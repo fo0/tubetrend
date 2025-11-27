@@ -3,6 +3,7 @@ name: Build and Push Docker image to GHCR
 on:
   push:
     branches: [ main, master ]
+    # Trigger auch bei Release-Tags (z.B. v1.0.0)
   workflow_dispatch:
 
 permissions:
@@ -14,11 +15,42 @@ env:
   IMAGE_NAME: ${{ toLower(github.repository) }}
 
 jobs:
-  build-and-push:
+  # 1. Neuer Job: Code-Qualität prüfen bevor gebaut wird
+  check-code:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      # Diese Skripte sollten in der package.json vorhanden sein
+      # (Vite Standard-Templates haben 'lint' und 'tsc' meist integriert)
+      - name: Run Type Check
+        run: npx tsc --noEmit
+      
+      - name: Run Linter
+        # Führt Lint nur aus, wenn das Skript existiert, um Fehler zu vermeiden
+        run: if npm run | grep -q "lint"; then npm run lint; fi
+
+  build-and-push:
+    # Startet erst, wenn check-code erfolgreich war
+    needs: check-code
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Log in to GHCR
         uses: docker/login-action@v3
@@ -49,3 +81,6 @@ jobs:
           platforms: linux/amd64
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          # 2. Caching aktivieren für schnellere Builds
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
