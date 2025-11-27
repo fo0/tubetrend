@@ -98,7 +98,7 @@ export const InputSection: React.FC<InputSectionProps> = ({ onSearch, isLoading 
   };
 
   return (
-    <div className="w-full bg-slate-900/50 backdrop-blur-xl rounded-2xl p-6 md:p-8 shadow-2xl border border-slate-800 mb-8 relative group" ref={wrapperRef}>
+    <div className="w-full bg-slate-900/50 backdrop-blur-xl rounded-2xl p-6 md:p-8 shadow-2xl border border-slate-800 mb-8 relative z-40 group" ref={wrapperRef}>
       {/* Glow Effect */}
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-indigo-500 to-transparent opacity-50 group-hover:opacity-100 transition-opacity"></div>
       
