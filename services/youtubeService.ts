@@ -144,6 +144,12 @@ export const findChannelInfo = async (channelName: string): Promise<{id: string,
 
 export const getVideosFromChannel = async (uploadsPlaylistId: string, timeFrame: TimeFrame, maxResults: number): Promise<YouTubeVideoItem[]> => {
   const now = Date.now();
+  // Helper for calendar-month based cutoffs
+  const monthsAgo = (n: number) => {
+    const d = new Date(now);
+    d.setMonth(d.getMonth() - n);
+    return d.getTime();
+  };
   let cutoffTime = 0;
 
   switch (timeFrame) {
@@ -180,6 +186,24 @@ export const getVideosFromChannel = async (uploadsPlaylistId: string, timeFrame:
       break;
     case TimeFrame.LAST_WEEK:
       cutoffTime = now - (7 * 24 * 60 * 60 * 1000);
+      break;
+    case TimeFrame.LAST_MONTH:
+      cutoffTime = monthsAgo(1);
+      break;
+    case TimeFrame.LAST_2_MONTHS:
+      cutoffTime = monthsAgo(2);
+      break;
+    case TimeFrame.LAST_3_MONTHS:
+      cutoffTime = monthsAgo(3);
+      break;
+    case TimeFrame.LAST_4_MONTHS:
+      cutoffTime = monthsAgo(4);
+      break;
+    case TimeFrame.LAST_5_MONTHS:
+      cutoffTime = monthsAgo(5);
+      break;
+    case TimeFrame.LAST_6_MONTHS:
+      cutoffTime = monthsAgo(6);
       break;
     default:
       cutoffTime = now - (24 * 60 * 60 * 1000);

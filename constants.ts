@@ -13,6 +13,13 @@ export const TIME_FRAMES = [
   { label: '5 Tage', value: TimeFrame.LAST_5_DAYS },
   { label: '6 Tage', value: TimeFrame.LAST_6_DAYS },
   { label: '7 Tage', value: TimeFrame.LAST_WEEK },
+  // Erweiterte Zeiträume (monatsweise)
+  { label: '1 Monat', value: TimeFrame.LAST_MONTH },
+  { label: '2 Monate', value: TimeFrame.LAST_2_MONTHS },
+  { label: '3 Monate', value: TimeFrame.LAST_3_MONTHS },
+  { label: '4 Monate', value: TimeFrame.LAST_4_MONTHS },
+  { label: '5 Monate', value: TimeFrame.LAST_5_MONTHS },
+  { label: '6 Monate', value: TimeFrame.LAST_6_MONTHS },
 ];
 
 export const MAX_RESULTS_OPTIONS = [

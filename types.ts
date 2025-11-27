@@ -10,7 +10,13 @@ export enum TimeFrame {
   LAST_4_DAYS = 'Letzte 4 Tage',
   LAST_5_DAYS = 'Letzte 5 Tage',
   LAST_6_DAYS = 'Letzte 6 Tage',
-  LAST_WEEK = 'Letzte Woche'
+  LAST_WEEK = 'Letzte Woche',
+  LAST_MONTH = 'Letzter Monat',
+  LAST_2_MONTHS = 'Letzte 2 Monate',
+  LAST_3_MONTHS = 'Letzte 3 Monate',
+  LAST_4_MONTHS = 'Letzte 4 Monate',
+  LAST_5_MONTHS = 'Letzte 5 Monate',
+  LAST_6_MONTHS = 'Letzte 6 Monate'
 }
 
 export enum SortOption {
