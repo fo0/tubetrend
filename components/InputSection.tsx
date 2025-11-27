@@ -4,13 +4,21 @@ import { TIME_FRAMES, MAX_RESULTS_OPTIONS } from '../constants';
 import { Search, Loader2, Link2, X, Youtube, ListFilter } from 'lucide-react';
 import { searchChannels, extractChannelIdentifier } from '../services/youtubeService';
 
+// Default search input can be configured via Vite env: VITE_DEFAULT_SEARCH
+// Behavior:
+// - If VITE_DEFAULT_SEARCH is set, use that value.
+// - Else: in dev mode default to 'TEDx', in prod default to empty string.
+const DEFAULT_SEARCH_INPUT: string = (
+  (import.meta as any)?.env?.VITE_DEFAULT_SEARCH ?? (((import.meta as any)?.env?.DEV) ? 'TEDx' : '')
+);
+
 interface InputSectionProps {
   onSearch: (channel: string, timeFrame: TimeFrame, maxResults: number) => void;
   isLoading: boolean;
 }
 
 export const InputSection: React.FC<InputSectionProps> = ({ onSearch, isLoading }) => {
-  const [inputValue, setInputValue] = useState('TEDx');
+  const [inputValue, setInputValue] = useState<string>(DEFAULT_SEARCH_INPUT);
   const [timeFrame, setTimeFrame] = useState<TimeFrame>(TimeFrame.LAST_24_HOURS);
   const [maxResults, setMaxResults] = useState<number>(25);
   
