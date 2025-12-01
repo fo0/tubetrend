@@ -7,7 +7,7 @@ import { ApiKeyModal } from './components/ApiKeyModal';
 import { analyzeVideoStats } from './services/geminiService';
 import { findChannelInfo, getVideosFromChannel, setYoutubeApiKey } from './services/youtubeService';
 import { TimeFrame, SearchState } from './types';
-import { BarChart3, AlertCircle, Activity, Settings, Trophy, List } from 'lucide-react';
+import { BarChart3, AlertCircle, Activity, Settings, Trophy, List, Eye } from 'lucide-react';
 
 const App: React.FC = () => {
   // Initialize state directly from storage to prevent modal flash
@@ -104,12 +104,23 @@ const App: React.FC = () => {
     }
   };
 
+  // Sorting / Filter state
+  const [sortMode, setSortMode] = useState<'trend' | 'views'>('trend');
+
   const sortedVideos = useMemo(() => {
     if (!searchState.data) return [];
-    
-    // Always sort by Trending Score descending
-    return [...searchState.data].sort((a, b) => b.trendingScore - a.trendingScore);
-  }, [searchState.data]);
+
+    const arr = [...searchState.data];
+    if (sortMode === 'views') {
+      // Sort by total views desc, tiebreaker trend score
+      return arr.sort((a, b) => {
+        if (b.views !== a.views) return b.views - a.views;
+        return b.trendingScore - a.trendingScore;
+      });
+    }
+    // Default: sort by Trending Score descending
+    return arr.sort((a, b) => b.trendingScore - a.trendingScore);
+  }, [searchState.data, sortMode]);
 
   // Split into Top 3 and Rest
   const topVideos = sortedVideos.slice(0, 3);
@@ -196,11 +207,41 @@ const App: React.FC = () => {
                  </span>
                </div>
                
-               <div className="flex items-center gap-2 text-sm text-indigo-300 font-medium">
-                 <Trophy className="w-4 h-4" />
-                 <span>Sortiert nach Trend Score (Velocity)</span>
+               <div className="flex items-center gap-3 text-sm font-medium">
+                 <span className="text-slate-400 whitespace-nowrap">
+                   Sortiert nach {sortMode === 'trend' ? 'Trend Score (Velocity)' : 'Views'}
+                 </span>
+                 {/* Sort Toggle */}
+                 <div className="inline-flex items-center rounded-lg border border-slate-800 bg-slate-900/60 p-0.5">
+                   <button
+                     type="button"
+                     onClick={() => setSortMode('trend')}
+                     className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors ${
+                       sortMode === 'trend'
+                         ? 'bg-indigo-600 text-white'
+                         : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                     }`}
+                     title="Nach Trend Score sortieren"
+                   >
+                     <Trophy className="w-4 h-4" />
+                     <span>Trend Score</span>
+                   </button>
+                   <button
+                     type="button"
+                     onClick={() => setSortMode('views')}
+                     className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors ${
+                       sortMode === 'views'
+                         ? 'bg-indigo-600 text-white'
+                         : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                     }`}
+                     title="Nach Views sortieren"
+                   >
+                     <Eye className="w-4 h-4" />
+                     <span>Views</span>
+                   </button>
+                 </div>
                </div>
-            </div>
+             </div>
 
             {/* SECTION 1: Top 3 Cards */}
             <div>
