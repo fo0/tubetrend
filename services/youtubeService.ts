@@ -1,4 +1,4 @@
-import { TimeFrame, YouTubeVideoItem, ChannelSuggestion } from "../types";
+import {ChannelSuggestion, TimeFrame, YouTubeVideoItem} from "../types";
 
 const STORAGE_KEY = 'yt_api_key';
 
@@ -44,18 +44,18 @@ const fetchFromApi = async (endpoint: string, params: Record<string, string>) =>
  */
 export const extractChannelIdentifier = (input: string): string => {
   const trimmed = input.trim();
-  
+
   // Handle full URLs
   if (trimmed.includes('youtube.com/') || trimmed.includes('youtu.be/')) {
     try {
       const url = new URL(trimmed.startsWith('http') ? trimmed : `https://${trimmed}`);
       const path = url.pathname;
-      
+
       // Case 1: /@handle
       if (path.startsWith('/@')) {
         return path.substring(1); // Return "handle" (without @ is usually safer for search, but with @ is specific)
       }
-      
+
       // Case 2: /channel/ID
       if (path.startsWith('/channel/')) {
         return path.split('/')[2];
@@ -85,10 +85,7 @@ export const searchChannels = async (query: string): Promise<ChannelSuggestion[]
 
   try {
     const data = await fetchFromApi("search", {
-      part: "snippet",
-      q: query,
-      type: "channel",
-      maxResults: "5"
+      part: "snippet", q: query, type: "channel", maxResults: "5"
     });
 
     if (!data.items) return [];
@@ -97,23 +94,22 @@ export const searchChannels = async (query: string): Promise<ChannelSuggestion[]
       id: item.snippet.channelId,
       title: item.snippet.channelTitle,
       thumbnailUrl: item.snippet.thumbnails?.default?.url || "",
-      handle: item.snippet.customUrl 
+      handle: item.snippet.customUrl
     }));
   } catch (error) {
     console.warn("Autocomplete failed", error);
-    return []; 
+    return [];
   }
 };
 
-export const findChannelInfo = async (channelName: string): Promise<{id: string, name: string, uploadsPlaylistId: string}> => {
+export const findChannelInfo = async (channelName: string): Promise<{
+  id: string, name: string, uploadsPlaylistId: string
+}> => {
   const query = channelName.startsWith('@') ? channelName : channelName;
 
   // 1. Search for the channel to get ID (Cost: 100 units)
   const searchData = await fetchFromApi("search", {
-    part: "snippet",
-    q: query,
-    type: "channel",
-    maxResults: "1"
+    part: "snippet", q: query, type: "channel", maxResults: "1"
   });
 
   if (!searchData.items || searchData.items.length === 0) {
@@ -125,8 +121,7 @@ export const findChannelInfo = async (channelName: string): Promise<{id: string,
 
   // 2. Get Channel Details to find "Uploads" playlist (Cost: 1 unit)
   const channelDetails = await fetchFromApi("channels", {
-    part: "contentDetails",
-    id: channelId
+    part: "contentDetails", id: channelId
   });
 
   if (!channelDetails.items || channelDetails.items.length === 0) {
@@ -136,9 +131,7 @@ export const findChannelInfo = async (channelName: string): Promise<{id: string,
   const uploadsPlaylistId = channelDetails.items[0].contentDetails.relatedPlaylists.uploads;
 
   return {
-    id: channelId,
-    name: channelTitle,
-    uploadsPlaylistId
+    id: channelId, name: channelTitle, uploadsPlaylistId
   };
 };
 
@@ -166,7 +159,7 @@ export const getVideosFromChannel = async (uploadsPlaylistId: string, timeFrame:
       cutoffTime = now - (12 * 60 * 60 * 1000);
       break;
     case TimeFrame.LAST_24_HOURS:
-    case TimeFrame.TODAY: 
+    case TimeFrame.TODAY:
       cutoffTime = now - (24 * 60 * 60 * 1000);
       break;
     case TimeFrame.LAST_2_DAYS:
@@ -213,17 +206,15 @@ export const getVideosFromChannel = async (uploadsPlaylistId: string, timeFrame:
   let nextPageToken = "";
   let shouldContinue = true;
   // Safety break: 100 pages * 50 videos = 5000 videos max depth
-  const MAX_PAGES = 100; 
+  const MAX_PAGES = 100;
   let pageCount = 0;
 
   while (shouldContinue && pageCount < MAX_PAGES) {
     // 1. Get latest videos from the uploads playlist (Cost: 1 unit per page)
     const params: any = {
-      part: "snippet,contentDetails",
-      playlistId: uploadsPlaylistId,
-      maxResults: "50" // Max allowed by API per page
+      part: "snippet,contentDetails", playlistId: uploadsPlaylistId, maxResults: "50" // Max allowed by API per page
     };
-    
+
     if (nextPageToken) params.pageToken = nextPageToken;
 
     const playlistData = await fetchFromApi("playlistItems", params);
@@ -234,18 +225,18 @@ export const getVideosFromChannel = async (uploadsPlaylistId: string, timeFrame:
     }
 
     const items = playlistData.items;
-    
+
     // Check if the oldest video in this batch is still within our timeframe
     // If ANY video in this batch is valid, we keep it. 
     // If ALL videos are too old, we stop.
     let validItemsInBatch = 0;
 
     for (const item of items) {
-       const publishedAt = new Date(item.snippet.publishedAt).getTime();
-       if (publishedAt >= cutoffTime) {
-         allVideos.push(item);
-         validItemsInBatch++;
-       }
+      const publishedAt = new Date(item.snippet.publishedAt).getTime();
+      if (publishedAt >= cutoffTime) {
+        allVideos.push(item);
+        validItemsInBatch++;
+      }
     }
 
     // If we found 0 valid items in a full batch, it means we passed the date threshold
@@ -271,25 +262,42 @@ export const getVideosFromChannel = async (uploadsPlaylistId: string, timeFrame:
 
   // 3. Get Video Statistics (Views, etc) for these items (Cost: 1 unit)
   // The API allows max 50 ids per call. We need to batch this.
-  
+
   let finalVideoItems: YouTubeVideoItem[] = [];
-  
+
   // Batch processing for stats
   for (let i = 0; i < allVideos.length; i += 50) {
     const batch = allVideos.slice(i, i + 50);
     const videoIds = batch.map((item: any) => item.contentDetails.videoId).join(",");
-    
+
+    // Schritt 1: 'contentDetails' zu den parts hinzufügen
     const statsData = await fetchFromApi("videos", {
-      part: "statistics,snippet", 
-      id: videoIds
+      part: "statistics,snippet,contentDetails", id: videoIds
     });
 
     if (statsData.items) {
-      const mapped = statsData.items.map((item: any) => ({
-        id: item.id,
-        snippet: item.snippet,
-        statistics: item.statistics
+      // Schritt 2: Filter-Logik einfügen
+      const mapped = statsData.items.filter((item: any) => {
+        // Dauer auslesen (Format: PT#H#M#S)
+        const duration = item.contentDetails?.duration;
+        if (!duration) return true; // Behalten, falls Dauer unbekannt
+
+        // Dauer parsen
+        const match = duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
+        let seconds = 0;
+        if (match) {
+          const h = parseInt(match[1]?.replace('H', '') || '0');
+          const m = parseInt(match[2]?.replace('M', '') || '0');
+          const s = parseInt(match[3]?.replace('S', '') || '0');
+          seconds = h * 3600 + m * 60 + s;
+        }
+
+        // Shorts herausfiltern (Videos <= 60 Sekunden)
+        return seconds > 60;
+      }).map((item: any) => ({
+        id: item.id, snippet: item.snippet, statistics: item.statistics
       }));
+
       finalVideoItems = [...finalVideoItems, ...mapped];
     }
   }

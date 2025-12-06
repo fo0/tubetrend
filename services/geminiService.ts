@@ -47,22 +47,22 @@ export const analyzeVideoStats = async (
   const maxVelocity = Math.max(...processedVideos.map(v => v.viewsPerHour), 1);
 
   // 3. Generate Final Data with Scores and Reasoning
-  const finalResults: VideoData[] = processedVideos.map(v => {
+  const finalResults: VideoData[] = processedVideos.map(ytVideo => {
     // Normalize Score: (VideoVelocity / MaxVelocity) * 100
     // This ensures the best video always gets 100 (or close to it)
-    const rawScore = (v.viewsPerHour / maxVelocity) * 100;
+    const rawScore = (ytVideo.viewsPerHour / maxVelocity) * 100;
     const trendingScore = Math.round(rawScore);
 
     // Generate deterministic reasoning text
     let reasoning = "";
     if (trendingScore >= 95) {
-      reasoning = `Top-Performer: Generiert extrem schnell Views (${v.viewsPerHour.toLocaleString()}/h).`;
+      reasoning = `Top-Performer: Generiert extrem schnell Views (${ytVideo.viewsPerHour.toLocaleString()}/h).`;
     } else if (trendingScore >= 80) {
-      reasoning = `Viraler Trend: Wächst viel schneller als der Durchschnitt (${v.viewsPerHour.toLocaleString()}/h).`;
+      reasoning = `Viraler Trend: Wächst viel schneller als der Durchschnitt (${ytVideo.viewsPerHour.toLocaleString()}/h).`;
     } else if (trendingScore >= 60) {
       reasoning = `Starke Performance: Überdurchschnittliche Aufrufzahlen.`;
     } else if (trendingScore >= 40) {
-      reasoning = `Solide: Sammelt stetig Aufrufe (${v.viewsPerHour.toLocaleString()}/h).`;
+      reasoning = `Solide: Sammelt stetig Aufrufe (${ytVideo.viewsPerHour.toLocaleString()}/h).`;
     } else if (trendingScore >= 20) {
       reasoning = `Moderat: Normale Wachstumsrate für diesen Kanal.`;
     } else {
@@ -70,16 +70,16 @@ export const analyzeVideoStats = async (
     }
 
     return {
-      id: v.rawItem.id,
-      title: v.rawItem.snippet.title,
-      url: `https://www.youtube.com/watch?v=${v.rawItem.id}`,
-      thumbnailUrl: v.thumbUrl,
-      views: v.viewCount,
-      uploadTime: v.timeString,
-      publishedTimestamp: v.publishedAt,
+      id: ytVideo.rawItem.id,
+      title: ytVideo.rawItem.snippet.title,
+      url: `https://www.youtube.com/watch?v=${ytVideo.rawItem.id}`,
+      thumbnailUrl: ytVideo.thumbUrl,
+      views: ytVideo.viewCount,
+      uploadTime: ytVideo.timeString,
+      publishedTimestamp: ytVideo.publishedAt,
       trendingScore: trendingScore,
       reasoning: reasoning,
-      viewsPerHour: v.viewsPerHour
+      viewsPerHour: ytVideo.viewsPerHour
     };
   });
 
