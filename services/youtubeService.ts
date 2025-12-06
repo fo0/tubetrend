@@ -1,6 +1,25 @@
 import {ChannelSuggestion, TimeFrame, YouTubeVideoItem} from "../types";
 
 const STORAGE_KEY = 'yt_api_key';
+const CHANNEL_CACHE_KEY = 'yt_channel_cache';
+
+// Helper to access channel cache
+const getChannelCache = (): Record<string, any> => {
+  if (typeof window === 'undefined') return {};
+  try {
+    const item = localStorage.getItem(CHANNEL_CACHE_KEY);
+    return item ? JSON.parse(item) : {};
+  } catch { return {}; }
+};
+
+const saveChannelToCache = (key: string, data: any) => {
+  if (typeof window === 'undefined') return;
+  try {
+    const cache = getChannelCache();
+    cache[key] = data;
+    localStorage.setItem(CHANNEL_CACHE_KEY, JSON.stringify(cache));
+  } catch (e) { console.warn("Cache save failed", e); }
+};
 
 // Load key immediately from storage if available
 let API_KEY = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEY) || "" : "";
@@ -107,7 +126,13 @@ export const findChannelInfo = async (channelName: string): Promise<{
 }> => {
   const query = channelName.startsWith('@') ? channelName : channelName;
 
-  // 1. Search for the channel to get ID (Cost: 100 units)
+  // 1. Check Cache
+  const cache = getChannelCache();
+  if (cache[query]) {
+    return cache[query];
+  }
+
+  // 2. Search for the channel to get ID (Cost: 100 units)
   const searchData = await fetchFromApi("search", {
     part: "snippet", q: query, type: "channel", maxResults: "1"
   });
@@ -119,7 +144,7 @@ export const findChannelInfo = async (channelName: string): Promise<{
   const channelId = searchData.items[0].snippet.channelId;
   const channelTitle = searchData.items[0].snippet.channelTitle;
 
-  // 2. Get Channel Details to find "Uploads" playlist (Cost: 1 unit)
+  // 3. Get Channel Details to find "Uploads" playlist (Cost: 1 unit)
   const channelDetails = await fetchFromApi("channels", {
     part: "contentDetails", id: channelId
   });
@@ -130,9 +155,10 @@ export const findChannelInfo = async (channelName: string): Promise<{
 
   const uploadsPlaylistId = channelDetails.items[0].contentDetails.relatedPlaylists.uploads;
 
-  return {
-    id: channelId, name: channelTitle, uploadsPlaylistId
-  };
+  const result = { id: channelId, name: channelTitle, uploadsPlaylistId };
+  saveChannelToCache(query, result);
+
+  return result;
 };
 
 export const getVideosFromChannel = async (uploadsPlaylistId: string, timeFrame: TimeFrame, maxResults: number): Promise<YouTubeVideoItem[]> => {
@@ -254,14 +280,17 @@ export const getVideosFromChannel = async (uploadsPlaylistId: string, timeFrame:
     return [];
   }
 
-  // 2. Limit the number of videos BEFORE fetching stats if limit is set.
-  // We prioritize the most recent videos (which are at the start of allVideos).
-  if (maxResults > 0 && allVideos.length > maxResults) {
-    allVideos = allVideos.slice(0, maxResults);
+  // Optimierung: Limitierung der Videos
+  // Wir nutzen mindestens 50 Items (1 Batch), auch wenn maxResults < 50 ist,
+  // um mehr Chancen zu haben, Shorts herauszufiltern, ohne mehr zu bezahlen.
+  let processingLimit = allVideos.length;
+  if (maxResults > 0) {
+    const effectiveLimit = Math.max(maxResults, 50);
+    if (allVideos.length > effectiveLimit) {
+      processingLimit = effectiveLimit;
+      allVideos = allVideos.slice(0, processingLimit);
+    }
   }
-
-  // 3. Get Video Statistics (Views, etc) for these items (Cost: 1 unit)
-  // The API allows max 50 ids per call. We need to batch this.
 
   let finalVideoItems: YouTubeVideoItem[] = [];
 
@@ -270,19 +299,16 @@ export const getVideosFromChannel = async (uploadsPlaylistId: string, timeFrame:
     const batch = allVideos.slice(i, i + 50);
     const videoIds = batch.map((item: any) => item.contentDetails.videoId).join(",");
 
-    // Schritt 1: 'contentDetails' zu den parts hinzufügen
+    // Optimierung: 'snippet' entfernt, da wir es schon haben.
     const statsData = await fetchFromApi("videos", {
-      part: "statistics,snippet,contentDetails", id: videoIds
+      part: "statistics,contentDetails", id: videoIds
     });
 
     if (statsData.items) {
-      // Schritt 2: Filter-Logik einfügen
       const mapped = statsData.items.filter((item: any) => {
-        // Dauer auslesen (Format: PT#H#M#S)
         const duration = item.contentDetails?.duration;
-        if (!duration) return true; // Behalten, falls Dauer unbekannt
+        if (!duration) return true;
 
-        // Dauer parsen
         const match = duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
         let seconds = 0;
         if (match) {
@@ -291,15 +317,24 @@ export const getVideosFromChannel = async (uploadsPlaylistId: string, timeFrame:
           const s = parseInt(match[3]?.replace('S', '') || '0');
           seconds = h * 3600 + m * 60 + s;
         }
-
-        // Shorts herausfiltern (Videos <= 60 Sekunden)
-        return seconds > 60;
-      }).map((item: any) => ({
-        id: item.id, snippet: item.snippet, statistics: item.statistics
-      }));
+        return seconds > 60; // Shorts Filter
+      }).map((item: any) => {
+        // Snippet aus dem Batch wiederverwenden
+        const originalItem = batch.find((b: any) => b.contentDetails.videoId === item.id);
+        return {
+          id: item.id,
+          snippet: originalItem ? originalItem.snippet : {},
+          statistics: item.statistics
+        };
+      });
 
       finalVideoItems = [...finalVideoItems, ...mapped];
     }
+  }
+
+  // Am Ende nochmal strikt auf maxResults kürzen
+  if (maxResults > 0 && finalVideoItems.length > maxResults) {
+    finalVideoItems = finalVideoItems.slice(0, maxResults);
   }
 
   return finalVideoItems;
