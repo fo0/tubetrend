@@ -33,6 +33,9 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, gl
   const [showMaxMenu, setShowMaxMenu] = useState<boolean>(false);
   const tfButtonRef = useRef<HTMLButtonElement | null>(null);
   const maxButtonRef = useRef<HTMLButtonElement | null>(null);
+  // Menü-Container Refs (für korrekte Outside-Click-Erkennung)
+  const tfMenuRef = useRef<HTMLDivElement | null>(null);
+  const maxMenuRef = useRef<HTMLDivElement | null>(null);
 
   // Sync bei Prop-Wechsel (z.B. nach Seiten-Neuladen)
   useEffect(() => {
@@ -81,8 +84,8 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, gl
       const forced = prevGlobalTokenRef.current !== globalRefreshToken || prevLocalTokenRef.current !== localRefreshToken;
       // Cache verwenden, wenn frisch und kein erzwungener Refresh
       if (!forced) {
-        const cachedOk = favoritesService.isCacheValid(favorite.id);
-        const cached = favoritesService.getCache(favorite.id);
+        const cachedOk = favoritesService.isCacheValid(currentFavId);
+        const cached = favoritesService.getCache(currentFavId);
         if (cachedOk && cached) {
           if (!cancelled) setVideos(cached.videos);
           return;
@@ -149,11 +152,21 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, gl
   useEffect(() => {
     const onDocClick = (e: MouseEvent) => {
       const target = e.target as Node;
-      if (showTfMenu && tfButtonRef.current && !tfButtonRef.current.contains(target)) {
-        setShowTfMenu(false);
+
+      if (showTfMenu) {
+        const clickedTfButton = !!tfButtonRef.current && tfButtonRef.current.contains(target);
+        const clickedTfMenu = !!tfMenuRef.current && tfMenuRef.current.contains(target);
+        if (!clickedTfButton && !clickedTfMenu) {
+          setShowTfMenu(false);
+        }
       }
-      if (showMaxMenu && maxButtonRef.current && !maxButtonRef.current.contains(target)) {
-        setShowMaxMenu(false);
+
+      if (showMaxMenu) {
+        const clickedMaxButton = !!maxButtonRef.current && maxButtonRef.current.contains(target);
+        const clickedMaxMenu = !!maxMenuRef.current && maxMenuRef.current.contains(target);
+        if (!clickedMaxButton && !clickedMaxMenu) {
+          setShowMaxMenu(false);
+        }
       }
     };
     document.addEventListener('mousedown', onDocClick);
@@ -221,7 +234,11 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, gl
               {currentTimeFrame}
             </button>
             {showTfMenu && (
-              <div className="absolute z-20 mt-2 left-0 w-56 bg-slate-900 border border-slate-700 rounded-lg shadow-xl p-1">
+              <div
+                ref={tfMenuRef}
+                onMouseDown={(e) => e.stopPropagation()}
+                className="absolute z-20 mt-2 left-0 w-56 bg-slate-900 border border-slate-700 rounded-lg shadow-xl p-1"
+              >
                 <div className="max-h-60 overflow-auto">
                   {TIME_FRAMES.map(opt => (
                     <button
@@ -247,7 +264,11 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, gl
               {displayMax}
             </button>
             {showMaxMenu && (
-              <div className="absolute z-20 mt-2 left-44 w-56 bg-slate-900 border border-slate-700 rounded-lg shadow-xl p-1">
+              <div
+                ref={maxMenuRef}
+                onMouseDown={(e) => e.stopPropagation()}
+                className="absolute z-20 mt-2 left-44 w-56 bg-slate-900 border border-slate-700 rounded-lg shadow-xl p-1"
+              >
                 <div className="max-h-60 overflow-auto">
                   {MAX_RESULTS_OPTIONS.map(opt => (
                     <button
