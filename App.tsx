@@ -69,7 +69,7 @@ const App: React.FC = () => {
       const { id: channelId, name: officialName, uploadsPlaylistId } = await findChannelInfo(channel);
       
       // Step 2: Get Videos from Playlist & Stats (passing limit)
-      const apiVideos = await getVideosFromChannel(uploadsPlaylistId, timeFrame, maxResults);
+      const { videos: apiVideos } = await getVideosFromChannel(uploadsPlaylistId, timeFrame, maxResults);
 
       if (apiVideos.length === 0) {
         throw new Error(`Keine Videos im Zeitraum "${timeFrame}" gefunden.`);

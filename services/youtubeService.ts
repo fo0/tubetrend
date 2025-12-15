@@ -1,4 +1,4 @@
-import {ChannelSuggestion, TimeFrame, YouTubeVideoItem} from "../types";
+import {ChannelSuggestion, TimeFrame, YouTubeVideoItem, ChannelVideosResult} from "../types";
 
 const STORAGE_KEY = 'yt_api_key';
 const CHANNEL_CACHE_KEY = 'yt_channel_cache';
@@ -161,7 +161,7 @@ export const findChannelInfo = async (channelName: string): Promise<{
   return result;
 };
 
-export const getVideosFromChannel = async (uploadsPlaylistId: string, timeFrame: TimeFrame, maxResults: number): Promise<YouTubeVideoItem[]> => {
+export const getVideosFromChannel = async (uploadsPlaylistId: string, timeFrame: TimeFrame, maxResults: number): Promise<ChannelVideosResult> => {
   const now = Date.now();
   // Helper for calendar-month based cutoffs
   const monthsAgo = (n: number) => {
@@ -277,7 +277,7 @@ export const getVideosFromChannel = async (uploadsPlaylistId: string, timeFrame:
   }
 
   if (allVideos.length === 0) {
-    return [];
+    return { videos: [], totalInTimeFrame: 0 };
   }
 
   // Optimierung: Limitierung der Videos
@@ -292,6 +292,7 @@ export const getVideosFromChannel = async (uploadsPlaylistId: string, timeFrame:
     }
   }
 
+  const totalInTimeFrame = allVideos.length;
   let finalVideoItems: YouTubeVideoItem[] = [];
 
   // Batch processing for stats
@@ -338,5 +339,5 @@ export const getVideosFromChannel = async (uploadsPlaylistId: string, timeFrame:
     finalVideoItems = finalVideoItems.slice(0, maxResults);
   }
 
-  return finalVideoItems;
+  return { videos: finalVideoItems, totalInTimeFrame };
 };

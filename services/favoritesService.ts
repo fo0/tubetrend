@@ -137,11 +137,18 @@ export const favoritesService = {
     return entry;
   },
 
-  setCache(id: string, videos: VideoData[], ttlMs: number = DEFAULT_CACHE_TTL) {
+  setCache(id: string, videos: VideoData[], extra?: { totalInTimeFrame?: number }, ttlMs: number = DEFAULT_CACHE_TTL) {
     // Nur Top6 speichern, um Speicher zu sparen
     const top6 = [...videos].sort((a, b) => b.trendingScore - a.trendingScore).slice(0, 6);
     const cache = safeRead<Record<string, FavoriteCacheEntry & { ttl?: number }>>(FAVORITES_CACHE_KEY, {});
-    cache[id] = { videos: top6, fetchedAt: Date.now() };
+    const entry: FavoriteCacheEntry & { ttl?: number } = {
+      videos: top6,
+      fetchedAt: Date.now(),
+      meta: {
+        totalInTimeFrame: extra?.totalInTimeFrame
+      }
+    };
+    cache[id] = entry;
     safeWrite(FAVORITES_CACHE_KEY, cache);
   },
 

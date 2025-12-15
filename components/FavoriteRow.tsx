@@ -4,7 +4,7 @@ import { favoritesService } from '../services/favoritesService';
 import { analyzeVideoStats } from '../services/geminiService';
 import { findChannelInfo, getVideosFromChannel } from '../services/youtubeService';
 import { VideoCard } from './VideoCard';
-import { AlertCircle, ChevronRight, Loader2, Trash2, RefreshCw, Youtube } from 'lucide-react';
+import { AlertCircle, AlertTriangle, ChevronRight, Loader2, Trash2, RefreshCw, Youtube } from 'lucide-react';
 import { MAX_RESULTS_OPTIONS, TIME_FRAMES } from '../constants';
 
 interface FavoriteRowProps {
@@ -20,6 +20,7 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, gl
   const [error, setError] = useState<string | null>(null);
   const [channelTitle, setChannelTitle] = useState<string>(favorite.query);
   const [channelId, setChannelId] = useState<string | null>(null);
+  const [totalInTimeFrame, setTotalInTimeFrame] = useState<number | null>(null);
   // Lokaler Refresh-Zähler für diese Reihe
   const [localRefreshToken, setLocalRefreshToken] = useState<number>(0);
 
@@ -56,6 +57,13 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, gl
     return entry?.fetchedAt ?? null;
   }, [currentFavId, videos, loading, globalRefreshToken, localRefreshToken]);
 
+  // Zeige Warnung, wenn ausgewählte Top-X kleiner als Gesamtmenge im Zeitraum ist
+  const showOverflowWarning = useMemo(() => {
+    if (!totalInTimeFrame) return false;
+    if (currentMax === 0) return false; // "Alle"
+    return totalInTimeFrame > currentMax;
+  }, [totalInTimeFrame, currentMax]);
+
   const formatTimeAgo = (ts: number): string => {
     const diffMs = Date.now() - ts;
     if (diffMs < 0) return 'gerade eben';
@@ -88,6 +96,7 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, gl
         const cached = favoritesService.getCache(currentFavId);
         if (cachedOk && cached) {
           if (!cancelled) setVideos(cached.videos);
+          if (!cancelled) setTotalInTimeFrame(cached.meta?.totalInTimeFrame ?? null);
           return;
         }
       }
@@ -97,11 +106,12 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, gl
         const { id, name, uploadsPlaylistId } = await findChannelInfo(favorite.query);
         if (!cancelled) setChannelTitle(name);
         if (!cancelled) setChannelId(id);
-        const apiVideos = await getVideosFromChannel(uploadsPlaylistId, currentTimeFrame as TimeFrame, currentMax);
+        const { videos: apiVideos, totalInTimeFrame } = await getVideosFromChannel(uploadsPlaylistId, currentTimeFrame as TimeFrame, currentMax);
+        if (!cancelled) setTotalInTimeFrame(totalInTimeFrame);
         const analyzed = await analyzeVideoStats(apiVideos, name, currentTimeFrame);
         const top6 = analyzed.sort((a, b) => b.trendingScore - a.trendingScore).slice(0, 6);
         if (!cancelled) setVideos(top6);
-        favoritesService.setCache(currentFavId, top6);
+        favoritesService.setCache(currentFavId, top6, { totalInTimeFrame });
       } catch (e: any) {
         if (!cancelled) setError(e?.message || 'Fehler beim Laden der Favoriten-Daten.');
       } finally {
@@ -263,6 +273,14 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, gl
             >
               {displayMax}
             </button>
+            {showOverflowWarning && (
+              <span
+                className="inline-flex items-center gap-1 text-yellow-400"
+                title={`Es gibt ${totalInTimeFrame} Videos im Zeitraum – angezeigt werden nur ${currentMax}.`}
+              >
+                <AlertTriangle className="w-4 h-4" aria-hidden="true" />
+              </span>
+            )}
             {showMaxMenu && (
               <div
                 ref={maxMenuRef}

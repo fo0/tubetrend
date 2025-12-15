@@ -44,6 +44,14 @@ export interface YouTubeVideoItem {
   statistics?: VideoStats;
 }
 
+// Ergebnis einer Kanalabfrage: Videos + Gesamtanzahl im gewählten Zeitraum
+export interface ChannelVideosResult {
+  videos: YouTubeVideoItem[];
+  // Anzahl der Playlist-Items im Zeitraum (ohne garantierte Shorts-Filterung)
+  // Dient für UI-Hinweise (z.B. Warnsymbol, wenn Auswahl "Top X" < Gesamtzahl)
+  totalInTimeFrame: number;
+}
+
 export interface VideoData {
   id: string;
   title: string;
@@ -87,4 +95,7 @@ export interface FavoriteConfig {
 export interface FavoriteCacheEntry {
   videos: VideoData[]; // bereits berechnete Videos (hier auf Top6 begrenzt)
   fetchedAt: number;   // Zeitstempel der Berechnung
+  meta?: {
+    totalInTimeFrame?: number;
+  };
 }
