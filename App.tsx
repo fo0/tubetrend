@@ -7,7 +7,7 @@ import { ApiKeyModal } from './components/ApiKeyModal';
 import { analyzeVideoStats } from './services/geminiService';
 import { findChannelInfo, getVideosFromChannel, setYoutubeApiKey } from './services/youtubeService';
 import { TimeFrame, SearchState } from './types';
-import { BarChart3, AlertCircle, Activity, Settings, Trophy, List, Eye } from 'lucide-react';
+import { BarChart3, AlertCircle, Activity, Settings, Trophy, List, Eye, LayoutDashboard } from 'lucide-react';
 
 const App: React.FC = () => {
   // Initialize state directly from storage to prevent modal flash
@@ -109,6 +109,9 @@ const App: React.FC = () => {
   // Anzahl hervorgehobener Karten (Top N)
   const [topN, setTopN] = useState<3 | 6>(3);
 
+  // Simple Navigation (ohne Router): Dashboard | Analyser
+  const [activePage, setActivePage] = useState<'dashboard' | 'analyser'>('analyser');
+
   const sortedVideos = useMemo(() => {
     if (!searchState.data) return [];
 
@@ -143,6 +146,35 @@ const App: React.FC = () => {
             <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-100 to-slate-400 hidden sm:block">
               TubeTrend
             </h1>
+            {/* Simple Menü links: Dashboard | Analyser */}
+            <nav className="ml-4 flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setActivePage('dashboard')}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium border transition-colors 
+                  ${activePage === 'dashboard' 
+                    ? 'bg-slate-800 text-white border-slate-700' 
+                    : 'text-slate-300 border-slate-800 hover:bg-slate-800 hover:text-white'}
+                `}
+                title="Dashboard"
+              >
+                <LayoutDashboard className="w-4 h-4" />
+                <span>Dashboard</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActivePage('analyser')}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium border transition-colors 
+                  ${activePage === 'analyser' 
+                    ? 'bg-slate-800 text-white border-slate-700' 
+                    : 'text-slate-300 border-slate-800 hover:bg-slate-800 hover:text-white'}
+                `}
+                title="Analyser"
+              >
+                <BarChart3 className="w-4 h-4" />
+                <span>Analyser</span>
+              </button>
+            </nav>
           </div>
           
           <div className="flex items-center gap-4">
@@ -171,141 +203,152 @@ const App: React.FC = () => {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        
-        <div className="mb-10 text-center space-y-3">
-          <h2 className="text-3xl md:text-5xl font-extrabold text-white tracking-tight">
-            Offizielle API. <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-500">Echte Trends.</span>
-          </h2>
-          <p className="text-slate-400 max-w-2xl mx-auto text-lg leading-relaxed">
-            Direkte Verbindung zur YouTube Data API v3. Mathematische Analyse von Velocity und Wachstum.
-          </p>
-        </div>
-
-        <InputSection 
-          onSearch={handleSearch} 
-          isLoading={searchState.isLoading} 
-        />
-
-        {/* Error Message */}
-        {searchState.error && (
-          <div className="mb-8 bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex items-center gap-3 text-red-200 animate-fade-in shadow-lg shadow-red-900/10">
-            <AlertCircle className="w-5 h-5 flex-shrink-0" />
-            <p>{searchState.error}</p>
+        {activePage === 'dashboard' ? (
+          <div className="animate-fade-in">
+            <div className="mb-10 text-center space-y-3">
+              <h2 className="text-3xl md:text-5xl font-extrabold text-white tracking-tight">
+                Dashboard
+              </h2>
+              <p className="text-slate-400 max-w-2xl mx-auto text-lg leading-relaxed">
+                Kommt bald. Hier erscheinen demnächst Übersichten und schnelle Einblicke.
+              </p>
+            </div>
           </div>
-        )}
-
-        {/* Results */}
-        {sortedVideos.length > 0 && (
-          <div className="space-y-12 animate-fade-in">
-            
-            {/* Control Bar */}
-            <div className="flex flex-col sm:flex-row justify-between items-center bg-slate-900/50 p-4 rounded-xl border border-slate-800 gap-4 backdrop-blur-sm">
-               <div className="flex items-center gap-2">
-                 <h3 className="font-semibold text-slate-200">
-                   Ergebnisse für <span className="text-red-400">@{searchState.channelName}</span>
-                 </h3>
-                 <span className="bg-slate-700 text-xs px-2 py-0.5 rounded-full text-slate-300 border border-slate-600">
-                   {sortedVideos.length} Videos
-                 </span>
-               </div>
-               
-               <div className="flex items-center gap-3 text-sm font-medium">
-                 <span className="text-slate-400 whitespace-nowrap">
-                   Sortiert nach {sortMode === 'trend' ? 'Trend Score (Velocity)' : 'Views'}
-                 </span>
-                 {/* Sort Toggle */}
-                 <div className="inline-flex items-center rounded-lg border border-slate-800 bg-slate-900/60 p-0.5">
-                   <button
-                     type="button"
-                     onClick={() => setSortMode('trend')}
-                     className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors ${
-                       sortMode === 'trend'
-                         ? 'bg-indigo-600 text-white'
-                         : 'text-slate-300 hover:text-white hover:bg-slate-800'
-                     }`}
-                     title="Nach Trend Score sortieren"
-                   >
-                     <Trophy className="w-4 h-4" />
-                     <span>Trend Score</span>
-                   </button>
-                   <button
-                     type="button"
-                     onClick={() => setSortMode('views')}
-                     className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors ${
-                       sortMode === 'views'
-                         ? 'bg-indigo-600 text-white'
-                         : 'text-slate-300 hover:text-white hover:bg-slate-800'
-                     }`}
-                     title="Nach Views sortieren"
-                   >
-                     <Eye className="w-4 h-4" />
-                     <span>Views</span>
-                   </button>
-                 </div>
-                  {/* Top N Toggle */}
-                  <div className="inline-flex items-center rounded-lg border border-slate-800 bg-slate-900/60 p-0.5">
-                    <button
-                      type="button"
-                      onClick={() => setTopN(3)}
-                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors ${
-                        topN === 3
-                          ? 'bg-indigo-600 text-white'
-                          : 'text-slate-300 hover:text-white hover:bg-slate-800'
-                      }`}
-                      title="Top 3 hervorheben"
-                    >
-                      <span>Top 3</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setTopN(6)}
-                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors ${
-                        topN === 6
-                          ? 'bg-indigo-600 text-white'
-                          : 'text-slate-300 hover:text-white hover:bg-slate-800'
-                      }`}
-                      title="Top 6 hervorheben"
-                    >
-                      <span>Top 6</span>
-                    </button>
-                  </div>
-               </div>
-             </div>
-
-            {/* SECTION 1: Top N Cards */}
-            <div>
-              <div className="flex items-center gap-2 mb-4 px-1">
-                <Trophy className="w-5 h-5 text-yellow-500" />
-                <h3 className="text-lg font-bold text-slate-200 uppercase tracking-wide">
-                  Top {topN} Performance
-                </h3>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {topVideos.map((video, index) => (
-                  <VideoCard key={video.id} video={video} rank={index + 1} />
-                ))}
-              </div>
+        ) : (
+          <>
+            <div className="mb-10 text-center space-y-3">
+              <h2 className="text-3xl md:text-5xl font-extrabold text-white tracking-tight">
+                Offizielle API. <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-500">Echte Trends.</span>
+              </h2>
+              <p className="text-slate-400 max-w-2xl mx-auto text-lg leading-relaxed">
+                Direkte Verbindung zur YouTube Data API v3. Mathematische Analyse von Velocity und Wachstum.
+              </p>
             </div>
 
-            {/* SECTION 2: List Table (Rank 4+) */}
-            {otherVideos.length > 0 && (
-              <div>
-                <div className="flex items-center gap-2 mb-4 px-1 mt-8">
-                  <List className="w-5 h-5 text-slate-400" />
-                  <h3 className="text-lg font-bold text-slate-200 uppercase tracking-wide">
-                    Weitere Videos
-                  </h3>
-                </div>
-                <VideoListTable videos={otherVideos} startIndex={topN + 1} />
+            <InputSection 
+              onSearch={handleSearch} 
+              isLoading={searchState.isLoading} 
+            />
+
+            {/* Error Message */}
+            {searchState.error && (
+              <div className="mb-8 bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex items-center gap-3 text-red-200 animate-fade-in shadow-lg shadow-red-900/10">
+                <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                <p>{searchState.error}</p>
               </div>
             )}
-            
-          </div>
-        )}
 
-        {/* Empty State / Initial Load */}
-        {!searchState.data && !searchState.isLoading && <EmptyState />}
-        
+            {/* Results */}
+            {sortedVideos.length > 0 && (
+              <div className="space-y-12 animate-fade-in">
+                {/* Control Bar */}
+                <div className="flex flex-col sm:flex-row justify-between items-center bg-slate-900/50 p-4 rounded-xl border border-slate-800 gap-4 backdrop-blur-sm">
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-semibold text-slate-200">
+                      Ergebnisse für <span className="text-red-400">@{searchState.channelName}</span>
+                    </h3>
+                    <span className="bg-slate-700 text-xs px-2 py-0.5 rounded-full text-slate-300 border border-slate-600">
+                      {sortedVideos.length} Videos
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center gap-3 text-sm font-medium">
+                    <span className="text-slate-400 whitespace-nowrap">
+                      Sortiert nach {sortMode === 'trend' ? 'Trend Score (Velocity)' : 'Views'}
+                    </span>
+                    {/* Sort Toggle */}
+                    <div className="inline-flex items-center rounded-lg border border-slate-800 bg-slate-900/60 p-0.5">
+                      <button
+                        type="button"
+                        onClick={() => setSortMode('trend')}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors ${
+                          sortMode === 'trend'
+                            ? 'bg-indigo-600 text-white'
+                            : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                        }`}
+                        title="Nach Trend Score sortieren"
+                      >
+                        <Trophy className="w-4 h-4" />
+                        <span>Trend Score</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setSortMode('views')}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors ${
+                          sortMode === 'views'
+                            ? 'bg-indigo-600 text-white'
+                            : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                        }`}
+                        title="Nach Views sortieren"
+                      >
+                        <Eye className="w-4 h-4" />
+                        <span>Views</span>
+                      </button>
+                    </div>
+                    {/* Top N Toggle */}
+                    <div className="inline-flex items-center rounded-lg border border-slate-800 bg-slate-900/60 p-0.5">
+                      <button
+                        type="button"
+                        onClick={() => setTopN(3)}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors ${
+                          topN === 3
+                            ? 'bg-indigo-600 text-white'
+                            : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                        }`}
+                        title="Top 3 hervorheben"
+                      >
+                        <span>Top 3</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setTopN(6)}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors ${
+                          topN === 6
+                            ? 'bg-indigo-600 text-white'
+                            : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                        }`}
+                        title="Top 6 hervorheben"
+                      >
+                        <span>Top 6</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* SECTION 1: Top N Cards */}
+                <div>
+                  <div className="flex items-center gap-2 mb-4 px-1">
+                    <Trophy className="w-5 h-5 text-yellow-500" />
+                    <h3 className="text-lg font-bold text-slate-200 uppercase tracking-wide">
+                      Top {topN} Performance
+                    </h3>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {topVideos.map((video, index) => (
+                      <VideoCard key={video.id} video={video} rank={index + 1} />
+                    ))}
+                  </div>
+                </div>
+
+                {/* SECTION 2: List Table (Rank 4+) */}
+                {otherVideos.length > 0 && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-4 px-1 mt-8">
+                      <List className="w-5 h-5 text-slate-400" />
+                      <h3 className="text-lg font-bold text-slate-200 uppercase tracking-wide">
+                        Weitere Videos
+                      </h3>
+                    </div>
+                    <VideoListTable videos={otherVideos} startIndex={topN + 1} />
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Empty State / Initial Load */}
+            {!searchState.data && !searchState.isLoading && <EmptyState />}
+          </>
+        )}
       </main>
     </div>
   );
