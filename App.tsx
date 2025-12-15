@@ -4,10 +4,12 @@ import { VideoCard } from './components/VideoCard';
 import { VideoListTable } from './components/VideoListTable';
 import { EmptyState } from './components/EmptyState';
 import { ApiKeyModal } from './components/ApiKeyModal';
+import { FavoriteRow } from './components/FavoriteRow';
 import { analyzeVideoStats } from './services/geminiService';
 import { findChannelInfo, getVideosFromChannel, setYoutubeApiKey } from './services/youtubeService';
-import { TimeFrame, SearchState } from './types';
-import { BarChart3, AlertCircle, Activity, Settings, Trophy, List, Eye, LayoutDashboard } from 'lucide-react';
+import { TimeFrame, SearchState, FavoriteConfig } from './types';
+import { favoritesService } from './services/favoritesService';
+import { BarChart3, AlertCircle, Activity, Settings, Trophy, List, Eye, LayoutDashboard, RefreshCw, Youtube } from 'lucide-react';
 
 const App: React.FC = () => {
   // Initialize state directly from storage to prevent modal flash
@@ -58,12 +60,13 @@ const App: React.FC = () => {
       step: 'fetching_youtube',
       error: null, 
       channelName: channel,
+      channelId: undefined,
       data: null
     }));
     
     try {
       // Step 1: Find Channel and Get Uploads Playlist
-      const { name: officialName, uploadsPlaylistId } = await findChannelInfo(channel);
+      const { id: channelId, name: officialName, uploadsPlaylistId } = await findChannelInfo(channel);
       
       // Step 2: Get Videos from Playlist & Stats (passing limit)
       const apiVideos = await getVideosFromChannel(uploadsPlaylistId, timeFrame, maxResults);
@@ -81,7 +84,8 @@ const App: React.FC = () => {
         isLoading: false, 
         step: 'complete',
         data: analyzedVideos,
-        channelName: officialName 
+        channelName: officialName,
+        channelId
       }));
 
     } catch (err: any) {
@@ -110,7 +114,25 @@ const App: React.FC = () => {
   const [topN, setTopN] = useState<3 | 6>(3);
 
   // Simple Navigation (ohne Router): Dashboard | Analyser
-  const [activePage, setActivePage] = useState<'dashboard' | 'analyser'>('analyser');
+  // Standardmäßig soll beim Betreten der Seite das Dashboard aktiv sein
+  const [activePage, setActivePage] = useState<'dashboard' | 'analyser'>('dashboard');
+  const [favorites, setFavorites] = useState<FavoriteConfig[]>([]);
+  const [dashRefreshToken, setDashRefreshToken] = useState<number>(0);
+
+  useEffect(() => {
+    if (activePage === 'dashboard') {
+      try {
+        setFavorites(favoritesService.list());
+      } catch (e) {
+        // ignore storage errors
+      }
+    }
+  }, [activePage]);
+
+  const handleRemoveFavorite = (id: string) => {
+    favoritesService.remove(id);
+    setFavorites(favoritesService.list());
+  };
 
   const sortedVideos = useMemo(() => {
     if (!searchState.data) return [];
@@ -131,6 +153,14 @@ const App: React.FC = () => {
   const topVideos = sortedVideos.slice(0, topN);
   const otherVideos = sortedVideos.slice(topN);
 
+  // URL zum YouTube‑Kanal für Breadcrumb/Heading (bevorzugt über Channel-ID)
+  const channelUrl = useMemo(() => {
+    if (searchState.channelId) return `https://www.youtube.com/channel/${searchState.channelId}`;
+    const q = (searchState.channelName || '').trim();
+    if (q.startsWith('@')) return `https://www.youtube.com/${q}`;
+    return null;
+  }, [searchState.channelId, searchState.channelName]);
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 pb-20 font-sans selection:bg-indigo-500/30">
       
@@ -138,7 +168,7 @@ const App: React.FC = () => {
 
       {/* Header */}
       <header className="bg-slate-900/80 backdrop-blur-md border-b border-slate-800 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <div className="max-w-[101.2rem] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="bg-gradient-to-br from-red-600 to-red-700 p-2 rounded-lg shadow-lg shadow-red-500/20">
               <BarChart3 className="w-5 h-5 text-white" />
@@ -202,17 +232,39 @@ const App: React.FC = () => {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-[101.2rem] mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {activePage === 'dashboard' ? (
           <div className="animate-fade-in">
             <div className="mb-10 text-center space-y-3">
               <h2 className="text-3xl md:text-5xl font-extrabold text-white tracking-tight">
                 Dashboard
               </h2>
-              <p className="text-slate-400 max-w-2xl mx-auto text-lg leading-relaxed">
-                Kommt bald. Hier erscheinen demnächst Übersichten und schnelle Einblicke.
-              </p>
             </div>
+
+            {favorites.length === 0 ? (
+              <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-6 text-center text-slate-400">
+                Noch keine Favoriten. Lege im Analyser eine Suche als Favorit an.
+              </div>
+            ) : (
+              <>
+                <div className="flex items-center justify-end mb-4">
+                  <button
+                    type="button"
+                    onClick={() => setDashRefreshToken(t => t + 1)}
+                    className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-md border border-slate-700 text-slate-300 hover:bg-slate-800 transition-colors"
+                    title="Alle Kanäle aktualisieren"
+                  >
+                    <RefreshCw className="w-3 h-3" /> Alle aktualisieren
+                  </button>
+                </div>
+
+                <div className="space-y-10">
+                  {favorites.map(fav => (
+                    <FavoriteRow key={fav.id} favorite={fav} onRemove={handleRemoveFavorite} globalRefreshToken={dashRefreshToken} />
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         ) : (
           <>
@@ -245,7 +297,23 @@ const App: React.FC = () => {
                 <div className="flex flex-col sm:flex-row justify-between items-center bg-slate-900/50 p-4 rounded-xl border border-slate-800 gap-4 backdrop-blur-sm">
                   <div className="flex items-center gap-2">
                     <h3 className="font-semibold text-slate-200">
-                      Ergebnisse für <span className="text-red-400">@{searchState.channelName}</span>
+                      Ergebnisse für {channelUrl ? (
+                        <a
+                          href={channelUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 text-red-400 hover:text-red-300 hover:underline underline-offset-2"
+                          title={`YouTube-Kanal öffnen: ${searchState.channelName}`}
+                        >
+                          <Youtube className="w-4 h-4" aria-hidden="true" />
+                          @{searchState.channelName}
+                        </a>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 text-red-400">
+                          <Youtube className="w-4 h-4" aria-hidden="true" />
+                          @{searchState.channelName}
+                        </span>
+                      )}
                     </h3>
                     <span className="bg-slate-700 text-xs px-2 py-0.5 rounded-full text-slate-300 border border-slate-600">
                       {sortedVideos.length} Videos

@@ -1,6 +1,6 @@
 import React from 'react';
 import { VideoData } from '../types';
-import { ExternalLink, TrendingUp, Eye, Clock, Zap } from 'lucide-react';
+import { TrendingUp, Eye, Clock, Zap } from 'lucide-react';
 
 interface VideoCardProps {
   video: VideoData;
@@ -25,7 +25,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, rank }) => {
       )}
 
       {/* Thumbnail Area */}
-      <div className="relative h-48 overflow-hidden bg-slate-900">
+      <div className="relative h-40 overflow-hidden bg-slate-900">
         <a href={video.url} target="_blank" rel="noopener noreferrer" className="block w-full h-full cursor-pointer">
           <img 
             src={video.thumbnailUrl} 
@@ -45,9 +45,9 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, rank }) => {
       </div>
 
       {/* Content Area */}
-      <div className="p-5 flex flex-col flex-grow">
-        <div className="mb-3">
-          <h3 className="text-lg font-bold leading-tight line-clamp-2">
+      <div className="p-4 flex flex-col flex-grow">
+        <div className="mb-2">
+          <h3 className="text-base font-bold leading-snug line-clamp-2">
             <a 
               href={video.url} 
               target="_blank" 
@@ -61,7 +61,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, rank }) => {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 gap-2 mb-4">
+        <div className="grid grid-cols-2 gap-2 mb-3">
           <div className="flex flex-col justify-center bg-slate-900/50 p-2 rounded-lg border border-slate-700/50">
             <div className="flex items-center gap-1.5 text-slate-400 text-xs uppercase font-semibold mb-0.5">
               <Eye className="w-3 h-3 text-indigo-400" /> Views
@@ -80,24 +80,14 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, rank }) => {
 
         {/* AI Reasoning */}
         <div className="mt-auto">
-          <div className="bg-indigo-500/5 border border-indigo-500/10 rounded-lg p-3 relative">
-            <div className="absolute -top-2 left-3 bg-slate-800 text-indigo-400 text-[10px] font-bold px-1.5 border border-indigo-500/20 rounded">
+          <div className="bg-indigo-500/5 border border-indigo-500/10 rounded-lg p-2 relative">
+            <div className="absolute -top-2 left-3 bg-slate-800 text-indigo-400 text-[10px] font-bold px-1 border border-indigo-500/20 rounded">
               ANALYSE
             </div>
-            <p className="text-xs text-indigo-200/80 italic leading-relaxed pt-1">
+            <p className="text-xs text-indigo-200/80 italic leading-snug pt-1">
               "{video.reasoning}"
             </p>
           </div>
-          
-          <a 
-            href={video.url} 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="mt-4 flex items-center justify-center w-full py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg transition-colors text-sm font-medium gap-2 group/btn"
-          >
-            Auf YouTube ansehen
-            <ExternalLink className="w-3 h-3 group-hover/btn:translate-x-0.5 transition-transform" />
-          </a>
         </div>
       </div>
     </div>

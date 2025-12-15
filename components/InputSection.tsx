@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { TimeFrame, ChannelSuggestion } from '../types';
 import { TIME_FRAMES, MAX_RESULTS_OPTIONS } from '../constants';
-import { Search, Loader2, Link2, X, Youtube, ListFilter, History } from 'lucide-react';
+import { Search, Loader2, Link2, X, Youtube, ListFilter, History, Star } from 'lucide-react';
 import { searchChannels, extractChannelIdentifier } from '../services/youtubeService';
+import { favoritesService } from '../services/favoritesService';
 
 // Default search input can be configured via Vite env: VITE_DEFAULT_SEARCH
 // Behavior:
@@ -33,6 +34,7 @@ export const InputSection: React.FC<InputSectionProps> = ({ onSearch, isLoading 
   
   const wrapperRef = useRef<HTMLDivElement>(null);
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [justSaved, setJustSaved] = useState<boolean>(false);
 
   // Load last selected timeframe and max results from localStorage once
   useEffect(() => {
@@ -169,6 +171,15 @@ export const InputSection: React.FC<InputSectionProps> = ({ onSearch, isLoading 
       // Save typed value to history (what the user entered)
       addToHistory(inputValue);
     }
+  };
+
+  const handleSaveFavorite = () => {
+    if (!inputValue.trim()) return;
+    const cleanIdentifier = extractChannelIdentifier(inputValue);
+    favoritesService.add({ query: cleanIdentifier, timeFrame, maxResults });
+    // kurzes visuelles Feedback
+    setJustSaved(true);
+    setTimeout(() => setJustSaved(false), 1500);
   };
 
   const handleFocus = () => {
@@ -340,24 +351,36 @@ export const InputSection: React.FC<InputSectionProps> = ({ onSearch, isLoading 
           </div>
         </div>
 
-        {/* Submit Button */}
-        <button
-          type="submit"
-          disabled={isLoading || !inputValue.trim()}
-          className="w-full xl:w-auto py-4 px-8 font-bold rounded-xl shadow-lg transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] active:scale-[0.98] bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-indigo-500/25 shrink-0"
-        >
-          {isLoading ? (
-            <>
-              <Loader2 className="animate-spin w-5 h-5" />
-              <span>Analysiere...</span>
-            </>
-          ) : (
-            <>
-              <Search className="w-5 h-5" />
-              <span>Trends finden</span>
-            </>
-          )}
-        </button>
+        {/* Actions */}
+        <div className="w-full xl:w-auto flex items-stretch gap-3">
+          <button
+            type="submit"
+            disabled={isLoading || !inputValue.trim()}
+            className="flex-1 xl:flex-none py-4 px-8 font-bold rounded-xl shadow-lg transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] active:scale-[0.98] bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-indigo-500/25 shrink-0"
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="animate-spin w-5 h-5" />
+                <span>Analysiere...</span>
+              </>
+            ) : (
+              <>
+                <Search className="w-5 h-5" />
+                <span>Trends finden</span>
+              </>
+            )}
+          </button>
+          <button
+            type="button"
+            disabled={isLoading || !inputValue.trim()}
+            onClick={handleSaveFavorite}
+            className={`px-4 xl:px-5 rounded-xl border font-semibold flex items-center gap-2 transition-colors ${justSaved ? 'border-green-500/30 bg-green-500/10 text-green-300' : 'border-slate-700 bg-slate-800/50 text-slate-200 hover:bg-slate-800'}`}
+            title="Als Favorit speichern"
+          >
+            <Star className="w-5 h-5" />
+            <span>{justSaved ? 'Gespeichert' : 'Als Favorit'}</span>
+          </button>
+        </div>
       </form>
     </div>
   );

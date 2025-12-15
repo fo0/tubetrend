@@ -63,6 +63,8 @@ export interface SearchState {
   error: string | null;
   data: VideoData[] | null;
   channelName: string;
+  // Optional: YouTube Channel ID (für Links zum Kanal)
+  channelId?: string;
 }
 
 export interface ChannelSuggestion {
@@ -70,4 +72,19 @@ export interface ChannelSuggestion {
   title: string;
   thumbnailUrl: string;
   handle?: string;
+}
+
+// Favoriten: Konfiguration und Cachetypen
+export interface FavoriteConfig {
+  id: string; // stabiler Schlüssel aus query + timeframe + maxResults
+  query: string; // Kanal-Handle, ID oder Suchtext (wie im Analyser eingegeben)
+  timeFrame: TimeFrame;
+  maxResults: number; // 0 bedeutet „Alle (Kein Limit)“
+  createdAt: number;
+  label?: string; // optionaler Anzeigename
+}
+
+export interface FavoriteCacheEntry {
+  videos: VideoData[]; // bereits berechnete Videos (hier auf Top6 begrenzt)
+  fetchedAt: number;   // Zeitstempel der Berechnung
 }
