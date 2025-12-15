@@ -34,6 +34,35 @@ export const InputSection: React.FC<InputSectionProps> = ({ onSearch, isLoading 
   const wrapperRef = useRef<HTMLDivElement>(null);
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Load last selected timeframe and max results from localStorage once
+  useEffect(() => {
+    try {
+      const tf = localStorage.getItem('tt.search.timeframe');
+      if (tf && (Object.values(TimeFrame) as string[]).includes(tf)) {
+        setTimeFrame(tf as TimeFrame);
+      }
+      const mr = localStorage.getItem('tt.search.maxResults');
+      if (mr) {
+        const n = parseInt(mr, 10);
+        if (!Number.isNaN(n)) {
+          setMaxResults(n);
+        }
+      }
+    } catch (e) {
+      // ignore storage errors
+    }
+  }, []);
+
+  // Persist timeframe and maxResults on change
+  useEffect(() => {
+    try {
+      localStorage.setItem('tt.search.timeframe', timeFrame);
+      localStorage.setItem('tt.search.maxResults', String(maxResults));
+    } catch (e) {
+      // ignore storage errors
+    }
+  }, [timeFrame, maxResults]);
+
   // Load history from storage once
   useEffect(() => {
     try {
