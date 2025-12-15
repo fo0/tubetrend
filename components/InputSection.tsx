@@ -35,6 +35,7 @@ export const InputSection: React.FC<InputSectionProps> = ({ onSearch, isLoading 
   const wrapperRef = useRef<HTMLDivElement>(null);
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [justSaved, setJustSaved] = useState<boolean>(false);
+  const [isFavorite, setIsFavorite] = useState<boolean>(false);
 
   // Load last selected timeframe and max results from localStorage once
   useEffect(() => {
@@ -180,6 +181,11 @@ export const InputSection: React.FC<InputSectionProps> = ({ onSearch, isLoading 
     // kurzes visuelles Feedback
     setJustSaved(true);
     setTimeout(() => setJustSaved(false), 1500);
+    // Status aktualisieren
+    try {
+      const exists = favoritesService.exists(cleanIdentifier, timeFrame, maxResults);
+      setIsFavorite(exists);
+    } catch {}
   };
 
   const handleFocus = () => {
@@ -198,6 +204,21 @@ export const InputSection: React.FC<InputSectionProps> = ({ onSearch, isLoading 
     setShowHistory(false);
     // Do not trigger search automatically; user can submit
   };
+
+  // Synchronisiere Favoriten-Status, wenn Eingabe/Zeitfenster/MaxErgebnisse sich ändern
+  useEffect(() => {
+    const q = extractChannelIdentifier(inputValue || '');
+    if (!q.trim()) {
+      setIsFavorite(false);
+      return;
+    }
+    try {
+      const exists = favoritesService.exists(q, timeFrame, maxResults);
+      setIsFavorite(exists);
+    } catch {
+      setIsFavorite(false);
+    }
+  }, [inputValue, timeFrame, maxResults]);
 
   return (
     <div className="w-full bg-slate-900/50 backdrop-blur-xl rounded-2xl p-6 md:p-8 shadow-2xl border border-slate-800 mb-8 relative z-40 group" ref={wrapperRef}>
@@ -374,11 +395,15 @@ export const InputSection: React.FC<InputSectionProps> = ({ onSearch, isLoading 
             type="button"
             disabled={isLoading || !inputValue.trim()}
             onClick={handleSaveFavorite}
-            className={`px-4 xl:px-5 rounded-xl border font-semibold flex items-center gap-2 transition-colors ${justSaved ? 'border-green-500/30 bg-green-500/10 text-green-300' : 'border-slate-700 bg-slate-800/50 text-slate-200 hover:bg-slate-800'}`}
-            title="Als Favorit speichern"
+            className={`px-4 xl:px-5 rounded-xl border font-semibold flex items-center gap-2 transition-colors ${
+              isFavorite
+                ? 'border-yellow-400/30 bg-yellow-500/10 text-yellow-300'
+                : (justSaved ? 'border-green-500/30 bg-green-500/10 text-green-300' : 'border-slate-700 bg-slate-800/50 text-slate-200 hover:bg-slate-800')
+            }`}
+            title={isFavorite ? 'Bereits als Favorit gespeichert' : 'Als Favorit speichern'}
           >
-            <Star className="w-5 h-5" />
-            <span>{justSaved ? 'Gespeichert' : 'Als Favorit'}</span>
+            <Star className={`w-5 h-5 ${isFavorite ? 'fill-current' : ''}`} />
+            <span>{isFavorite ? 'Favorit' : (justSaved ? 'Gespeichert' : 'Als Favorit')}</span>
           </button>
         </div>
       </form>

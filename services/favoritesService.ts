@@ -37,6 +37,13 @@ export const favoritesService = {
     return safeRead<FavoriteConfig[]>(FAVORITES_KEY, []).sort((a, b) => b.createdAt - a.createdAt);
   },
 
+  /** Prüft, ob eine Favoriten-Konfiguration bereits existiert. */
+  exists(query: string, timeFrame: TimeFrame, maxResults: number): boolean {
+    const id = makeId(query, timeFrame, maxResults);
+    const list = safeRead<FavoriteConfig[]>(FAVORITES_KEY, []);
+    return list.some(f => f.id === id);
+  },
+
   add(input: { query: string; timeFrame: TimeFrame; maxResults: number; label?: string }): FavoriteConfig {
     const id = makeId(input.query, input.timeFrame, input.maxResults);
     const now = Date.now();
