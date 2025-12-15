@@ -263,15 +263,6 @@ const App: React.FC = () => {
           </div>
         ) : (
           <>
-            <div className="mb-10 text-center space-y-3">
-              <h2 className="text-3xl md:text-5xl font-extrabold text-white tracking-tight">
-                Offizielle API. <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-500">Echte Trends.</span>
-              </h2>
-              <p className="text-slate-400 max-w-2xl mx-auto text-lg leading-relaxed">
-                Direkte Verbindung zur YouTube Data API v3. Mathematische Analyse von Velocity und Wachstum.
-              </p>
-            </div>
-
             <InputSection 
               onSearch={handleSearch} 
               isLoading={searchState.isLoading} 
