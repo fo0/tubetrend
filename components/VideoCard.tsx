@@ -17,12 +17,6 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, rank }) => {
 
   return (
     <div className="bg-slate-800 rounded-xl overflow-hidden border border-slate-700 shadow-lg hover:shadow-xl hover:border-slate-600 transition-all duration-300 group flex flex-col h-full relative">
-      {/* Rank Badge for Top 3 */}
-      {rank <= 3 && (
-        <div className="absolute top-0 left-0 z-20 bg-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-br-lg shadow-lg pointer-events-none">
-          #{rank}
-        </div>
-      )}
 
       {/* Thumbnail Area */}
       <div className="relative h-40 overflow-hidden bg-slate-900">
