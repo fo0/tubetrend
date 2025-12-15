@@ -69,6 +69,51 @@ export const favoritesService = {
     return next;
   },
 
+  /**
+   * Aktualisiert einen bestehenden Favoriten. Darf timeFrame und/oder maxResults (und optional label) ändern.
+   * Wenn sich durch die Änderung der zusammengesetzte Schlüssel (id) ändert, wird der Eintrag unter neuer id gespeichert
+   * und der alte entfernt. Optional vorhandener Cache wird invalidiert.
+   */
+  update(id: string, patch: Partial<Pick<FavoriteConfig, 'timeFrame' | 'maxResults' | 'label'>>): FavoriteConfig | null {
+    const list = this.list();
+    const idx = list.findIndex(f => f.id === id);
+    if (idx < 0) return null;
+
+    const base = list[idx];
+    const nextTimeFrame = patch.timeFrame ?? base.timeFrame;
+    const nextMax = typeof patch.maxResults === 'number' ? patch.maxResults : base.maxResults;
+    const nextLabel = patch.label !== undefined ? (patch.label?.trim() || undefined) : base.label;
+
+    const newId = makeId(base.query, nextTimeFrame, nextMax);
+
+    // Wenn bereits ein Eintrag mit neuer id existiert, ersetzen wir diesen durch die aktualisierte Version (kein Duplikat)
+    const existingIdx = list.findIndex(f => f.id === newId);
+
+    const updatedFav: FavoriteConfig = {
+      id: newId,
+      query: base.query,
+      timeFrame: nextTimeFrame,
+      maxResults: nextMax,
+      createdAt: Date.now(),
+      label: nextLabel
+    };
+
+    let nextList = list.filter(f => f.id !== id);
+    if (existingIdx >= 0) {
+      nextList = nextList.filter(f => f.id !== newId);
+    }
+    nextList = [updatedFav, ...nextList];
+    safeWrite(FAVORITES_KEY, nextList);
+
+    // Cache invalidieren: alter und ggf. neuer Schlüssel entfernen
+    const cache = safeRead<Record<string, FavoriteCacheEntry & { ttl?: number }>>(FAVORITES_CACHE_KEY, {});
+    if (cache[id]) delete cache[id];
+    if (cache[newId]) delete cache[newId];
+    safeWrite(FAVORITES_CACHE_KEY, cache);
+
+    return updatedFav;
+  },
+
   remove(id: string) {
     const list = this.list().filter(f => f.id !== id);
     safeWrite(FAVORITES_KEY, list);

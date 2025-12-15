@@ -5,6 +5,7 @@ import { analyzeVideoStats } from '../services/geminiService';
 import { findChannelInfo, getVideosFromChannel } from '../services/youtubeService';
 import { VideoCard } from './VideoCard';
 import { AlertCircle, ChevronRight, Loader2, Trash2, RefreshCw, Youtube } from 'lucide-react';
+import { MAX_RESULTS_OPTIONS, TIME_FRAMES } from '../constants';
 
 interface FavoriteRowProps {
   favorite: FavoriteConfig;
@@ -22,17 +23,35 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, gl
   // Lokaler Refresh-Zähler für diese Reihe
   const [localRefreshToken, setLocalRefreshToken] = useState<number>(0);
 
+  // Lokale (änderbare) Konfiguration des Favoriten
+  const [currentTimeFrame, setCurrentTimeFrame] = useState<TimeFrame>(favorite.timeFrame);
+  const [currentMax, setCurrentMax] = useState<number>(favorite.maxResults);
+  const [currentFavId, setCurrentFavId] = useState<string>(favorite.id);
+
+  // Popover-UI State
+  const [showTfMenu, setShowTfMenu] = useState<boolean>(false);
+  const [showMaxMenu, setShowMaxMenu] = useState<boolean>(false);
+  const tfButtonRef = useRef<HTMLButtonElement | null>(null);
+  const maxButtonRef = useRef<HTMLButtonElement | null>(null);
+
+  // Sync bei Prop-Wechsel (z.B. nach Seiten-Neuladen)
+  useEffect(() => {
+    setCurrentTimeFrame(favorite.timeFrame);
+    setCurrentMax(favorite.maxResults);
+    setCurrentFavId(favorite.id);
+  }, [favorite.id]);
+
   // Vorherige Token, um zu erkennen, ob ein erzwungener Refresh nötig ist
   const prevGlobalTokenRef = useRef<number>(globalRefreshToken);
   const prevLocalTokenRef = useRef<number>(localRefreshToken);
 
-  const displayMax = useMemo(() => (favorite.maxResults === 0 ? 'Alle' : `Top ${favorite.maxResults}`), [favorite.maxResults]);
+  const displayMax = useMemo(() => (currentMax === 0 ? 'Alle' : `Top ${currentMax}`), [currentMax]);
 
   // Letztes Cache-Datum ermitteln (für Anzeige "wie alt")
   const lastFetchedAt = useMemo(() => {
-    const entry = favoritesService.getCache(favorite.id);
+    const entry = favoritesService.getCache(currentFavId);
     return entry?.fetchedAt ?? null;
-  }, [favorite.id, videos, loading, globalRefreshToken, localRefreshToken]);
+  }, [currentFavId, videos, loading, globalRefreshToken, localRefreshToken]);
 
   const formatTimeAgo = (ts: number): string => {
     const diffMs = Date.now() - ts;
@@ -75,11 +94,11 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, gl
         const { id, name, uploadsPlaylistId } = await findChannelInfo(favorite.query);
         if (!cancelled) setChannelTitle(name);
         if (!cancelled) setChannelId(id);
-        const apiVideos = await getVideosFromChannel(uploadsPlaylistId, favorite.timeFrame as TimeFrame, favorite.maxResults);
-        const analyzed = await analyzeVideoStats(apiVideos, name, favorite.timeFrame);
+        const apiVideos = await getVideosFromChannel(uploadsPlaylistId, currentTimeFrame as TimeFrame, currentMax);
+        const analyzed = await analyzeVideoStats(apiVideos, name, currentTimeFrame);
         const top6 = analyzed.sort((a, b) => b.trendingScore - a.trendingScore).slice(0, 6);
         if (!cancelled) setVideos(top6);
-        favoritesService.setCache(favorite.id, top6);
+        favoritesService.setCache(currentFavId, top6);
       } catch (e: any) {
         if (!cancelled) setError(e?.message || 'Fehler beim Laden der Favoriten-Daten.');
       } finally {
@@ -91,7 +110,7 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, gl
     prevGlobalTokenRef.current = globalRefreshToken;
     prevLocalTokenRef.current = localRefreshToken;
     return () => { cancelled = true; };
-  }, [favorite.id, favorite.maxResults, favorite.query, favorite.timeFrame, globalRefreshToken, localRefreshToken]);
+  }, [currentFavId, currentMax, favorite.query, currentTimeFrame, globalRefreshToken, localRefreshToken]);
 
   // Sicherstellen, dass der Kanal-Titel klickbar ist – auch wenn wir nur Cache-Daten nutzen.
   // Falls keine channelId vorhanden ist, laden wir einmalig die Kanal-Metadaten (ID/Name).
@@ -126,6 +145,45 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, gl
     return null;
   }, [channelId, favorite.query]);
 
+  // Klick ausserhalb von Menüs schließt diese
+  useEffect(() => {
+    const onDocClick = (e: MouseEvent) => {
+      const target = e.target as Node;
+      if (showTfMenu && tfButtonRef.current && !tfButtonRef.current.contains(target)) {
+        setShowTfMenu(false);
+      }
+      if (showMaxMenu && maxButtonRef.current && !maxButtonRef.current.contains(target)) {
+        setShowMaxMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', onDocClick);
+    return () => document.removeEventListener('mousedown', onDocClick);
+  }, [showTfMenu, showMaxMenu]);
+
+  const handleChangeTimeFrame = (tf: TimeFrame) => {
+    setShowTfMenu(false);
+    if (tf === currentTimeFrame) return;
+    const updated = favoritesService.update(currentFavId, { timeFrame: tf });
+    if (updated) {
+      setCurrentTimeFrame(updated.timeFrame);
+      setCurrentMax(updated.maxResults);
+      setCurrentFavId(updated.id);
+      setLocalRefreshToken(t => t + 1);
+    }
+  };
+
+  const handleChangeMax = (value: number) => {
+    setShowMaxMenu(false);
+    if (value === currentMax) return;
+    const updated = favoritesService.update(currentFavId, { maxResults: value });
+    if (updated) {
+      setCurrentTimeFrame(updated.timeFrame);
+      setCurrentMax(updated.maxResults);
+      setCurrentFavId(updated.id);
+      setLocalRefreshToken(t => t + 1);
+    }
+  };
+
   return (
     <section className="mb-10">
       {/* Header */}
@@ -151,9 +209,58 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, gl
             )}
           </h3>
           <ChevronRight className="w-4 h-4 text-slate-500" />
-          <div className="text-sm text-slate-400 flex items-center gap-2">
-            <span className="px-2 py-0.5 rounded-full bg-slate-800 border border-slate-700">{favorite.timeFrame}</span>
-            <span className="px-2 py-0.5 rounded-full bg-slate-800 border border-slate-700">{displayMax}</span>
+          <div className="text-sm text-slate-400 flex items-center gap-2 relative">
+            {/* Timeframe Tag als Button */}
+            <button
+              ref={tfButtonRef}
+              type="button"
+              onClick={() => { setShowTfMenu(v => !v); setShowMaxMenu(false); }}
+              className="px-2 py-0.5 rounded-full bg-slate-800 border border-slate-700 hover:bg-slate-700/70"
+              title="Zeitraum ändern"
+            >
+              {currentTimeFrame}
+            </button>
+            {showTfMenu && (
+              <div className="absolute z-20 mt-2 left-0 w-56 bg-slate-900 border border-slate-700 rounded-lg shadow-xl p-1">
+                <div className="max-h-60 overflow-auto">
+                  {TIME_FRAMES.map(opt => (
+                    <button
+                      key={opt.value}
+                      onClick={() => handleChangeTimeFrame(opt.value)}
+                      className={`w-full text-left px-3 py-2 rounded-md text-sm ${opt.value === currentTimeFrame ? 'bg-indigo-600 text-white' : 'text-slate-200 hover:bg-slate-800'}`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Max Results Tag als Button */}
+            <button
+              ref={maxButtonRef}
+              type="button"
+              onClick={() => { setShowMaxMenu(v => !v); setShowTfMenu(false); }}
+              className="px-2 py-0.5 rounded-full bg-slate-800 border border-slate-700 hover:bg-slate-700/70"
+              title="Max. Ergebnisse ändern"
+            >
+              {displayMax}
+            </button>
+            {showMaxMenu && (
+              <div className="absolute z-20 mt-2 left-44 w-56 bg-slate-900 border border-slate-700 rounded-lg shadow-xl p-1">
+                <div className="max-h-60 overflow-auto">
+                  {MAX_RESULTS_OPTIONS.map(opt => (
+                    <button
+                      key={opt.value}
+                      onClick={() => handleChangeMax(opt.value)}
+                      className={`w-full text-left px-3 py-2 rounded-md text-sm ${opt.value === currentMax ? 'bg-indigo-600 text-white' : 'text-slate-200 hover:bg-slate-800'}`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
             <span
               className="px-2 py-0.5 rounded-full bg-slate-800/70 border border-slate-700 text-slate-400"
               title={lastFetchedAt ? new Date(lastFetchedAt).toLocaleString() : undefined}
@@ -184,7 +291,7 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, gl
           {onRemove && (
             <button
               type="button"
-              onClick={() => onRemove?.(favorite.id)}
+              onClick={() => onRemove?.(currentFavId)}
               className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-md border border-red-500/30 text-red-300 hover:bg-red-500/10 transition-colors"
               title="Favorit entfernen"
             >
