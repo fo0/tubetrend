@@ -72,17 +72,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, rank }) => {
           </div>
         </div>
 
-        {/* AI Reasoning */}
-        <div className="mt-auto">
-          <div className="bg-indigo-500/5 border border-indigo-500/10 rounded-lg p-2 relative">
-            <div className="absolute -top-2 left-3 bg-slate-800 text-indigo-400 text-[10px] font-bold px-1 border border-indigo-500/20 rounded">
-              ANALYSE
-            </div>
-            <p className="text-xs text-indigo-200/80 italic leading-snug pt-1">
-              "{video.reasoning}"
-            </p>
-          </div>
-        </div>
+        {/* Analyse-Bereich entfernt */}
       </div>
     </div>
   );

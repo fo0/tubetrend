@@ -97,5 +97,7 @@ export interface FavoriteCacheEntry {
   fetchedAt: number;   // Zeitstempel der Berechnung
   meta?: {
     totalInTimeFrame?: number;
+    // Bester Velocity-Wert (Aufrufe pro Stunde) über alle analysierten Videos des Kanals im gewählten Zeitraum
+    topVelocityVph?: number;
   };
 }

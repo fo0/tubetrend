@@ -119,6 +119,28 @@ const App: React.FC = () => {
   const [favorites, setFavorites] = useState<FavoriteConfig[]>([]);
   const [dashRefreshToken, setDashRefreshToken] = useState<number>(0);
 
+  // Dashboard: Sortiermodus (persistiert im Browser)
+  type DashboardSortMode = 'alpha' | 'velocity';
+  const DASHBOARD_SORT_KEY = 'tt.dashboard.sort.v1';
+  type SortOrder = 'asc' | 'desc';
+  const DASHBOARD_ORDER_KEY = 'tt.dashboard.sortOrder.v1';
+  const [dashboardSortMode, setDashboardSortMode] = useState<DashboardSortMode>(() => {
+    if (typeof window === 'undefined') return 'alpha';
+    const v = localStorage.getItem(DASHBOARD_SORT_KEY);
+    return v === 'velocity' ? 'velocity' : 'alpha';
+  });
+  const [dashboardSortOrder, setDashboardSortOrder] = useState<SortOrder>(() => {
+    if (typeof window === 'undefined') return 'asc';
+    // Wenn bereits gespeichert, diesen Wert verwenden
+    const saved = localStorage.getItem(DASHBOARD_ORDER_KEY);
+    if (saved === 'asc' || saved === 'desc') return saved;
+    // Sonst standardgemäß je Modus: Alpha → asc, Velocity → desc
+    const mode = localStorage.getItem(DASHBOARD_SORT_KEY) === 'velocity' ? 'velocity' : 'alpha';
+    return mode === 'velocity' ? 'desc' : 'asc';
+  });
+  // Tick, um Re-Rendering zu erzwingen, wenn Cache aktualisiert wird (für Velocity-Sortierung)
+  const [cacheTick, setCacheTick] = useState<number>(0);
+
   useEffect(() => {
     if (activePage === 'dashboard') {
       try {
@@ -129,10 +151,96 @@ const App: React.FC = () => {
     }
   }, [activePage]);
 
+  // Persistiere Dashboard-Sortiermodus
+  useEffect(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(DASHBOARD_SORT_KEY, dashboardSortMode);
+      }
+    } catch {
+      // ignore storage errors
+    }
+  }, [dashboardSortMode]);
+
+  // Persistiere Dashboard-Sortierreihenfolge (ASC/DESC)
+  useEffect(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(DASHBOARD_ORDER_KEY, dashboardSortOrder);
+      }
+    } catch {
+      // ignore storage errors
+    }
+  }, [dashboardSortOrder]);
+
+  // Reagiere auf Cache-Updates aus FavoriteRow -> löst Neu-Sortierung bei Velocity aus
+  useEffect(() => {
+    const handler = () => setCacheTick(t => t + 1);
+    if (typeof window !== 'undefined') {
+      window.addEventListener('favorites-cache-updated', handler as EventListener);
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('favorites-cache-updated', handler as EventListener);
+      }
+    };
+  }, []);
+
   const handleRemoveFavorite = (id: string) => {
     favoritesService.remove(id);
     setFavorites(favoritesService.list());
   };
+
+  // Klick auf Sortier-Buttons: gleiches erneut → Reihenfolge umkehren, anderer Modus → Modus wechseln + Default-Reihenfolge setzen
+  const handleDashboardSortClick = (mode: DashboardSortMode) => {
+    if (mode === dashboardSortMode) {
+      setDashboardSortOrder(o => (o === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setDashboardSortMode(mode);
+      setDashboardSortOrder(mode === 'velocity' ? 'desc' : 'asc');
+    }
+  };
+
+  // Sortierte Favoriten für Dashboard
+  const sortedFavorites = useMemo(() => {
+    const arr = [...favorites];
+    if (dashboardSortMode === 'alpha') {
+      return arr.sort((a, b) => {
+        const an = (a.label || a.query || '').toString();
+        const bn = (b.label || b.query || '').toString();
+        const cmp = an.localeCompare(bn, 'de', { sensitivity: 'base' });
+        return dashboardSortOrder === 'asc' ? cmp : -cmp;
+      });
+    }
+    // Velocity: Desc nach Aufrufen pro Stunde (Views/Hour) des besten Videos im Zeitraum (höchster zuerst), Tiebreaker Alphabet
+    return arr.sort((a, b) => {
+      const ac = favoritesService.getCache(a.id);
+      const bc = favoritesService.getCache(b.id);
+      // Primär versuchen wir, den vorab gespeicherten Top‑Velocity‑Wert zu nutzen
+      const avMeta = Number(ac?.meta?.topVelocityVph);
+      const bvMeta = Number(bc?.meta?.topVelocityVph);
+      // Fallback: maximalen viewsPerHour aus den (gecachten) Videos berechnen
+      const avCandidates = (ac?.videos ?? []).map(v => {
+        const n = Number(v.viewsPerHour);
+        return Number.isFinite(n) ? n : -1;
+      });
+      const bvCandidates = (bc?.videos ?? []).map(v => {
+        const n = Number(v.viewsPerHour);
+        return Number.isFinite(n) ? n : -1;
+      });
+      const avFallback = avCandidates.length ? Math.max(...avCandidates) : -1;
+      const bvFallback = bvCandidates.length ? Math.max(...bvCandidates) : -1;
+      const av = Number.isFinite(avMeta) ? avMeta : avFallback;
+      const bv = Number.isFinite(bvMeta) ? bvMeta : bvFallback;
+      // Reihenfolge: desc → höherer Wert nach oben, asc → niedrigerer nach oben
+      if (av !== bv) {
+        return dashboardSortOrder === 'desc' ? (bv - av) : (av - bv);
+      }
+      const an = (a.label || a.query || '').toString();
+      const bn = (b.label || b.query || '').toString();
+      return an.localeCompare(bn, 'de', { sensitivity: 'base' });
+    });
+  }, [favorites, dashboardSortMode, dashboardSortOrder, cacheTick]);
 
   const sortedVideos = useMemo(() => {
     if (!searchState.data) return [];
@@ -242,19 +350,49 @@ const App: React.FC = () => {
               </div>
             ) : (
               <>
-                <div className="flex items-center justify-end mb-4">
-                  <button
-                    type="button"
-                    onClick={() => setDashRefreshToken(t => t + 1)}
-                    className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-md border border-slate-700 text-slate-300 hover:bg-slate-800 transition-colors"
-                    title="Alle Kanäle aktualisieren"
-                  >
-                    <RefreshCw className="w-3 h-3" /> Alle aktualisieren
-                  </button>
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-4">
+                  {/* Sortier-Umschalter */}
+                  <div className="flex items-center gap-2 text-xs font-medium">
+                    <span className="text-slate-400">Sortierung:</span>
+                    <div className="inline-flex items-center rounded-lg border border-slate-800 bg-slate-900/60 p-0.5">
+                      <button
+                        type="button"
+                        onClick={() => handleDashboardSortClick('alpha')}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors ${
+                          dashboardSortMode === 'alpha' ? 'bg-indigo-600 text-white' : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                        }`}
+                        title="Alphabetisch sortieren (erneut klicken: Reihenfolge umkehren)"
+                      >
+                        <span>{dashboardSortMode === 'alpha' ? (dashboardSortOrder === 'asc' ? 'A–Z' : 'Z–A') : 'A–Z'}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDashboardSortClick('velocity')}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors ${
+                          dashboardSortMode === 'velocity' ? 'bg-indigo-600 text-white' : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                        }`}
+                        title="Nach Aktivität (Velocity = Aufrufe pro Stunde, bestes Video im Zeitraum) sortieren – erneut klicken: Reihenfolge umkehren"
+                      >
+                        <Activity className="w-3 h-3" />
+                        <span>Aktivität{dashboardSortMode === 'velocity' ? (dashboardSortOrder === 'desc' ? ' ↓' : ' ↑') : ''}</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-end">
+                    <button
+                      type="button"
+                      onClick={() => setDashRefreshToken(t => t + 1)}
+                      className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-md border border-slate-700 text-slate-300 hover:bg-slate-800 transition-colors"
+                      title="Alle Kanäle aktualisieren"
+                    >
+                      <RefreshCw className="w-3 h-3" /> Alle aktualisieren
+                    </button>
+                  </div>
                 </div>
 
                 <div className="space-y-10">
-                  {favorites.map(fav => (
+                  {sortedFavorites.map(fav => (
                     <FavoriteRow key={fav.id} favorite={fav} onRemove={handleRemoveFavorite} globalRefreshToken={dashRefreshToken} />
                   ))}
                 </div>

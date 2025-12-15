@@ -137,7 +137,7 @@ export const favoritesService = {
     return entry;
   },
 
-  setCache(id: string, videos: VideoData[], extra?: { totalInTimeFrame?: number }, ttlMs: number = DEFAULT_CACHE_TTL) {
+  setCache(id: string, videos: VideoData[], extra?: { totalInTimeFrame?: number; topVelocityVph?: number }, ttlMs: number = DEFAULT_CACHE_TTL) {
     // Nur Top6 speichern, um Speicher zu sparen
     const top6 = [...videos].sort((a, b) => b.trendingScore - a.trendingScore).slice(0, 6);
     const cache = safeRead<Record<string, FavoriteCacheEntry & { ttl?: number }>>(FAVORITES_CACHE_KEY, {});
@@ -145,11 +145,21 @@ export const favoritesService = {
       videos: top6,
       fetchedAt: Date.now(),
       meta: {
-        totalInTimeFrame: extra?.totalInTimeFrame
+        totalInTimeFrame: extra?.totalInTimeFrame,
+        topVelocityVph: extra?.topVelocityVph
       }
     };
     cache[id] = entry;
     safeWrite(FAVORITES_CACHE_KEY, cache);
+    // Informiere UI, dass es neue Cache-Daten gibt (z. B. für Dashboard-Neusortierung)
+    try {
+      if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
+        const evt = new CustomEvent('favorites-cache-updated', { detail: { id } });
+        window.dispatchEvent(evt);
+      }
+    } catch {
+      // stiller Fallback
+    }
   },
 
   isCacheValid(id: string, ttlMs: number = DEFAULT_CACHE_TTL): boolean {

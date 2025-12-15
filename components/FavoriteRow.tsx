@@ -110,8 +110,15 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, gl
         if (!cancelled) setTotalInTimeFrame(totalInTimeFrame);
         const analyzed = await analyzeVideoStats(apiVideos, name, currentTimeFrame);
         const top6 = analyzed.sort((a, b) => b.trendingScore - a.trendingScore).slice(0, 6);
+        // Bestimme den höchsten Velocity‑Wert (Views pro Stunde) über alle analysierten Videos
+        const topVelocityVph = analyzed.length > 0 
+          ? analyzed.reduce((max, v) => {
+              const vph = typeof v.viewsPerHour === 'number' && Number.isFinite(v.viewsPerHour) ? v.viewsPerHour : 0;
+              return vph > max ? vph : max;
+            }, 0)
+          : 0;
         if (!cancelled) setVideos(top6);
-        favoritesService.setCache(currentFavId, top6, { totalInTimeFrame });
+        favoritesService.setCache(currentFavId, top6, { totalInTimeFrame, topVelocityVph });
       } catch (e: any) {
         if (!cancelled) setError(e?.message || 'Fehler beim Laden der Favoriten-Daten.');
       } finally {
