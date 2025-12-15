@@ -235,11 +235,6 @@ const App: React.FC = () => {
       <main className="max-w-[101.2rem] mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {activePage === 'dashboard' ? (
           <div className="animate-fade-in">
-            <div className="mb-10 text-center space-y-3">
-              <h2 className="text-3xl md:text-5xl font-extrabold text-white tracking-tight">
-                Dashboard
-              </h2>
-            </div>
 
             {favorites.length === 0 ? (
               <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-6 text-center text-slate-400">
