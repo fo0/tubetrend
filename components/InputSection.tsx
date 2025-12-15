@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { TimeFrame, ChannelSuggestion } from '../types';
 import { TIME_FRAMES, MAX_RESULTS_OPTIONS } from '../constants';
-import { Search, Loader2, Link2, X, Youtube, ListFilter } from 'lucide-react';
+import { Search, Loader2, Link2, X, Youtube, ListFilter, History } from 'lucide-react';
 import { searchChannels, extractChannelIdentifier } from '../services/youtubeService';
 
 // Default search input can be configured via Vite env: VITE_DEFAULT_SEARCH
@@ -27,23 +27,62 @@ export const InputSection: React.FC<InputSectionProps> = ({ onSearch, isLoading 
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isSearchingSuggestions, setIsSearchingSuggestions] = useState(false);
   
+  // Local history state (last 10 entries)
+  const [history, setHistory] = useState<string[]>([]);
+  const [showHistory, setShowHistory] = useState(false);
+  
   const wrapperRef = useRef<HTMLDivElement>(null);
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Close dropdown when clicking outside
+  // Load history from storage once
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('tt.search.history');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) setHistory(parsed.filter((x) => typeof x === 'string'));
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, []);
+
+  // Close dropdowns when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
         setShowSuggestions(false);
+        setShowHistory(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const persistHistory = (next: string[]) => {
+    try {
+      localStorage.setItem('tt.search.history', JSON.stringify(next));
+    } catch (e) {
+      // ignore
+    }
+  };
+
+  const addToHistory = (value: string) => {
+    const v = value.trim();
+    if (!v) return;
+    setHistory((prev) => {
+      const withoutDup = prev.filter((x) => x.toLowerCase() !== v.toLowerCase());
+      const updated = [v, ...withoutDup].slice(0, 10);
+      persistHistory(updated);
+      return updated;
+    });
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setInputValue(val);
+    // Hide history once user starts typing
+    if (val.length > 0) setShowHistory(false);
 
     // If it looks like a URL, don't try to autocomplete
     if (val.includes('youtube.com') || val.includes('youtu.be')) {
@@ -79,12 +118,15 @@ export const InputSection: React.FC<InputSectionProps> = ({ onSearch, isLoading 
     setInputValue(suggestion.title); // Use title for display
     setSuggestions([]);
     setShowSuggestions(false);
+    setShowHistory(false);
   };
 
   const clearInput = () => {
     setInputValue('');
     setSuggestions([]);
     setShowSuggestions(false);
+    // keep history hidden until user focuses again
+    setShowHistory(false);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -94,7 +136,27 @@ export const InputSection: React.FC<InputSectionProps> = ({ onSearch, isLoading 
       const cleanIdentifier = extractChannelIdentifier(inputValue);
       onSearch(cleanIdentifier, timeFrame, maxResults);
       setShowSuggestions(false);
+      setShowHistory(false);
+      // Save typed value to history (what the user entered)
+      addToHistory(inputValue);
     }
+  };
+
+  const handleFocus = () => {
+    // Show history only when input is empty and there is history
+    if (inputValue.length === 0 && history.length > 0) {
+      setShowHistory(true);
+      setShowSuggestions(false);
+    } else if (inputValue.length >= 2 && !inputValue.includes('http')) {
+      setShowSuggestions(true);
+      setShowHistory(false);
+    }
+  };
+
+  const selectHistoryItem = (val: string) => {
+    setInputValue(val);
+    setShowHistory(false);
+    // Do not trigger search automatically; user can submit
   };
 
   return (
@@ -123,7 +185,7 @@ export const InputSection: React.FC<InputSectionProps> = ({ onSearch, isLoading 
               id="channel"
               value={inputValue}
               onChange={handleInputChange}
-              onFocus={() => inputValue.length >= 2 && !inputValue.includes('http') && setShowSuggestions(true)}
+              onFocus={handleFocus}
               className="block w-full pl-11 pr-10 py-4 bg-slate-950 border border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 text-white placeholder-slate-600 transition-all shadow-inner text-lg"
               placeholder="z.B. TEDx oder https://youtube.com/@..."
               disabled={isLoading}
@@ -162,6 +224,31 @@ export const InputSection: React.FC<InputSectionProps> = ({ onSearch, isLoading 
                         <div className="min-w-0">
                           <p className="text-slate-200 font-medium truncate group-hover/item:text-indigo-400 transition-colors">{sug.title}</p>
                           {sug.handle && <p className="text-xs text-slate-500 truncate">{sug.handle}</p>}
+                        </div>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* History Dropdown (shown only on focus when input is empty) */}
+            {showHistory && history.length > 0 && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl overflow-hidden z-50 animate-fade-in">
+                <ul>
+                  {history.map((item, idx) => (
+                    <li key={`${item}-${idx}`}>
+                      <button
+                        type="button"
+                        onClick={() => selectHistoryItem(item)}
+                        className="w-full text-left px-4 py-3 hover:bg-slate-800 transition-colors flex items-center gap-3 group/item"
+                      >
+                        <div className="w-8 h-8 rounded-full overflow-hidden bg-slate-950 flex-shrink-0 border border-slate-700 flex items-center justify-center">
+                          <History className="w-4 h-4 text-slate-500" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-slate-200 font-medium truncate group-hover/item:text-indigo-400 transition-colors">{item}</p>
+                          <p className="text-xs text-slate-500 truncate">Zuletzt gesucht</p>
                         </div>
                       </button>
                     </li>
