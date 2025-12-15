@@ -19,7 +19,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, rank }) => {
     <div className="bg-slate-800 rounded-xl overflow-hidden border border-slate-700 shadow-lg hover:shadow-xl hover:border-slate-600 transition-all duration-300 group flex flex-col h-full relative">
       {/* Rank Badge for Top 3 */}
       {rank <= 3 && (
-        <div className="absolute top-0 left-0 z-20 bg-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-br-lg shadow-lg">
+        <div className="absolute top-0 left-0 z-20 bg-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-br-lg shadow-lg pointer-events-none">
           #{rank}
         </div>
       )}
@@ -38,7 +38,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, rank }) => {
           <Clock className="w-3 h-3 text-slate-300" />
           {video.uploadTime}
         </div>
-        <div className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-bold border backdrop-blur-md flex items-center gap-1 ${getScoreColor(video.trendingScore)}`}>
+        <div className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-bold border backdrop-blur-md flex items-center gap-1 pointer-events-none ${getScoreColor(video.trendingScore)}`}>
           <TrendingUp className="w-3 h-3" />
           Score: {video.trendingScore}
         </div>

@@ -222,7 +222,7 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, gl
             )}
           </h3>
           <ChevronRight className="w-4 h-4 text-slate-500" />
-          <div className="text-sm text-slate-400 flex items-center gap-2 relative">
+          <div className="text-sm text-slate-400 flex items-center gap-2 relative z-40">
             {/* Timeframe Tag als Button */}
             <button
               ref={tfButtonRef}
@@ -237,7 +237,7 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, gl
               <div
                 ref={tfMenuRef}
                 onMouseDown={(e) => e.stopPropagation()}
-                className="absolute z-20 mt-2 left-0 w-56 bg-slate-900 border border-slate-700 rounded-lg shadow-xl p-1"
+                className="absolute z-50 mt-2 left-0 w-56 bg-slate-900 border border-slate-700 rounded-lg shadow-xl p-1"
               >
                 <div className="max-h-60 overflow-auto">
                   {TIME_FRAMES.map(opt => (
@@ -267,7 +267,7 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, gl
               <div
                 ref={maxMenuRef}
                 onMouseDown={(e) => e.stopPropagation()}
-                className="absolute z-20 mt-2 left-44 w-56 bg-slate-900 border border-slate-700 rounded-lg shadow-xl p-1"
+                className="absolute z-50 mt-2 left-44 w-56 bg-slate-900 border border-slate-700 rounded-lg shadow-xl p-1"
               >
                 <div className="max-h-60 overflow-auto">
                   {MAX_RESULTS_OPTIONS.map(opt => (
