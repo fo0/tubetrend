@@ -106,6 +106,8 @@ const App: React.FC = () => {
 
   // Sorting / Filter state
   const [sortMode, setSortMode] = useState<'trend' | 'views'>('trend');
+  // Anzahl hervorgehobener Karten (Top N)
+  const [topN, setTopN] = useState<3 | 6>(3);
 
   const sortedVideos = useMemo(() => {
     if (!searchState.data) return [];
@@ -122,9 +124,9 @@ const App: React.FC = () => {
     return arr.sort((a, b) => b.trendingScore - a.trendingScore);
   }, [searchState.data, sortMode]);
 
-  // Split into Top 3 and Rest
-  const topVideos = sortedVideos.slice(0, 3);
-  const otherVideos = sortedVideos.slice(3);
+  // Split into Top N and Rest
+  const topVideos = sortedVideos.slice(0, topN);
+  const otherVideos = sortedVideos.slice(topN);
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 pb-20 font-sans selection:bg-indigo-500/30">
@@ -240,15 +242,42 @@ const App: React.FC = () => {
                      <span>Views</span>
                    </button>
                  </div>
+                  {/* Top N Toggle */}
+                  <div className="inline-flex items-center rounded-lg border border-slate-800 bg-slate-900/60 p-0.5">
+                    <button
+                      type="button"
+                      onClick={() => setTopN(3)}
+                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors ${
+                        topN === 3
+                          ? 'bg-indigo-600 text-white'
+                          : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                      }`}
+                      title="Top 3 hervorheben"
+                    >
+                      <span>Top 3</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setTopN(6)}
+                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors ${
+                        topN === 6
+                          ? 'bg-indigo-600 text-white'
+                          : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                      }`}
+                      title="Top 6 hervorheben"
+                    >
+                      <span>Top 6</span>
+                    </button>
+                  </div>
                </div>
              </div>
 
-            {/* SECTION 1: Top 3 Cards */}
+            {/* SECTION 1: Top N Cards */}
             <div>
               <div className="flex items-center gap-2 mb-4 px-1">
                 <Trophy className="w-5 h-5 text-yellow-500" />
                 <h3 className="text-lg font-bold text-slate-200 uppercase tracking-wide">
-                  Top 3 Performance
+                  Top {topN} Performance
                 </h3>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -267,7 +296,7 @@ const App: React.FC = () => {
                     Weitere Videos
                   </h3>
                 </div>
-                <VideoListTable videos={otherVideos} startIndex={4} />
+                <VideoListTable videos={otherVideos} startIndex={topN + 1} />
               </div>
             )}
             
