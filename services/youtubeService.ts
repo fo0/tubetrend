@@ -317,8 +317,8 @@ export const getVideosFromChannel = async (uploadsPlaylistId: string, timeFrame:
           const s = parseInt(match[3]?.replace('S', '') || '0');
           seconds = h * 3600 + m * 60 + s;
         }
-        // Filter: Nur Videos behalten, die mindestens 120 Sekunden (2 Minuten) lang sind
-        return seconds >= 120; // Shorts-Filter (alles < 120s wird ausgeschlossen)
+        // Filter: Nur Videos behalten, die mindestens 180 Sekunden (3 Minuten) lang sind
+        return seconds >= 180; // Shorts-Filter (alles < 180s wird ausgeschlossen)
       }).map((item: any) => {
         // Snippet aus dem Batch wiederverwenden
         const originalItem = batch.find((b: any) => b.contentDetails.videoId === item.id);
