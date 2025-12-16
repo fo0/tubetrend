@@ -9,6 +9,7 @@ import { analyzeVideoStats } from './services/geminiService';
 import { findChannelInfo, getVideosFromChannel, setYoutubeApiKey } from './services/youtubeService';
 import { TimeFrame, SearchState, FavoriteConfig } from './types';
 import { favoritesService } from './services/favoritesService';
+import { selectTopFavoriteVideos } from './utils/dashboardTopVideos';
 import { BarChart3, AlertCircle, Activity, Settings, Trophy, List, Eye, LayoutDashboard, RefreshCw, Youtube } from 'lucide-react';
 import { ThemeToggle } from './components/ThemeToggle';
 import { LanguageSwitcher } from './components/LanguageSwitcher';
@@ -247,6 +248,10 @@ const App: React.FC = () => {
     });
   }, [favorites, dashboardSortMode, dashboardSortOrder, cacheTick]);
 
+  const topFavoriteVideos = useMemo(() => {
+    return selectTopFavoriteVideos(sortedFavorites, (id) => favoritesService.getCache(id));
+  }, [sortedFavorites, cacheTick]);
+
   const sortedVideos = useMemo(() => {
     if (!searchState.data) return [];
 
@@ -363,6 +368,15 @@ const App: React.FC = () => {
               </div>
             ) : (
               <>
+                {topFavoriteVideos.length > 0 && (
+                  <div className="mb-6">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3">
+                      {topFavoriteVideos.map((video, idx) => (
+                        <VideoCard key={video.id} video={video} rank={idx + 1} />
+                      ))}
+                    </div>
+                  </div>
+                )}
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-4">
                   {/* Sortier-Umschalter */}
                   <div className="flex items-center gap-2 text-xs font-medium">
