@@ -9,11 +9,12 @@ import { analyzeVideoStats } from './services/geminiService';
 import { findChannelInfo, getVideosFromChannel, setYoutubeApiKey } from './services/youtubeService';
 import { TimeFrame, SearchState, FavoriteConfig } from './types';
 import { favoritesService } from './services/favoritesService';
-import { selectTopFavoriteVideos } from './utils/dashboardTopVideos';
+import { selectHighlightVideosFromFavorites } from './utils/dashboardTopVideos';
 import { BarChart3, AlertCircle, Activity, Settings, Trophy, List, Eye, LayoutDashboard, RefreshCw, Youtube } from 'lucide-react';
 import { ThemeToggle } from './components/ThemeToggle';
 import { LanguageSwitcher } from './components/LanguageSwitcher';
 import { useTranslation } from 'react-i18next';
+import { HighlightVideoCard } from './components/HighlightVideoCard';
 
 const App: React.FC = () => {
   const { t } = useTranslation();
@@ -248,8 +249,24 @@ const App: React.FC = () => {
     });
   }, [favorites, dashboardSortMode, dashboardSortOrder, cacheTick]);
 
-  const topFavoriteVideos = useMemo(() => {
-    return selectTopFavoriteVideos(sortedFavorites, (id) => favoritesService.getCache(id));
+  const highlightVideos = useMemo(() => {
+    const raw = selectHighlightVideosFromFavorites(
+      sortedFavorites,
+      (id) => favoritesService.getCache(id),
+      { perFavorite: 1, maxTotal: sortedFavorites.length }
+    );
+    // Highlights immer nach Aktivität (Velocity) sortieren
+    return [...raw].sort((a, b) => {
+      const av = Number(a.video?.viewsPerHour);
+      const bv = Number(b.video?.viewsPerHour);
+      const aVph = Number.isFinite(av) ? av : -1;
+      const bVph = Number.isFinite(bv) ? bv : -1;
+      if (aVph !== bVph) return bVph - aVph;
+      const aTs = typeof a.video?.trendingScore === 'number' && Number.isFinite(a.video.trendingScore) ? a.video.trendingScore : -1;
+      const bTs = typeof b.video?.trendingScore === 'number' && Number.isFinite(b.video.trendingScore) ? b.video.trendingScore : -1;
+      if (aTs !== bTs) return bTs - aTs;
+      return a.sourceLabel.localeCompare(b.sourceLabel, 'de', { sensitivity: 'base' });
+    });
   }, [sortedFavorites, cacheTick]);
 
   const sortedVideos = useMemo(() => {
@@ -368,14 +385,34 @@ const App: React.FC = () => {
               </div>
             ) : (
               <>
-                {topFavoriteVideos.length > 0 && (
-                  <div className="mb-6">
-                    <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3">
-                      {topFavoriteVideos.map((video, idx) => (
-                        <VideoCard key={video.id} video={video} rank={idx + 1} />
+                {highlightVideos.length > 0 && (
+                  <section className="mb-6 rounded-2xl border border-indigo-200/70 bg-indigo-50/40 p-4 shadow-sm dark:border-indigo-500/20 dark:bg-indigo-500/10">
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-3">
+                      <div>
+                        <div className="text-xs font-extrabold uppercase tracking-wide text-indigo-700 dark:text-indigo-300">
+                          {t('dashboard.highlights.title')}
+                        </div>
+                        <div className="text-sm text-slate-600 dark:text-slate-400">
+                          {t('dashboard.highlights.subtitle')}
+                        </div>
+                      </div>
+                      <div className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                        {t('dashboard.highlights.count', { count: highlightVideos.length })}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                      {highlightVideos.map((item, idx) => (
+                        <HighlightVideoCard
+                          key={`${item.video.id}:${item.sourceId}:${item.sourceRank}`}
+                          video={item.video}
+                          highlightRank={idx + 1}
+                          sourceLabel={item.sourceLabel}
+                          sourceRank={item.sourceRank}
+                        />
                       ))}
                     </div>
-                  </div>
+                  </section>
                 )}
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-4">
                   {/* Sortier-Umschalter */}

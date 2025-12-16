@@ -81,6 +81,12 @@ const resources = {
       },
       dashboard: {
         noFavorites: 'No favorites yet. Create a favorite from the analyzer.',
+        highlights: {
+          title: 'Highlights',
+          subtitle: 'Top videos across all favorites (click to open)',
+          count_one: '{{count}} highlight',
+          count_other: '{{count}} highlights',
+        },
         sorting: {
           label: 'Sorting:',
           alphaTitle: 'Sort alphabetically (click again to reverse order)',
@@ -221,6 +227,12 @@ const resources = {
       },
       dashboard: {
         noFavorites: 'Noch keine Favoriten. Lege im Analyser eine Suche als Favorit an.',
+        highlights: {
+          title: 'Highlights',
+          subtitle: 'Top-Videos aus allen Favoriten (klickbar)',
+          count_one: '{{count}} Highlight',
+          count_other: '{{count}} Highlights',
+        },
         sorting: {
           label: 'Sortierung:',
           alphaTitle: 'Alphabetisch sortieren (erneut klicken: Reihenfolge umkehren)',
