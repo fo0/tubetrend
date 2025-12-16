@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { InputSection } from './components/InputSection';
 import { VideoCard } from './components/VideoCard';
 import { VideoListTable } from './components/VideoListTable';
@@ -9,8 +9,9 @@ import { analyzeVideoStats } from './services/geminiService';
 import { findChannelInfo, getVideosFromChannel, setYoutubeApiKey } from './services/youtubeService';
 import { TimeFrame, SearchState, FavoriteConfig } from './types';
 import { favoritesService } from './services/favoritesService';
+import { dashboardBackupService } from './services/dashboardBackupService';
 import { selectHighlightVideosFromFavorites } from './utils/dashboardTopVideos';
-import { BarChart3, AlertCircle, Activity, Settings, Trophy, List, Eye, LayoutDashboard, RefreshCw, Youtube } from 'lucide-react';
+import { BarChart3, AlertCircle, Activity, Settings, Trophy, List, Eye, LayoutDashboard, RefreshCw, Youtube, Download, Upload } from 'lucide-react';
 import { ThemeToggle } from './components/ThemeToggle';
 import { LanguageSwitcher } from './components/LanguageSwitcher';
 import { useTranslation } from 'react-i18next';
@@ -18,6 +19,8 @@ import { HighlightVideoCard } from './components/HighlightVideoCard';
 
 const App: React.FC = () => {
   const { t } = useTranslation();
+
+  const dashboardImportRef = useRef<HTMLInputElement | null>(null);
 
   // Initialize state directly from storage to prevent modal flash
   const [apiKey, setApiKey] = useState<string | null>(() => {
@@ -53,6 +56,82 @@ const App: React.FC = () => {
       setApiKey(null);
       setIsApiKeyModalOpen(true);
     }
+  };
+
+  const downloadTextFile = (filename: string, text: string, mime: string = 'application/json') => {
+    try {
+      const blob = new Blob([text], { type: mime });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 0);
+    } catch {
+      // ignore
+    }
+  };
+
+  const makeBackupFilename = () => {
+    const d = new Date();
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const stamp = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}_${pad(d.getHours())}-${pad(d.getMinutes())}-${pad(d.getSeconds())}`;
+    return `tubetrend-dashboard-backup_${stamp}.json`;
+  };
+
+  const handleDashboardExport = () => {
+    const payload = dashboardBackupService.createBackup({
+      dashboardSortMode,
+      dashboardSortOrder,
+    });
+    const json = dashboardBackupService.stringify(payload);
+    downloadTextFile(makeBackupFilename(), json);
+    try {
+      window.alert(t('backup.exportSuccess'));
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleDashboardImportPick = () => {
+    dashboardImportRef.current?.click();
+  };
+
+  const handleDashboardImportFile = async (file: File) => {
+    const text = await file.text();
+    const parsed = dashboardBackupService.parse(text);
+    if (!parsed.ok) {
+      window.alert(t('backup.importInvalid'));
+      return;
+    }
+
+    const count = parsed.payload.data.favorites.length;
+    const ok = window.confirm(t('confirm.importDashboardReplace', { count }));
+    if (!ok) return;
+
+    try {
+      localStorage.setItem('tt.favorites.v1', JSON.stringify(parsed.payload.data.favorites));
+      localStorage.setItem('tt.favorites.cache.v1', JSON.stringify(parsed.payload.data.favoritesCache));
+    } catch {
+      window.alert(t('backup.importFailedStorage'));
+      return;
+    }
+
+    setDashboardSortMode(parsed.payload.data.dashboard.sortMode);
+    setDashboardSortOrder(parsed.payload.data.dashboard.sortOrder);
+
+    // Favoriten neu einlesen + UI-Sortierung (Velocity) anstoßen
+    setFavorites(favoritesService.list());
+    try {
+      const evt = new CustomEvent('favorites-cache-updated', { detail: { id: '*' } });
+      window.dispatchEvent(evt);
+    } catch {
+      // ignore
+    }
+
+    window.alert(t('backup.importSuccess', { count }));
   };
 
   const handleSearch = async (channel: string, timeFrame: TimeFrame, maxResults: number) => {
@@ -448,16 +527,58 @@ const App: React.FC = () => {
                   </div>
 
                   <div className="flex items-center justify-end">
-                    <button
-                      type="button"
-                      onClick={() => setDashRefreshToken(v => v + 1)}
-                      className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-md border transition-colors 
+                    <input
+                      ref={dashboardImportRef}
+                      type="file"
+                      accept="application/json,.json"
+                      className="hidden"
+                      onChange={(e) => {
+                        const f = e.target.files?.[0];
+                        // reset, damit gleicher File erneut gewählt werden kann
+                        e.target.value = '';
+                        if (!f) return;
+                        handleDashboardImportFile(f).catch(() => {
+                          try {
+                            window.alert(t('backup.importInvalid'));
+                          } catch {
+                            // ignore
+                          }
+                        });
+                      }}
+                    />
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={handleDashboardImportPick}
+                        className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-md border transition-colors 
                                  border-slate-300 text-slate-700 hover:bg-slate-100 
                                  dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
-                      title={t('actions.refreshAll')}
-                    >
-                      <RefreshCw className="w-3 h-3" /> {t('actions.refreshAll')}
-                    </button>
+                        title={t('actions.importDashboard')}
+                      >
+                        <Upload className="w-3 h-3" /> {t('actions.importDashboard')}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleDashboardExport}
+                        className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-md border transition-colors 
+                                 border-slate-300 text-slate-700 hover:bg-slate-100 
+                                 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                        title={t('actions.exportDashboard')}
+                      >
+                        <Download className="w-3 h-3" /> {t('actions.exportDashboard')}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setDashRefreshToken(v => v + 1)}
+                        className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-md border transition-colors 
+                                 border-slate-300 text-slate-700 hover:bg-slate-100 
+                                 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                        title={t('actions.refreshAll')}
+                      >
+                        <RefreshCw className="w-3 h-3" /> {t('actions.refreshAll')}
+                      </button>
+                    </div>
                   </div>
                 </div>
 

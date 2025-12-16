@@ -19,6 +19,8 @@ const resources = {
         refreshAll: 'Refresh all',
         remove: 'Remove',
         refresh: 'Refresh',
+        importDashboard: 'Import',
+        exportDashboard: 'Export',
       },
       // Labels & inputs
       labels: {
@@ -143,6 +145,13 @@ const resources = {
       },
       confirm: {
         deleteApiKey: 'Do you really want to delete the API key?',
+        importDashboardReplace: 'Import will replace your current dashboard favorites and cache ({{count}} favorites). Continue?',
+      },
+      backup: {
+        exportSuccess: 'Backup downloaded.',
+        importSuccess: 'Import completed. {{count}} favorites restored.',
+        importInvalid: 'Invalid backup file.',
+        importFailedStorage: 'Import failed (could not write to browser storage).',
       },
       errors: {
         favoriteLoad: 'Failed to load favorite data.',
@@ -167,6 +176,8 @@ const resources = {
         refreshAll: 'Alle aktualisieren',
         remove: 'Entfernen',
         refresh: 'Aktualisieren',
+        importDashboard: 'Importieren',
+        exportDashboard: 'Exportieren',
       },
       labels: {
         channelName: 'Kanalname',
@@ -289,6 +300,13 @@ const resources = {
       },
       confirm: {
         deleteApiKey: 'Möchtest du den API Key wirklich löschen?',
+        importDashboardReplace: 'Import ersetzt deine aktuellen Dashboard-Favoriten und den Cache ({{count}} Favoriten). Fortfahren?',
+      },
+      backup: {
+        exportSuccess: 'Backup-Datei wurde heruntergeladen.',
+        importSuccess: 'Import abgeschlossen. {{count}} Favoriten wurden wiederhergestellt.',
+        importInvalid: 'Ungültige Backup-Datei.',
+        importFailedStorage: 'Import fehlgeschlagen (konnte nicht in den Browser-Speicher schreiben).',
       },
       errors: {
         favoriteLoad: 'Fehler beim Laden der Favoriten-Daten.',
