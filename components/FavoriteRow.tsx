@@ -219,13 +219,13 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, gl
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <h3 className="text-lg font-bold text-slate-100">
+          <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">
             {channelUrl ? (
               <a
                 href={channelUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-red-400 hover:text-red-300 hover:underline underline-offset-2"
+                className="inline-flex items-center gap-1.5 text-red-500 dark:text-red-400 hover:text-red-400 dark:hover:text-red-300 hover:underline underline-offset-2"
                 title={`YouTube-Kanal öffnen: ${channelTitle}`}
               >
                 <Youtube className="w-4 h-4" aria-hidden="true" />
@@ -238,14 +238,14 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, gl
               </span>
             )}
           </h3>
-          <ChevronRight className="w-4 h-4 text-slate-500" />
-          <div className="text-sm text-slate-400 flex items-center gap-2 relative z-40">
+          <ChevronRight className="w-4 h-4 text-slate-400 dark:text-slate-500" />
+          <div className="text-sm text-slate-500 dark:text-slate-400 flex items-center gap-2 relative z-40">
             {/* Timeframe Tag als Button */}
             <button
               ref={tfButtonRef}
               type="button"
               onClick={() => { setShowTfMenu(v => !v); setShowMaxMenu(false); }}
-              className="px-2 py-0.5 rounded-full bg-slate-800 border border-slate-700 hover:bg-slate-700/70"
+              className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-200/70 dark:hover:bg-slate-700/70"
               title="Zeitraum ändern"
             >
               {currentTimeFrame}
@@ -254,14 +254,14 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, gl
               <div
                 ref={tfMenuRef}
                 onMouseDown={(e) => e.stopPropagation()}
-                className="absolute z-50 mt-2 left-0 w-56 bg-slate-900 border border-slate-700 rounded-lg shadow-xl p-1"
+                className="absolute z-50 mt-2 left-0 w-56 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl p-1"
               >
                 <div className="max-h-60 overflow-auto">
                   {TIME_FRAMES.map(opt => (
                     <button
                       key={opt.value}
                       onClick={() => handleChangeTimeFrame(opt.value)}
-                      className={`w-full text-left px-3 py-2 rounded-md text-sm ${opt.value === currentTimeFrame ? 'bg-indigo-600 text-white' : 'text-slate-200 hover:bg-slate-800'}`}
+                      className={`w-full text-left px-3 py-2 rounded-md text-sm ${opt.value === currentTimeFrame ? 'bg-indigo-600 text-white' : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                     >
                       {opt.label}
                     </button>
@@ -275,14 +275,14 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, gl
               ref={maxButtonRef}
               type="button"
               onClick={() => { setShowMaxMenu(v => !v); setShowTfMenu(false); }}
-              className="px-2 py-0.5 rounded-full bg-slate-800 border border-slate-700 hover:bg-slate-700/70"
+              className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-200/70 dark:hover:bg-slate-700/70"
               title="Max. Ergebnisse ändern"
             >
               {displayMax}
             </button>
             {showOverflowWarning && (
               <span
-                className="inline-flex items-center gap-1 text-yellow-400"
+                className="inline-flex items-center gap-1 text-yellow-500 dark:text-yellow-400"
                 title={`Es gibt ${totalInTimeFrame} Videos im Zeitraum – angezeigt werden nur ${currentMax}.`}
               >
                 <AlertTriangle className="w-4 h-4" aria-hidden="true" />
@@ -292,14 +292,14 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, gl
               <div
                 ref={maxMenuRef}
                 onMouseDown={(e) => e.stopPropagation()}
-                className="absolute z-50 mt-2 left-44 w-56 bg-slate-900 border border-slate-700 rounded-lg shadow-xl p-1"
+                className="absolute z-50 mt-2 left-44 w-56 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl p-1"
               >
                 <div className="max-h-60 overflow-auto">
                   {MAX_RESULTS_OPTIONS.map(opt => (
                     <button
                       key={opt.value}
                       onClick={() => handleChangeMax(opt.value)}
-                      className={`w-full text-left px-3 py-2 rounded-md text-sm ${opt.value === currentMax ? 'bg-indigo-600 text-white' : 'text-slate-200 hover:bg-slate-800'}`}
+                      className={`w-full text-left px-3 py-2 rounded-md text-sm ${opt.value === currentMax ? 'bg-indigo-600 text-white' : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                     >
                       {opt.label}
                     </button>
@@ -308,7 +308,7 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, gl
               </div>
             )}
             <span
-              className="px-2 py-0.5 rounded-full bg-slate-800/70 border border-slate-700 text-slate-400"
+              className="px-2 py-0.5 rounded-full bg-slate-100/70 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400"
               title={lastFetchedAt ? new Date(lastFetchedAt).toLocaleString() : undefined}
             >
               {loading
@@ -326,8 +326,8 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, gl
             disabled={loading}
             className={`inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-md border transition-colors ${
               loading
-                ? 'border-slate-700 text-slate-500 cursor-not-allowed'
-                : 'border-slate-700 text-slate-300 hover:bg-slate-800'
+                ? 'border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500 cursor-not-allowed'
+                : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
             }`}
             title="Kanal aktualisieren"
           >
@@ -338,7 +338,7 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, gl
             <button
               type="button"
               onClick={() => onRemove?.(currentFavId)}
-              className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-md border border-red-500/30 text-red-300 hover:bg-red-500/10 transition-colors"
+              className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-md border border-red-500/30 text-red-400 dark:text-red-300 hover:bg-red-500/10 transition-colors"
               title="Favorit entfernen"
             >
               <Trash2 className="w-3 h-3" /> Entfernen
@@ -349,13 +349,13 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, gl
 
       {/* Content */}
       {loading && (
-        <div className="flex items-center gap-2 text-slate-400 text-sm">
+        <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-sm">
           <Loader2 className="w-4 h-4 animate-spin" /> Lädt…
         </div>
       )}
 
       {error && (
-        <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex items-center gap-3 text-red-200">
+        <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex items-center gap-3 text-red-500 dark:text-red-200">
           <AlertCircle className="w-5 h-5" />
           <span>{error}</span>
         </div>

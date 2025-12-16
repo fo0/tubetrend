@@ -16,10 +16,10 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, rank }) => {
   };
 
   return (
-    <div className="bg-slate-800 rounded-xl overflow-hidden border border-slate-700 shadow-lg hover:shadow-xl hover:border-slate-600 transition-all duration-300 group flex flex-col h-full relative">
+    <div className="bg-white border-slate-200 dark:bg-slate-800 rounded-xl overflow-hidden border dark:border-slate-700 shadow-lg hover:shadow-xl hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-300 group flex flex-col h-full relative">
 
       {/* Thumbnail Area */}
-      <div className="relative h-40 overflow-hidden bg-slate-900">
+      <div className="relative h-40 overflow-hidden bg-slate-100 dark:bg-slate-900">
         <a href={video.url} target="_blank" rel="noopener noreferrer" className="block w-full h-full cursor-pointer">
           <img 
             src={video.thumbnailUrl} 
@@ -46,7 +46,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, rank }) => {
               href={video.url} 
               target="_blank" 
               rel="noopener noreferrer"
-              className="text-slate-100 group-hover:text-indigo-400 transition-colors hover:underline decoration-indigo-400/30 underline-offset-2"
+              className="text-slate-800 dark:text-slate-100 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors hover:underline decoration-indigo-400/30 underline-offset-2"
               title={video.title}
             >
               {video.title}
@@ -56,17 +56,17 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, rank }) => {
 
         {/* Stats Grid */}
         <div className="grid grid-cols-2 gap-2 mb-3">
-          <div className="flex flex-col justify-center bg-slate-900/50 p-2 rounded-lg border border-slate-700/50">
-            <div className="flex items-center gap-1.5 text-slate-400 text-xs uppercase font-semibold mb-0.5">
-              <Eye className="w-3 h-3 text-indigo-400" /> Views
+          <div className="flex flex-col justify-center bg-slate-100/50 dark:bg-slate-900/50 p-2 rounded-lg border border-slate-200/50 dark:border-slate-700/50">
+            <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 text-xs uppercase font-semibold mb-0.5">
+              <Eye className="w-3 h-3 text-indigo-500 dark:text-indigo-400" /> Views
             </div>
-            <span className="text-slate-200 font-mono text-sm">{video.views.toLocaleString('de-DE')}</span>
+            <span className="text-slate-700 dark:text-slate-200 font-mono text-sm">{video.views.toLocaleString('de-DE')}</span>
           </div>
-          <div className="flex flex-col justify-center bg-slate-900/50 p-2 rounded-lg border border-slate-700/50">
-            <div className="flex items-center gap-1.5 text-slate-400 text-xs uppercase font-semibold mb-0.5">
-              <Zap className="w-3 h-3 text-yellow-400" /> Velocity
+          <div className="flex flex-col justify-center bg-slate-100/50 dark:bg-slate-900/50 p-2 rounded-lg border border-slate-200/50 dark:border-slate-700/50">
+            <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 text-xs uppercase font-semibold mb-0.5">
+              <Zap className="w-3 h-3 text-yellow-500 dark:text-yellow-400" /> Velocity
             </div>
-            <span className="text-slate-200 font-mono text-sm">
+            <span className="text-slate-700 dark:text-slate-200 font-mono text-sm">
               {video.viewsPerHour ? `~${video.viewsPerHour.toLocaleString('de-DE')}/h` : 'N/A'}
             </span>
           </div>

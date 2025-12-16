@@ -427,7 +427,7 @@ const App: React.FC = () => {
 
             {/* Error Message */}
             {searchState.error && (
-              <div className="mb-8 bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex items-center gap-3 text-red-200 animate-fade-in shadow-lg shadow-red-900/10">
+              <div className="mb-8 bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex items-center gap-3 text-red-500 dark:text-red-200 animate-fade-in shadow-lg shadow-red-900/10">
                 <AlertCircle className="w-5 h-5 flex-shrink-0" />
                 <p>{searchState.error}</p>
               </div>
@@ -437,45 +437,45 @@ const App: React.FC = () => {
             {sortedVideos.length > 0 && (
               <div className="space-y-12 animate-fade-in">
                 {/* Control Bar */}
-                <div className="flex flex-col sm:flex-row justify-between items-center bg-slate-900/50 p-4 rounded-xl border border-slate-800 gap-4 backdrop-blur-sm">
+                <div className="flex flex-col sm:flex-row justify-between items-center bg-slate-100/50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200 dark:border-slate-800 gap-4 backdrop-blur-sm">
                   <div className="flex items-center gap-2">
-                    <h3 className="font-semibold text-slate-200">
+                    <h3 className="font-semibold text-slate-700 dark:text-slate-200">
                       Ergebnisse für {channelUrl ? (
                         <a
                           href={channelUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 text-red-400 hover:text-red-300 hover:underline underline-offset-2"
+                          className="inline-flex items-center gap-1.5 text-red-500 dark:text-red-400 hover:text-red-400 dark:hover:text-red-300 hover:underline underline-offset-2"
                           title={`YouTube-Kanal öffnen: ${searchState.channelName}`}
                         >
                           <Youtube className="w-4 h-4" aria-hidden="true" />
                           @{searchState.channelName}
                         </a>
                       ) : (
-                        <span className="inline-flex items-center gap-1.5 text-red-400">
+                        <span className="inline-flex items-center gap-1.5 text-red-500 dark:text-red-400">
                           <Youtube className="w-4 h-4" aria-hidden="true" />
                           @{searchState.channelName}
                         </span>
                       )}
                     </h3>
-                    <span className="bg-slate-700 text-xs px-2 py-0.5 rounded-full text-slate-300 border border-slate-600">
+                    <span className="bg-slate-200 dark:bg-slate-700 text-xs px-2 py-0.5 rounded-full text-slate-600 dark:text-slate-300 border border-slate-300 dark:border-slate-600">
                       {sortedVideos.length} Videos
                     </span>
                   </div>
                   
                   <div className="flex items-center gap-3 text-sm font-medium">
-                    <span className="text-slate-400 whitespace-nowrap">
+                    <span className="text-slate-500 dark:text-slate-400 whitespace-nowrap">
                       Sortiert nach {sortMode === 'trend' ? 'Trend Score (Velocity)' : 'Views'}
                     </span>
                     {/* Sort Toggle */}
-                    <div className="inline-flex items-center rounded-lg border border-slate-800 bg-slate-900/60 p-0.5">
+                    <div className="inline-flex items-center rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-100/60 dark:bg-slate-900/60 p-0.5">
                       <button
                         type="button"
                         onClick={() => setSortMode('trend')}
                         className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors ${
                           sortMode === 'trend'
                             ? 'bg-indigo-600 text-white'
-                            : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                            : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800'
                         }`}
                         title="Nach Trend Score sortieren"
                       >
@@ -488,7 +488,7 @@ const App: React.FC = () => {
                         className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors ${
                           sortMode === 'views'
                             ? 'bg-indigo-600 text-white'
-                            : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                            : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800'
                         }`}
                         title="Nach Views sortieren"
                       >
@@ -497,14 +497,14 @@ const App: React.FC = () => {
                       </button>
                     </div>
                     {/* Top N Toggle */}
-                    <div className="inline-flex items-center rounded-lg border border-slate-800 bg-slate-900/60 p-0.5">
+                    <div className="inline-flex items-center rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-100/60 dark:bg-slate-900/60 p-0.5">
                       <button
                         type="button"
                         onClick={() => setTopN(3)}
                         className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors ${
                           topN === 3
                             ? 'bg-indigo-600 text-white'
-                            : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                            : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800'
                         }`}
                         title="Top 3 hervorheben"
                       >
@@ -516,7 +516,7 @@ const App: React.FC = () => {
                         className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors ${
                           topN === 6
                             ? 'bg-indigo-600 text-white'
-                            : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                            : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800'
                         }`}
                         title="Top 6 hervorheben"
                       >
@@ -530,7 +530,7 @@ const App: React.FC = () => {
                 <div>
                   <div className="flex items-center gap-2 mb-4 px-1">
                     <Trophy className="w-5 h-5 text-yellow-500" />
-                    <h3 className="text-lg font-bold text-slate-200 uppercase tracking-wide">
+                    <h3 className="text-lg font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wide">
                       Top {topN} Performance
                     </h3>
                   </div>
@@ -545,8 +545,8 @@ const App: React.FC = () => {
                 {otherVideos.length > 0 && (
                   <div>
                     <div className="flex items-center gap-2 mb-4 px-1 mt-8">
-                      <List className="w-5 h-5 text-slate-400" />
-                      <h3 className="text-lg font-bold text-slate-200 uppercase tracking-wide">
+                      <List className="w-5 h-5 text-slate-500 dark:text-slate-400" />
+                      <h3 className="text-lg font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wide">
                         Weitere Videos
                       </h3>
                     </div>

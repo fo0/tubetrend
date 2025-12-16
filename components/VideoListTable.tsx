@@ -16,11 +16,11 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({ videos, startInd
   };
 
   return (
-    <div className="bg-slate-900/50 rounded-xl border border-slate-800 overflow-hidden backdrop-blur-sm shadow-xl">
+    <div className="bg-white/50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden backdrop-blur-sm shadow-xl">
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="bg-slate-900/80 border-b border-slate-800 text-xs uppercase tracking-wider text-slate-500 font-semibold">
+            <tr className="bg-slate-100/80 dark:bg-slate-900/80 border-b border-slate-200 dark:border-slate-800 text-xs uppercase tracking-wider text-slate-500 font-semibold">
               <th className="p-4 w-16 text-center">#</th>
               <th className="p-4">Video</th>
               <th className="p-4 hidden sm:table-cell">Upload</th>
@@ -30,11 +30,11 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({ videos, startInd
               <th className="p-4 w-16 text-center"></th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-800/50 text-sm">
+          <tbody className="divide-y divide-slate-200/50 dark:divide-slate-800/50 text-sm">
             {videos.map((video, index) => {
               const rank = startIndex + index;
               return (
-                <tr key={video.id} className="hover:bg-slate-800/40 transition-colors group">
+                <tr key={video.id} className="hover:bg-slate-100/40 dark:hover:bg-slate-800/40 transition-colors group">
                   <td className="p-4 text-center text-slate-500 font-mono font-medium">
                     {rank}
                   </td>
@@ -44,7 +44,7 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({ videos, startInd
                         href={video.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="relative w-24 h-14 flex-shrink-0 rounded-md overflow-hidden bg-slate-800 border border-slate-700 cursor-pointer"
+                        className="relative w-24 h-14 flex-shrink-0 rounded-md overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 cursor-pointer"
                       >
                         <img 
                           src={video.thumbnailUrl} 
@@ -58,7 +58,7 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({ videos, startInd
                           href={video.url}
                           target="_blank"
                           rel="noopener noreferrer" 
-                          className="font-medium text-slate-200 line-clamp-2 group-hover:text-indigo-400 transition-colors hover:underline decoration-indigo-400/30 underline-offset-2 block" 
+                          className="font-medium text-slate-700 dark:text-slate-200 line-clamp-2 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors hover:underline decoration-indigo-400/30 underline-offset-2 block" 
                           title={video.title}
                         >
                           {video.title}
@@ -69,18 +69,18 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({ videos, startInd
                       </div>
                     </div>
                   </td>
-                  <td className="p-4 text-slate-400 whitespace-nowrap hidden sm:table-cell">
+                  <td className="p-4 text-slate-500 dark:text-slate-400 whitespace-nowrap hidden sm:table-cell">
                     <div className="flex items-center gap-1.5">
-                      <Clock className="w-3.5 h-3.5 text-slate-600" />
+                      <Clock className="w-3.5 h-3.5 text-slate-400 dark:text-slate-600" />
                       {video.uploadTime}
                     </div>
                   </td>
-                  <td className="p-4 text-right font-mono text-slate-300">
+                  <td className="p-4 text-right font-mono text-slate-600 dark:text-slate-300">
                     {video.views.toLocaleString('de-DE')}
                   </td>
-                  <td className="p-4 text-right font-mono text-slate-400 hidden md:table-cell">
+                  <td className="p-4 text-right font-mono text-slate-500 dark:text-slate-400 hidden md:table-cell">
                     {video.viewsPerHour ? (
-                      <span className="flex items-center justify-end gap-1 text-yellow-500/80">
+                      <span className="flex items-center justify-end gap-1 text-yellow-600/80 dark:text-yellow-500/80">
                          {video.viewsPerHour.toLocaleString('de-DE')}/h
                       </span>
                     ) : '-'}
@@ -95,7 +95,7 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({ videos, startInd
                       href={video.url} 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-all border border-slate-700 hover:border-slate-600"
+                      className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white transition-all border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"
                       title="Auf YouTube ansehen"
                     >
                       <ExternalLink className="w-4 h-4" />

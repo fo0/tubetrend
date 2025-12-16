@@ -223,7 +223,7 @@ export const InputSection: React.FC<InputSectionProps> = ({ onSearch, isLoading 
   }, [inputValue, timeFrame, maxResults]);
 
   return (
-    <div className="w-full bg-slate-900/50 backdrop-blur-xl rounded-2xl p-6 md:p-8 shadow-2xl border border-slate-800 mb-8 relative z-40 group" ref={wrapperRef}>
+    <div className="w-full bg-slate-100/50 dark:bg-slate-900/50 backdrop-blur-xl rounded-2xl p-6 md:p-8 shadow-2xl border border-slate-200 dark:border-slate-800 mb-8 relative z-40 group" ref={wrapperRef}>
       {/* Glow Effect */}
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-indigo-500 to-transparent opacity-50 group-hover:opacity-100 transition-opacity"></div>
       
@@ -237,9 +237,9 @@ export const InputSection: React.FC<InputSectionProps> = ({ onSearch, isLoading 
           <div className="relative group/input">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
               {inputValue.includes('http') ? (
-                 <Link2 className="w-5 h-5 text-indigo-400" />
+                 <Link2 className="w-5 h-5 text-indigo-500 dark:text-indigo-400" />
               ) : (
-                 <Youtube className="w-5 h-5 text-slate-500 group-focus-within/input:text-red-500 transition-colors" />
+                 <Youtube className="w-5 h-5 text-slate-400 dark:text-slate-500 group-focus-within/input:text-red-500 transition-colors" />
               )}
             </div>
             
@@ -249,7 +249,7 @@ export const InputSection: React.FC<InputSectionProps> = ({ onSearch, isLoading 
               value={inputValue}
               onChange={handleInputChange}
               onFocus={handleFocus}
-              className="block w-full pl-11 pr-10 py-4 bg-slate-950 border border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 text-white placeholder-slate-600 transition-all shadow-inner text-lg"
+              className="block w-full pl-11 pr-10 py-4 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 transition-all shadow-inner text-lg"
               placeholder={t('input.channelPlaceholder')}
               disabled={isLoading}
               autoComplete="off"
@@ -263,7 +263,7 @@ export const InputSection: React.FC<InputSectionProps> = ({ onSearch, isLoading 
                 <button 
                   type="button" 
                   onClick={clearInput}
-                  className="text-slate-600 hover:text-slate-300 transition-colors p-1"
+                  className="text-slate-400 dark:text-slate-600 hover:text-slate-600 dark:hover:text-slate-300 transition-colors p-1"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -272,20 +272,20 @@ export const InputSection: React.FC<InputSectionProps> = ({ onSearch, isLoading 
 
             {/* Suggestions Dropdown */}
             {showSuggestions && suggestions.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl overflow-hidden z-50 animate-fade-in">
+              <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl overflow-hidden z-50 animate-fade-in">
                 <ul>
                   {suggestions.map((sug) => (
                     <li key={sug.id}>
                       <button
                         type="button"
                         onClick={() => selectSuggestion(sug)}
-                        className="w-full text-left px-4 py-3 hover:bg-slate-800 transition-colors flex items-center gap-3 group/item"
+                        className="w-full text-left px-4 py-3 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex items-center gap-3 group/item"
                       >
-                        <div className="w-8 h-8 rounded-full overflow-hidden bg-slate-950 flex-shrink-0 border border-slate-700">
+                        <div className="w-8 h-8 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-950 flex-shrink-0 border border-slate-200 dark:border-slate-700">
                           <img src={sug.thumbnailUrl} alt="" className="w-full h-full object-cover" />
                         </div>
                         <div className="min-w-0">
-                          <p className="text-slate-200 font-medium truncate group-hover/item:text-indigo-400 transition-colors">{sug.title}</p>
+                          <p className="text-slate-700 dark:text-slate-200 font-medium truncate group-hover/item:text-indigo-500 dark:group-hover/item:text-indigo-400 transition-colors">{sug.title}</p>
                           {sug.handle && <p className="text-xs text-slate-500 truncate">{sug.handle}</p>}
                         </div>
                       </button>
@@ -297,20 +297,20 @@ export const InputSection: React.FC<InputSectionProps> = ({ onSearch, isLoading 
 
             {/* History Dropdown (shown only on focus when input is empty) */}
             {showHistory && history.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl overflow-hidden z-50 animate-fade-in">
+              <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl overflow-hidden z-50 animate-fade-in">
                 <ul>
                   {history.map((item, idx) => (
                     <li key={`${item}-${idx}`}>
                       <button
                         type="button"
                         onClick={() => selectHistoryItem(item)}
-                        className="w-full text-left px-4 py-3 hover:bg-slate-800 transition-colors flex items-center gap-3 group/item"
+                        className="w-full text-left px-4 py-3 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex items-center gap-3 group/item"
                       >
-                        <div className="w-8 h-8 rounded-full overflow-hidden bg-slate-950 flex-shrink-0 border border-slate-700 flex items-center justify-center">
+                        <div className="w-8 h-8 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-950 flex-shrink-0 border border-slate-200 dark:border-slate-700 flex items-center justify-center">
                           <History className="w-4 h-4 text-slate-500" />
                         </div>
                         <div className="min-w-0">
-                          <p className="text-slate-200 font-medium truncate group-hover/item:text-indigo-400 transition-colors">{item}</p>
+                          <p className="text-slate-700 dark:text-slate-200 font-medium truncate group-hover/item:text-indigo-500 dark:group-hover/item:text-indigo-400 transition-colors">{item}</p>
                           <p className="text-xs text-slate-500 truncate">Zuletzt gesucht</p>
                         </div>
                       </button>
@@ -333,7 +333,7 @@ export const InputSection: React.FC<InputSectionProps> = ({ onSearch, isLoading 
                 id="timeframe"
                 value={timeFrame}
                 onChange={(e) => setTimeFrame(e.target.value as TimeFrame)}
-                className="block w-full py-4 px-4 bg-slate-950 border border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 text-white transition-all appearance-none text-base cursor-pointer hover:bg-slate-900 truncate"
+                className="block w-full py-4 px-4 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 text-slate-900 dark:text-white transition-all appearance-none text-base cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900 truncate"
                 disabled={isLoading}
               >
                 {TIME_FRAMES.map((tf) => (
@@ -358,7 +358,7 @@ export const InputSection: React.FC<InputSectionProps> = ({ onSearch, isLoading 
                 id="maxResults"
                 value={maxResults}
                 onChange={(e) => setMaxResults(Number(e.target.value))}
-                className="block w-full py-4 px-4 bg-slate-950 border border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 text-white transition-all appearance-none text-base cursor-pointer hover:bg-slate-900 truncate"
+                className="block w-full py-4 px-4 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 text-slate-900 dark:text-white transition-all appearance-none text-base cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900 truncate"
                 disabled={isLoading}
               >
                 {MAX_RESULTS_OPTIONS.map((opt) => (
@@ -399,8 +399,8 @@ export const InputSection: React.FC<InputSectionProps> = ({ onSearch, isLoading 
             onClick={handleSaveFavorite}
             className={`px-4 xl:px-5 rounded-xl border font-semibold flex items-center gap-2 transition-colors ${
               isFavorite
-                ? 'border-yellow-400/30 bg-yellow-500/10 text-yellow-300'
-                : (justSaved ? 'border-green-500/30 bg-green-500/10 text-green-300' : 'border-slate-700 bg-slate-800/50 text-slate-200 hover:bg-slate-800')
+                ? 'border-yellow-400/30 bg-yellow-500/10 text-yellow-500 dark:text-yellow-300'
+                : (justSaved ? 'border-green-500/30 bg-green-500/10 text-green-500 dark:text-green-300' : 'border-slate-300 dark:border-slate-700 bg-slate-100/50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800')
             }`}
             title={isFavorite ? 'Bereits als Favorit gespeichert' : 'Als Favorit speichern'}
           >
