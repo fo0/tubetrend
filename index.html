@@ -4,12 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TubeTrend</title>
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <!-- Tailwind CDN config: enable class-based dark mode for manual toggling -->
     <script>
-      window.tailwind = window.tailwind || {};
-      window.tailwind.config = { darkMode: 'class' };
+      tailwind.config = { darkMode: 'class' };
     </script>
-    <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Apply theme class (dark/light) before React mounts to avoid FOUC -->
     <script>
