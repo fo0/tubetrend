@@ -4,6 +4,7 @@ import { TIME_FRAMES, MAX_RESULTS_OPTIONS } from '../constants';
 import { Search, Loader2, Link2, X, Youtube, ListFilter, History, Star } from 'lucide-react';
 import { searchChannels, extractChannelIdentifier } from '../services/youtubeService';
 import { favoritesService } from '../services/favoritesService';
+import { useTranslation } from 'react-i18next';
 
 // Default search input can be configured via Vite env: VITE_DEFAULT_SEARCH
 // Behavior:
@@ -19,6 +20,7 @@ interface InputSectionProps {
 }
 
 export const InputSection: React.FC<InputSectionProps> = ({ onSearch, isLoading }) => {
+  const { t } = useTranslation();
   const [inputValue, setInputValue] = useState<string>(DEFAULT_SEARCH_INPUT);
   const [timeFrame, setTimeFrame] = useState<TimeFrame>(TimeFrame.LAST_24_HOURS);
   const [maxResults, setMaxResults] = useState<number>(25);
@@ -230,7 +232,7 @@ export const InputSection: React.FC<InputSectionProps> = ({ onSearch, isLoading 
         {/* Channel Input with Autocomplete */}
         <div className="flex-1 w-full space-y-2 relative">
           <label htmlFor="channel" className="block text-xs font-semibold uppercase tracking-wider text-slate-500">
-            YouTube Kanal Name oder Link
+            {t('labels.channelName')}
           </label>
           <div className="relative group/input">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -248,7 +250,7 @@ export const InputSection: React.FC<InputSectionProps> = ({ onSearch, isLoading 
               onChange={handleInputChange}
               onFocus={handleFocus}
               className="block w-full pl-11 pr-10 py-4 bg-slate-950 border border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 text-white placeholder-slate-600 transition-all shadow-inner text-lg"
-              placeholder="z.B. TEDx oder https://youtube.com/@..."
+              placeholder={t('input.channelPlaceholder')}
               disabled={isLoading}
               autoComplete="off"
             />
@@ -382,12 +384,12 @@ export const InputSection: React.FC<InputSectionProps> = ({ onSearch, isLoading 
             {isLoading ? (
               <>
                 <Loader2 className="animate-spin w-5 h-5" />
-                <span>Analysiere...</span>
+                <span>...</span>
               </>
             ) : (
               <>
                 <Search className="w-5 h-5" />
-                <span>Trends finden</span>
+                <span>{t('actions.search')}</span>
               </>
             )}
           </button>

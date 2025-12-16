@@ -10,8 +10,13 @@ import { findChannelInfo, getVideosFromChannel, setYoutubeApiKey } from './servi
 import { TimeFrame, SearchState, FavoriteConfig } from './types';
 import { favoritesService } from './services/favoritesService';
 import { BarChart3, AlertCircle, Activity, Settings, Trophy, List, Eye, LayoutDashboard, RefreshCw, Youtube } from 'lucide-react';
+import { ThemeToggle } from './components/ThemeToggle';
+import { LanguageSwitcher } from './components/LanguageSwitcher';
+import { useTranslation } from 'react-i18next';
 
 const App: React.FC = () => {
+  const { t } = useTranslation();
+
   // Initialize state directly from storage to prevent modal flash
   const [apiKey, setApiKey] = useState<string | null>(() => {
     return localStorage.getItem('yt_api_key');
@@ -41,7 +46,7 @@ const App: React.FC = () => {
   };
 
   const handleResetKey = () => {
-    if (window.confirm("Möchtest du den API Key wirklich löschen?")) {
+    if (window.confirm(t('confirm.deleteApiKey'))) {
       setYoutubeApiKey("");
       setApiKey(null);
       setIsApiKeyModalOpen(true);
@@ -270,19 +275,19 @@ const App: React.FC = () => {
   }, [searchState.channelId, searchState.channelName]);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 pb-20 font-sans selection:bg-indigo-500/30">
+    <div className="min-h-screen bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100 pb-20 font-sans selection:bg-indigo-500/30">
       
       {isApiKeyModalOpen && <ApiKeyModal onSave={handleSaveKey} />}
 
       {/* Header */}
-      <header className="bg-slate-900/80 backdrop-blur-md border-b border-slate-800 sticky top-0 z-50">
+      <header className="bg-white/80 border-b border-slate-200 dark:bg-slate-900/80 dark:border-slate-800 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-[101.2rem] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="bg-gradient-to-br from-red-600 to-red-700 p-2 rounded-lg shadow-lg shadow-red-500/20">
               <BarChart3 className="w-5 h-5 text-white" />
             </div>
             <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-100 to-slate-400 hidden sm:block">
-              TubeTrend
+              {t('appTitle')}
             </h1>
             {/* Simple Menü links: Dashboard | Analyser */}
             <nav className="ml-4 flex items-center gap-2">
@@ -291,8 +296,8 @@ const App: React.FC = () => {
                 onClick={() => setActivePage('dashboard')}
                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium border transition-colors 
                   ${activePage === 'dashboard' 
-                    ? 'bg-slate-800 text-white border-slate-700' 
-                    : 'text-slate-300 border-slate-800 hover:bg-slate-800 hover:text-white'}
+                    ? 'bg-slate-100 text-slate-900 border-slate-200 dark:bg-slate-800 dark:text-white dark:border-slate-700' 
+                    : 'text-slate-700 border-slate-300 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:border-slate-800 dark:hover:bg-slate-800 dark:hover:text-white'}
                 `}
                 title="Dashboard"
               >
@@ -304,8 +309,8 @@ const App: React.FC = () => {
                 onClick={() => setActivePage('analyser')}
                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium border transition-colors 
                   ${activePage === 'analyser' 
-                    ? 'bg-slate-800 text-white border-slate-700' 
-                    : 'text-slate-300 border-slate-800 hover:bg-slate-800 hover:text-white'}
+                    ? 'bg-slate-100 text-slate-900 border-slate-200 dark:bg-slate-800 dark:text-white dark:border-slate-700' 
+                    : 'text-slate-700 border-slate-300 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:border-slate-800 dark:hover:bg-slate-800 dark:hover:text-white'}
                 `}
                 title="Analyser"
               >
@@ -323,29 +328,37 @@ const App: React.FC = () => {
                  <span>{searchState.step === 'fetching_youtube' ? 'Lade offizielle Daten...' : 'Berechne Statistiken...'}</span>
                </div>
              ) : (
-                <>
-                  {apiKey && (
-                    <button 
-                      onClick={handleResetKey}
-                      className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border border-slate-700 hover:bg-slate-800 transition-colors text-slate-400"
-                      title="API Key ändern"
-                    >
-                        <Settings className="w-3 h-3" />
-                        <span>Configured</span>
-                    </button>
-                  )}
-                </>
+               <>
+                 {/* Theme Toggle */}
+                 {apiKey && (
+                   <button 
+                     onClick={handleResetKey}
+                     className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors 
+                                border-slate-300 text-slate-700 hover:bg-slate-100 
+                                dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800"
+                     title={t('actions.resetApiKey')}
+                   >
+                       <Settings className="w-3 h-3" />
+                       <span>{t('actions.resetApiKey')}</span>
+                   </button>
+                 )}
+               </>
              )}
-          </div>
-        </div>
-      </header>
+             {/* Always show toggle at the far right */}
+            <div className="flex items-center gap-2">
+              <LanguageSwitcher />
+              <ThemeToggle />
+            </div>
+         </div>
+       </div>
+     </header>
 
       <main className="max-w-[101.2rem] mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {activePage === 'dashboard' ? (
           <div className="animate-fade-in">
 
             {favorites.length === 0 ? (
-              <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-6 text-center text-slate-400">
+              <div className="bg-slate-50 border border-slate-200 text-slate-600 dark:bg-slate-900/50 dark:border-slate-800 rounded-xl p-6 text-center dark:text-slate-400">
                 Noch keine Favoriten. Lege im Analyser eine Suche als Favorit an.
               </div>
             ) : (
@@ -353,13 +366,15 @@ const App: React.FC = () => {
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-4">
                   {/* Sortier-Umschalter */}
                   <div className="flex items-center gap-2 text-xs font-medium">
-                    <span className="text-slate-400">Sortierung:</span>
-                    <div className="inline-flex items-center rounded-lg border border-slate-800 bg-slate-900/60 p-0.5">
+                    <span className="text-slate-600 dark:text-slate-400">Sortierung:</span>
+                    <div className="inline-flex items-center rounded-lg border border-slate-300 bg-white p-0.5 dark:border-slate-800 dark:bg-slate-900/60">
                       <button
                         type="button"
                         onClick={() => handleDashboardSortClick('alpha')}
                         className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors ${
-                          dashboardSortMode === 'alpha' ? 'bg-indigo-600 text-white' : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                          dashboardSortMode === 'alpha' 
+                            ? 'bg-indigo-600 text-white' 
+                            : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-800'
                         }`}
                         title="Alphabetisch sortieren (erneut klicken: Reihenfolge umkehren)"
                       >
@@ -369,7 +384,9 @@ const App: React.FC = () => {
                         type="button"
                         onClick={() => handleDashboardSortClick('velocity')}
                         className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors ${
-                          dashboardSortMode === 'velocity' ? 'bg-indigo-600 text-white' : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                          dashboardSortMode === 'velocity' 
+                            ? 'bg-indigo-600 text-white' 
+                            : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-800'
                         }`}
                         title="Nach Aktivität (Velocity = Aufrufe pro Stunde, bestes Video im Zeitraum) sortieren – erneut klicken: Reihenfolge umkehren"
                       >
@@ -383,10 +400,12 @@ const App: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setDashRefreshToken(t => t + 1)}
-                      className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-md border border-slate-700 text-slate-300 hover:bg-slate-800 transition-colors"
-                      title="Alle Kanäle aktualisieren"
+                      className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-md border transition-colors 
+                                 border-slate-300 text-slate-700 hover:bg-slate-100 
+                                 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                      title={t('actions.refreshAll')}
                     >
-                      <RefreshCw className="w-3 h-3" /> Alle aktualisieren
+                      <RefreshCw className="w-3 h-3" /> {t('actions.refreshAll')}
                     </button>
                   </div>
                 </div>

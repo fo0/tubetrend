@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Key, Check, HelpCircle, ExternalLink } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface ApiKeyModalProps {
   onSave: (key: string) => void;
@@ -8,6 +9,7 @@ interface ApiKeyModalProps {
 export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ onSave }) => {
   const [inputKey, setInputKey] = useState('');
   const [showHelp, setShowHelp] = useState(false);
+  const { t } = useTranslation();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,16 +26,14 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ onSave }) => {
             <div className="w-16 h-16 bg-red-600/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-500/20">
               <Key className="w-8 h-8 text-red-500" />
             </div>
-            <h2 className="text-2xl font-bold text-white">YouTube API Zugang</h2>
-            <p className="text-slate-400">
-              Damit die App offizielle, echte Daten direkt von YouTube laden kann, benötigst du einen kostenlosen API Key.
-            </p>
+            <h2 className="text-2xl font-bold text-white">{t('modal.apiKey.title')}</h2>
+            <p className="text-slate-400">{t('modal.apiKey.description')}</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="apiKey" className="block text-sm font-medium text-slate-300 mb-2">
-                Dein YouTube Data API v3 Key
+                YouTube Data API v3 Key
               </label>
               <input
                 type="text"
@@ -52,7 +52,7 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ onSave }) => {
               className="w-full py-3 px-4 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 text-white font-bold rounded-xl transition-all shadow-lg shadow-red-900/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Check className="w-5 h-5" />
-              Speichern & Starten
+              {t('modal.apiKey.save')}
             </button>
           </form>
 

@@ -6,13 +6,16 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite build && vite preview"
   },
   "dependencies": {
     "react-dom": "^19.2.0",
     "@google/genai": "^1.30.0",
     "lucide-react": "^0.554.0",
-    "react": "^19.2.0"
+    "react": "^19.2.0",
+    "i18next": "^23.15.1",
+    "react-i18next": "^15.5.2",
+    "i18next-browser-languagedetector": "^7.2.1"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
