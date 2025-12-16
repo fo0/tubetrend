@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { TimeFrame, ChannelSuggestion } from '../types';
+import { TimeFrame, ChannelSuggestion, coerceTimeFrame } from '../types';
 import { TIME_FRAMES, MAX_RESULTS_OPTIONS } from '../constants';
 import { Search, Loader2, Link2, X, Youtube, ListFilter, History, Star } from 'lucide-react';
 import { searchChannels, extractChannelIdentifier } from '../services/youtubeService';
@@ -43,8 +43,8 @@ export const InputSection: React.FC<InputSectionProps> = ({ onSearch, isLoading 
   useEffect(() => {
     try {
       const tf = localStorage.getItem('tt.search.timeframe');
-      if (tf && (Object.values(TimeFrame) as string[]).includes(tf)) {
-        setTimeFrame(tf as TimeFrame);
+      if (tf) {
+        setTimeFrame(coerceTimeFrame(tf));
       }
       const mr = localStorage.getItem('tt.search.maxResults');
       if (mr) {
@@ -311,7 +311,7 @@ export const InputSection: React.FC<InputSectionProps> = ({ onSearch, isLoading 
                         </div>
                         <div className="min-w-0">
                           <p className="text-slate-700 dark:text-slate-200 font-medium truncate group-hover/item:text-indigo-500 dark:group-hover/item:text-indigo-400 transition-colors">{item}</p>
-                          <p className="text-xs text-slate-500 truncate">Zuletzt gesucht</p>
+                          <p className="text-xs text-slate-500 truncate">{t('history.recent')}</p>
                         </div>
                       </button>
                     </li>
@@ -326,7 +326,7 @@ export const InputSection: React.FC<InputSectionProps> = ({ onSearch, isLoading 
           {/* Timeframe Select */}
           <div className="w-full sm:w-48 space-y-2">
             <label htmlFor="timeframe" className="block text-xs font-semibold uppercase tracking-wider text-slate-500">
-              Zeitraum
+              {t('labels.timeFrame')}
             </label>
             <div className="relative">
               <select
@@ -338,7 +338,7 @@ export const InputSection: React.FC<InputSectionProps> = ({ onSearch, isLoading 
               >
                 {TIME_FRAMES.map((tf) => (
                   <option key={tf.value} value={tf.value}>
-                    {tf.label}
+                    {t(tf.labelKey)}
                   </option>
                 ))}
               </select>
@@ -351,7 +351,7 @@ export const InputSection: React.FC<InputSectionProps> = ({ onSearch, isLoading 
           {/* Max Results Select */}
           <div className="w-full sm:w-40 space-y-2">
             <label htmlFor="maxResults" className="block text-xs font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-1">
-              <ListFilter className="w-3 h-3" /> Max. Ergebnisse
+              <ListFilter className="w-3 h-3" /> {t('labels.maxResults')}
             </label>
             <div className="relative">
               <select
@@ -363,7 +363,7 @@ export const InputSection: React.FC<InputSectionProps> = ({ onSearch, isLoading 
               >
                 {MAX_RESULTS_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
-                    {opt.label}
+                    {t(opt.labelKey, opt.n ? { n: opt.n } : undefined)}
                   </option>
                 ))}
               </select>
@@ -402,10 +402,10 @@ export const InputSection: React.FC<InputSectionProps> = ({ onSearch, isLoading 
                 ? 'border-yellow-400/30 bg-yellow-500/10 text-yellow-500 dark:text-yellow-300'
                 : (justSaved ? 'border-green-500/30 bg-green-500/10 text-green-500 dark:text-green-300' : 'border-slate-300 dark:border-slate-700 bg-slate-100/50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800')
             }`}
-            title={isFavorite ? 'Bereits als Favorit gespeichert' : 'Als Favorit speichern'}
+            title={isFavorite ? t('favorites.alreadySaved') : t('favorites.saveTitle')}
           >
             <Star className={`w-5 h-5 ${isFavorite ? 'fill-current' : ''}`} />
-            <span>{isFavorite ? 'Favorit' : (justSaved ? 'Gespeichert' : 'Als Favorit')}</span>
+            <span>{isFavorite ? t('favorites.favorite') : (justSaved ? t('favorites.saved') : t('favorites.saveButton'))}</span>
           </button>
         </div>
       </form>

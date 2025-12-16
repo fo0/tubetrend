@@ -1,4 +1,4 @@
-import { FavoriteCacheEntry, FavoriteConfig, TimeFrame, VideoData } from "../types";
+import { FavoriteCacheEntry, FavoriteConfig, TimeFrame, VideoData, coerceTimeFrame } from "../types";
 
 const FAVORITES_KEY = 'tt.favorites.v1';
 const FAVORITES_CACHE_KEY = 'tt.favorites.cache.v1';
@@ -34,7 +34,53 @@ const makeId = (query: string, timeFrame: TimeFrame, maxResults: number) => {
 
 export const favoritesService = {
   list(): FavoriteConfig[] {
-    return safeRead<FavoriteConfig[]>(FAVORITES_KEY, []).sort((a, b) => b.createdAt - a.createdAt);
+    const raw = safeRead<any[]>(FAVORITES_KEY, []);
+
+    let migrated = false;
+    const byId = new Map<string, FavoriteConfig>();
+
+    for (const item of raw) {
+      const query = typeof item?.query === 'string' ? item.query.trim() : '';
+      if (!query) {
+        migrated = true;
+        continue;
+      }
+      const timeFrame = coerceTimeFrame(item?.timeFrame);
+      const maxResults = typeof item?.maxResults === 'number'
+        ? item.maxResults
+        : (typeof item?.maxResults === 'string' ? parseInt(item.maxResults, 10) : 25);
+      const createdAt = typeof item?.createdAt === 'number' ? item.createdAt : Date.now();
+      const label = typeof item?.label === 'string' ? (item.label.trim() || undefined) : undefined;
+
+      const nextId = makeId(query, timeFrame, Number.isFinite(maxResults) ? maxResults : 25);
+      const next: FavoriteConfig = {
+        id: nextId,
+        query,
+        timeFrame,
+        maxResults: Number.isFinite(maxResults) ? maxResults : 25,
+        createdAt,
+        label,
+      };
+
+      if (item?.id !== nextId || item?.timeFrame !== timeFrame) migrated = true;
+
+      const existing = byId.get(nextId);
+      if (!existing || existing.createdAt < createdAt) {
+        byId.set(nextId, next);
+      } else {
+        migrated = true; // Duplikat entfernt
+      }
+    }
+
+    const list = Array.from(byId.values()).sort((a, b) => b.createdAt - a.createdAt);
+
+    // Wenn wir migriert haben, Cache verwerfen (IDs können sich geändert haben)
+    if (migrated || raw.length !== list.length) {
+      safeWrite(FAVORITES_KEY, list);
+      safeWrite(FAVORITES_CACHE_KEY, {});
+    }
+
+    return list;
   },
 
   /** Prüft, ob eine Favoriten-Konfiguration bereits existiert. */

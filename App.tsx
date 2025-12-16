@@ -359,14 +359,14 @@ const App: React.FC = () => {
 
             {favorites.length === 0 ? (
               <div className="bg-slate-50 border border-slate-200 text-slate-600 dark:bg-slate-900/50 dark:border-slate-800 rounded-xl p-6 text-center dark:text-slate-400">
-                Noch keine Favoriten. Lege im Analyser eine Suche als Favorit an.
+                {t('dashboard.noFavorites')}
               </div>
             ) : (
               <>
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-4">
                   {/* Sortier-Umschalter */}
                   <div className="flex items-center gap-2 text-xs font-medium">
-                    <span className="text-slate-600 dark:text-slate-400">Sortierung:</span>
+                    <span className="text-slate-600 dark:text-slate-400">{t('dashboard.sorting.label')}</span>
                     <div className="inline-flex items-center rounded-lg border border-slate-300 bg-white p-0.5 dark:border-slate-800 dark:bg-slate-900/60">
                       <button
                         type="button"
@@ -376,7 +376,7 @@ const App: React.FC = () => {
                             ? 'bg-indigo-600 text-white' 
                             : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-800'
                         }`}
-                        title="Alphabetisch sortieren (erneut klicken: Reihenfolge umkehren)"
+                        title={t('dashboard.sorting.alphaTitle')}
                       >
                         <span>{dashboardSortMode === 'alpha' ? (dashboardSortOrder === 'asc' ? 'A–Z' : 'Z–A') : 'A–Z'}</span>
                       </button>
@@ -388,10 +388,10 @@ const App: React.FC = () => {
                             ? 'bg-indigo-600 text-white' 
                             : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-800'
                         }`}
-                        title="Nach Aktivität (Velocity = Aufrufe pro Stunde, bestes Video im Zeitraum) sortieren – erneut klicken: Reihenfolge umkehren"
+                        title={t('dashboard.sorting.velocityTitle')}
                       >
                         <Activity className="w-3 h-3" />
-                        <span>Aktivität{dashboardSortMode === 'velocity' ? (dashboardSortOrder === 'desc' ? ' ↓' : ' ↑') : ''}</span>
+                        <span>{t('dashboard.sorting.activity')}{dashboardSortMode === 'velocity' ? (dashboardSortOrder === 'desc' ? ' ↓' : ' ↑') : ''}</span>
                       </button>
                     </div>
                   </div>
@@ -399,7 +399,7 @@ const App: React.FC = () => {
                   <div className="flex items-center justify-end">
                     <button
                       type="button"
-                      onClick={() => setDashRefreshToken(t => t + 1)}
+                      onClick={() => setDashRefreshToken(v => v + 1)}
                       className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-md border transition-colors 
                                  border-slate-300 text-slate-700 hover:bg-slate-100 
                                  dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
@@ -440,13 +440,13 @@ const App: React.FC = () => {
                 <div className="flex flex-col sm:flex-row justify-between items-center bg-slate-100/50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200 dark:border-slate-800 gap-4 backdrop-blur-sm">
                   <div className="flex items-center gap-2">
                     <h3 className="font-semibold text-slate-700 dark:text-slate-200">
-                      Ergebnisse für {channelUrl ? (
+                      {t('results.resultsFor')} {channelUrl ? (
                         <a
                           href={channelUrl}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-1.5 text-red-500 dark:text-red-400 hover:text-red-400 dark:hover:text-red-300 hover:underline underline-offset-2"
-                          title={`YouTube-Kanal öffnen: ${searchState.channelName}`}
+                          title={t('results.openChannelTitle', { channel: searchState.channelName })}
                         >
                           <Youtube className="w-4 h-4" aria-hidden="true" />
                           @{searchState.channelName}
@@ -459,13 +459,13 @@ const App: React.FC = () => {
                       )}
                     </h3>
                     <span className="bg-slate-200 dark:bg-slate-700 text-xs px-2 py-0.5 rounded-full text-slate-600 dark:text-slate-300 border border-slate-300 dark:border-slate-600">
-                      {sortedVideos.length} Videos
+                      {t('results.videosCount', { count: sortedVideos.length })}
                     </span>
                   </div>
                   
                   <div className="flex items-center gap-3 text-sm font-medium">
                     <span className="text-slate-500 dark:text-slate-400 whitespace-nowrap">
-                      Sortiert nach {sortMode === 'trend' ? 'Trend Score (Velocity)' : 'Views'}
+                      {t('results.sortedBy')} {sortMode === 'trend' ? t('results.sortModes.trend') : t('results.sortModes.views')}
                     </span>
                     {/* Sort Toggle */}
                     <div className="inline-flex items-center rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-100/60 dark:bg-slate-900/60 p-0.5">
@@ -477,10 +477,10 @@ const App: React.FC = () => {
                             ? 'bg-indigo-600 text-white'
                             : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800'
                         }`}
-                        title="Nach Trend Score sortieren"
+                        title={t('results.sortTitles.trend')}
                       >
                         <Trophy className="w-4 h-4" />
-                        <span>Trend Score</span>
+                        <span>{t('results.sortButtons.trendScore')}</span>
                       </button>
                       <button
                         type="button"
@@ -490,10 +490,10 @@ const App: React.FC = () => {
                             ? 'bg-indigo-600 text-white'
                             : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800'
                         }`}
-                        title="Nach Views sortieren"
+                        title={t('results.sortTitles.views')}
                       >
                         <Eye className="w-4 h-4" />
-                        <span>Views</span>
+                        <span>{t('results.sortButtons.views')}</span>
                       </button>
                     </div>
                     {/* Top N Toggle */}
@@ -506,7 +506,7 @@ const App: React.FC = () => {
                             ? 'bg-indigo-600 text-white'
                             : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800'
                         }`}
-                        title="Top 3 hervorheben"
+                        title={t('results.highlightTopN', { n: 3 })}
                       >
                         <span>Top 3</span>
                       </button>
@@ -518,7 +518,7 @@ const App: React.FC = () => {
                             ? 'bg-indigo-600 text-white'
                             : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800'
                         }`}
-                        title="Top 6 hervorheben"
+                        title={t('results.highlightTopN', { n: 6 })}
                       >
                         <span>Top 6</span>
                       </button>
@@ -531,7 +531,7 @@ const App: React.FC = () => {
                   <div className="flex items-center gap-2 mb-4 px-1">
                     <Trophy className="w-5 h-5 text-yellow-500" />
                     <h3 className="text-lg font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wide">
-                      Top {topN} Performance
+                      {t('results.topPerformance', { n: topN })}
                     </h3>
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3">
@@ -547,7 +547,7 @@ const App: React.FC = () => {
                     <div className="flex items-center gap-2 mb-4 px-1 mt-8">
                       <List className="w-5 h-5 text-slate-500 dark:text-slate-400" />
                       <h3 className="text-lg font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wide">
-                        Weitere Videos
+                        {t('results.moreVideos')}
                       </h3>
                     </div>
                     <VideoListTable videos={otherVideos} startIndex={topN + 1} />
