@@ -23,7 +23,7 @@ export const InputSection: React.FC<InputSectionProps> = ({ onSearch, isLoading 
   const { t } = useTranslation();
   const [inputValue, setInputValue] = useState<string>(DEFAULT_SEARCH_INPUT);
   const [timeFrame, setTimeFrame] = useState<TimeFrame>(TimeFrame.LAST_24_HOURS);
-  const [maxResults, setMaxResults] = useState<number>(25);
+  const [maxResults, setMaxResults] = useState<number>(1000);
   
   // Autocomplete State
   const [suggestions, setSuggestions] = useState<ChannelSuggestion[]>([]);

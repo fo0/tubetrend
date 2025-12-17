@@ -60,16 +60,16 @@ export const favoritesService = {
       const timeFrame = coerceTimeFrame(item?.timeFrame);
       const maxResults = typeof item?.maxResults === 'number'
         ? item.maxResults
-        : (typeof item?.maxResults === 'string' ? parseInt(item.maxResults, 10) : 25);
+        : (typeof item?.maxResults === 'string' ? parseInt(item.maxResults, 10) : 1000);
       const createdAt = typeof item?.createdAt === 'number' ? item.createdAt : Date.now();
       const label = typeof item?.label === 'string' ? (item.label.trim() || undefined) : undefined;
 
-      const nextId = makeId(query, timeFrame, Number.isFinite(maxResults) ? maxResults : 25);
+      const nextId = makeId(query, timeFrame, Number.isFinite(maxResults) ? maxResults : 1000);
       const next: FavoriteConfig = {
         id: nextId,
         query,
         timeFrame,
-        maxResults: Number.isFinite(maxResults) ? maxResults : 25,
+        maxResults: Number.isFinite(maxResults) ? maxResults : 1000,
         createdAt,
         label,
       };
