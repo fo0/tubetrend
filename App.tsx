@@ -197,7 +197,7 @@ const App: React.FC = () => {
   // Sorting / Filter state
   const [sortMode, setSortMode] = useState<'trend' | 'views'>('trend');
   // Anzahl hervorgehobener Karten (Top N)
-  const [topN, setTopN] = useState<3 | 6>(3);
+  const [topN, setTopN] = useState<3 | 6>(6);
 
   // Simple Navigation (ohne Router): Dashboard | Analyser
   // Standardmäßig soll beim Betreten der Seite das Dashboard aktiv sein
