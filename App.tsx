@@ -272,6 +272,25 @@ const App: React.FC = () => {
     };
   }, []);
 
+  // Reagiere auf Favoriten-Änderungen (add/update/remove), damit IDs/Configs im Dashboard aktuell bleiben
+  useEffect(() => {
+    const handler = () => {
+      try {
+        setFavorites(favoritesService.list());
+      } catch {
+        // ignore storage errors
+      }
+    };
+    if (typeof window !== 'undefined') {
+      window.addEventListener('favorites-changed', handler as EventListener);
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('favorites-changed', handler as EventListener);
+      }
+    };
+  }, []);
+
   const handleRemoveFavorite = (id: string) => {
     favoritesService.remove(id);
     setFavorites(favoritesService.list());

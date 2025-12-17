@@ -125,7 +125,12 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, gl
             }, 0)
           : 0;
         if (!cancelled) setVideos(top6);
-        favoritesService.setCache(currentFavId, top6, { totalInTimeFrame, topVelocityVph });
+        favoritesService.setCache(currentFavId, top6, {
+          totalInTimeFrame,
+          topVelocityVph,
+          channelTitle: name,
+          channelId: id,
+        });
       } catch (e: any) {
         if (!cancelled) setError(e?.message || t('errors.favoriteLoad'));
       } finally {

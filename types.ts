@@ -130,5 +130,8 @@ export interface FavoriteCacheEntry {
     totalInTimeFrame?: number;
     // Bester Velocity-Wert (Aufrufe pro Stunde) über alle analysierten Videos des Kanals im gewählten Zeitraum
     topVelocityVph?: number;
+    // Optional: aktueller Kanalname/ID aus den Dashboard-Daten (ohne Extra-Fetch in Highlights)
+    channelTitle?: string;
+    channelId?: string;
   };
 }

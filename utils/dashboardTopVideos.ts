@@ -54,7 +54,7 @@ export function selectHighlightVideosFromFavorites(
     const vids = cache?.videos ?? [];
     if (!vids.length) continue;
 
-    const sourceLabel = (fav.label || fav.query || '').toString() || '—';
+    const sourceLabel = (cache?.meta?.channelTitle || fav.label || fav.query || '').toString() || '—';
 
     // Sortierung innerhalb eines Favoriten: primär nach Velocity (Views/Hour) absteigend,
     // damit "Top 1" tatsächlich das aktivste Video im Zeitraum ist.
