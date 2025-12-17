@@ -204,6 +204,8 @@ const App: React.FC = () => {
   const [activePage, setActivePage] = useState<'dashboard' | 'analyser'>('dashboard');
   const [favorites, setFavorites] = useState<FavoriteConfig[]>([]);
   const [dashRefreshToken, setDashRefreshToken] = useState<number>(0);
+  // IDs der Favoriten, die aktuell geladen/aktualisiert werden
+  const [refreshingIds, setRefreshingIds] = useState<Set<string>>(new Set());
 
   // Dashboard: Sortiermodus (persistiert im Browser)
   type DashboardSortMode = 'alpha' | 'velocity';
@@ -287,6 +289,49 @@ const App: React.FC = () => {
     return () => {
       if (typeof window !== 'undefined') {
         window.removeEventListener('favorites-changed', handler as EventListener);
+      }
+    };
+  }, []);
+
+  // Global: Tracke Start/Ende einzelner Favoriten-Refreshes, um Highlights optisch abzudunkeln
+  useEffect(() => {
+    const onStart = (ev: Event) => {
+      try {
+        const e = ev as CustomEvent;
+        const id = e?.detail?.id as string | undefined;
+        if (!id) return;
+        setRefreshingIds(prev => {
+          const next = new Set(prev);
+          next.add(id);
+          return next;
+        });
+      } catch {
+        // ignore
+      }
+    };
+    const onEnd = (ev: Event) => {
+      try {
+        const e = ev as CustomEvent;
+        const id = e?.detail?.id as string | undefined;
+        if (!id) return;
+        setRefreshingIds(prev => {
+          const next = new Set(prev);
+          next.delete(id);
+          return next;
+        });
+      } catch {
+        // ignore
+      }
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('favorite-refresh-start', onStart as EventListener);
+      window.addEventListener('favorite-refresh-end', onEnd as EventListener);
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('favorite-refresh-start', onStart as EventListener);
+        window.removeEventListener('favorite-refresh-end', onEnd as EventListener);
       }
     };
   }, []);
@@ -501,6 +546,7 @@ const App: React.FC = () => {
                       highlightRank={idx + 1}
                       sourceLabel={item.sourceLabel}
                       sourceRank={item.sourceRank}
+                      isRefreshing={refreshingIds.has(item.sourceId)}
                     />
                   ))}
                 </div>

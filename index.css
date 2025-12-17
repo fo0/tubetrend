@@ -41,12 +41,10 @@ body, .theme-surface {
 
 /* Fresh (<24h) video highlight border for dashboard cards */
 .fresh-green-border {
-  /* Subtle but visible green outline */
-  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.9); /* green-500 */
-  border-color: #22c55e !important; /* ensure border itself appears green */
+  /* Dezent: dünner, etwas stärker sichtbarer Ring ohne Border-Farbänderung */
+  box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.50);
 }
 
 .dark .fresh-green-border {
-  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.85);
-  border-color: #22c55e !important;
+  box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.60);
 }

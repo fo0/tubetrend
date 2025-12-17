@@ -7,6 +7,8 @@ interface HighlightVideoCardProps {
   highlightRank: number;
   sourceLabel: string;
   sourceRank: number;
+  // Wenn true, wird die Karte visuell als "wird aktualisiert" markiert
+  isRefreshing?: boolean;
 }
 
 export const HighlightVideoCard: React.FC<HighlightVideoCardProps> = ({
@@ -14,6 +16,7 @@ export const HighlightVideoCard: React.FC<HighlightVideoCardProps> = ({
   highlightRank,
   sourceLabel,
   sourceRank,
+  isRefreshing = false,
 }) => {
   // Determine color based on score (gleiches Verhalten wie `VideoCard`)
   const getScoreColor = (score: number) => {
@@ -27,7 +30,10 @@ export const HighlightVideoCard: React.FC<HighlightVideoCardProps> = ({
     (Date.now() - video.publishedTimestamp) < 24 * 60 * 60 * 1000;
 
   return (
-    <div className={`bg-white border-slate-200 dark:bg-slate-800 rounded-xl overflow-hidden border dark:border-slate-700 shadow-lg hover:shadow-xl hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-300 group flex flex-col h-full relative ${isFresh ? 'fresh-green-border' : ''}`}>
+    <div
+      className={`bg-white border-slate-200 dark:bg-slate-800 rounded-xl overflow-hidden border dark:border-slate-700 shadow-lg hover:shadow-xl hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-300 group flex flex-col h-full relative ${isFresh ? 'fresh-green-border' : ''} ${isRefreshing ? 'opacity-60' : ''}`}
+      aria-busy={isRefreshing}
+    >
       {/* Thumbnail Area */}
       <div className="relative h-40 overflow-hidden bg-slate-100 dark:bg-slate-900">
         <a href={video.url} target="_blank" rel="noopener noreferrer" className="block w-full h-full cursor-pointer">
@@ -95,6 +101,9 @@ export const HighlightVideoCard: React.FC<HighlightVideoCardProps> = ({
           </div>
         </div>
       </div>
+      {isRefreshing && (
+        <div className="absolute inset-0 bg-slate-200/40 dark:bg-slate-700/30 pointer-events-none" />
+      )}
     </div>
   );
 };

@@ -109,6 +109,16 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, gl
       }
 
       setLoading(true);
+      // Globales Event: Start des Refresh für diesen Favoriten
+      let dispatchedStart = false;
+      try {
+        if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
+          window.dispatchEvent(new CustomEvent('favorite-refresh-start', { detail: { id: currentFavId } }));
+          dispatchedStart = true;
+        }
+      } catch {
+        // ignore
+      }
       try {
         const { id, name, uploadsPlaylistId } = await findChannelInfo(favorite.query);
         if (!cancelled) setChannelTitle(name);
@@ -135,6 +145,14 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, gl
         if (!cancelled) setError(e?.message || t('errors.favoriteLoad'));
       } finally {
         if (!cancelled) setLoading(false);
+        // Globales Event: Ende des Refresh für diesen Favoriten (nur senden, wenn Start gesendet wurde)
+        try {
+          if (dispatchedStart && typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
+            window.dispatchEvent(new CustomEvent('favorite-refresh-end', { detail: { id: currentFavId } }));
+          }
+        } catch {
+          // ignore
+        }
       }
     };
     load();
