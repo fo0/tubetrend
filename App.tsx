@@ -477,136 +477,143 @@ const App: React.FC = () => {
         {activePage === 'dashboard' ? (
           <div className="animate-fade-in">
 
+            {favorites.length > 0 && highlightVideos.length > 0 && (
+              <section className="mb-6 rounded-2xl border border-indigo-200/70 bg-indigo-50/40 p-4 shadow-sm dark:border-indigo-500/20 dark:bg-indigo-500/10">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-3">
+                  <div>
+                    <div className="text-xs font-extrabold uppercase tracking-wide text-indigo-700 dark:text-indigo-300">
+                      {t('dashboard.highlights.title')}
+                    </div>
+                    <div className="text-sm text-slate-600 dark:text-slate-400">
+                      {t('dashboard.highlights.subtitle')}
+                    </div>
+                  </div>
+                  <div className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                    {t('dashboard.highlights.count', { count: highlightVideos.length })}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                  {highlightVideos.map((item, idx) => (
+                    <HighlightVideoCard
+                      key={`${item.video.id}:${item.sourceId}:${item.sourceRank}`}
+                      video={item.video}
+                      highlightRank={idx + 1}
+                      sourceLabel={item.sourceLabel}
+                      sourceRank={item.sourceRank}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-4">
+              {/* Sortier-Umschalter */}
+              {favorites.length > 0 ? (
+                <div className="flex items-center gap-2 text-xs font-medium">
+                  <span className="text-slate-600 dark:text-slate-400">{t('dashboard.sorting.label')}</span>
+                  <div className="inline-flex items-center rounded-lg border border-slate-300 bg-white p-0.5 dark:border-slate-800 dark:bg-slate-900/60">
+                    <button
+                      type="button"
+                      onClick={() => handleDashboardSortClick('alpha')}
+                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors ${
+                        dashboardSortMode === 'alpha'
+                          ? 'bg-indigo-600 text-white'
+                          : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-800'
+                      }`}
+                      title={t('dashboard.sorting.alphaTitle')}
+                    >
+                      <span>{dashboardSortMode === 'alpha' ? (dashboardSortOrder === 'asc' ? 'A–Z' : 'Z–A') : 'A–Z'}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDashboardSortClick('velocity')}
+                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors ${
+                        dashboardSortMode === 'velocity'
+                          ? 'bg-indigo-600 text-white'
+                          : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-800'
+                      }`}
+                      title={t('dashboard.sorting.velocityTitle')}
+                    >
+                      <Activity className="w-3 h-3" />
+                      <span>{t('dashboard.sorting.activity')}{dashboardSortMode === 'velocity' ? (dashboardSortOrder === 'desc' ? ' ↓' : ' ↑') : ''}</span>
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div />
+              )}
+
+              <div className="flex items-center justify-end">
+                <input
+                  ref={dashboardImportRef}
+                  type="file"
+                  accept="application/json,.json"
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    // reset, damit gleicher File erneut gewählt werden kann
+                    e.target.value = '';
+                    if (!f) return;
+                    handleDashboardImportFile(f).catch(() => {
+                      try {
+                        window.alert(t('backup.importInvalid'));
+                      } catch {
+                        // ignore
+                      }
+                    });
+                  }}
+                />
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleDashboardImportPick}
+                    className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-md border transition-colors 
+                             border-slate-300 text-slate-700 hover:bg-slate-100 
+                             dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                    title={t('actions.importDashboard')}
+                  >
+                    <Upload className="w-3 h-3" /> {t('actions.importDashboard')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleDashboardExport}
+                    disabled={favorites.length === 0}
+                    className={`inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-md border transition-colors 
+                             border-slate-300 text-slate-700 hover:bg-slate-100 
+                             disabled:opacity-50 disabled:cursor-not-allowed
+                             dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800`}
+                    title={t('actions.exportDashboard')}
+                  >
+                    <Download className="w-3 h-3" /> {t('actions.exportDashboard')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDashRefreshToken(v => v + 1)}
+                    disabled={favorites.length === 0}
+                    className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-md border transition-colors 
+                             border-slate-300 text-slate-700 hover:bg-slate-100 
+                             disabled:opacity-50 disabled:cursor-not-allowed
+                             dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                    title={t('actions.refreshAll')}
+                  >
+                    <RefreshCw className="w-3 h-3" /> {t('actions.refreshAll')}
+                  </button>
+                </div>
+              </div>
+            </div>
+
             {favorites.length === 0 ? (
               <div className="bg-slate-50 border border-slate-200 text-slate-600 dark:bg-slate-900/50 dark:border-slate-800 rounded-xl p-6 text-center dark:text-slate-400">
                 {t('dashboard.noFavorites')}
               </div>
             ) : (
-              <>
-                {highlightVideos.length > 0 && (
-                  <section className="mb-6 rounded-2xl border border-indigo-200/70 bg-indigo-50/40 p-4 shadow-sm dark:border-indigo-500/20 dark:bg-indigo-500/10">
-                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-3">
-                      <div>
-                        <div className="text-xs font-extrabold uppercase tracking-wide text-indigo-700 dark:text-indigo-300">
-                          {t('dashboard.highlights.title')}
-                        </div>
-                        <div className="text-sm text-slate-600 dark:text-slate-400">
-                          {t('dashboard.highlights.subtitle')}
-                        </div>
-                      </div>
-                      <div className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                        {t('dashboard.highlights.count', { count: highlightVideos.length })}
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-                      {highlightVideos.map((item, idx) => (
-                        <HighlightVideoCard
-                          key={`${item.video.id}:${item.sourceId}:${item.sourceRank}`}
-                          video={item.video}
-                          highlightRank={idx + 1}
-                          sourceLabel={item.sourceLabel}
-                          sourceRank={item.sourceRank}
-                        />
-                      ))}
-                    </div>
-                  </section>
-                )}
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-4">
-                  {/* Sortier-Umschalter */}
-                  <div className="flex items-center gap-2 text-xs font-medium">
-                    <span className="text-slate-600 dark:text-slate-400">{t('dashboard.sorting.label')}</span>
-                    <div className="inline-flex items-center rounded-lg border border-slate-300 bg-white p-0.5 dark:border-slate-800 dark:bg-slate-900/60">
-                      <button
-                        type="button"
-                        onClick={() => handleDashboardSortClick('alpha')}
-                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors ${
-                          dashboardSortMode === 'alpha' 
-                            ? 'bg-indigo-600 text-white' 
-                            : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-800'
-                        }`}
-                        title={t('dashboard.sorting.alphaTitle')}
-                      >
-                        <span>{dashboardSortMode === 'alpha' ? (dashboardSortOrder === 'asc' ? 'A–Z' : 'Z–A') : 'A–Z'}</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleDashboardSortClick('velocity')}
-                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors ${
-                          dashboardSortMode === 'velocity' 
-                            ? 'bg-indigo-600 text-white' 
-                            : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-800'
-                        }`}
-                        title={t('dashboard.sorting.velocityTitle')}
-                      >
-                        <Activity className="w-3 h-3" />
-                        <span>{t('dashboard.sorting.activity')}{dashboardSortMode === 'velocity' ? (dashboardSortOrder === 'desc' ? ' ↓' : ' ↑') : ''}</span>
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-end">
-                    <input
-                      ref={dashboardImportRef}
-                      type="file"
-                      accept="application/json,.json"
-                      className="hidden"
-                      onChange={(e) => {
-                        const f = e.target.files?.[0];
-                        // reset, damit gleicher File erneut gewählt werden kann
-                        e.target.value = '';
-                        if (!f) return;
-                        handleDashboardImportFile(f).catch(() => {
-                          try {
-                            window.alert(t('backup.importInvalid'));
-                          } catch {
-                            // ignore
-                          }
-                        });
-                      }}
-                    />
-
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={handleDashboardImportPick}
-                        className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-md border transition-colors 
-                                 border-slate-300 text-slate-700 hover:bg-slate-100 
-                                 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
-                        title={t('actions.importDashboard')}
-                      >
-                        <Upload className="w-3 h-3" /> {t('actions.importDashboard')}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={handleDashboardExport}
-                        className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-md border transition-colors 
-                                 border-slate-300 text-slate-700 hover:bg-slate-100 
-                                 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
-                        title={t('actions.exportDashboard')}
-                      >
-                        <Download className="w-3 h-3" /> {t('actions.exportDashboard')}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setDashRefreshToken(v => v + 1)}
-                        className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-md border transition-colors 
-                                 border-slate-300 text-slate-700 hover:bg-slate-100 
-                                 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
-                        title={t('actions.refreshAll')}
-                      >
-                        <RefreshCw className="w-3 h-3" /> {t('actions.refreshAll')}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-10">
-                  {sortedFavorites.map(fav => (
-                    <FavoriteRow key={fav.id} favorite={fav} onRemove={handleRemoveFavorite} globalRefreshToken={dashRefreshToken} />
-                  ))}
-                </div>
-              </>
+              <div className="space-y-10">
+                {sortedFavorites.map(fav => (
+                  <FavoriteRow key={fav.id} favorite={fav} onRemove={handleRemoveFavorite} globalRefreshToken={dashRefreshToken} />
+                ))}
+              </div>
             )}
           </div>
         ) : (
