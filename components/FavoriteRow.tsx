@@ -375,9 +375,15 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, gl
 
       {!loading && !error && videos && (
         <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3">
-          {videos.map((video, idx) => (
-            <VideoCard key={video.id} video={video} rank={idx + 1} />
-          ))}
+          {videos.map((video, idx) => {
+            const isFresh = typeof video?.publishedTimestamp === 'number'
+              && (Date.now() - video.publishedTimestamp) < 24 * 60 * 60 * 1000;
+            return (
+              <div key={video.id} className={isFresh ? 'fresh-green-border rounded-xl' : ''}>
+                <VideoCard video={video} rank={idx + 1} />
+              </div>
+            );
+          })}
         </div>
       )}
     </section>

@@ -22,8 +22,12 @@ export const HighlightVideoCard: React.FC<HighlightVideoCardProps> = ({
     return 'text-slate-400 bg-slate-400/10 border-slate-400/20';
   };
 
+  // Frische Videos (jünger als 24h) mit grünem Rand hervorheben
+  const isFresh = typeof video?.publishedTimestamp === 'number' &&
+    (Date.now() - video.publishedTimestamp) < 24 * 60 * 60 * 1000;
+
   return (
-    <div className="bg-white border-slate-200 dark:bg-slate-800 rounded-xl overflow-hidden border dark:border-slate-700 shadow-lg hover:shadow-xl hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-300 group flex flex-col h-full relative">
+    <div className={`bg-white border-slate-200 dark:bg-slate-800 rounded-xl overflow-hidden border dark:border-slate-700 shadow-lg hover:shadow-xl hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-300 group flex flex-col h-full relative ${isFresh ? 'fresh-green-border' : ''}`}>
       {/* Thumbnail Area */}
       <div className="relative h-40 overflow-hidden bg-slate-100 dark:bg-slate-900">
         <a href={video.url} target="_blank" rel="noopener noreferrer" className="block w-full h-full cursor-pointer">
