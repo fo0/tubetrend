@@ -522,6 +522,27 @@ const App: React.FC = () => {
         {activePage === 'dashboard' ? (
           <div className="animate-fade-in">
 
+            {/* Hidden file input (mounted once) for dashboard import */}
+            <input
+              ref={dashboardImportRef}
+              type="file"
+              accept="application/json,.json"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                // reset, damit gleicher File erneut gewählt werden kann
+                e.target.value = '';
+                if (!f) return;
+                handleDashboardImportFile(f).catch(() => {
+                  try {
+                    window.alert(t('backup.importInvalid'));
+                  } catch {
+                    // ignore
+                  }
+                });
+              }}
+            />
+
             {favorites.length > 0 && highlightVideos.length > 0 && (
               <section className="mb-6 rounded-2xl border border-indigo-200/70 bg-indigo-50/40 p-4 shadow-sm dark:border-indigo-500/20 dark:bg-indigo-500/10">
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-3">
@@ -533,8 +554,48 @@ const App: React.FC = () => {
                       {t('dashboard.highlights.subtitle')}
                     </div>
                   </div>
-                  <div className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                    {t('dashboard.highlights.count', { count: highlightVideos.length })}
+                  {/* Right side: count + actions */}
+                  <div className="flex items-center justify-end gap-2">
+                    <div className="text-xs font-medium text-slate-500 dark:text-slate-400 mr-1">
+                      {t('dashboard.highlights.count', { count: highlightVideos.length })}
+                    </div>
+                    {/* Actions moved here: Import, Export, Refresh All */}
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={handleDashboardImportPick}
+                        className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-md border transition-colors 
+                                 border-slate-300 text-slate-700 hover:bg-slate-100 
+                                 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                        title={t('actions.importDashboard')}
+                      >
+                        <Upload className="w-3 h-3" /> {t('actions.importDashboard')}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleDashboardExport}
+                        disabled={favorites.length === 0}
+                        className={`inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-md border transition-colors 
+                                 border-slate-300 text-slate-700 hover:bg-slate-100 
+                                 disabled:opacity-50 disabled:cursor-not-allowed
+                                 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800`}
+                        title={t('actions.exportDashboard')}
+                      >
+                        <Download className="w-3 h-3" /> {t('actions.exportDashboard')}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setDashRefreshToken(v => v + 1)}
+                        disabled={favorites.length === 0}
+                        className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-md border transition-colors 
+                                 border-slate-300 text-slate-700 hover:bg-slate-100 
+                                 disabled:opacity-50 disabled:cursor-not-allowed
+                                 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                        title={t('actions.refreshAll')}
+                      >
+                        <RefreshCw className="w-3 h-3" /> {t('actions.refreshAll')}
+                      </button>
+                    </div>
                   </div>
                 </div>
 
@@ -591,62 +652,45 @@ const App: React.FC = () => {
               )}
 
               <div className="flex items-center justify-end">
-                <input
-                  ref={dashboardImportRef}
-                  type="file"
-                  accept="application/json,.json"
-                  className="hidden"
-                  onChange={(e) => {
-                    const f = e.target.files?.[0];
-                    // reset, damit gleicher File erneut gewählt werden kann
-                    e.target.value = '';
-                    if (!f) return;
-                    handleDashboardImportFile(f).catch(() => {
-                      try {
-                        window.alert(t('backup.importInvalid'));
-                      } catch {
-                        // ignore
-                      }
-                    });
-                  }}
-                />
-
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={handleDashboardImportPick}
-                    className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-md border transition-colors 
-                             border-slate-300 text-slate-700 hover:bg-slate-100 
-                             dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
-                    title={t('actions.importDashboard')}
-                  >
-                    <Upload className="w-3 h-3" /> {t('actions.importDashboard')}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleDashboardExport}
-                    disabled={favorites.length === 0}
-                    className={`inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-md border transition-colors 
-                             border-slate-300 text-slate-700 hover:bg-slate-100 
-                             disabled:opacity-50 disabled:cursor-not-allowed
-                             dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800`}
-                    title={t('actions.exportDashboard')}
-                  >
-                    <Download className="w-3 h-3" /> {t('actions.exportDashboard')}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setDashRefreshToken(v => v + 1)}
-                    disabled={favorites.length === 0}
-                    className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-md border transition-colors 
-                             border-slate-300 text-slate-700 hover:bg-slate-100 
-                             disabled:opacity-50 disabled:cursor-not-allowed
-                             dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
-                    title={t('actions.refreshAll')}
-                  >
-                    <RefreshCw className="w-3 h-3" /> {t('actions.refreshAll')}
-                  </button>
-                </div>
+                {/* Fallback actions toolbar when no highlights are visible */}
+                {!(favorites.length > 0 && highlightVideos.length > 0) && (
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handleDashboardImportPick}
+                      className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-md border transition-colors 
+                               border-slate-300 text-slate-700 hover:bg-slate-100 
+                               dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                      title={t('actions.importDashboard')}
+                    >
+                      <Upload className="w-3 h-3" /> {t('actions.importDashboard')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleDashboardExport}
+                      disabled={favorites.length === 0}
+                      className={`inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-md border transition-colors 
+                               border-slate-300 text-slate-700 hover:bg-slate-100 
+                               disabled:opacity-50 disabled:cursor-not-allowed
+                               dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800`}
+                      title={t('actions.exportDashboard')}
+                    >
+                      <Download className="w-3 h-3" /> {t('actions.exportDashboard')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDashRefreshToken(v => v + 1)}
+                      disabled={favorites.length === 0}
+                      className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-md border transition-colors 
+                               border-slate-300 text-slate-700 hover:bg-slate-100 
+                               disabled:opacity-50 disabled:cursor-not-allowed
+                               dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                      title={t('actions.refreshAll')}
+                    >
+                      <RefreshCw className="w-3 h-3" /> {t('actions.refreshAll')}
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
 
