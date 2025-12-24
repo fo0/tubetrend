@@ -97,6 +97,11 @@ const resources = {
           subtitle: 'Top videos across all favorites (click to open)',
           count_one: '{{count}} highlight',
           count_other: '{{count}} highlights',
+          hide: 'Hide this highlight',
+          hiddenCount_one: '{{count}} hidden',
+          hiddenCount_other: '{{count}} hidden',
+          showHidden: 'Show hidden',
+          clearHidden: 'Show all hidden',
         },
         sorting: {
           label: 'Sorting:',
@@ -261,6 +266,11 @@ const resources = {
           subtitle: 'Top-Videos aus allen Favoriten (klickbar)',
           count_one: '{{count}} Highlight',
           count_other: '{{count}} Highlights',
+          hide: 'Dieses Highlight ausblenden',
+          hiddenCount_one: '{{count}} ausgeblendet',
+          hiddenCount_other: '{{count}} ausgeblendet',
+          showHidden: 'Ausgeblendete anzeigen',
+          clearHidden: 'Alle wieder einblenden',
         },
         sorting: {
           label: 'Sortierung:',

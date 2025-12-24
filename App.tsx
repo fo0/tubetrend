@@ -10,8 +10,9 @@ import { findChannelInfo, getVideosFromChannel, setYoutubeApiKey, searchVideosBy
 import { TimeFrame, SearchState, FavoriteConfig, SearchType } from './types';
 import { favoritesService } from './services/favoritesService';
 import { dashboardBackupService } from './services/dashboardBackupService';
+import { hiddenHighlightsService } from './services/hiddenHighlightsService';
 import { selectHighlightVideosFromFavorites } from './utils/dashboardTopVideos';
-import { BarChart3, AlertCircle, Activity, Settings, Trophy, List, Eye, LayoutDashboard, RefreshCw, Youtube, Download, Upload } from 'lucide-react';
+import { BarChart3, AlertCircle, Activity, Settings, Trophy, List, Eye, EyeOff, LayoutDashboard, RefreshCw, Youtube, Download, Upload } from 'lucide-react';
 import { ThemeToggle } from './components/ThemeToggle';
 import { LanguageSwitcher } from './components/LanguageSwitcher';
 import { useTranslation } from 'react-i18next';
@@ -241,6 +242,8 @@ const App: React.FC = () => {
   });
   // Tick, um Re-Rendering zu erzwingen, wenn Cache aktualisiert wird (für Velocity-Sortierung)
   const [cacheTick, setCacheTick] = useState<number>(0);
+  // Tick, um Re-Rendering zu erzwingen, wenn ausgeblendete Highlights sich ändern
+  const [hiddenHighlightsTick, setHiddenHighlightsTick] = useState<number>(0);
 
   useEffect(() => {
     if (activePage === 'dashboard') {
@@ -283,6 +286,19 @@ const App: React.FC = () => {
     return () => {
       if (typeof window !== 'undefined') {
         window.removeEventListener('favorites-cache-updated', handler as EventListener);
+      }
+    };
+  }, []);
+
+  // Reagiere auf Änderungen bei ausgeblendeten Highlights
+  useEffect(() => {
+    const handler = () => setHiddenHighlightsTick(t => t + 1);
+    if (typeof window !== 'undefined') {
+      window.addEventListener('hidden-highlights-changed', handler as EventListener);
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('hidden-highlights-changed', handler as EventListener);
       }
     };
   }, []);
@@ -405,14 +421,14 @@ const App: React.FC = () => {
     });
   }, [favorites, dashboardSortMode, dashboardSortOrder, cacheTick]);
 
-  const highlightVideos = useMemo(() => {
+  const highlightVideosData = useMemo(() => {
     const raw = selectHighlightVideosFromFavorites(
       sortedFavorites,
       (id) => favoritesService.getCache(id),
       { perFavorite: 1, maxTotal: sortedFavorites.length }
     );
     // Highlights immer nach Aktivität (Velocity) sortieren
-    return [...raw].sort((a, b) => {
+    const sorted = [...raw].sort((a, b) => {
       const av = Number(a.video?.viewsPerHour);
       const bv = Number(b.video?.viewsPerHour);
       const aVph = Number.isFinite(av) ? av : -1;
@@ -423,7 +439,16 @@ const App: React.FC = () => {
       if (aTs !== bTs) return bTs - aTs;
       return a.sourceLabel.localeCompare(b.sourceLabel, 'de', { sensitivity: 'base' });
     });
-  }, [sortedFavorites, cacheTick]);
+    
+    // Filtere ausgeblendete Karten (prüft auch ob sich das Video geändert hat)
+    const visible = sorted.filter(item => !hiddenHighlightsService.isHidden(item.sourceId, item.video.id));
+    const hiddenCount = sorted.length - visible.length;
+    
+    return { all: sorted, visible, hiddenCount };
+  }, [sortedFavorites, cacheTick, hiddenHighlightsTick]);
+
+  const highlightVideos = highlightVideosData.visible;
+  const hiddenHighlightsCount = highlightVideosData.hiddenCount;
 
   const sortedVideos = useMemo(() => {
     if (!searchState.data) return [];
@@ -608,6 +633,19 @@ const App: React.FC = () => {
                       >
                         <RefreshCw className="w-3 h-3" /> {t('actions.refreshAll')}
                       </button>
+                      {/* Button zum Wiederherstellen ausgeblendeter Karten */}
+                      {hiddenHighlightsCount > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => hiddenHighlightsService.clearAll()}
+                          className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-md border transition-colors 
+                                   border-amber-300 text-amber-700 hover:bg-amber-50 
+                                   dark:border-amber-600/50 dark:text-amber-400 dark:hover:bg-amber-900/20"
+                          title={t('dashboard.highlights.clearHidden')}
+                        >
+                          <EyeOff className="w-3 h-3" /> {t('dashboard.highlights.hiddenCount', { count: hiddenHighlightsCount })}
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -620,7 +658,9 @@ const App: React.FC = () => {
                       highlightRank={idx + 1}
                       sourceLabel={item.sourceLabel}
                       sourceRank={item.sourceRank}
+                      sourceId={item.sourceId}
                       isRefreshing={refreshingIds.has(item.sourceId)}
+                      onHide={(sourceId, videoId) => hiddenHighlightsService.hide(sourceId, videoId)}
                     />
                   ))}
                 </div>

@@ -1,14 +1,18 @@
 import React from 'react';
 import { VideoData } from '../types';
-import { Clock, Eye, Sparkles, Zap } from 'lucide-react';
+import { Clock, Eye, EyeOff, Sparkles, Zap } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface HighlightVideoCardProps {
   video: VideoData;
   highlightRank: number;
   sourceLabel: string;
   sourceRank: number;
+  sourceId: string;
   // Wenn true, wird die Karte visuell als "wird aktualisiert" markiert
   isRefreshing?: boolean;
+  // Callback zum Ausblenden der Karte
+  onHide?: (sourceId: string, videoId: string) => void;
 }
 
 export const HighlightVideoCard: React.FC<HighlightVideoCardProps> = ({
@@ -16,8 +20,11 @@ export const HighlightVideoCard: React.FC<HighlightVideoCardProps> = ({
   highlightRank,
   sourceLabel,
   sourceRank,
+  sourceId,
   isRefreshing = false,
+  onHide,
 }) => {
+  const { t } = useTranslation();
   // Frische Videos (jünger als 24h) mit grünem Rand hervorheben
   const isFresh = typeof video?.publishedTimestamp === 'number' &&
     (Date.now() - video.publishedTimestamp) < 24 * 60 * 60 * 1000;
@@ -50,6 +57,23 @@ export const HighlightVideoCard: React.FC<HighlightVideoCardProps> = ({
           <Sparkles className="w-3 h-3" />
           #{highlightRank}
         </div>
+
+        {/* Ausblenden-Button */}
+        {onHide && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onHide(sourceId, video.id);
+            }}
+            className="absolute top-3 right-3 p-1.5 rounded-full bg-black/50 hover:bg-black/70 text-white/70 hover:text-white backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
+            title={t('dashboard.highlights.hide')}
+            aria-label={t('dashboard.highlights.hide')}
+          >
+            <EyeOff className="w-3.5 h-3.5" />
+          </button>
+        )}
       </div>
 
       {/* Content Area */}
