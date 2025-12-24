@@ -1,6 +1,6 @@
 import React from 'react';
 import { VideoData } from '../types';
-import { Clock, Eye, Sparkles, TrendingUp, Zap } from 'lucide-react';
+import { Clock, Eye, Sparkles, Zap } from 'lucide-react';
 
 interface HighlightVideoCardProps {
   video: VideoData;
@@ -18,13 +18,6 @@ export const HighlightVideoCard: React.FC<HighlightVideoCardProps> = ({
   sourceRank,
   isRefreshing = false,
 }) => {
-  // Determine color based on score (gleiches Verhalten wie `VideoCard`)
-  const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-red-400 bg-red-400/10 border-red-400/20 shadow-[0_0_15px_rgba(248,113,113,0.2)]';
-    if (score >= 50) return 'text-amber-400 bg-amber-400/10 border-amber-400/20';
-    return 'text-slate-400 bg-slate-400/10 border-slate-400/20';
-  };
-
   // Frische Videos (jünger als 24h) mit grünem Rand hervorheben
   const isFresh = typeof video?.publishedTimestamp === 'number' &&
     (Date.now() - video.publishedTimestamp) < 24 * 60 * 60 * 1000;
@@ -48,11 +41,6 @@ export const HighlightVideoCard: React.FC<HighlightVideoCardProps> = ({
         <div className="absolute bottom-3 left-3 bg-black/70 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded flex items-center gap-1 pointer-events-none">
           <Clock className="w-3 h-3 text-slate-300" />
           {video.uploadTime}
-        </div>
-
-        <div className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-bold border backdrop-blur-md flex items-center gap-1 pointer-events-none ${getScoreColor(video.trendingScore)}`}>
-          <TrendingUp className="w-3 h-3" />
-          Score: {video.trendingScore}
         </div>
 
         <div
