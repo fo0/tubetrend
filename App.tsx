@@ -6,8 +6,8 @@ import { EmptyState } from './components/EmptyState';
 import { ApiKeyModal } from './components/ApiKeyModal';
 import { FavoriteRow } from './components/FavoriteRow';
 import { analyzeVideoStats } from './services/geminiService';
-import { findChannelInfo, getVideosFromChannel, setYoutubeApiKey } from './services/youtubeService';
-import { TimeFrame, SearchState, FavoriteConfig } from './types';
+import { findChannelInfo, getVideosFromChannel, setYoutubeApiKey, searchVideosByKeyword } from './services/youtubeService';
+import { TimeFrame, SearchState, FavoriteConfig, SearchType } from './types';
 import { favoritesService } from './services/favoritesService';
 import { dashboardBackupService } from './services/dashboardBackupService';
 import { selectHighlightVideosFromFavorites } from './utils/dashboardTopVideos';
@@ -134,7 +134,7 @@ const App: React.FC = () => {
     window.alert(t('backup.importSuccess', { count }));
   };
 
-  const handleSearch = async (channel: string, timeFrame: TimeFrame, maxResults: number) => {
+  const handleSearch = async (query: string, timeFrame: TimeFrame, maxResults: number, searchType: SearchType = SearchType.CHANNEL) => {
     if (!apiKey) {
       setIsApiKeyModalOpen(true);
       return;
@@ -145,32 +145,45 @@ const App: React.FC = () => {
       isLoading: true, 
       step: 'fetching_youtube',
       error: null, 
-      channelName: channel,
+      channelName: query,
       channelId: undefined,
       data: null
     }));
     
     try {
-      // Step 1: Find Channel and Get Uploads Playlist
-      const { id: channelId, name: officialName, uploadsPlaylistId } = await findChannelInfo(channel);
-      
-      // Step 2: Get Videos from Playlist & Stats (passing limit)
-      const { videos: apiVideos } = await getVideosFromChannel(uploadsPlaylistId, timeFrame, maxResults);
+      let apiVideos: any[];
+      let displayName: string;
+      let channelId: string | undefined;
+
+      if (searchType === SearchType.KEYWORD) {
+        // Keyword-Suche: Videos direkt nach Schlagwort suchen
+        const { videos } = await searchVideosByKeyword(query, timeFrame, maxResults);
+        apiVideos = videos;
+        displayName = query; // Bei Keyword-Suche zeigen wir das Keyword als "Name"
+        channelId = undefined;
+      } else {
+        // Kanal-Suche: Erst Kanal finden, dann Videos aus Uploads-Playlist
+        const { id, name: officialName, uploadsPlaylistId } = await findChannelInfo(query);
+        const { videos } = await getVideosFromChannel(uploadsPlaylistId, timeFrame, maxResults);
+        apiVideos = videos;
+        displayName = officialName;
+        channelId = id;
+      }
 
       if (apiVideos.length === 0) {
         throw new Error(`Keine Videos im Zeitraum "${timeFrame}" gefunden.`);
       }
 
-      // Step 3: Calculate Stats (Pure Math, no AI API)
+      // Calculate Stats (Pure Math, no AI API)
       setSearchState(prev => ({ ...prev, step: 'analyzing_ai' }));
-      const analyzedVideos = await analyzeVideoStats(apiVideos, officialName, timeFrame);
+      const analyzedVideos = await analyzeVideoStats(apiVideos, displayName, timeFrame);
 
       setSearchState(prev => ({ 
         ...prev, 
         isLoading: false, 
         step: 'complete',
         data: analyzedVideos,
-        channelName: officialName,
+        channelName: displayName,
         channelId
       }));
 

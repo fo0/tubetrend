@@ -24,9 +24,16 @@ const resources = {
       },
       // Labels & inputs
       labels: {
+        search: 'Search',
         channelName: 'Channel name',
+        keyword: 'Keyword',
+        searchType: 'Search type',
         timeFrame: 'Time frame',
         maxResults: 'Max results',
+      },
+      searchType: {
+        channel: 'Channel',
+        keyword: 'Keyword',
       },
       history: {
         recent: 'Recently searched',
@@ -57,7 +64,9 @@ const resources = {
         topN: 'Top {{n}}',
       },
       input: {
+        searchPlaceholder: 'Channel name, @handle or #searchtext',
         channelPlaceholder: 'Enter channel name or @handle',
+        keywordPlaceholder: 'Enter search keyword (e.g. "React tutorial")',
       },
       maxResults: {
         all: 'All',
@@ -180,9 +189,16 @@ const resources = {
         exportDashboard: 'Exportieren',
       },
       labels: {
+        search: 'Suche',
         channelName: 'Kanalname',
+        keyword: 'Schlagwort',
+        searchType: 'Suchtyp',
         timeFrame: 'Zeitraum',
         maxResults: 'Max. Ergebnisse',
+      },
+      searchType: {
+        channel: 'Kanal',
+        keyword: 'Schlagwort',
       },
       history: {
         recent: 'Zuletzt gesucht',
@@ -212,7 +228,9 @@ const resources = {
         topN: 'Top {{n}}',
       },
       input: {
+        searchPlaceholder: 'Kanalname, @handle oder #suchtext',
         channelPlaceholder: 'Kanalnamen oder @handle eingeben',
+        keywordPlaceholder: 'Suchbegriff eingeben (z.B. "React Tutorial")',
       },
       maxResults: {
         all: 'Alle',

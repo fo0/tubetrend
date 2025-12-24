@@ -1,3 +1,8 @@
+export enum SearchType {
+  CHANNEL = 'channel',
+  KEYWORD = 'keyword'
+}
+
 export enum TimeFrame {
   LAST_HOUR = 'last_hour',
   LAST_3_HOURS = 'last_3_hours',
@@ -48,6 +53,12 @@ export function coerceTimeFrame(value: unknown, fallback: TimeFrame = TimeFrame.
   if (typeof value !== 'string') return fallback;
   if ((Object.values(TimeFrame) as string[]).includes(value)) return value as TimeFrame;
   return LEGACY_TIMEFRAME_MAP[value] ?? fallback;
+}
+
+export function coerceSearchType(value: unknown, fallback: SearchType = SearchType.CHANNEL): SearchType {
+  if (typeof value !== 'string') return fallback;
+  if ((Object.values(SearchType) as string[]).includes(value)) return value as SearchType;
+  return fallback;
 }
 
 export enum SortOption {
@@ -115,10 +126,11 @@ export interface ChannelSuggestion {
 
 // Favoriten: Konfiguration und Cachetypen
 export interface FavoriteConfig {
-  id: string; // stabiler Schlüssel aus query + timeframe + maxResults
-  query: string; // Kanal-Handle, ID oder Suchtext (wie im Analyser eingegeben)
+  id: string; // stabiler Schlüssel aus query + timeframe + maxResults + searchType
+  query: string; // Kanal-Handle, ID oder Suchtext/Keyword (wie im Analyser eingegeben)
   timeFrame: TimeFrame;
   maxResults: number; // 0 bedeutet „Alle (Kein Limit)“
+  searchType: SearchType; // 'channel' oder 'keyword'
   createdAt: number;
   label?: string; // optionaler Anzeigename
 }

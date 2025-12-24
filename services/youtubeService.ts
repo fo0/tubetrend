@@ -1,4 +1,4 @@
-import {ChannelSuggestion, TimeFrame, YouTubeVideoItem, ChannelVideosResult} from "../types";
+import {ChannelSuggestion, TimeFrame, YouTubeVideoItem, ChannelVideosResult, SearchType} from "../types";
 
 const STORAGE_KEY = 'yt_api_key';
 const CHANNEL_CACHE_KEY = 'yt_channel_cache';
@@ -329,6 +329,177 @@ export const getVideosFromChannel = async (uploadsPlaylistId: string, timeFrame:
           statistics: item.statistics
         };
       });
+
+      finalVideoItems = [...finalVideoItems, ...mapped];
+    }
+  }
+
+  // Am Ende nochmal strikt auf maxResults kürzen
+  if (maxResults > 0 && finalVideoItems.length > maxResults) {
+    finalVideoItems = finalVideoItems.slice(0, maxResults);
+  }
+
+  return { videos: finalVideoItems, totalInTimeFrame };
+};
+
+/**
+ * Helper: Berechnet den ISO-Zeitstempel für publishedAfter basierend auf TimeFrame
+ */
+const getPublishedAfterDate = (timeFrame: TimeFrame): string => {
+  const now = Date.now();
+  const monthsAgo = (n: number) => {
+    const d = new Date(now);
+    d.setMonth(d.getMonth() - n);
+    return d.toISOString();
+  };
+
+  let cutoffTime: number;
+
+  switch (timeFrame) {
+    case TimeFrame.LAST_HOUR:
+      cutoffTime = now - (60 * 60 * 1000);
+      break;
+    case TimeFrame.LAST_3_HOURS:
+      cutoffTime = now - (3 * 60 * 60 * 1000);
+      break;
+    case TimeFrame.LAST_5_HOURS:
+      cutoffTime = now - (5 * 60 * 60 * 1000);
+      break;
+    case TimeFrame.LAST_12_HOURS:
+      cutoffTime = now - (12 * 60 * 60 * 1000);
+      break;
+    case TimeFrame.LAST_24_HOURS:
+    case TimeFrame.TODAY:
+      cutoffTime = now - (24 * 60 * 60 * 1000);
+      break;
+    case TimeFrame.LAST_2_DAYS:
+      cutoffTime = now - (2 * 24 * 60 * 60 * 1000);
+      break;
+    case TimeFrame.LAST_3_DAYS:
+      cutoffTime = now - (3 * 24 * 60 * 60 * 1000);
+      break;
+    case TimeFrame.LAST_4_DAYS:
+      cutoffTime = now - (4 * 24 * 60 * 60 * 1000);
+      break;
+    case TimeFrame.LAST_5_DAYS:
+      cutoffTime = now - (5 * 24 * 60 * 60 * 1000);
+      break;
+    case TimeFrame.LAST_6_DAYS:
+      cutoffTime = now - (6 * 24 * 60 * 60 * 1000);
+      break;
+    case TimeFrame.LAST_WEEK:
+      cutoffTime = now - (7 * 24 * 60 * 60 * 1000);
+      break;
+    case TimeFrame.LAST_MONTH:
+      return monthsAgo(1);
+    case TimeFrame.LAST_2_MONTHS:
+      return monthsAgo(2);
+    case TimeFrame.LAST_3_MONTHS:
+      return monthsAgo(3);
+    case TimeFrame.LAST_4_MONTHS:
+      return monthsAgo(4);
+    case TimeFrame.LAST_5_MONTHS:
+      return monthsAgo(5);
+    case TimeFrame.LAST_6_MONTHS:
+      return monthsAgo(6);
+    default:
+      cutoffTime = now - (24 * 60 * 60 * 1000);
+  }
+
+  return new Date(cutoffTime).toISOString();
+};
+
+/**
+ * Keyword-Suche: Sucht Videos nach Schlagwort/Keyword
+ */
+export const searchVideosByKeyword = async (
+  keyword: string,
+  timeFrame: TimeFrame,
+  maxResults: number
+): Promise<ChannelVideosResult> => {
+  if (!keyword || keyword.trim().length === 0) {
+    return { videos: [], totalInTimeFrame: 0 };
+  }
+
+  const publishedAfter = getPublishedAfterDate(timeFrame);
+  
+  // YouTube Search API erlaubt maximal 50 Ergebnisse pro Seite
+  // Wir holen mehrere Seiten, wenn mehr Ergebnisse gewünscht sind
+  const effectiveMax = maxResults > 0 ? maxResults : 500; // Limit für "Alle"
+  let allVideoIds: string[] = [];
+  let nextPageToken = "";
+  const MAX_PAGES = Math.ceil(effectiveMax / 50);
+  let pageCount = 0;
+
+  while (pageCount < MAX_PAGES && allVideoIds.length < effectiveMax) {
+    const params: Record<string, string> = {
+      part: "snippet",
+      q: keyword.trim(),
+      type: "video",
+      order: "date", // Neueste zuerst
+      publishedAfter: publishedAfter,
+      maxResults: "50"
+    };
+
+    if (nextPageToken) params.pageToken = nextPageToken;
+
+    const searchData = await fetchFromApi("search", params);
+
+    if (!searchData.items || searchData.items.length === 0) {
+      break;
+    }
+
+    const videoIds = searchData.items.map((item: any) => item.id.videoId);
+    allVideoIds = [...allVideoIds, ...videoIds];
+
+    nextPageToken = searchData.nextPageToken;
+    if (!nextPageToken) break;
+
+    pageCount++;
+  }
+
+  if (allVideoIds.length === 0) {
+    return { videos: [], totalInTimeFrame: 0 };
+  }
+
+  // Auf maxResults begrenzen
+  if (maxResults > 0 && allVideoIds.length > maxResults) {
+    allVideoIds = allVideoIds.slice(0, maxResults);
+  }
+
+  const totalInTimeFrame = allVideoIds.length;
+  let finalVideoItems: YouTubeVideoItem[] = [];
+
+  // Batch processing für Video-Details und Statistiken
+  for (let i = 0; i < allVideoIds.length; i += 50) {
+    const batch = allVideoIds.slice(i, i + 50);
+    const videoIds = batch.join(",");
+
+    const videoData = await fetchFromApi("videos", {
+      part: "snippet,statistics,contentDetails",
+      id: videoIds
+    });
+
+    if (videoData.items) {
+      const mapped = videoData.items.filter((item: any) => {
+        // Shorts-Filter: Videos < 180 Sekunden ausschließen
+        const duration = item.contentDetails?.duration;
+        if (!duration) return true;
+
+        const match = duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
+        let seconds = 0;
+        if (match) {
+          const h = parseInt(match[1]?.replace('H', '') || '0');
+          const m = parseInt(match[2]?.replace('M', '') || '0');
+          const s = parseInt(match[3]?.replace('S', '') || '0');
+          seconds = h * 3600 + m * 60 + s;
+        }
+        return seconds >= 180;
+      }).map((item: any) => ({
+        id: item.id,
+        snippet: item.snippet,
+        statistics: item.statistics
+      }));
 
       finalVideoItems = [...finalVideoItems, ...mapped];
     }

@@ -1,4 +1,4 @@
-import { coerceTimeFrame, FavoriteCacheEntry, FavoriteConfig, TimeFrame } from "../types";
+import { coerceTimeFrame, coerceSearchType, FavoriteCacheEntry, FavoriteConfig, TimeFrame, SearchType } from "../types";
 
 const BACKUP_SCHEMA = "tt.dashboard.backup";
 const BACKUP_VERSION = 1 as const;
@@ -34,8 +34,8 @@ const safeReadJson = <T>(key: string, fallback: T): T => {
   }
 };
 
-const makeId = (query: string, timeFrame: TimeFrame, maxResults: number) => {
-  return `${query.trim().toLowerCase()}|${timeFrame}|${maxResults}`;
+const makeId = (query: string, timeFrame: TimeFrame, maxResults: number, searchType: SearchType = SearchType.CHANNEL) => {
+  return `${query.trim().toLowerCase()}|${timeFrame}|${maxResults}|${searchType}`;
 };
 
 const coerceSortMode = (value: unknown, fallback: DashboardSortMode = "alpha"): DashboardSortMode => {
@@ -60,13 +60,15 @@ const normalizeFavorites = (raw: any[]): { favorites: FavoriteConfig[]; idMap: M
       : (typeof item?.maxResults === "string" ? parseInt(item.maxResults, 10) : 1000);
     const createdAt = typeof item?.createdAt === "number" ? item.createdAt : Date.now();
     const label = typeof item?.label === "string" ? (item.label.trim() || undefined) : undefined;
+    const searchType = coerceSearchType(item?.searchType, SearchType.CHANNEL);
 
-    const nextId = makeId(query, timeFrame, Number.isFinite(maxResults) ? maxResults : 1000);
+    const nextId = makeId(query, timeFrame, Number.isFinite(maxResults) ? maxResults : 1000, searchType);
     const next: FavoriteConfig = {
       id: nextId,
       query,
       timeFrame,
       maxResults: Number.isFinite(maxResults) ? maxResults : 1000,
+      searchType,
       createdAt,
       label,
     };

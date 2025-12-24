@@ -1,4 +1,4 @@
-import { FavoriteCacheEntry, FavoriteConfig, TimeFrame, VideoData, coerceTimeFrame } from "../types";
+import { FavoriteCacheEntry, FavoriteConfig, TimeFrame, VideoData, coerceTimeFrame, SearchType, coerceSearchType } from "../types";
 
 const FAVORITES_KEY = 'tt.favorites.v1';
 const FAVORITES_CACHE_KEY = 'tt.favorites.cache.v1';
@@ -29,9 +29,9 @@ const safeWrite = (key: string, value: any) => {
   }
 };
 
-const makeId = (query: string, timeFrame: TimeFrame, maxResults: number) => {
+const makeId = (query: string, timeFrame: TimeFrame, maxResults: number, searchType: SearchType = SearchType.CHANNEL) => {
   // deterministischer Schlüssel zur einfachen Deduplizierung
-  return `${query.trim().toLowerCase()}|${timeFrame}|${maxResults}`;
+  return `${query.trim().toLowerCase()}|${timeFrame}|${maxResults}|${searchType}`;
 };
 
 const dispatchFavoritesChanged = () => {
@@ -63,18 +63,22 @@ export const favoritesService = {
         : (typeof item?.maxResults === 'string' ? parseInt(item.maxResults, 10) : 1000);
       const createdAt = typeof item?.createdAt === 'number' ? item.createdAt : Date.now();
       const label = typeof item?.label === 'string' ? (item.label.trim() || undefined) : undefined;
+      // Migration: Bestehende Favoriten ohne searchType bekommen Default CHANNEL
+      const searchType = coerceSearchType(item?.searchType, SearchType.CHANNEL);
 
-      const nextId = makeId(query, timeFrame, Number.isFinite(maxResults) ? maxResults : 1000);
+      const nextId = makeId(query, timeFrame, Number.isFinite(maxResults) ? maxResults : 1000, searchType);
       const next: FavoriteConfig = {
         id: nextId,
         query,
         timeFrame,
         maxResults: Number.isFinite(maxResults) ? maxResults : 1000,
+        searchType,
         createdAt,
         label,
       };
 
-      if (item?.id !== nextId || item?.timeFrame !== timeFrame) migrated = true;
+      // Migration-Check: auch wenn searchType fehlt oder ID sich geändert hat
+      if (item?.id !== nextId || item?.timeFrame !== timeFrame || !item?.searchType) migrated = true;
 
       const existing = byId.get(nextId);
       if (!existing || existing.createdAt < createdAt) {
@@ -96,20 +100,22 @@ export const favoritesService = {
   },
 
   /** Prüft, ob eine Favoriten-Konfiguration bereits existiert. */
-  exists(query: string, timeFrame: TimeFrame, maxResults: number): boolean {
-    const id = makeId(query, timeFrame, maxResults);
+  exists(query: string, timeFrame: TimeFrame, maxResults: number, searchType: SearchType = SearchType.CHANNEL): boolean {
+    const id = makeId(query, timeFrame, maxResults, searchType);
     const list = safeRead<FavoriteConfig[]>(FAVORITES_KEY, []);
     return list.some(f => f.id === id);
   },
 
-  add(input: { query: string; timeFrame: TimeFrame; maxResults: number; label?: string }): FavoriteConfig {
-    const id = makeId(input.query, input.timeFrame, input.maxResults);
+  add(input: { query: string; timeFrame: TimeFrame; maxResults: number; searchType?: SearchType; label?: string }): FavoriteConfig {
+    const searchType = input.searchType ?? SearchType.CHANNEL;
+    const id = makeId(input.query, input.timeFrame, input.maxResults, searchType);
     const now = Date.now();
     const next: FavoriteConfig = {
       id,
       query: input.query.trim(),
       timeFrame: input.timeFrame,
       maxResults: input.maxResults,
+      searchType,
       createdAt: now,
       label: input.label?.trim() || undefined,
     };
@@ -133,6 +139,7 @@ export const favoritesService = {
    * Aktualisiert einen bestehenden Favoriten. Darf timeFrame und/oder maxResults (und optional label) ändern.
    * Wenn sich durch die Änderung der zusammengesetzte Schlüssel (id) ändert, wird der Eintrag unter neuer id gespeichert
    * und der alte entfernt. Optional vorhandener Cache wird invalidiert.
+   * searchType bleibt unverändert.
    */
   update(id: string, patch: Partial<Pick<FavoriteConfig, 'timeFrame' | 'maxResults' | 'label'>>): FavoriteConfig | null {
     const list = this.list();
@@ -143,8 +150,10 @@ export const favoritesService = {
     const nextTimeFrame = patch.timeFrame ?? base.timeFrame;
     const nextMax = typeof patch.maxResults === 'number' ? patch.maxResults : base.maxResults;
     const nextLabel = patch.label !== undefined ? (patch.label?.trim() || undefined) : base.label;
+    // searchType bleibt unverändert
+    const searchType = base.searchType ?? SearchType.CHANNEL;
 
-    const newId = makeId(base.query, nextTimeFrame, nextMax);
+    const newId = makeId(base.query, nextTimeFrame, nextMax, searchType);
 
     // Wenn bereits ein Eintrag mit neuer id existiert, ersetzen wir diesen durch die aktualisierte Version (kein Duplikat)
     const existingIdx = list.findIndex(f => f.id === newId);
@@ -154,6 +163,7 @@ export const favoritesService = {
       query: base.query,
       timeFrame: nextTimeFrame,
       maxResults: nextMax,
+      searchType,
       createdAt: Date.now(),
       label: nextLabel
     };

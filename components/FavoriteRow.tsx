@@ -1,10 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { FavoriteConfig, TimeFrame, VideoData } from '../types';
+import { FavoriteConfig, TimeFrame, VideoData, SearchType } from '../types';
 import { favoritesService } from '../services/favoritesService';
 import { analyzeVideoStats } from '../services/geminiService';
-import { findChannelInfo, getVideosFromChannel } from '../services/youtubeService';
+import { findChannelInfo, getVideosFromChannel, searchVideosByKeyword } from '../services/youtubeService';
 import { VideoCard } from './VideoCard';
-import { AlertCircle, AlertTriangle, ChevronRight, Loader2, Trash2, RefreshCw, Youtube } from 'lucide-react';
+import { AlertCircle, AlertTriangle, ChevronRight, Loader2, Trash2, RefreshCw, Youtube, Hash } from 'lucide-react';
 import { MAX_RESULTS_OPTIONS, TIME_FRAMES } from '../constants';
 import { useTranslation } from 'react-i18next';
 
@@ -120,12 +120,35 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, gl
         // ignore
       }
       try {
-        const { id, name, uploadsPlaylistId } = await findChannelInfo(favorite.query);
-        if (!cancelled) setChannelTitle(name);
-        if (!cancelled) setChannelId(id);
-        const { videos: apiVideos, totalInTimeFrame } = await getVideosFromChannel(uploadsPlaylistId, currentTimeFrame as TimeFrame, currentMax);
+        let apiVideos: any[];
+        let displayName: string;
+        let fetchedChannelId: string | undefined;
+        let totalInTimeFrame: number;
+
+        const searchType = favorite.searchType ?? SearchType.CHANNEL;
+
+        if (searchType === SearchType.KEYWORD) {
+          // Keyword-Suche: Videos direkt nach Schlagwort suchen
+          const result = await searchVideosByKeyword(favorite.query, currentTimeFrame as TimeFrame, currentMax);
+          apiVideos = result.videos;
+          totalInTimeFrame = result.totalInTimeFrame;
+          displayName = favorite.query; // Bei Keyword-Suche zeigen wir das Keyword als "Name"
+          fetchedChannelId = undefined;
+        } else {
+          // Kanal-Suche: Erst Kanal finden, dann Videos aus Uploads-Playlist
+          const { id, name, uploadsPlaylistId } = await findChannelInfo(favorite.query);
+          const result = await getVideosFromChannel(uploadsPlaylistId, currentTimeFrame as TimeFrame, currentMax);
+          apiVideos = result.videos;
+          totalInTimeFrame = result.totalInTimeFrame;
+          displayName = name;
+          fetchedChannelId = id;
+        }
+
+        if (!cancelled) setChannelTitle(displayName);
+        if (!cancelled) setChannelId(fetchedChannelId ?? null);
         if (!cancelled) setTotalInTimeFrame(totalInTimeFrame);
-        const analyzed = await analyzeVideoStats(apiVideos, name, currentTimeFrame);
+
+        const analyzed = await analyzeVideoStats(apiVideos, displayName, currentTimeFrame);
         const top6 = analyzed.sort((a, b) => b.trendingScore - a.trendingScore).slice(0, 6);
         // Bestimme den höchsten Velocity‑Wert (Views pro Stunde) über alle analysierten Videos
         const topVelocityVph = analyzed.length > 0 
@@ -138,8 +161,8 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, gl
         favoritesService.setCache(currentFavId, top6, {
           totalInTimeFrame,
           topVelocityVph,
-          channelTitle: name,
-          channelId: id,
+          channelTitle: displayName,
+          channelId: fetchedChannelId,
         });
       } catch (e: any) {
         if (!cancelled) setError(e?.message || t('errors.favoriteLoad'));
@@ -160,11 +183,16 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, gl
     prevGlobalTokenRef.current = globalRefreshToken;
     prevLocalTokenRef.current = localRefreshToken;
     return () => { cancelled = true; };
-  }, [currentFavId, currentMax, favorite.query, currentTimeFrame, globalRefreshToken, localRefreshToken]);
+  }, [currentFavId, currentMax, favorite.query, favorite.searchType, currentTimeFrame, globalRefreshToken, localRefreshToken]);
 
   // Sicherstellen, dass der Kanal-Titel klickbar ist – auch wenn wir nur Cache-Daten nutzen.
   // Falls keine channelId vorhanden ist, laden wir einmalig die Kanal-Metadaten (ID/Name).
+  // Nur bei Channel-Suche relevant, nicht bei Keyword-Suche.
   useEffect(() => {
+    // Bei Keyword-Suche gibt es keinen Kanal
+    const searchType = favorite.searchType ?? SearchType.CHANNEL;
+    if (searchType === SearchType.KEYWORD) return;
+
     let cancelled = false;
     // Ohne API-Key kein Versuch, die Metadaten zu laden
     const hasKey = typeof window !== 'undefined' && !!localStorage.getItem('yt_api_key');
@@ -186,14 +214,21 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, gl
     return () => {
       cancelled = true;
     };
-  }, [favorite.query, channelId]);
+  }, [favorite.query, favorite.searchType, channelId]);
 
   const channelUrl = useMemo(() => {
+    // Bei Keyword-Suche gibt es keinen Kanal-Link
+    const searchType = favorite.searchType ?? SearchType.CHANNEL;
+    if (searchType === SearchType.KEYWORD) return null;
+    
     if (channelId) return `https://www.youtube.com/channel/${channelId}`;
     const q = (favorite.query || '').trim();
     if (q.startsWith('@')) return `https://www.youtube.com/${q}`;
     return null;
-  }, [channelId, favorite.query]);
+  }, [channelId, favorite.query, favorite.searchType]);
+
+  // Bestimme ob es eine Keyword-Suche ist
+  const isKeywordSearch = (favorite.searchType ?? SearchType.CHANNEL) === SearchType.KEYWORD;
 
   // Klick ausserhalb von Menüs schließt diese
   useEffect(() => {
@@ -250,7 +285,14 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, gl
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">
-            {channelUrl ? (
+            {isKeywordSearch ? (
+              // Keyword-Suche: Hash-Icon, kein Link
+              <span className="inline-flex items-center gap-1.5">
+                <Hash className="w-4 h-4 text-indigo-500" aria-hidden="true" />
+                {channelTitle}
+              </span>
+            ) : channelUrl ? (
+              // Kanal-Suche mit Link
               <a
                 href={channelUrl}
                 target="_blank"
@@ -262,6 +304,7 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, gl
                 {channelTitle}
               </a>
             ) : (
+              // Kanal-Suche ohne Link (noch kein channelId)
               <span className="inline-flex items-center gap-1.5">
                 <Youtube className="w-4 h-4 text-red-500" aria-hidden="true" />
                 {channelTitle}

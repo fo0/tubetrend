@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { TimeFrame, ChannelSuggestion, coerceTimeFrame } from '../types';
+import { TimeFrame, ChannelSuggestion, coerceTimeFrame, SearchType } from '../types';
 import { TIME_FRAMES, MAX_RESULTS_OPTIONS } from '../constants';
-import { Search, Loader2, Link2, X, Youtube, ListFilter, History, Star } from 'lucide-react';
+import { Loader2, Link2, X, Youtube, History, Star, Hash, Search, ListFilter } from 'lucide-react';
 import { searchChannels, extractChannelIdentifier } from '../services/youtubeService';
 import { favoritesService } from '../services/favoritesService';
 import { useTranslation } from 'react-i18next';
@@ -15,15 +15,37 @@ const DEFAULT_SEARCH_INPUT: string = (
 );
 
 interface InputSectionProps {
-  onSearch: (channel: string, timeFrame: TimeFrame, maxResults: number) => void;
+  onSearch: (query: string, timeFrame: TimeFrame, maxResults: number, searchType: SearchType) => void;
   isLoading: boolean;
 }
+
+// Hilfsfunktion: Ermittelt den SearchType aus dem Input-Präfix
+// # am Anfang = Keyword-Suche, sonst Kanal-Suche
+const detectSearchType = (input: string): SearchType => {
+  const trimmed = input.trim();
+  if (trimmed.startsWith('#')) {
+    return SearchType.KEYWORD;
+  }
+  return SearchType.CHANNEL;
+};
+
+// Hilfsfunktion: Entfernt das Präfix-Zeichen (#) vom Input
+const stripSearchPrefix = (input: string): string => {
+  const trimmed = input.trim();
+  if (trimmed.startsWith('#')) {
+    return trimmed.substring(1).trim();
+  }
+  return trimmed;
+};
 
 export const InputSection: React.FC<InputSectionProps> = ({ onSearch, isLoading }) => {
   const { t } = useTranslation();
   const [inputValue, setInputValue] = useState<string>(DEFAULT_SEARCH_INPUT);
-  const [timeFrame, setTimeFrame] = useState<TimeFrame>(TimeFrame.LAST_24_HOURS);
+  const [timeFrame, setTimeFrame] = useState<TimeFrame>(TimeFrame.LAST_MONTH);
   const [maxResults, setMaxResults] = useState<number>(1000);
+  
+  // SearchType wird dynamisch aus dem Input-Präfix ermittelt
+  const searchType = detectSearchType(inputValue);
   
   // Autocomplete State
   const [suggestions, setSuggestions] = useState<ChannelSuggestion[]>([]);
@@ -118,6 +140,14 @@ export const InputSection: React.FC<InputSectionProps> = ({ onSearch, isLoading 
     // Hide history once user starts typing
     if (val.length > 0) setShowHistory(false);
 
+    // Autocomplete nur bei Kanal-Suche (basierend auf neuem Wert)
+    const newSearchType = detectSearchType(val);
+    if (newSearchType !== SearchType.CHANNEL) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
     // If it looks like a URL, don't try to autocomplete
     if (val.includes('youtube.com') || val.includes('youtu.be')) {
       setSuggestions([]);
@@ -166,26 +196,34 @@ export const InputSection: React.FC<InputSectionProps> = ({ onSearch, isLoading 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (inputValue.trim()) {
-      // Extract clean identifier (handle or ID) from URL if present
-      const cleanIdentifier = extractChannelIdentifier(inputValue);
-      onSearch(cleanIdentifier, timeFrame, maxResults);
+      // Präfix entfernen und Query extrahieren
+      const strippedInput = stripSearchPrefix(inputValue);
+      // Bei Kanal-Suche: Extract clean identifier (handle or ID) from URL if present
+      // Bei Keyword-Suche: Direkt den Suchbegriff verwenden
+      const query = searchType === SearchType.CHANNEL 
+        ? extractChannelIdentifier(strippedInput) 
+        : strippedInput;
+      onSearch(query, timeFrame, maxResults, searchType);
       setShowSuggestions(false);
       setShowHistory(false);
-      // Save typed value to history (what the user entered)
+      // Save typed value to history (what the user entered, inkl. Präfix)
       addToHistory(inputValue);
     }
   };
 
   const handleSaveFavorite = () => {
     if (!inputValue.trim()) return;
-    const cleanIdentifier = extractChannelIdentifier(inputValue);
-    favoritesService.add({ query: cleanIdentifier, timeFrame, maxResults });
+    const strippedInput = stripSearchPrefix(inputValue);
+    const query = searchType === SearchType.CHANNEL 
+      ? extractChannelIdentifier(strippedInput) 
+      : strippedInput;
+    favoritesService.add({ query, timeFrame, maxResults, searchType });
     // kurzes visuelles Feedback
     setJustSaved(true);
     setTimeout(() => setJustSaved(false), 1500);
     // Status aktualisieren
     try {
-      const exists = favoritesService.exists(cleanIdentifier, timeFrame, maxResults);
+      const exists = favoritesService.exists(query, timeFrame, maxResults, searchType);
       setIsFavorite(exists);
     } catch {}
   };
@@ -195,7 +233,8 @@ export const InputSection: React.FC<InputSectionProps> = ({ onSearch, isLoading 
     if (inputValue.length === 0 && history.length > 0) {
       setShowHistory(true);
       setShowSuggestions(false);
-    } else if (inputValue.length >= 2 && !inputValue.includes('http')) {
+    } else if (searchType === SearchType.CHANNEL && inputValue.length >= 2 && !inputValue.includes('http')) {
+      // Autocomplete-Suggestions nur bei Kanal-Suche
       setShowSuggestions(true);
       setShowHistory(false);
     }
@@ -207,20 +246,23 @@ export const InputSection: React.FC<InputSectionProps> = ({ onSearch, isLoading 
     // Do not trigger search automatically; user can submit
   };
 
-  // Synchronisiere Favoriten-Status, wenn Eingabe/Zeitfenster/MaxErgebnisse sich ändern
+  // Synchronisiere Favoriten-Status, wenn Eingabe/Zeitfenster/MaxErgebnisse/SearchType sich ändern
   useEffect(() => {
-    const q = extractChannelIdentifier(inputValue || '');
+    const strippedInput = stripSearchPrefix(inputValue || '');
+    const q = searchType === SearchType.CHANNEL 
+      ? extractChannelIdentifier(strippedInput) 
+      : strippedInput;
     if (!q.trim()) {
       setIsFavorite(false);
       return;
     }
     try {
-      const exists = favoritesService.exists(q, timeFrame, maxResults);
+      const exists = favoritesService.exists(q, timeFrame, maxResults, searchType);
       setIsFavorite(exists);
     } catch {
       setIsFavorite(false);
     }
-  }, [inputValue, timeFrame, maxResults]);
+  }, [inputValue, timeFrame, maxResults, searchType]);
 
   return (
     <div className="w-full bg-slate-100/50 dark:bg-slate-900/50 backdrop-blur-xl rounded-2xl p-6 md:p-8 shadow-2xl border border-slate-200 dark:border-slate-800 mb-8 relative z-40 group" ref={wrapperRef}>
@@ -229,15 +271,17 @@ export const InputSection: React.FC<InputSectionProps> = ({ onSearch, isLoading 
       
       <form onSubmit={handleSubmit} className="flex flex-col xl:flex-row gap-5 items-end relative z-10">
         
-        {/* Channel Input with Autocomplete */}
+        {/* Search Input with Autocomplete (for Channel) or Keyword Search (with # prefix) */}
         <div className="flex-1 w-full space-y-2 relative">
-          <label htmlFor="channel" className="block text-xs font-semibold uppercase tracking-wider text-slate-500">
-            {t('labels.channelName')}
+          <label htmlFor="searchInput" className="block text-xs font-semibold uppercase tracking-wider text-slate-500">
+            {t('labels.search')}
           </label>
           <div className="relative group/input">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
               {inputValue.includes('http') ? (
                  <Link2 className="w-5 h-5 text-indigo-500 dark:text-indigo-400" />
+              ) : searchType === SearchType.KEYWORD ? (
+                 <Hash className="w-5 h-5 text-indigo-500 dark:text-indigo-400" />
               ) : (
                  <Youtube className="w-5 h-5 text-slate-400 dark:text-slate-500 group-focus-within/input:text-red-500 transition-colors" />
               )}
@@ -245,12 +289,12 @@ export const InputSection: React.FC<InputSectionProps> = ({ onSearch, isLoading 
             
             <input
               type="text"
-              id="channel"
+              id="searchInput"
               value={inputValue}
               onChange={handleInputChange}
               onFocus={handleFocus}
               className="block w-full pl-11 pr-10 py-4 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 transition-all shadow-inner text-lg"
-              placeholder={t('input.channelPlaceholder')}
+              placeholder={t('input.searchPlaceholder')}
               disabled={isLoading}
               autoComplete="off"
             />
