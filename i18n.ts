@@ -102,6 +102,11 @@ const resources = {
           hiddenCount_other: '{{count}} hidden',
           showHidden: 'Show hidden',
           clearHidden: 'Show all hidden',
+          hiddenButton: 'Hidden',
+          showHiddenList: 'Show hidden videos',
+          hiddenModalTitle: 'Hidden Videos',
+          noHiddenItems: 'No hidden videos.',
+          unhide: 'Show',
         },
         sorting: {
           label: 'Sorting:',
@@ -271,6 +276,11 @@ const resources = {
           hiddenCount_other: '{{count}} ausgeblendet',
           showHidden: 'Ausgeblendete anzeigen',
           clearHidden: 'Alle wieder einblenden',
+          hiddenButton: 'Ausgeblendet',
+          showHiddenList: 'Ausgeblendete Videos anzeigen',
+          hiddenModalTitle: 'Ausgeblendete Videos',
+          noHiddenItems: 'Keine ausgeblendeten Videos.',
+          unhide: 'Einblenden',
         },
         sorting: {
           label: 'Sortierung:',

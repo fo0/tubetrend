@@ -12,6 +12,10 @@ const HIDDEN_HIGHLIGHTS_CHANGED_EVENT = 'hidden-highlights-changed';
 export interface HiddenHighlight {
   sourceId: string;  // Favorit/Kanal-ID
   videoId: string;   // Video-ID zum Zeitpunkt des Ausblendens
+  hiddenAt: number;  // Zeitstempel wann ausgeblendet wurde (für chronologische Sortierung)
+  videoTitle?: string;  // Video-Titel für die Anzeige in der Liste
+  thumbnailUrl?: string;  // Thumbnail-URL für die Anzeige in der Liste
+  sourceLabel?: string;  // Kanal-/Favoritenname für die Anzeige in der Liste
 }
 
 const safeRead = <T>(key: string, fallback: T): T => {
@@ -48,32 +52,61 @@ const dispatchHiddenHighlightsChanged = () => {
 export const hiddenHighlightsService = {
   /**
    * Gibt alle ausgeblendeten Highlights zurück.
+   * Alte Einträge ohne hiddenAt bekommen einen Default-Zeitstempel.
    */
   list(): HiddenHighlight[] {
     const raw = safeRead<any[]>(HIDDEN_HIGHLIGHTS_KEY, []);
-    // Validierung: nur gültige Einträge behalten
-    return raw.filter(
-      (item): item is HiddenHighlight =>
-        typeof item?.sourceId === 'string' &&
-        typeof item?.videoId === 'string' &&
-        item.sourceId.length > 0 &&
-        item.videoId.length > 0
-    );
+    // Validierung: nur gültige Einträge behalten und alte Einträge migrieren
+    return raw
+      .filter(
+        (item) =>
+          typeof item?.sourceId === 'string' &&
+          typeof item?.videoId === 'string' &&
+          item.sourceId.length > 0 &&
+          item.videoId.length > 0
+      )
+      .map((item): HiddenHighlight => ({
+        sourceId: item.sourceId,
+        videoId: item.videoId,
+        hiddenAt: typeof item.hiddenAt === 'number' ? item.hiddenAt : 0,
+        videoTitle: typeof item.videoTitle === 'string' ? item.videoTitle : undefined,
+        thumbnailUrl: typeof item.thumbnailUrl === 'string' ? item.thumbnailUrl : undefined,
+        sourceLabel: typeof item.sourceLabel === 'string' ? item.sourceLabel : undefined,
+      }));
+  },
+
+  /**
+   * Gibt alle ausgeblendeten Highlights chronologisch sortiert zurück (neueste zuerst).
+   */
+  listChronological(): HiddenHighlight[] {
+    return this.list().sort((a, b) => b.hiddenAt - a.hiddenAt);
   },
 
   /**
    * Blendet eine Highlight-Karte aus.
    * Speichert die Kombination aus sourceId (Kanal) und videoId (aktuelles Video).
    */
-  hide(sourceId: string, videoId: string): void {
+  hide(sourceId: string, videoId: string, meta?: { videoTitle?: string; thumbnailUrl?: string; sourceLabel?: string }): void {
     const list = this.list();
+    const now = Date.now();
     // Prüfen ob bereits ausgeblendet (für diesen sourceId)
     const existingIdx = list.findIndex(h => h.sourceId === sourceId);
     if (existingIdx >= 0) {
-      // Aktualisiere die videoId (falls sich das Video geändert hat und erneut ausgeblendet wird)
+      // Aktualisiere die videoId und Metadaten (falls sich das Video geändert hat und erneut ausgeblendet wird)
       list[existingIdx].videoId = videoId;
+      list[existingIdx].hiddenAt = now;
+      if (meta?.videoTitle) list[existingIdx].videoTitle = meta.videoTitle;
+      if (meta?.thumbnailUrl) list[existingIdx].thumbnailUrl = meta.thumbnailUrl;
+      if (meta?.sourceLabel) list[existingIdx].sourceLabel = meta.sourceLabel;
     } else {
-      list.push({ sourceId, videoId });
+      list.push({
+        sourceId,
+        videoId,
+        hiddenAt: now,
+        videoTitle: meta?.videoTitle,
+        thumbnailUrl: meta?.thumbnailUrl,
+        sourceLabel: meta?.sourceLabel,
+      });
     }
     safeWrite(HIDDEN_HIGHLIGHTS_KEY, list);
     dispatchHiddenHighlightsChanged();

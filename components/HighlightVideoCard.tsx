@@ -11,8 +11,8 @@ interface HighlightVideoCardProps {
   sourceId: string;
   // Wenn true, wird die Karte visuell als "wird aktualisiert" markiert
   isRefreshing?: boolean;
-  // Callback zum Ausblenden der Karte
-  onHide?: (sourceId: string, videoId: string) => void;
+  // Callback zum Ausblenden der Karte (mit optionalen Metadaten für die Liste)
+  onHide?: (sourceId: string, videoId: string, meta: { videoTitle: string; thumbnailUrl: string; sourceLabel: string }) => void;
 }
 
 export const HighlightVideoCard: React.FC<HighlightVideoCardProps> = ({
@@ -65,7 +65,11 @@ export const HighlightVideoCard: React.FC<HighlightVideoCardProps> = ({
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              onHide(sourceId, video.id);
+              onHide(sourceId, video.id, {
+                videoTitle: video.title,
+                thumbnailUrl: video.thumbnailUrl,
+                sourceLabel,
+              });
             }}
             className="absolute top-1.5 right-1.5 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white/70 hover:text-white backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
             title={t('dashboard.highlights.hide')}

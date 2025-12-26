@@ -17,6 +17,7 @@ import { ThemeToggle } from './components/ThemeToggle';
 import { LanguageSwitcher } from './components/LanguageSwitcher';
 import { useTranslation } from 'react-i18next';
 import { HighlightVideoCard } from './components/HighlightVideoCard';
+import { HiddenHighlightsModal } from './components/HiddenHighlightsModal';
 
 const App: React.FC = () => {
   const { t } = useTranslation();
@@ -29,6 +30,7 @@ const App: React.FC = () => {
   });
   
   const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
+  const [isHiddenHighlightsModalOpen, setIsHiddenHighlightsModalOpen] = useState(false);
 
   const [searchState, setSearchState] = useState<SearchState>({
     isLoading: false,
@@ -481,6 +483,10 @@ const App: React.FC = () => {
     <div className="min-h-screen bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100 pb-20 font-sans selection:bg-indigo-500/30">
       
       {isApiKeyModalOpen && <ApiKeyModal onSave={handleSaveKey} />}
+      <HiddenHighlightsModal 
+        isOpen={isHiddenHighlightsModalOpen} 
+        onClose={() => setIsHiddenHighlightsModalOpen(false)} 
+      />
 
       {/* Header */}
       <header className="bg-white/80 border-b border-slate-200 dark:bg-slate-900/80 dark:border-slate-800 backdrop-blur-md sticky top-0 z-50">
@@ -633,17 +639,17 @@ const App: React.FC = () => {
                       >
                         <RefreshCw className="w-3 h-3" /> {t('actions.refreshAll')}
                       </button>
-                      {/* Button zum Wiederherstellen ausgeblendeter Karten */}
+                      {/* Button zum Anzeigen der ausgeblendeten Karten */}
                       {hiddenHighlightsCount > 0 && (
                         <button
                           type="button"
-                          onClick={() => hiddenHighlightsService.clearAll()}
+                          onClick={() => setIsHiddenHighlightsModalOpen(true)}
                           className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-md border transition-colors 
                                    border-amber-300 text-amber-700 hover:bg-amber-50 
                                    dark:border-amber-600/50 dark:text-amber-400 dark:hover:bg-amber-900/20"
-                          title={t('dashboard.highlights.clearHidden')}
+                          title={t('dashboard.highlights.showHiddenList')}
                         >
-                          <EyeOff className="w-3 h-3" /> {t('dashboard.highlights.hiddenCount', { count: hiddenHighlightsCount })}
+                          <EyeOff className="w-3 h-3" /> {t('dashboard.highlights.hiddenButton')}
                         </button>
                       )}
                     </div>
@@ -660,7 +666,7 @@ const App: React.FC = () => {
                       sourceRank={item.sourceRank}
                       sourceId={item.sourceId}
                       isRefreshing={refreshingIds.has(item.sourceId)}
-                      onHide={(sourceId, videoId) => hiddenHighlightsService.hide(sourceId, videoId)}
+                      onHide={(sourceId, videoId, meta) => hiddenHighlightsService.hide(sourceId, videoId, meta)}
                     />
                   ))}
                 </div>
