@@ -9,7 +9,6 @@
     "preview": "vite build && vite preview"
   },
   "dependencies": {
-    "@google/genai": "^1.30.0",
     "i18next": "^23.15.1",
     "i18next-browser-languagedetector": "^7.2.1",
     "lucide-react": "^0.554.0",

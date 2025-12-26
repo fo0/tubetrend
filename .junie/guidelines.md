@@ -153,7 +153,7 @@ This app stores multiple pieces of state in `localStorage`. When debugging “st
 
 #### “AI” service behavior
 
-`services/geminiService.ts` does **not** call an external AI API anymore (comment: “Logic is pure math”). Trend scoring is deterministic and based on view velocity normalization.
+`services/trendAnalysisService.ts` does **not** call an external AI API anymore (comment: “Logic is pure math”). Trend scoring is deterministic and based on view velocity normalization.
 
 #### TypeScript configuration quirks
 

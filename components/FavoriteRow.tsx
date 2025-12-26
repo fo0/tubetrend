@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { FavoriteConfig, TimeFrame, VideoData, SearchType } from '../types';
 import { favoritesService } from '../services/favoritesService';
-import { analyzeVideoStats } from '../services/geminiService';
+import { analyzeVideoStats } from '../services/trendAnalysisService';
 import { findChannelInfo, getVideosFromChannel, searchVideosByKeyword } from '../services/youtubeService';
 import { VideoCard } from './VideoCard';
 import { AlertCircle, AlertTriangle, ChevronRight, Loader2, Trash2, RefreshCw, Youtube, Hash } from 'lucide-react';

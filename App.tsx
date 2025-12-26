@@ -5,7 +5,7 @@ import { VideoListTable } from './components/VideoListTable';
 import { EmptyState } from './components/EmptyState';
 import { ApiKeyModal } from './components/ApiKeyModal';
 import { FavoriteRow } from './components/FavoriteRow';
-import { analyzeVideoStats } from './services/geminiService';
+import { analyzeVideoStats } from './services/trendAnalysisService';
 import { findChannelInfo, getVideosFromChannel, setYoutubeApiKey, searchVideosByKeyword } from './services/youtubeService';
 import { TimeFrame, SearchState, FavoriteConfig, SearchType } from './types';
 import { favoritesService } from './services/favoritesService';
