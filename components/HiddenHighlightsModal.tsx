@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Eye, Clock } from 'lucide-react';
+import { X, Eye, Clock, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { hiddenHighlightsService, HiddenHighlight } from '../services/hiddenHighlightsService';
 
@@ -21,6 +21,11 @@ export const HiddenHighlightsModal: React.FC<HiddenHighlightsModalProps> = ({ is
 
   const handleUnhide = (sourceId: string) => {
     hiddenHighlightsService.show(sourceId);
+    setHiddenItems(hiddenHighlightsService.listChronological());
+  };
+
+  const handleDelete = (sourceId: string) => {
+    hiddenHighlightsService.show(sourceId); // Entfernt den Eintrag aus der Liste
     setHiddenItems(hiddenHighlightsService.listChronological());
   };
 
@@ -103,19 +108,35 @@ export const HiddenHighlightsModal: React.FC<HiddenHighlightsModalProps> = ({ is
                     </div>
                   </div>
 
-                  {/* Unhide Button */}
-                  <button
-                    type="button"
-                    onClick={() => handleUnhide(item.sourceId)}
-                    className="flex-shrink-0 inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium
-                             bg-indigo-100 text-indigo-700 hover:bg-indigo-200
-                             dark:bg-indigo-900/30 dark:text-indigo-400 dark:hover:bg-indigo-900/50
-                             transition-colors"
-                    title={t('dashboard.highlights.unhide')}
-                  >
-                    <Eye className="w-4 h-4" />
-                    {t('dashboard.highlights.unhide')}
-                  </button>
+                  {/* Action Buttons */}
+                  <div className="flex-shrink-0 flex items-center gap-2">
+                    {/* Unhide Button */}
+                    <button
+                      type="button"
+                      onClick={() => handleUnhide(item.sourceId)}
+                      className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium
+                               bg-indigo-100 text-indigo-700 hover:bg-indigo-200
+                               dark:bg-indigo-900/30 dark:text-indigo-400 dark:hover:bg-indigo-900/50
+                               transition-colors"
+                      title={t('dashboard.highlights.unhide')}
+                    >
+                      <Eye className="w-4 h-4" />
+                      {t('dashboard.highlights.unhide')}
+                    </button>
+                    {/* Delete Button */}
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(item.sourceId)}
+                      className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium
+                               bg-red-100 text-red-700 hover:bg-red-200
+                               dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50
+                               transition-colors"
+                      title={t('dashboard.highlights.delete')}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      {t('dashboard.highlights.delete')}
+                    </button>
+                  </div>
                 </li>
               ))}
             </ul>

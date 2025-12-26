@@ -107,6 +107,7 @@ const resources = {
           hiddenModalTitle: 'Hidden Videos',
           noHiddenItems: 'No hidden videos.',
           unhide: 'Show',
+          delete: 'Delete',
         },
         sorting: {
           label: 'Sorting:',
@@ -281,6 +282,7 @@ const resources = {
           hiddenModalTitle: 'Ausgeblendete Videos',
           noHiddenItems: 'Keine ausgeblendeten Videos.',
           unhide: 'Einblenden',
+          delete: 'Löschen',
         },
         sorting: {
           label: 'Sortierung:',
