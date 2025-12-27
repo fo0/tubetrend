@@ -794,8 +794,8 @@ const App: React.FC = () => {
               </div>
             ) : (
               <div className="space-y-10">
-                {sortedFavorites.map(fav => (
-                  <FavoriteRow key={fav.id} favorite={fav} onRemove={handleRemoveFavorite} globalRefreshToken={dashRefreshToken} />
+                {sortedFavorites.map((fav, idx) => (
+                  <FavoriteRow key={fav.id} favorite={fav} onRemove={handleRemoveFavorite} globalRefreshToken={dashRefreshToken} staggerIndex={idx} />
                 ))}
               </div>
             )}

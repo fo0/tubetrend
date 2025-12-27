@@ -13,9 +13,14 @@ interface FavoriteRowProps {
   onRemove?: (id: string) => void;
   // Wird vom Dashboard erhöht, um alle Reihen neu zu laden
   globalRefreshToken?: number;
+  // Optimierung: Index für gestaffelten Refresh (verhindert gleichzeitige API-Calls)
+  staggerIndex?: number;
 }
 
-export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, globalRefreshToken = 0 }) => {
+// Optimierung: Gestaffelter Refresh - Delay zwischen den Favorites (in ms)
+const STAGGER_DELAY_MS = 300;
+
+export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, globalRefreshToken = 0, staggerIndex = 0 }) => {
   const { t } = useTranslation();
   const [videos, setVideos] = useState<VideoData[] | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -93,10 +98,23 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, gl
 
   useEffect(() => {
     let cancelled = false;
+    let staggerTimeout: ReturnType<typeof setTimeout> | null = null;
+
     const load = async () => {
       setError(null);
       // Entscheiden, ob wir Cache ignorieren sollen (erzwungener Refresh)
-      const forced = prevGlobalTokenRef.current !== globalRefreshToken || prevLocalTokenRef.current !== localRefreshToken;
+      const isGlobalRefresh = prevGlobalTokenRef.current !== globalRefreshToken;
+      const isLocalRefresh = prevLocalTokenRef.current !== localRefreshToken;
+      const forced = isGlobalRefresh || isLocalRefresh;
+
+      // Optimierung: Bei globalem Refresh gestaffelten Delay verwenden
+      // um nicht alle API-Calls gleichzeitig zu starten
+      if (isGlobalRefresh && staggerIndex > 0) {
+        await new Promise<void>(resolve => {
+          staggerTimeout = setTimeout(resolve, staggerIndex * STAGGER_DELAY_MS);
+        });
+        if (cancelled) return;
+      }
       // Cache verwenden, wenn frisch und kein erzwungener Refresh
       if (!forced) {
         const cachedOk = favoritesService.isCacheValid(currentFavId);
@@ -182,8 +200,11 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, gl
     // Gesehene Tokens aktualisieren
     prevGlobalTokenRef.current = globalRefreshToken;
     prevLocalTokenRef.current = localRefreshToken;
-    return () => { cancelled = true; };
-  }, [currentFavId, currentMax, favorite.query, favorite.searchType, currentTimeFrame, globalRefreshToken, localRefreshToken]);
+    return () => {
+      cancelled = true;
+      if (staggerTimeout) clearTimeout(staggerTimeout);
+    };
+  }, [currentFavId, currentMax, favorite.query, favorite.searchType, currentTimeFrame, globalRefreshToken, localRefreshToken, staggerIndex]);
 
   // Sicherstellen, dass der Kanal-Titel klickbar ist – auch wenn wir nur Cache-Daten nutzen.
   // Falls keine channelId vorhanden ist, laden wir einmalig die Kanal-Metadaten (ID/Name).
