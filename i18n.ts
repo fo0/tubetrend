@@ -108,6 +108,7 @@ const resources = {
           noHiddenItems: 'No hidden videos.',
           unhide: 'Show',
           delete: 'Delete',
+          empty: 'No highlights available yet. Highlights will appear once your favorites have loaded videos.',
         },
         sorting: {
           label: 'Sorting:',
@@ -283,6 +284,7 @@ const resources = {
           noHiddenItems: 'Keine ausgeblendeten Videos.',
           unhide: 'Einblenden',
           delete: 'Löschen',
+          empty: 'Noch keine Highlights verfügbar. Highlights erscheinen, sobald deine Favoriten Videos geladen haben.',
         },
         sorting: {
           label: 'Sortierung:',

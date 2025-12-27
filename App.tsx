@@ -587,7 +587,7 @@ const App: React.FC = () => {
               }}
             />
 
-            {favorites.length > 0 && highlightVideos.length > 0 && (
+            {favorites.length > 0 && (
               <section className="mb-6 rounded-2xl border border-indigo-200/70 bg-indigo-50/40 p-4 shadow-sm dark:border-indigo-500/20 dark:bg-indigo-500/10">
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-3">
                   <div>
@@ -600,9 +600,11 @@ const App: React.FC = () => {
                   </div>
                   {/* Right side: count + actions */}
                   <div className="flex items-center justify-end gap-2">
-                    <div className="text-xs font-medium text-slate-500 dark:text-slate-400 mr-1">
-                      {t('dashboard.highlights.count', { count: highlightVideos.length })}
-                    </div>
+                    {highlightVideos.length > 0 && (
+                      <div className="text-xs font-medium text-slate-500 dark:text-slate-400 mr-1">
+                        {t('dashboard.highlights.count', { count: highlightVideos.length })}
+                      </div>
+                    )}
                     {/* Actions moved here: Import, Export, Refresh All */}
                     <div className="flex items-center gap-2">
                       <button
@@ -656,20 +658,53 @@ const App: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-                  {highlightVideos.map((item, idx) => (
-                    <HighlightVideoCard
-                      key={`${item.video.id}:${item.sourceId}:${item.sourceRank}`}
-                      video={item.video}
-                      highlightRank={idx + 1}
-                      sourceLabel={item.sourceLabel}
-                      sourceRank={item.sourceRank}
-                      sourceId={item.sourceId}
-                      isRefreshing={refreshingIds.has(item.sourceId)}
-                      onHide={(sourceId, videoId, meta) => hiddenHighlightsService.hide(sourceId, videoId, meta)}
-                    />
-                  ))}
-                </div>
+                {highlightVideos.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                    {highlightVideos.map((item, idx) => (
+                      <HighlightVideoCard
+                        key={`${item.video.id}:${item.sourceId}:${item.sourceRank}`}
+                        video={item.video}
+                        highlightRank={idx + 1}
+                        sourceLabel={item.sourceLabel}
+                        sourceRank={item.sourceRank}
+                        sourceId={item.sourceId}
+                        isRefreshing={refreshingIds.has(item.sourceId)}
+                        onHide={(sourceId, videoId, meta) => hiddenHighlightsService.hide(sourceId, videoId, meta)}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  /* Skeleton/Placeholder when no highlights available */
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                    {[1, 2, 3, 4].map((i) => (
+                      <div
+                        key={i}
+                        className="bg-white/50 dark:bg-slate-800/50 rounded-xl overflow-hidden border border-slate-200/50 dark:border-slate-700/50 flex flex-col h-full"
+                      >
+                        {/* Skeleton Thumbnail */}
+                        <div className="h-40 bg-slate-200 dark:bg-slate-700" />
+                        {/* Skeleton Content */}
+                        <div className="p-4 flex flex-col flex-grow">
+                          <div className="mb-2">
+                            <div className="h-3 w-24 bg-slate-200 dark:bg-slate-700 rounded mb-2" />
+                            <div className="h-4 w-full bg-slate-200 dark:bg-slate-700 rounded mb-1" />
+                            <div className="h-4 w-3/4 bg-slate-200 dark:bg-slate-700 rounded" />
+                          </div>
+                          <div className="grid grid-cols-2 gap-2 mt-auto">
+                            <div className="h-14 bg-slate-100 dark:bg-slate-800 rounded-lg border border-slate-200/50 dark:border-slate-700/50" />
+                            <div className="h-14 bg-slate-100 dark:bg-slate-800 rounded-lg border border-slate-200/50 dark:border-slate-700/50" />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    {/* Empty state message overlay */}
+                    <div className="col-span-full flex items-center justify-center -mt-[200px] pointer-events-none">
+                      <div className="text-center text-slate-500 dark:text-slate-400 text-sm bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm px-4 py-2 rounded-lg">
+                        {t('dashboard.highlights.empty')}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </section>
             )}
 
@@ -711,8 +746,8 @@ const App: React.FC = () => {
               )}
 
               <div className="flex items-center justify-end">
-                {/* Fallback actions toolbar when no highlights are visible */}
-                {!(favorites.length > 0 && highlightVideos.length > 0) && (
+                {/* Fallback actions toolbar when no favorites exist (highlight section not shown) */}
+                {favorites.length === 0 && (
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
