@@ -2,6 +2,8 @@ import {ChannelSuggestion, TimeFrame, YouTubeVideoItem, ChannelVideosResult, Sea
 
 const STORAGE_KEY = 'yt_api_key';
 const CHANNEL_CACHE_KEY = 'yt_channel_cache';
+const AUTOCOMPLETE_CACHE_KEY = 'yt_autocomplete_cache';
+const AUTOCOMPLETE_CACHE_TTL = 5 * 60 * 1000; // 5 Minuten TTL
 
 // Helper to access channel cache
 const getChannelCache = (): Record<string, any> => {
@@ -19,6 +21,50 @@ const saveChannelToCache = (key: string, data: any) => {
     cache[key] = data;
     localStorage.setItem(CHANNEL_CACHE_KEY, JSON.stringify(cache));
   } catch (e) { console.warn("Cache save failed", e); }
+};
+
+// Autocomplete Cache mit TTL
+interface AutocompleteCacheEntry {
+  results: ChannelSuggestion[];
+  timestamp: number;
+}
+
+const getAutocompleteCache = (): Record<string, AutocompleteCacheEntry> => {
+  if (typeof window === 'undefined') return {};
+  try {
+    const item = localStorage.getItem(AUTOCOMPLETE_CACHE_KEY);
+    return item ? JSON.parse(item) : {};
+  } catch { return {}; }
+};
+
+const getAutocompleteFromCache = (query: string): ChannelSuggestion[] | null => {
+  const cache = getAutocompleteCache();
+  const entry = cache[query.toLowerCase()];
+  if (!entry) return null;
+
+  // Prüfe TTL
+  if (Date.now() - entry.timestamp > AUTOCOMPLETE_CACHE_TTL) {
+    return null; // Abgelaufen
+  }
+  return entry.results;
+};
+
+const saveAutocompleteToCache = (query: string, results: ChannelSuggestion[]) => {
+  if (typeof window === 'undefined') return;
+  try {
+    const cache = getAutocompleteCache();
+
+    // Alte Einträge bereinigen (älter als TTL)
+    const now = Date.now();
+    Object.keys(cache).forEach(key => {
+      if (now - cache[key].timestamp > AUTOCOMPLETE_CACHE_TTL) {
+        delete cache[key];
+      }
+    });
+
+    cache[query.toLowerCase()] = { results, timestamp: now };
+    localStorage.setItem(AUTOCOMPLETE_CACHE_KEY, JSON.stringify(cache));
+  } catch (e) { console.warn("Autocomplete cache save failed", e); }
 };
 
 // Load key immediately from storage if available
@@ -95,12 +141,19 @@ export const extractChannelIdentifier = (input: string): string => {
 
 /**
  * Autocomplete search for channels
+ * Optimierung: 5-Minuten Cache um wiederholte Suchen zu vermeiden (spart 100 Units pro Cache-Hit)
  */
 export const searchChannels = async (query: string): Promise<ChannelSuggestion[]> => {
   if (!query || query.length < 2) return [];
 
   // Don't autocomplete if we don't have a key yet to avoid errors
   if (!API_KEY) return [];
+
+  // Prüfe Cache zuerst
+  const cached = getAutocompleteFromCache(query);
+  if (cached) {
+    return cached;
+  }
 
   try {
     const data = await fetchFromApi("search", {
@@ -109,12 +162,17 @@ export const searchChannels = async (query: string): Promise<ChannelSuggestion[]
 
     if (!data.items) return [];
 
-    return data.items.map((item: any) => ({
+    const results = data.items.map((item: any) => ({
       id: item.snippet.channelId,
       title: item.snippet.channelTitle,
       thumbnailUrl: item.snippet.thumbnails?.default?.url || "",
       handle: item.snippet.customUrl
     }));
+
+    // Speichere im Cache
+    saveAutocompleteToCache(query, results);
+
+    return results;
   } catch (error) {
     console.warn("Autocomplete failed", error);
     return [];
@@ -293,11 +351,15 @@ export const getVideosFromChannel = async (uploadsPlaylistId: string, timeFrame:
   }
 
   const totalInTimeFrame = allVideos.length;
-  let finalVideoItems: YouTubeVideoItem[] = [];
 
-  // Batch processing for stats
+  // Optimierung: Parallele Batch-Abfragen für Video-Stats
+  // Statt sequentiell (langsam) werden alle Batches gleichzeitig abgefragt
+  const batches: any[][] = [];
   for (let i = 0; i < allVideos.length; i += 50) {
-    const batch = allVideos.slice(i, i + 50);
+    batches.push(allVideos.slice(i, i + 50));
+  }
+
+  const batchPromises = batches.map(async (batch) => {
     const videoIds = batch.map((item: any) => item.contentDetails.videoId).join(",");
 
     // Optimierung: 'snippet' entfernt, da wir es schon haben.
@@ -305,34 +367,35 @@ export const getVideosFromChannel = async (uploadsPlaylistId: string, timeFrame:
       part: "statistics,contentDetails", id: videoIds
     });
 
-    if (statsData.items) {
-      const mapped = statsData.items.filter((item: any) => {
-        const duration = item.contentDetails?.duration;
-        if (!duration) return true;
+    if (!statsData.items) return [];
 
-        const match = duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
-        let seconds = 0;
-        if (match) {
-          const h = parseInt(match[1]?.replace('H', '') || '0');
-          const m = parseInt(match[2]?.replace('M', '') || '0');
-          const s = parseInt(match[3]?.replace('S', '') || '0');
-          seconds = h * 3600 + m * 60 + s;
-        }
-        // Filter: Nur Videos behalten, die mindestens 180 Sekunden (3 Minuten) lang sind
-        return seconds >= 180; // Shorts-Filter (alles < 180s wird ausgeschlossen)
-      }).map((item: any) => {
-        // Snippet aus dem Batch wiederverwenden
-        const originalItem = batch.find((b: any) => b.contentDetails.videoId === item.id);
-        return {
-          id: item.id,
-          snippet: originalItem ? originalItem.snippet : {},
-          statistics: item.statistics
-        };
-      });
+    return statsData.items.filter((item: any) => {
+      const duration = item.contentDetails?.duration;
+      if (!duration) return true;
 
-      finalVideoItems = [...finalVideoItems, ...mapped];
-    }
-  }
+      const match = duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
+      let seconds = 0;
+      if (match) {
+        const h = parseInt(match[1]?.replace('H', '') || '0');
+        const m = parseInt(match[2]?.replace('M', '') || '0');
+        const s = parseInt(match[3]?.replace('S', '') || '0');
+        seconds = h * 3600 + m * 60 + s;
+      }
+      // Filter: Nur Videos behalten, die mindestens 180 Sekunden (3 Minuten) lang sind
+      return seconds >= 180; // Shorts-Filter (alles < 180s wird ausgeschlossen)
+    }).map((item: any) => {
+      // Snippet aus dem Batch wiederverwenden
+      const originalItem = batch.find((b: any) => b.contentDetails.videoId === item.id);
+      return {
+        id: item.id,
+        snippet: originalItem ? originalItem.snippet : {},
+        statistics: item.statistics
+      };
+    });
+  });
+
+  const batchResults = await Promise.all(batchPromises);
+  let finalVideoItems: YouTubeVideoItem[] = batchResults.flat();
 
   // Am Ende nochmal strikt auf maxResults kürzen
   if (maxResults > 0 && finalVideoItems.length > maxResults) {
@@ -462,17 +525,25 @@ export const searchVideosByKeyword = async (
     return { videos: [], totalInTimeFrame: 0 };
   }
 
+  // Optimierung: Deduplizierung - entferne doppelte Video-IDs vor der Stats-Abfrage
+  // Dies spart API-Calls wenn die Suche Duplikate zurückgibt
+  const uniqueVideoIds = [...new Set(allVideoIds)];
+  allVideoIds = uniqueVideoIds;
+
   // Auf maxResults begrenzen
   if (maxResults > 0 && allVideoIds.length > maxResults) {
     allVideoIds = allVideoIds.slice(0, maxResults);
   }
 
   const totalInTimeFrame = allVideoIds.length;
-  let finalVideoItems: YouTubeVideoItem[] = [];
 
-  // Batch processing für Video-Details und Statistiken
+  // Optimierung: Parallele Batch-Abfragen für Video-Details und Statistiken
+  const batches: string[][] = [];
   for (let i = 0; i < allVideoIds.length; i += 50) {
-    const batch = allVideoIds.slice(i, i + 50);
+    batches.push(allVideoIds.slice(i, i + 50));
+  }
+
+  const batchPromises = batches.map(async (batch) => {
     const videoIds = batch.join(",");
 
     const videoData = await fetchFromApi("videos", {
@@ -480,30 +551,31 @@ export const searchVideosByKeyword = async (
       id: videoIds
     });
 
-    if (videoData.items) {
-      const mapped = videoData.items.filter((item: any) => {
-        // Shorts-Filter: Videos < 180 Sekunden ausschließen
-        const duration = item.contentDetails?.duration;
-        if (!duration) return true;
+    if (!videoData.items) return [];
 
-        const match = duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
-        let seconds = 0;
-        if (match) {
-          const h = parseInt(match[1]?.replace('H', '') || '0');
-          const m = parseInt(match[2]?.replace('M', '') || '0');
-          const s = parseInt(match[3]?.replace('S', '') || '0');
-          seconds = h * 3600 + m * 60 + s;
-        }
-        return seconds >= 180;
-      }).map((item: any) => ({
-        id: item.id,
-        snippet: item.snippet,
-        statistics: item.statistics
-      }));
+    return videoData.items.filter((item: any) => {
+      // Shorts-Filter: Videos < 180 Sekunden ausschließen
+      const duration = item.contentDetails?.duration;
+      if (!duration) return true;
 
-      finalVideoItems = [...finalVideoItems, ...mapped];
-    }
-  }
+      const match = duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
+      let seconds = 0;
+      if (match) {
+        const h = parseInt(match[1]?.replace('H', '') || '0');
+        const m = parseInt(match[2]?.replace('M', '') || '0');
+        const s = parseInt(match[3]?.replace('S', '') || '0');
+        seconds = h * 3600 + m * 60 + s;
+      }
+      return seconds >= 180;
+    }).map((item: any) => ({
+      id: item.id,
+      snippet: item.snippet,
+      statistics: item.statistics
+    }));
+  });
+
+  const batchResults = await Promise.all(batchPromises);
+  let finalVideoItems: YouTubeVideoItem[] = batchResults.flat();
 
   // Am Ende nochmal strikt auf maxResults kürzen
   if (maxResults > 0 && finalVideoItems.length > maxResults) {
