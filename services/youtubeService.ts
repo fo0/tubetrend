@@ -280,6 +280,7 @@ export const findChannelInfo = async (channelName: string): Promise<{
   // Optimierung: Erkennung ob @handle oder Channel-ID (UC...) vorliegt
   // Bei @handle: Nutze channels?forHandle= (1 Unit statt 100 Units für search)
   // Bei UC...: Nutze channels?id= direkt (1 Unit statt 100 Units für search)
+  // Bei Fehler: Fallback auf Search API um Fuzzy-Matching zu ermöglichen
   const isHandle = query.startsWith('@');
   const isChannelId = query.startsWith('UC') && query.length >= 20;
 
@@ -296,20 +297,24 @@ export const findChannelInfo = async (channelName: string): Promise<{
       params.id = query;
     }
 
-    const channelData = await fetchFromApi("channels", params);
+    try {
+      const channelData = await fetchFromApi("channels", params);
 
-    if (!channelData.items || channelData.items.length === 0) {
-      throw new Error(`Kanal "${channelName}" nicht gefunden.`);
+      if (channelData.items && channelData.items.length > 0) {
+        channelId = channelData.items[0].id;
+        channelTitle = channelData.items[0].snippet.title;
+        const uploadsPlaylistId = channelData.items[0].contentDetails.relatedPlaylists.uploads;
+
+        const result = { id: channelId, name: channelTitle, uploadsPlaylistId };
+        saveChannelToCache(query.toLowerCase(), result);
+
+        return result;
+      }
+      // Kein Ergebnis → Fallback auf Search API (siehe unten)
+    } catch (e) {
+      // Bei Fehler (z.B. ungültiger Handle) → Fallback auf Search API
+      console.warn("Direct channel lookup failed, falling back to search:", e);
     }
-
-    channelId = channelData.items[0].id;
-    channelTitle = channelData.items[0].snippet.title;
-    const uploadsPlaylistId = channelData.items[0].contentDetails.relatedPlaylists.uploads;
-
-    const result = { id: channelId, name: channelTitle, uploadsPlaylistId };
-    saveChannelToCache(query.toLowerCase(), result);
-
-    return result;
   }
 
   // Fallback: Search API für Namen/URLs ohne @handle (100 Units)
