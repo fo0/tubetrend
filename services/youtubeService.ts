@@ -3,7 +3,83 @@ import {ChannelSuggestion, TimeFrame, YouTubeVideoItem, ChannelVideosResult, Sea
 const STORAGE_KEY = 'yt_api_key';
 const CHANNEL_CACHE_KEY = 'yt_channel_cache';
 const AUTOCOMPLETE_CACHE_KEY = 'yt_autocomplete_cache';
+const QUOTA_TRACKING_KEY = 'yt_quota_tracking';
 const AUTOCOMPLETE_CACHE_TTL = 5 * 60 * 1000; // 5 Minuten TTL
+const DEFAULT_DAILY_QUOTA = 10000; // YouTube API default quota
+
+// Quota tracking interface - dynamically adapts based on actual usage
+interface QuotaData {
+  date: string; // YYYY-MM-DD
+  used: number;
+  exhausted: boolean; // True when API returns quota exceeded error
+  detectedLimit?: number; // Actual limit detected when exhausted
+}
+
+// Get today's date as YYYY-MM-DD
+const getTodayDateString = (): string => {
+  return new Date().toISOString().split('T')[0];
+};
+
+// Get current quota data
+const getQuotaData = (): QuotaData => {
+  if (typeof window === 'undefined') return { date: getTodayDateString(), used: 0, exhausted: false };
+  try {
+    const item = localStorage.getItem(QUOTA_TRACKING_KEY);
+    if (!item) return { date: getTodayDateString(), used: 0, exhausted: false };
+    const data: QuotaData = JSON.parse(item);
+    // Reset if it's a new day
+    if (data.date !== getTodayDateString()) {
+      return { date: getTodayDateString(), used: 0, exhausted: false };
+    }
+    return data;
+  } catch { return { date: getTodayDateString(), used: 0, exhausted: false }; }
+};
+
+// Save quota data
+const saveQuotaData = (data: QuotaData) => {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(QUOTA_TRACKING_KEY, JSON.stringify(data));
+    window.dispatchEvent(new CustomEvent('quota-updated', { detail: data }));
+  } catch (e) { console.warn("Quota tracking failed", e); }
+};
+
+// Track quota usage
+const trackQuotaUsage = (units: number) => {
+  const data = getQuotaData();
+  data.used += units;
+  saveQuotaData(data);
+};
+
+// Mark quota as exhausted (called when API returns quota error)
+const markQuotaExhausted = () => {
+  const data = getQuotaData();
+  data.exhausted = true;
+  // The current usage becomes our detected limit
+  data.detectedLimit = data.used;
+  saveQuotaData(data);
+};
+
+// Export quota info for UI - dynamically calculates based on actual data
+export const getQuotaInfo = (): { used: number; limit: number; percentage: number; exhausted: boolean } => {
+  const data = getQuotaData();
+  // Use detected limit if we've hit quota before, otherwise use default
+  const limit = data.detectedLimit || DEFAULT_DAILY_QUOTA;
+  return {
+    used: data.used,
+    limit: limit,
+    percentage: data.exhausted ? 100 : Math.min(100, Math.round((data.used / limit) * 100)),
+    exhausted: data.exhausted
+  };
+};
+
+// API cost constants (YouTube Data API v3)
+const API_COSTS = {
+  search: 100,
+  channels: 1,
+  playlistItems: 1,
+  videos: 1
+} as const;
 
 // Helper to access channel cache
 const getChannelCache = (): Record<string, any> => {
@@ -95,11 +171,19 @@ const fetchFromApi = async (endpoint: string, params: Record<string, string>) =>
     if (data.error) {
       const msg = data.error.message;
       if (msg.includes("API key not valid")) throw new Error("Der eingegebene API Key ist ungültig.");
-      if (msg.includes("quota")) throw new Error("YouTube API Quota überschritten.");
+      if (msg.includes("quota")) {
+        // Mark quota as exhausted for dynamic UI update
+        markQuotaExhausted();
+        throw new Error("YouTube API Quota überschritten.");
+      }
       throw new Error(`YouTube API Fehler: ${msg}`);
     }
     throw new Error(`HTTP Fehler: ${response.status}`);
   }
+
+  // Track quota usage on successful API calls
+  const cost = API_COSTS[endpoint as keyof typeof API_COSTS] || 1;
+  trackQuotaUsage(cost);
 
   return data;
 };
