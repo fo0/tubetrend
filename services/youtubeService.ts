@@ -166,6 +166,9 @@ const fetchFromApi = async (endpoint: string, params: Record<string, string>) =>
   const response = await fetch(url.toString());
   const data = await response.json();
 
+  // Berechne Kosten für diesen Endpoint
+  const cost = API_COSTS[endpoint as keyof typeof API_COSTS] || 1;
+
   if (!response.ok) {
     // Handle specific API errors
     if (data.error) {
@@ -173,16 +176,25 @@ const fetchFromApi = async (endpoint: string, params: Record<string, string>) =>
       if (msg.includes("API key not valid")) throw new Error("Der eingegebene API Key ist ungültig.");
       if (msg.includes("quota")) {
         // Mark quota as exhausted for dynamic UI update
+        // Bei Quota-Fehler: Aktuelle Nutzung ist das Limit
         markQuotaExhausted();
         throw new Error("YouTube API Quota überschritten.");
       }
+      // Bei anderen 4xx-Fehlern: YouTube berechnet trotzdem Quota
+      // (außer bei 5xx Server-Fehlern)
+      if (response.status >= 400 && response.status < 500) {
+        trackQuotaUsage(cost);
+      }
       throw new Error(`YouTube API Fehler: ${msg}`);
+    }
+    // Bei HTTP-Fehlern ohne error-Objekt: 4xx kosten Quota
+    if (response.status >= 400 && response.status < 500) {
+      trackQuotaUsage(cost);
     }
     throw new Error(`HTTP Fehler: ${response.status}`);
   }
 
   // Track quota usage on successful API calls
-  const cost = API_COSTS[endpoint as keyof typeof API_COSTS] || 1;
   trackQuotaUsage(cost);
 
   return data;
