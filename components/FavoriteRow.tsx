@@ -122,6 +122,10 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, gl
         if (cachedOk && cached) {
           if (!cancelled) setVideos(cached.videos);
           if (!cancelled) setTotalInTimeFrame(cached.meta?.totalInTimeFrame ?? null);
+          // Optimierung: channelId und channelTitle aus Cache wiederherstellen
+          // Verhindert redundanten findChannelInfo() Call (spart 101 API Units)
+          if (!cancelled && cached.meta?.channelId) setChannelId(cached.meta.channelId);
+          if (!cancelled && cached.meta?.channelTitle) setChannelTitle(cached.meta.channelTitle);
           return;
         }
       }

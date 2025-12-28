@@ -266,15 +266,58 @@ export const searchChannels = async (query: string): Promise<ChannelSuggestion[]
 export const findChannelInfo = async (channelName: string): Promise<{
   id: string, name: string, uploadsPlaylistId: string
 }> => {
-  const query = channelName.startsWith('@') ? channelName : channelName;
+  const query = channelName.trim();
 
   // 1. Check Cache
   const cache = getChannelCache();
-  if (cache[query]) {
-    return cache[query];
+  if (cache[query.toLowerCase()]) {
+    return cache[query.toLowerCase()];
   }
 
-  // 2. Search for the channel to get ID (Cost: 100 units)
+  let channelId: string;
+  let channelTitle: string;
+
+  // Optimierung: Erkennung ob @handle oder Channel-ID (UC...) vorliegt
+  // Bei @handle: Nutze channels?forHandle= (1 Unit statt 100 Units für search)
+  // Bei UC...: Nutze channels?id= direkt (1 Unit statt 100 Units für search)
+  // Bei Fehler: Fallback auf Search API um Fuzzy-Matching zu ermöglichen
+  const isHandle = query.startsWith('@');
+  const isChannelId = query.startsWith('UC') && query.length >= 20;
+
+  if (isHandle || isChannelId) {
+    // Optimierter Pfad: Direkter channels-Endpoint (nur 1 Unit!)
+    const params: Record<string, string> = {
+      part: "snippet,contentDetails"
+    };
+
+    if (isHandle) {
+      // forHandle erwartet den Handle MIT @ Zeichen
+      params.forHandle = query;
+    } else {
+      params.id = query;
+    }
+
+    try {
+      const channelData = await fetchFromApi("channels", params);
+
+      if (channelData.items && channelData.items.length > 0) {
+        channelId = channelData.items[0].id;
+        channelTitle = channelData.items[0].snippet.title;
+        const uploadsPlaylistId = channelData.items[0].contentDetails.relatedPlaylists.uploads;
+
+        const result = { id: channelId, name: channelTitle, uploadsPlaylistId };
+        saveChannelToCache(query.toLowerCase(), result);
+
+        return result;
+      }
+      // Kein Ergebnis → Fallback auf Search API (siehe unten)
+    } catch (e) {
+      // Bei Fehler (z.B. ungültiger Handle) → Fallback auf Search API
+      console.warn("Direct channel lookup failed, falling back to search:", e);
+    }
+  }
+
+  // Fallback: Search API für Namen/URLs ohne @handle (100 Units)
   const searchData = await fetchFromApi("search", {
     part: "snippet", q: query, type: "channel", maxResults: "1"
   });
@@ -283,10 +326,10 @@ export const findChannelInfo = async (channelName: string): Promise<{
     throw new Error(`Kanal "${channelName}" nicht gefunden.`);
   }
 
-  const channelId = searchData.items[0].snippet.channelId;
-  const channelTitle = searchData.items[0].snippet.channelTitle;
+  channelId = searchData.items[0].snippet.channelId;
+  channelTitle = searchData.items[0].snippet.channelTitle;
 
-  // 3. Get Channel Details to find "Uploads" playlist (Cost: 1 unit)
+  // Get Channel Details to find "Uploads" playlist (Cost: 1 unit)
   const channelDetails = await fetchFromApi("channels", {
     part: "contentDetails", id: channelId
   });
@@ -298,7 +341,7 @@ export const findChannelInfo = async (channelName: string): Promise<{
   const uploadsPlaylistId = channelDetails.items[0].contentDetails.relatedPlaylists.uploads;
 
   const result = { id: channelId, name: channelTitle, uploadsPlaylistId };
-  saveChannelToCache(query, result);
+  saveChannelToCache(query.toLowerCase(), result);
 
   return result;
 };
