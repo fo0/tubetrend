@@ -7,13 +7,23 @@ const QUOTA_TRACKING_KEY = 'yt_quota_tracking';
 const AUTOCOMPLETE_CACHE_TTL = 5 * 60 * 1000; // 5 Minuten TTL
 const DEFAULT_DAILY_QUOTA = 10000; // YouTube API default quota
 
+// History entry for API usage tracking
+interface QuotaHistoryEntry {
+  timestamp: number; // Unix timestamp in ms
+  units: number;
+  endpoint: string;
+}
+
 // Quota tracking interface - dynamically adapts based on actual usage
 interface QuotaData {
   date: string; // YYYY-MM-DD
   used: number;
   exhausted: boolean; // True when API returns quota exceeded error
   detectedLimit?: number; // Actual limit detected when exhausted
+  history?: QuotaHistoryEntry[]; // History of API calls for timeline
 }
+
+const MAX_HISTORY_ENTRIES = 100; // Limit history to prevent excessive storage
 
 // Get today's date as YYYY-MM-DD
 const getTodayDateString = (): string => {
@@ -22,17 +32,20 @@ const getTodayDateString = (): string => {
 
 // Get current quota data
 const getQuotaData = (): QuotaData => {
-  if (typeof window === 'undefined') return { date: getTodayDateString(), used: 0, exhausted: false };
+  const emptyData = (): QuotaData => ({ date: getTodayDateString(), used: 0, exhausted: false, history: [] });
+  if (typeof window === 'undefined') return emptyData();
   try {
     const item = localStorage.getItem(QUOTA_TRACKING_KEY);
-    if (!item) return { date: getTodayDateString(), used: 0, exhausted: false };
+    if (!item) return emptyData();
     const data: QuotaData = JSON.parse(item);
     // Reset if it's a new day
     if (data.date !== getTodayDateString()) {
-      return { date: getTodayDateString(), used: 0, exhausted: false };
+      return emptyData();
     }
+    // Ensure history array exists
+    if (!data.history) data.history = [];
     return data;
-  } catch { return { date: getTodayDateString(), used: 0, exhausted: false }; }
+  } catch { return emptyData(); }
 };
 
 // Save quota data
@@ -44,10 +57,25 @@ const saveQuotaData = (data: QuotaData) => {
   } catch (e) { console.warn("Quota tracking failed", e); }
 };
 
-// Track quota usage
-const trackQuotaUsage = (units: number) => {
+// Track quota usage with history
+const trackQuotaUsage = (units: number, endpoint: string = 'unknown') => {
   const data = getQuotaData();
   data.used += units;
+
+  // Add history entry
+  const entry: QuotaHistoryEntry = {
+    timestamp: Date.now(),
+    units,
+    endpoint
+  };
+  data.history = data.history || [];
+  data.history.push(entry);
+
+  // Limit history size
+  if (data.history.length > MAX_HISTORY_ENTRIES) {
+    data.history = data.history.slice(-MAX_HISTORY_ENTRIES);
+  }
+
   saveQuotaData(data);
 };
 
@@ -72,6 +100,15 @@ export const getQuotaInfo = (): { used: number; limit: number; percentage: numbe
     exhausted: data.exhausted
   };
 };
+
+// Export quota history for timeline UI
+export const getQuotaHistory = (): QuotaHistoryEntry[] => {
+  const data = getQuotaData();
+  return data.history || [];
+};
+
+// Export type for use in components
+export type { QuotaHistoryEntry };
 
 // API cost constants (YouTube Data API v3)
 const API_COSTS = {
@@ -183,19 +220,19 @@ const fetchFromApi = async (endpoint: string, params: Record<string, string>) =>
       // Bei anderen 4xx-Fehlern: YouTube berechnet trotzdem Quota
       // (außer bei 5xx Server-Fehlern)
       if (response.status >= 400 && response.status < 500) {
-        trackQuotaUsage(cost);
+        trackQuotaUsage(cost, endpoint);
       }
       throw new Error(`YouTube API Fehler: ${msg}`);
     }
     // Bei HTTP-Fehlern ohne error-Objekt: 4xx kosten Quota
     if (response.status >= 400 && response.status < 500) {
-      trackQuotaUsage(cost);
+      trackQuotaUsage(cost, endpoint);
     }
     throw new Error(`HTTP Fehler: ${response.status}`);
   }
 
   // Track quota usage on successful API calls
-  trackQuotaUsage(cost);
+  trackQuotaUsage(cost, endpoint);
 
   return data;
 };
