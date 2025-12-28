@@ -185,6 +185,7 @@ const resources = {
       quota: {
         label: 'API Quota',
         tooltip: 'YouTube API: {{used}} / {{limit}} units ({{percentage}}%)',
+        exhausted: 'Quota exhausted! Resets at midnight PT.',
       }
     }
   },
@@ -365,6 +366,7 @@ const resources = {
       quota: {
         label: 'API-Kontingent',
         tooltip: 'YouTube API: {{used}} / {{limit}} Einheiten ({{percentage}}%)',
+        exhausted: 'Kontingent erschöpft! Reset um Mitternacht PT.',
       }
     }
   }
