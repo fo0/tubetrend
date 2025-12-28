@@ -186,6 +186,12 @@ const resources = {
         label: 'API Quota',
         tooltip: 'YouTube API: {{used}} / {{limit}} units ({{percentage}}%)',
         exhausted: 'Quota exhausted! Resets at midnight PT.',
+        historyTitle: 'API Usage',
+        units: 'Units',
+        last2Hours: 'Last 2 hours',
+        now: 'Now',
+        recentCalls: 'Recent calls',
+        noCalls: 'No API calls yet',
       }
     }
   },
@@ -367,6 +373,12 @@ const resources = {
         label: 'API-Kontingent',
         tooltip: 'YouTube API: {{used}} / {{limit}} Einheiten ({{percentage}}%)',
         exhausted: 'Kontingent erschöpft! Reset um Mitternacht PT.',
+        historyTitle: 'API-Nutzung',
+        units: 'Einheiten',
+        last2Hours: 'Letzte 2 Stunden',
+        now: 'Jetzt',
+        recentCalls: 'Letzte Aufrufe',
+        noCalls: 'Noch keine API-Aufrufe',
       }
     }
   }
