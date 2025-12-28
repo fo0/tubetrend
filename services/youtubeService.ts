@@ -3,7 +3,65 @@ import {ChannelSuggestion, TimeFrame, YouTubeVideoItem, ChannelVideosResult, Sea
 const STORAGE_KEY = 'yt_api_key';
 const CHANNEL_CACHE_KEY = 'yt_channel_cache';
 const AUTOCOMPLETE_CACHE_KEY = 'yt_autocomplete_cache';
+const QUOTA_TRACKING_KEY = 'yt_quota_tracking';
 const AUTOCOMPLETE_CACHE_TTL = 5 * 60 * 1000; // 5 Minuten TTL
+const DAILY_QUOTA_LIMIT = 10000; // YouTube API default quota
+
+// Quota tracking interface
+interface QuotaData {
+  date: string; // YYYY-MM-DD
+  used: number;
+}
+
+// Get today's date as YYYY-MM-DD
+const getTodayDateString = (): string => {
+  return new Date().toISOString().split('T')[0];
+};
+
+// Get current quota data
+const getQuotaData = (): QuotaData => {
+  if (typeof window === 'undefined') return { date: getTodayDateString(), used: 0 };
+  try {
+    const item = localStorage.getItem(QUOTA_TRACKING_KEY);
+    if (!item) return { date: getTodayDateString(), used: 0 };
+    const data: QuotaData = JSON.parse(item);
+    // Reset if it's a new day
+    if (data.date !== getTodayDateString()) {
+      return { date: getTodayDateString(), used: 0 };
+    }
+    return data;
+  } catch { return { date: getTodayDateString(), used: 0 }; }
+};
+
+// Track quota usage
+const trackQuotaUsage = (units: number) => {
+  if (typeof window === 'undefined') return;
+  try {
+    const data = getQuotaData();
+    data.used += units;
+    localStorage.setItem(QUOTA_TRACKING_KEY, JSON.stringify(data));
+    // Dispatch event for UI updates
+    window.dispatchEvent(new CustomEvent('quota-updated', { detail: data }));
+  } catch (e) { console.warn("Quota tracking failed", e); }
+};
+
+// Export quota info for UI
+export const getQuotaInfo = (): { used: number; limit: number; percentage: number } => {
+  const data = getQuotaData();
+  return {
+    used: data.used,
+    limit: DAILY_QUOTA_LIMIT,
+    percentage: Math.min(100, Math.round((data.used / DAILY_QUOTA_LIMIT) * 100))
+  };
+};
+
+// API cost constants (YouTube Data API v3)
+const API_COSTS = {
+  search: 100,
+  channels: 1,
+  playlistItems: 1,
+  videos: 1
+} as const;
 
 // Helper to access channel cache
 const getChannelCache = (): Record<string, any> => {
@@ -100,6 +158,10 @@ const fetchFromApi = async (endpoint: string, params: Record<string, string>) =>
     }
     throw new Error(`HTTP Fehler: ${response.status}`);
   }
+
+  // Track quota usage on successful API calls
+  const cost = API_COSTS[endpoint as keyof typeof API_COSTS] || 1;
+  trackQuotaUsage(cost);
 
   return data;
 };

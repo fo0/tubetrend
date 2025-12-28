@@ -181,6 +181,10 @@ const resources = {
       empty: {
         title: 'Analyze YouTube channels',
         desc: 'Search a channel and get trend insights for different time frames.'
+      },
+      quota: {
+        label: 'API Quota',
+        tooltip: 'YouTube API: {{used}} / {{limit}} units ({{percentage}}%)',
       }
     }
   },
@@ -357,6 +361,10 @@ const resources = {
       empty: {
         title: 'YouTube-Kanäle analysieren',
         desc: 'Suche einen Kanal und erhalte Trend-Einblicke für verschiedene Zeiträume.'
+      },
+      quota: {
+        label: 'API-Kontingent',
+        tooltip: 'YouTube API: {{used}} / {{limit}} Einheiten ({{percentage}}%)',
       }
     }
   }

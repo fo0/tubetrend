@@ -15,6 +15,7 @@ import { selectHighlightVideosFromFavorites } from './utils/dashboardTopVideos';
 import { BarChart3, AlertCircle, Activity, Settings, Trophy, List, Eye, EyeOff, LayoutDashboard, RefreshCw, Youtube, Download, Upload } from 'lucide-react';
 import { ThemeToggle } from './components/ThemeToggle';
 import { LanguageSwitcher } from './components/LanguageSwitcher';
+import { ApiQuotaIndicator } from './components/ApiQuotaIndicator';
 import { useTranslation } from 'react-i18next';
 import { HighlightVideoCard } from './components/HighlightVideoCard';
 import { HiddenHighlightsModal } from './components/HiddenHighlightsModal';
@@ -555,6 +556,7 @@ const App: React.FC = () => {
              )}
              {/* Always show toggle at the far right */}
             <div className="flex items-center gap-2">
+              {apiKey && <ApiQuotaIndicator />}
               <LanguageSwitcher />
               <ThemeToggle />
             </div>
