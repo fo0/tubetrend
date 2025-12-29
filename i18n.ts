@@ -74,7 +74,8 @@ const resources = {
       },
       maxResults: {
         all: 'All',
-        allNoLimit: 'All (no limit)',
+        auto: 'Auto',
+        noLimit: 'No limit',
         topN: 'Top {{n}}',
       },
       favorites: {
@@ -268,7 +269,8 @@ const resources = {
       },
       maxResults: {
         all: 'Alle',
-        allNoLimit: 'Alle (Kein Limit)',
+        auto: 'Auto',
+        noLimit: 'Ohne Limit',
         topN: 'Top {{n}}',
       },
       favorites: {
