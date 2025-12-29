@@ -633,6 +633,15 @@ export const getVideosFromChannel = async (uploadsPlaylistId: string, timeFrame:
     case TimeFrame.LAST_WEEK:
       cutoffTime = now - (7 * 24 * 60 * 60 * 1000);
       break;
+    case TimeFrame.LAST_2_WEEKS:
+      cutoffTime = now - (14 * 24 * 60 * 60 * 1000);
+      break;
+    case TimeFrame.LAST_3_WEEKS:
+      cutoffTime = now - (21 * 24 * 60 * 60 * 1000);
+      break;
+    case TimeFrame.LAST_4_WEEKS:
+      cutoffTime = now - (28 * 24 * 60 * 60 * 1000);
+      break;
     case TimeFrame.LAST_MONTH:
       cutoffTime = monthsAgo(1);
       break;
@@ -846,6 +855,15 @@ const getPublishedAfterDate = (timeFrame: TimeFrame): string => {
       break;
     case TimeFrame.LAST_WEEK:
       cutoffTime = now - (7 * 24 * 60 * 60 * 1000);
+      break;
+    case TimeFrame.LAST_2_WEEKS:
+      cutoffTime = now - (14 * 24 * 60 * 60 * 1000);
+      break;
+    case TimeFrame.LAST_3_WEEKS:
+      cutoffTime = now - (21 * 24 * 60 * 60 * 1000);
+      break;
+    case TimeFrame.LAST_4_WEEKS:
+      cutoffTime = now - (28 * 24 * 60 * 60 * 1000);
       break;
     case TimeFrame.LAST_MONTH:
       return monthsAgo(1);

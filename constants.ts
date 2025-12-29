@@ -13,6 +13,10 @@ export const TIME_FRAMES = [
   { labelKey: 'timeFrames.last5Days', value: TimeFrame.LAST_5_DAYS },
   { labelKey: 'timeFrames.last6Days', value: TimeFrame.LAST_6_DAYS },
   { labelKey: 'timeFrames.lastWeek', value: TimeFrame.LAST_WEEK },
+  // Erweiterte Zeiträume (wochenweise)
+  { labelKey: 'timeFrames.last2Weeks', value: TimeFrame.LAST_2_WEEKS },
+  { labelKey: 'timeFrames.last3Weeks', value: TimeFrame.LAST_3_WEEKS },
+  { labelKey: 'timeFrames.last4Weeks', value: TimeFrame.LAST_4_WEEKS },
   // Erweiterte Zeiträume (monatsweise)
   { labelKey: 'timeFrames.lastMonth', value: TimeFrame.LAST_MONTH },
   { labelKey: 'timeFrames.last2Months', value: TimeFrame.LAST_2_MONTHS },
