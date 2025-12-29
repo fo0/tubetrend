@@ -417,7 +417,7 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, gl
             </span>
             {!loading && totalInTimeFrame !== null && totalInTimeFrame > 0 && (
               <span
-                className="px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-700/50 text-indigo-600 dark:text-indigo-300"
+                className="px-2 py-0.5 rounded-full bg-slate-100/70 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400"
                 title={t('favorites.status.videoCount', { count: totalInTimeFrame })}
               >
                 {t('favorites.status.videoCount', { count: totalInTimeFrame })}
