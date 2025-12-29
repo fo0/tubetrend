@@ -415,6 +415,14 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, gl
                   ? t('favorites.status.asOf', { time: formatTimeAgo(lastFetchedAt) })
                   : t('favorites.status.asOfUnknown')}
             </span>
+            {!loading && totalInTimeFrame !== null && totalInTimeFrame > 0 && (
+              <span
+                className="px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-700/50 text-indigo-600 dark:text-indigo-300"
+                title={t('favorites.status.videoCount', { count: totalInTimeFrame })}
+              >
+                {t('favorites.status.videoCount', { count: totalInTimeFrame })}
+              </span>
+            )}
           </div>
         </div>
         <div className="flex items-center gap-2">
