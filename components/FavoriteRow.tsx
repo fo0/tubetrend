@@ -30,6 +30,8 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, gl
   const [totalInTimeFrame, setTotalInTimeFrame] = useState<number | null>(null);
   // Lokaler Refresh-Zähler für diese Reihe
   const [localRefreshToken, setLocalRefreshToken] = useState<number>(0);
+  // Live-aktualisierter "vor X Min." Text
+  const [liveTimeAgo, setLiveTimeAgo] = useState<string>('');
 
   // Lokale (änderbare) Konfiguration des Favoriten
   const [currentTimeFrame, setCurrentTimeFrame] = useState<TimeFrame>(favorite.timeFrame);
@@ -95,6 +97,21 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, gl
     const years = Math.floor(days / 365);
     return t('timeAgo.years', { count: years });
   };
+
+  // Live-Update für "vor X Min." Badge (aktualisiert alle 10 Sekunden)
+  useEffect(() => {
+    if (!lastFetchedAt || loading) {
+      setLiveTimeAgo('');
+      return;
+    }
+    // Initiale Berechnung
+    setLiveTimeAgo(formatTimeAgo(lastFetchedAt));
+    // Intervall für Live-Updates
+    const interval = setInterval(() => {
+      setLiveTimeAgo(formatTimeAgo(lastFetchedAt));
+    }, 10000); // alle 10 Sekunden aktualisieren
+    return () => clearInterval(interval);
+  }, [lastFetchedAt, loading]);
 
   useEffect(() => {
     let cancelled = false;
@@ -411,8 +428,8 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, gl
             >
               {loading
                 ? t('favorites.status.refreshing')
-                : lastFetchedAt
-                  ? t('favorites.status.asOf', { time: formatTimeAgo(lastFetchedAt) })
+                : lastFetchedAt && liveTimeAgo
+                  ? t('favorites.status.asOf', { time: liveTimeAgo })
                   : t('favorites.status.asOfUnknown')}
             </span>
             {!loading && totalInTimeFrame !== null && totalInTimeFrame > 0 && (
