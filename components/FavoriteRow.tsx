@@ -60,7 +60,11 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, on
   const prevGlobalTokenRef = useRef<number>(globalRefreshToken);
   const prevLocalTokenRef = useRef<number>(localRefreshToken);
 
-  const displayMax = useMemo(() => (currentMax === 0 ? t('maxResults.all') : t('maxResults.topN', { n: currentMax })), [currentMax, t]);
+  const displayMax = useMemo(() => {
+    if (currentMax === -1) return t('maxResults.auto');      // Auto
+    if (currentMax === 0) return t('maxResults.noLimit');    // Ohne Limit
+    return t('maxResults.topN', { n: currentMax });          // Top X
+  }, [currentMax, t]);
 
   const timeFrameLabel = (tf: TimeFrame): string => {
     const opt = TIME_FRAMES.find(o => o.value === tf);
