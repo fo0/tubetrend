@@ -1,5 +1,5 @@
-import { API_COSTS, STORAGE_KEYS } from '@/src/shared/constants';
-import { quotaService } from './quotaService';
+import {API_COSTS, STORAGE_KEYS} from '@/src/shared/constants';
+import {quotaService} from './quotaService';
 
 type Endpoint = keyof typeof API_COSTS;
 

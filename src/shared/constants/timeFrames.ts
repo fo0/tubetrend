@@ -1,4 +1,4 @@
-import { TimeFrame } from '../types';
+import {TimeFrame} from '../types';
 
 export interface TimeFrameOption {
   readonly labelKey: string;

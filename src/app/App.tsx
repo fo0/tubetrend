@@ -1,19 +1,22 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { ApiKeyModal } from '@/components/ApiKeyModal';
-import { HiddenHighlightsModal } from '@/components/HiddenHighlightsModal';
-import { Header, type PageType } from '@/src/shared/components/layout';
-import { DashboardPage } from './routes/DashboardPage';
-import { AnalyserPage } from './routes/AnalyserPage';
-import { useTranslation } from 'react-i18next';
-import { setApiKey as setYoutubeApiKey } from '@/src/features/youtube';
-import { favoritesService } from '@/src/features/favorites';
-import { dashboardBackupService } from '@/src/features/dashboard';
-import { useFavorites, useDashboardSort, useHighlights } from '@/src/features/dashboard/hooks/useDashboard';
-import { useSearch } from '@/src/features/search/hooks/useSearch';
-import type { FavoriteConfig } from '@/src/features/favorites/types';
-import type { VideoData } from '@/src/features/videos/types';
-import type { TimeFrame, SearchType } from '@/src/shared/types';
-import { STORAGE_KEYS } from '@/src/shared/constants';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import {ApiKeyModal} from '@/components/ApiKeyModal';
+import {HiddenHighlightsModal} from '@/components/HiddenHighlightsModal';
+import {Header, type PageType} from '@/src/shared/components/layout';
+import {DashboardPage} from './routes/DashboardPage';
+import {AnalyserPage} from './routes/AnalyserPage';
+import {useTranslation} from 'react-i18next';
+import {setApiKey as setYoutubeApiKey} from '@/src/features/youtube';
+import {dashboardBackupService} from '@/src/features/dashboard';
+import {
+  useDashboardSort,
+  useFavorites,
+  useHighlights
+} from '@/src/features/dashboard/hooks/useDashboard';
+import {useSearch} from '@/src/features/search/hooks/useSearch';
+import type {FavoriteConfig} from '@/src/features/favorites/types';
+import type {VideoData} from '@/src/features/videos/types';
+import type {SearchType, TimeFrame} from '@/src/shared/types';
+import {STORAGE_KEYS} from '@/src/shared/constants';
 
 const App: React.FC = () => {
   const { t } = useTranslation();

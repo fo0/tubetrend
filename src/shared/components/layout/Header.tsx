@@ -1,9 +1,9 @@
 import React from 'react';
-import { BarChart3, Activity, Settings, LayoutDashboard } from 'lucide-react';
-import { ThemeToggle } from '@/components/ThemeToggle';
-import { LanguageSwitcher } from '@/components/LanguageSwitcher';
-import { ApiQuotaIndicator } from '@/components/ApiQuotaIndicator';
-import { useTranslation } from 'react-i18next';
+import {Activity, BarChart3, LayoutDashboard, Settings} from 'lucide-react';
+import {ThemeToggle} from '@/components/ThemeToggle';
+import {LanguageSwitcher} from '@/components/LanguageSwitcher';
+import {ApiQuotaIndicator} from '@/components/ApiQuotaIndicator';
+import {useTranslation} from 'react-i18next';
 
 export type PageType = 'dashboard' | 'analyser';
 

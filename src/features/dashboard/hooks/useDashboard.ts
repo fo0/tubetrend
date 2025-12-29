@@ -1,9 +1,8 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import type { FavoriteConfig, FavoriteCacheEntry } from '@/src/features/favorites/types';
-import type { VideoData } from '@/src/features/videos/types';
-import { favoritesService } from '@/src/features/favorites';
-import type { DashboardSortMode, SortOrder } from '@/src/shared/types';
-import { STORAGE_KEYS } from '@/src/shared/constants';
+import {useCallback, useEffect, useState} from 'react';
+import type {FavoriteConfig} from '@/src/features/favorites/types';
+import {favoritesService} from '@/src/features/favorites';
+import type {DashboardSortMode, SortOrder} from '@/src/shared/types';
+import {STORAGE_KEYS} from '@/src/shared/constants';
 
 /**
  * Hook for managing favorites state with event-driven updates

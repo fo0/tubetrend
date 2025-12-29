@@ -1,12 +1,26 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { FavoriteConfig, TimeFrame, VideoData, SearchType } from '../types';
-import { favoritesService } from '../services/favoritesService';
-import { analyzeVideoStats } from '../services/trendAnalysisService';
-import { findChannelInfo, getVideosFromChannel, searchVideosByKeyword } from '../services/youtubeService';
-import { VideoCard } from './VideoCard';
-import { AlertCircle, AlertTriangle, ChevronRight, Loader2, Trash2, RefreshCw, Youtube, Hash, BarChart3 } from 'lucide-react';
-import { MAX_RESULTS_OPTIONS, TIME_FRAMES } from '../constants';
-import { useTranslation } from 'react-i18next';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
+import {FavoriteConfig, SearchType, TimeFrame, VideoData} from '../types';
+import {favoritesService} from '../services/favoritesService';
+import {analyzeVideoStats} from '../services/trendAnalysisService';
+import {
+  findChannelInfo,
+  getVideosFromChannel,
+  searchVideosByKeyword
+} from '../services/youtubeService';
+import {VideoCard} from './VideoCard';
+import {
+  AlertCircle,
+  AlertTriangle,
+  BarChart3,
+  ChevronRight,
+  Hash,
+  Loader2,
+  RefreshCw,
+  Trash2,
+  Youtube
+} from 'lucide-react';
+import {MAX_RESULTS_OPTIONS, TIME_FRAMES} from '../constants';
+import {useTranslation} from 'react-i18next';
 
 interface FavoriteRowProps {
   favorite: FavoriteConfig;
@@ -120,6 +134,38 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, on
     }, 10000); // alle 10 Sekunden aktualisieren
     return () => clearInterval(interval);
   }, [lastFetchedAt, loading]);
+
+  // Reagiere auf externe Cache-Updates (z.B. wenn ein anderer Prozess den Cache aktualisiert)
+  useEffect(() => {
+    const handler = (ev: Event) => {
+      try {
+        const e = ev as CustomEvent;
+        const updatedId = e?.detail?.id as string | undefined;
+        // Reagiere nur auf Updates für diesen Favoriten oder auf globale Updates ('*')
+        if (updatedId && updatedId !== '*' && updatedId !== currentFavId) return;
+        
+        // Lade die Daten aus dem Cache neu
+        const cached = favoritesService.getCache(currentFavId);
+        if (cached) {
+          setVideos(cached.videos);
+          setTotalInTimeFrame(cached.meta?.totalInTimeFrame ?? null);
+          if (cached.meta?.channelId) setChannelId(cached.meta.channelId);
+          if (cached.meta?.channelTitle) setChannelTitle(cached.meta.channelTitle);
+        }
+      } catch {
+        // stiller Fallback
+      }
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('favorites-cache-updated', handler as EventListener);
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('favorites-cache-updated', handler as EventListener);
+      }
+    };
+  }, [currentFavId]);
 
   useEffect(() => {
     let cancelled = false;

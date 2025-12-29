@@ -1,6 +1,6 @@
-import { safeRead, safeWrite } from '@/src/shared/lib/storage';
-import { dispatchEvent } from '@/src/shared/lib/eventBus';
-import { STORAGE_KEYS } from '@/src/shared/constants';
+import {safeRead, safeWrite} from '@/src/shared/lib/storage';
+import {dispatchEvent} from '@/src/shared/lib/eventBus';
+import {STORAGE_KEYS} from '@/src/shared/constants';
 
 export interface HiddenHighlightMeta {
   readonly title?: string;

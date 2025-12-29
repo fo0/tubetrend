@@ -1,5 +1,5 @@
 import React from 'react';
-import { Youtube } from 'lucide-react';
+import {Youtube} from 'lucide-react';
 
 export const EmptyState: React.FC = () => {
   return (

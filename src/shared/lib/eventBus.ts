@@ -2,7 +2,7 @@
  * Type-safe event bus for cross-component communication
  */
 
-import { useEffect } from 'react';
+import {useEffect} from 'react';
 
 // Event type definitions
 export interface EventMap {

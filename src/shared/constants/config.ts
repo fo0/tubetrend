@@ -5,7 +5,8 @@
 export const STORAGE_KEYS = {
   API_KEY: 'yt_api_key',
   CHANNEL_CACHE: 'yt_channel_cache',
-  AUTOCOMPLETE_CACHE: 'yt_autocomplete_cache',
+  // v2: Cache-Key geändert um alte Einträge mit falschen Thumbnail-URLs zu invalidieren
+  AUTOCOMPLETE_CACHE: 'yt_autocomplete_cache_v2',
   QUOTA_TRACKING: 'yt_quota_tracking',
   FAVORITES: 'tt.favorites.v1',
   FAVORITES_CACHE: 'tt.favorites.cache.v1',

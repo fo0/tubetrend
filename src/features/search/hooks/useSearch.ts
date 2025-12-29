@@ -1,13 +1,13 @@
-import { useState, useCallback } from 'react';
-import type { TimeFrame, SearchType } from '@/src/shared/types';
-import type { VideoData } from '@/src/features/videos/types';
-import { analyzeVideoStats } from '@/src/features/videos';
+import {useCallback, useState} from 'react';
+import type {SearchType, TimeFrame} from '@/src/shared/types';
+import {SearchType as ST} from '@/src/shared/types';
+import type {VideoData} from '@/src/features/videos/types';
+import {analyzeVideoStats} from '@/src/features/videos';
 import {
   findChannelInfo,
   getVideosFromChannel,
   searchVideosByKeyword,
 } from '@/src/features/youtube';
-import { SearchType as ST } from '@/src/shared/types';
 
 export interface SearchState {
   isLoading: boolean;

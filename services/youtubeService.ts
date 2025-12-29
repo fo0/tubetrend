@@ -1,9 +1,10 @@
-import {ChannelSuggestion, TimeFrame, YouTubeVideoItem, ChannelVideosResult, SearchType} from "../types";
-import { AUTO_LIMIT_KEYWORD, AUTO_LIMIT_CHANNEL } from "../constants";
+import {ChannelSuggestion, ChannelVideosResult, TimeFrame, YouTubeVideoItem} from "../types";
+import {AUTO_LIMIT_CHANNEL, AUTO_LIMIT_KEYWORD} from "../constants";
 
 const STORAGE_KEY = 'yt_api_key';
 const CHANNEL_CACHE_KEY = 'yt_channel_cache';
-const AUTOCOMPLETE_CACHE_KEY = 'yt_autocomplete_cache';
+// v2: Cache-Key geändert um alte Einträge mit falschen Thumbnail-URLs zu invalidieren
+const AUTOCOMPLETE_CACHE_KEY = 'yt_autocomplete_cache_v2';
 const QUOTA_TRACKING_KEY = 'yt_quota_tracking';
 const AUTOCOMPLETE_CACHE_TTL = 5 * 60 * 1000; // 5 Minuten TTL
 const DEFAULT_DAILY_QUOTA = 10000; // YouTube API default quota
@@ -302,6 +303,10 @@ export const setYoutubeApiKey = (key: string) => {
     localStorage.setItem(STORAGE_KEY, key);
   } else {
     localStorage.removeItem(STORAGE_KEY);
+    // Reset quota statistics when API key is deleted
+    localStorage.removeItem(QUOTA_TRACKING_KEY);
+    // Dispatch event to update UI
+    window.dispatchEvent(new CustomEvent('quota-updated', { detail: { date: getTodayDateString(), used: 0, exhausted: false, history: [] } }));
   }
 };
 
@@ -417,6 +422,10 @@ export const extractChannelIdentifier = (input: string): string => {
 /**
  * Autocomplete search for channels
  * Optimierung: 5-Minuten Cache um wiederholte Suchen zu vermeiden (spart 100 Units pro Cache-Hit)
+ * 
+ * Hinweis: Die Search API gibt bei type=channel nicht immer korrekte Kanal-Thumbnails zurück.
+ * Daher wird nach der Suche ein zusätzlicher channels-API-Call gemacht, um die korrekten
+ * Profilbilder zu holen (kostet nur 1 zusätzliche Unit für bis zu 50 Kanäle).
  */
 export const searchChannels = async (query: string): Promise<ChannelSuggestion[]> => {
   if (!query || query.length < 2) return [];
@@ -437,12 +446,42 @@ export const searchChannels = async (query: string): Promise<ChannelSuggestion[]
 
     if (!data.items) return [];
 
-    const results = data.items.map((item: any) => ({
-      id: item.snippet.channelId,
-      title: item.snippet.channelTitle,
-      thumbnailUrl: item.snippet.thumbnails?.default?.url || "",
-      handle: item.snippet.customUrl
-    }));
+    // Sammle Channel-IDs für den Batch-Call
+    const channelIds = data.items.map((item: any) => item.snippet.channelId).filter(Boolean);
+    
+    // Hole korrekte Thumbnails über den channels-Endpoint (1 Unit für bis zu 50 Kanäle)
+    let thumbnailMap: Record<string, string> = {};
+    if (channelIds.length > 0) {
+      try {
+        const channelsData = await fetchFromApi("channels", {
+          part: "snippet",
+          id: channelIds.join(",")
+        });
+        
+        if (channelsData.items) {
+          for (const channel of channelsData.items) {
+            const thumbUrl = channel.snippet?.thumbnails?.default?.url || 
+                            channel.snippet?.thumbnails?.medium?.url || 
+                            channel.snippet?.thumbnails?.high?.url || "";
+            thumbnailMap[channel.id] = thumbUrl;
+          }
+        }
+      } catch (thumbError) {
+        // Bei Fehler: Fallback auf Search-Thumbnails (besser als nichts)
+        console.warn("Failed to fetch channel thumbnails, using search thumbnails", thumbError);
+      }
+    }
+
+    const results = data.items.map((item: any) => {
+      const channelId = item.snippet.channelId;
+      return {
+        id: channelId,
+        title: item.snippet.channelTitle,
+        // Bevorzuge Thumbnail vom channels-Endpoint, Fallback auf Search-Thumbnail
+        thumbnailUrl: thumbnailMap[channelId] || item.snippet.thumbnails?.default?.url || "",
+        handle: item.snippet.customUrl
+      };
+    });
 
     // Speichere im Cache
     saveAutocompleteToCache(query, results);

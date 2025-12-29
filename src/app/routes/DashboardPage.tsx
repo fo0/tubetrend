@@ -1,14 +1,16 @@
-import React, { useRef, useMemo } from 'react';
-import { Activity, RefreshCw, Download, Upload, EyeOff } from 'lucide-react';
-import { FavoriteRow } from '@/components/FavoriteRow';
-import { HighlightVideoCard } from '@/components/HighlightVideoCard';
-import { useTranslation } from 'react-i18next';
-import type { FavoriteConfig } from '@/src/features/favorites/types';
-import type { VideoData } from '@/src/features/videos/types';
-import { favoritesService } from '@/src/features/favorites';
-import { hiddenHighlightsService } from '@/src/features/dashboard';
-import { selectHighlightVideosFromFavorites } from '@/src/features/dashboard';
-import type { DashboardSortMode } from '@/src/shared/types';
+import React, {useMemo, useRef} from 'react';
+import {Activity, Download, EyeOff, RefreshCw, Upload} from 'lucide-react';
+import {FavoriteRow} from '@/components/FavoriteRow';
+import {HighlightVideoCard} from '@/components/HighlightVideoCard';
+import {useTranslation} from 'react-i18next';
+import type {FavoriteConfig} from '@/src/features/favorites/types';
+import type {VideoData} from '@/src/features/videos/types';
+import {favoritesService} from '@/src/features/favorites';
+import {
+  hiddenHighlightsService,
+  selectHighlightVideosFromFavorites
+} from '@/src/features/dashboard';
+import type {DashboardSortMode} from '@/src/shared/types';
 
 interface DashboardPageProps {
   favorites: FavoriteConfig[];

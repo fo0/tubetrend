@@ -1,5 +1,5 @@
-import type { FavoriteConfig, FavoriteCacheEntry } from '@/src/features/favorites/types';
-import type { VideoData } from '@/src/features/videos/types';
+import type {FavoriteCacheEntry, FavoriteConfig} from '@/src/features/favorites/types';
+import type {VideoData} from '@/src/features/videos/types';
 
 export interface HighlightItem {
   video: VideoData;

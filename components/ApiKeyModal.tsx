@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { Key, Check, HelpCircle, ExternalLink } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import React, {useState} from 'react';
+import {Check, HelpCircle, Key} from 'lucide-react';
+import {useTranslation} from 'react-i18next';
 
 interface ApiKeyModalProps {
   onSave: (key: string) => void;

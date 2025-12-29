@@ -1,4 +1,12 @@
-import { FavoriteCacheEntry, FavoriteConfig, TimeFrame, VideoData, coerceTimeFrame, SearchType, coerceSearchType } from "../types";
+import {
+  coerceSearchType,
+  coerceTimeFrame,
+  FavoriteCacheEntry,
+  FavoriteConfig,
+  SearchType,
+  TimeFrame,
+  VideoData
+} from "../types";
 
 const FAVORITES_KEY = 'tt.favorites.v1';
 const FAVORITES_CACHE_KEY = 'tt.favorites.cache.v1';

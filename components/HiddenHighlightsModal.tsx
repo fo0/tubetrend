@@ -1,7 +1,7 @@
 import React from 'react';
-import { X, Eye, Clock, Trash2 } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
-import { hiddenHighlightsService, HiddenHighlight } from '../services/hiddenHighlightsService';
+import {Clock, Eye, Trash2, X} from 'lucide-react';
+import {useTranslation} from 'react-i18next';
+import {HiddenHighlight, hiddenHighlightsService} from '../services/hiddenHighlightsService';
 
 interface HiddenHighlightsModalProps {
   isOpen: boolean;

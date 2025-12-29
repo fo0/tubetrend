@@ -1,5 +1,5 @@
-import type { YouTubeVideoItem } from '@/src/shared/types';
-import type { VideoData } from '../types';
+import type {YouTubeVideoItem} from '@/src/shared/types';
+import type {VideoData} from '../types';
 
 /**
  * Pure math-based trend analysis (no AI API calls)

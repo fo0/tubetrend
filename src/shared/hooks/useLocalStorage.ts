@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import {useCallback, useEffect, useState} from 'react';
 
 interface UseLocalStorageOptions<T> {
   serialize?: (value: T) => string;

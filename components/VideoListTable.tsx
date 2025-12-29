@@ -1,6 +1,6 @@
 import React from 'react';
-import { VideoData } from '../types';
-import { ExternalLink, TrendingUp, Eye, Zap, Clock } from 'lucide-react';
+import {VideoData} from '../types';
+import {Clock, ExternalLink} from 'lucide-react';
 
 interface VideoListTableProps {
   videos: VideoData[];

@@ -1,7 +1,7 @@
 import React from 'react';
-import { VideoData } from '../types';
-import { Clock, Eye, EyeOff, Sparkles, Zap } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import {VideoData} from '../types';
+import {Clock, Eye, EyeOff, Sparkles, Zap} from 'lucide-react';
+import {useTranslation} from 'react-i18next';
 
 interface HighlightVideoCardProps {
   video: VideoData;

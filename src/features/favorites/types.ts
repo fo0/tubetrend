@@ -1,5 +1,5 @@
-import type { TimeFrame, SearchType } from '@/src/shared/types';
-import type { VideoData } from '@/src/features/videos/types';
+import type {SearchType, TimeFrame} from '@/src/shared/types';
+import type {VideoData} from '@/src/features/videos/types';
 
 /**
  * Favorite configuration stored in localStorage

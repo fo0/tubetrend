@@ -1,4 +1,4 @@
-import { VideoData, YouTubeVideoItem, TimeFrame } from "../types";
+import {TimeFrame, VideoData, YouTubeVideoItem} from "../types";
 
 export const analyzeVideoStats = async (
   apiVideos: YouTubeVideoItem[], 

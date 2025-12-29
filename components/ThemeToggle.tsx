@@ -1,6 +1,6 @@
 import React from 'react';
-import { Moon, Sun, Monitor } from 'lucide-react';
-import { useTheme } from '@/src/providers/ThemeProvider';
+import {Monitor, Moon, Sun} from 'lucide-react';
+import {useTheme} from '@/src/providers/ThemeProvider';
 
 export const ThemeToggle: React.FC = () => {
   const { theme, resolvedTheme, setTheme } = useTheme();

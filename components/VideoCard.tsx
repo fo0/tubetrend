@@ -1,6 +1,6 @@
 import React from 'react';
-import { VideoData } from '../types';
-import { TrendingUp, Eye, Clock, Zap } from 'lucide-react';
+import {VideoData} from '../types';
+import {Clock, Eye, TrendingUp, Zap} from 'lucide-react';
 
 interface VideoCardProps {
   video: VideoData;

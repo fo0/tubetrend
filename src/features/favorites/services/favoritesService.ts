@@ -1,9 +1,9 @@
-import { TimeFrame, SearchType, coerceTimeFrame, coerceSearchType } from '@/src/shared/types';
-import { safeRead, safeWrite } from '@/src/shared/lib/storage';
-import { dispatchEvent } from '@/src/shared/lib/eventBus';
-import { STORAGE_KEYS, CACHE_TTL } from '@/src/shared/constants';
-import type { FavoriteConfig, FavoriteCacheEntry } from '../types';
-import type { VideoData } from '@/src/features/videos/types';
+import {coerceSearchType, coerceTimeFrame, SearchType, TimeFrame} from '@/src/shared/types';
+import {safeRead, safeWrite} from '@/src/shared/lib/storage';
+import {dispatchEvent} from '@/src/shared/lib/eventBus';
+import {CACHE_TTL, STORAGE_KEYS} from '@/src/shared/constants';
+import type {FavoriteCacheEntry, FavoriteConfig} from '../types';
+import type {VideoData} from '@/src/features/videos/types';
 
 const makeId = (
   query: string,

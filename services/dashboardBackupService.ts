@@ -1,4 +1,11 @@
-import { coerceTimeFrame, coerceSearchType, FavoriteCacheEntry, FavoriteConfig, TimeFrame, SearchType } from "../types";
+import {
+  coerceSearchType,
+  coerceTimeFrame,
+  FavoriteCacheEntry,
+  FavoriteConfig,
+  SearchType,
+  TimeFrame
+} from "../types";
 
 const BACKUP_SCHEMA = "tt.dashboard.backup";
 const BACKUP_VERSION = 1 as const;

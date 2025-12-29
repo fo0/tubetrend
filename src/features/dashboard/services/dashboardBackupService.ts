@@ -1,7 +1,7 @@
-import { safeRead } from '@/src/shared/lib/storage';
-import { STORAGE_KEYS } from '@/src/shared/constants';
-import type { DashboardSortMode, SortOrder } from '@/src/shared/types';
-import type { FavoriteConfig, FavoriteCacheEntry } from '@/src/features/favorites/types';
+import {safeRead} from '@/src/shared/lib/storage';
+import {STORAGE_KEYS} from '@/src/shared/constants';
+import type {DashboardSortMode, SortOrder} from '@/src/shared/types';
+import type {FavoriteCacheEntry, FavoriteConfig} from '@/src/features/favorites/types';
 
 const BACKUP_VERSION = 1;
 

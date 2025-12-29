@@ -1,12 +1,12 @@
-import React, { useState, useMemo } from 'react';
-import { AlertCircle, Trophy, List, Eye, Youtube } from 'lucide-react';
-import { InputSection } from '@/components/InputSection';
-import { VideoCard } from '@/components/VideoCard';
-import { VideoListTable } from '@/components/VideoListTable';
-import { EmptyState } from '@/components/EmptyState';
-import { useTranslation } from 'react-i18next';
-import type { TimeFrame, SearchType } from '@/src/shared/types';
-import type { SearchState } from '@/src/features/search/hooks/useSearch';
+import React, {useMemo, useState} from 'react';
+import {AlertCircle, Eye, List, Trophy, Youtube} from 'lucide-react';
+import {InputSection} from '@/components/InputSection';
+import {VideoCard} from '@/components/VideoCard';
+import {VideoListTable} from '@/components/VideoListTable';
+import {EmptyState} from '@/components/EmptyState';
+import {useTranslation} from 'react-i18next';
+import type {SearchType, TimeFrame} from '@/src/shared/types';
+import type {SearchState} from '@/src/features/search/hooks/useSearch';
 
 interface AnalyserPageProps {
   searchState: SearchState;

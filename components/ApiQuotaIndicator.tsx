@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Zap, AlertTriangle, X, Activity } from 'lucide-react';
-import { getQuotaInfo, getQuotaHistory, QuotaHistoryEntry } from '../services/youtubeService';
-import { useTranslation } from 'react-i18next';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
+import {Activity, AlertTriangle, X, Zap} from 'lucide-react';
+import {getQuotaHistory, getQuotaInfo, QuotaHistoryEntry} from '../services/youtubeService';
+import {useTranslation} from 'react-i18next';
 
 // Group history entries by time buckets for the timeline
 const groupHistoryByTimeBuckets = (history: QuotaHistoryEntry[], bucketCount: number = 24) => {
