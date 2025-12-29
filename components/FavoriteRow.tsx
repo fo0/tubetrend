@@ -78,9 +78,11 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, on
   }, [currentFavId, videos, loading, globalRefreshToken, localRefreshToken]);
 
   // Zeige Warnung, wenn ausgewählte Top-X kleiner als Gesamtmenge im Zeitraum ist
+  // Nur bei expliziten Limits (>0), nicht bei Auto (-1) oder Ohne Limit (0)
+  // da der Video-Count Badge bereits die Gesamtzahl anzeigt
   const showOverflowWarning = useMemo(() => {
     if (!totalInTimeFrame) return false;
-    if (currentMax === 0) return false; // "Alle"
+    if (currentMax <= 0) return false; // Auto (-1) oder Ohne Limit (0)
     return totalInTimeFrame > currentMax;
   }, [totalInTimeFrame, currentMax]);
 
