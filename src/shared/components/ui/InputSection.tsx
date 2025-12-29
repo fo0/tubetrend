@@ -58,7 +58,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
   const { t } = useTranslation();
   const [inputValue, setInputValue] = useState<string>(DEFAULT_SEARCH_INPUT);
   const [timeFrame, setTimeFrame] = useState<TimeFrame>(TimeFrame.LAST_MONTH);
-  const [maxResults, setMaxResults] = useState<number>(1000);
+  const [maxResults, setMaxResults] = useState<number>(-1);
   
   // SearchType wird dynamisch aus dem Input-Präfix ermittelt
   const searchType = detectSearchType(inputValue);
