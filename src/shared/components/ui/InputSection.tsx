@@ -1,9 +1,10 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {ChannelSuggestion, coerceTimeFrame, SearchType, TimeFrame} from '../types';
-import {MAX_RESULTS_OPTIONS, TIME_FRAMES} from '../constants';
+import type {ChannelSuggestion} from '@/src/shared/types';
+import {coerceTimeFrame, SearchType, TimeFrame} from '@/src/shared/types';
+import {MAX_RESULTS_OPTIONS, TIME_FRAMES} from '@/src/shared/constants';
 import {Hash, History, Link2, ListFilter, Loader2, Search, Star, X, Youtube} from 'lucide-react';
-import {extractChannelIdentifier, searchChannels} from '../services/youtubeService';
-import {favoritesService} from '../services/favoritesService';
+import {extractChannelIdentifier, searchChannels} from '@/src/features/youtube';
+import {favoritesService} from '@/src/features/favorites';
 import {useTranslation} from 'react-i18next';
 
 // Default search input can be configured via Vite env: VITE_DEFAULT_SEARCH

@@ -1,6 +1,7 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {Activity, AlertTriangle, X, Zap} from 'lucide-react';
-import {getQuotaHistory, getQuotaInfo, QuotaHistoryEntry} from '../services/youtubeService';
+import {quotaService} from '@/src/features/youtube';
+import type {QuotaHistoryEntry} from '@/src/shared/types';
 import {useTranslation} from 'react-i18next';
 
 // Group history entries by time buckets for the timeline
@@ -54,20 +55,20 @@ const formatRelativeTime = (timestamp: number): string => {
 
 export const ApiQuotaIndicator: React.FC = () => {
   const { t } = useTranslation();
-  const [quota, setQuota] = useState(getQuotaInfo());
+  const [quota, setQuota] = useState(quotaService.getInfo());
   const [history, setHistory] = useState<QuotaHistoryEntry[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // Initial load
-    setQuota(getQuotaInfo());
-    setHistory(getQuotaHistory());
+    setQuota(quotaService.getInfo());
+    setHistory(quotaService.getHistory());
 
     // Listen for quota updates
     const handleQuotaUpdate = () => {
-      setQuota(getQuotaInfo());
-      setHistory(getQuotaHistory());
+      setQuota(quotaService.getInfo());
+      setHistory(quotaService.getHistory());
     };
 
     window.addEventListener('quota-updated', handleQuotaUpdate);

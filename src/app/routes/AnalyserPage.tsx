@@ -1,9 +1,9 @@
 import React, {useMemo, useState} from 'react';
 import {AlertCircle, Eye, List, Trophy, Youtube} from 'lucide-react';
-import {InputSection} from '@/components/InputSection';
-import {VideoCard} from '@/components/VideoCard';
-import {VideoListTable} from '@/components/VideoListTable';
-import {EmptyState} from '@/components/EmptyState';
+import {InputSection} from '@/src/shared/components/ui/InputSection';
+import {VideoCard} from '@/src/shared/components/ui/VideoCard';
+import {VideoListTable} from '@/src/shared/components/ui/VideoListTable';
+import {EmptyState} from '@/src/shared/components/ui/EmptyState';
 import {useTranslation} from 'react-i18next';
 import type {SearchType, TimeFrame} from '@/src/shared/types';
 import type {SearchState} from '@/src/features/search/hooks/useSearch';

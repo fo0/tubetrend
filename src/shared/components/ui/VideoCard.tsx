@@ -1,5 +1,5 @@
 import React from 'react';
-import {VideoData} from '../types';
+import type {VideoData} from '@/src/features/videos';
 import {Clock, Eye, TrendingUp, Zap} from 'lucide-react';
 
 interface VideoCardProps {

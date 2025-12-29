@@ -13,6 +13,8 @@ export function setApiKey(key: string): void {
       localStorage.setItem(STORAGE_KEYS.API_KEY, key);
     } else {
       localStorage.removeItem(STORAGE_KEYS.API_KEY);
+      // Reset quota statistics when API key is deleted
+      quotaService.reset();
     }
   }
 }

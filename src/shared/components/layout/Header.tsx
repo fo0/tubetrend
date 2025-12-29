@@ -1,8 +1,8 @@
 import React from 'react';
 import {Activity, BarChart3, LayoutDashboard, Settings} from 'lucide-react';
-import {ThemeToggle} from '@/components/ThemeToggle';
-import {LanguageSwitcher} from '@/components/LanguageSwitcher';
-import {ApiQuotaIndicator} from '@/components/ApiQuotaIndicator';
+import {ThemeToggle} from '@/src/shared/components/ui/ThemeToggle';
+import {LanguageSwitcher} from '@/src/shared/components/ui/LanguageSwitcher';
+import {ApiQuotaIndicator} from '@/src/shared/components/ui/ApiQuotaIndicator';
 import {useTranslation} from 'react-i18next';
 
 export type PageType = 'dashboard' | 'analyser';

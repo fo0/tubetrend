@@ -91,4 +91,16 @@ export const quotaService = {
   getCost(endpoint: keyof typeof API_COSTS): number {
     return API_COSTS[endpoint];
   },
+
+  reset(): void {
+    if (typeof window === 'undefined') return;
+    localStorage.removeItem(STORAGE_KEYS.QUOTA_TRACKING);
+    // Dispatch event to update UI with empty data
+    dispatchEvent('quota-updated', {
+      used: 0,
+      limit: DEFAULT_DAILY_QUOTA,
+      percentage: 0,
+      exhausted: false,
+    });
+  },
 };

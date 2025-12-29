@@ -1,6 +1,6 @@
 import React, {useEffect, useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {LANG_STORAGE_KEY} from '../i18n';
+import {LANG_STORAGE_KEY} from '@/src/i18n/config';
 
 type Mode = 'system' | 'explicit';
 

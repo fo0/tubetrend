@@ -1,5 +1,5 @@
 import React from 'react';
-import {VideoData} from '../types';
+import type {VideoData} from '@/src/features/videos';
 import {Clock, Eye, EyeOff, Sparkles, Zap} from 'lucide-react';
 import {useTranslation} from 'react-i18next';
 

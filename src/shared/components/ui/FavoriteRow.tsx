@@ -1,12 +1,10 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
-import {FavoriteConfig, SearchType, TimeFrame, VideoData} from '../types';
-import {favoritesService} from '../services/favoritesService';
-import {analyzeVideoStats} from '../services/trendAnalysisService';
-import {
-  findChannelInfo,
-  getVideosFromChannel,
-  searchVideosByKeyword
-} from '../services/youtubeService';
+import type {FavoriteConfig} from '@/src/features/favorites';
+import type {VideoData} from '@/src/features/videos';
+import type {SearchType, TimeFrame} from '@/src/shared/types';
+import {favoritesService} from '@/src/features/favorites';
+import {analyzeVideoStats} from '@/src/features/videos';
+import {findChannelInfo, getVideosFromChannel, searchVideosByKeyword} from '@/src/features/youtube';
 import {VideoCard} from './VideoCard';
 import {
   AlertCircle,
@@ -19,7 +17,7 @@ import {
   Trash2,
   Youtube
 } from 'lucide-react';
-import {MAX_RESULTS_OPTIONS, TIME_FRAMES} from '../constants';
+import {MAX_RESULTS_OPTIONS, TIME_FRAMES} from '@/src/shared/constants';
 import {useTranslation} from 'react-i18next';
 
 interface FavoriteRowProps {

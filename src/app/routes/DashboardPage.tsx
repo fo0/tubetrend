@@ -1,7 +1,7 @@
 import React, {useMemo, useRef} from 'react';
 import {Activity, Download, EyeOff, RefreshCw, Upload} from 'lucide-react';
-import {FavoriteRow} from '@/components/FavoriteRow';
-import {HighlightVideoCard} from '@/components/HighlightVideoCard';
+import {FavoriteRow} from '@/src/shared/components/ui/FavoriteRow';
+import {HighlightVideoCard} from '@/src/shared/components/ui/HighlightVideoCard';
 import {useTranslation} from 'react-i18next';
 import type {FavoriteConfig} from '@/src/features/favorites/types';
 import type {VideoData} from '@/src/features/videos/types';
