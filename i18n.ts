@@ -19,6 +19,7 @@ const resources = {
         refreshAll: 'Refresh all',
         remove: 'Remove',
         refresh: 'Refresh',
+        analyze: 'Analyze',
         importDashboard: 'Import',
         exportDashboard: 'Export',
       },
@@ -91,6 +92,7 @@ const resources = {
         },
         refresh: 'Refresh channel',
         remove: 'Remove favorite',
+        analyze: 'Open in Analyzer (uses cached data)',
       },
       dashboard: {
         noFavorites: 'No favorites yet. Create a favorite from the analyzer.',
@@ -210,6 +212,7 @@ const resources = {
         refreshAll: 'Alle aktualisieren',
         remove: 'Entfernen',
         refresh: 'Aktualisieren',
+        analyze: 'Analysieren',
         importDashboard: 'Importieren',
         exportDashboard: 'Exportieren',
       },
@@ -280,6 +283,7 @@ const resources = {
         },
         refresh: 'Kanal aktualisieren',
         remove: 'Favorit entfernen',
+        analyze: 'Im Analyser öffnen (nutzt Cache-Daten)',
       },
       dashboard: {
         noFavorites: 'Noch keine Favoriten. Lege im Analyser eine Suche als Favorit an.',
