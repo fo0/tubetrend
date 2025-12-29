@@ -234,34 +234,106 @@ export const ApiQuotaIndicator: React.FC = () => {
             </div>
           </div>
 
-          {/* Timeline chart */}
+          {/* Timeline line chart */}
           <div className="px-3 py-3 border-b border-slate-700/50">
             <div className="text-[10px] text-slate-500 mb-2">{t('quota.last2Hours')}</div>
-            <div className="flex items-end gap-0.5 h-12">
-              {timeBuckets.map((bucket, index) => {
-                const height = bucket.units > 0 ? Math.max(8, (bucket.units / maxUnitsInBucket) * 100) : 0;
-                const isRecent = index === timeBuckets.length - 1;
-                return (
+            <div className="relative h-12">
+              <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                {/* Grid lines */}
+                <line x1="0" y1="50" x2="100" y2="50" stroke="currentColor" className="text-slate-700/30" strokeWidth="0.5" strokeDasharray="2,2" />
+
+                {/* Gradient fill under the line */}
+                <defs>
+                  <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" className={quota.percentage >= 90 ? 'text-red-500' : quota.percentage >= 70 ? 'text-amber-500' : 'text-emerald-500'} stopColor="currentColor" stopOpacity="0.3" />
+                    <stop offset="100%" className={quota.percentage >= 90 ? 'text-red-500' : quota.percentage >= 70 ? 'text-amber-500' : 'text-emerald-500'} stopColor="currentColor" stopOpacity="0.05" />
+                  </linearGradient>
+                </defs>
+
+                {/* Area under line */}
+                {timeBuckets.length > 0 && (
+                  <path
+                    d={(() => {
+                      const width = 100;
+                      const height = 100;
+                      const padding = 2;
+                      const points = timeBuckets.map((bucket, i) => {
+                        const x = (i / (timeBuckets.length - 1)) * (width - padding * 2) + padding;
+                        const y = height - padding - (bucket.units / maxUnitsInBucket) * (height - padding * 2);
+                        return { x, y };
+                      });
+                      let path = `M ${points[0].x} ${height}`;
+                      path += ` L ${points[0].x} ${points[0].y}`;
+                      for (let i = 1; i < points.length; i++) {
+                        path += ` L ${points[i].x} ${points[i].y}`;
+                      }
+                      path += ` L ${points[points.length - 1].x} ${height} Z`;
+                      return path;
+                    })()}
+                    fill="url(#areaGradient)"
+                    vectorEffect="non-scaling-stroke"
+                  />
+                )}
+
+                {/* Line */}
+                {timeBuckets.length > 0 && (
+                  <polyline
+                    points={timeBuckets.map((bucket, i) => {
+                      const width = 100;
+                      const height = 100;
+                      const padding = 2;
+                      const x = (i / (timeBuckets.length - 1)) * (width - padding * 2) + padding;
+                      const y = height - padding - (bucket.units / maxUnitsInBucket) * (height - padding * 2);
+                      return `${x},${y}`;
+                    }).join(' ')}
+                    fill="none"
+                    className={quota.percentage >= 90 ? 'text-red-400' : quota.percentage >= 70 ? 'text-amber-400' : 'text-emerald-400'}
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                )}
+
+                {/* Data points */}
+                {timeBuckets.map((bucket, i) => {
+                  if (bucket.units === 0) return null;
+                  const width = 100;
+                  const height = 100;
+                  const padding = 2;
+                  const x = (i / (timeBuckets.length - 1)) * (width - padding * 2) + padding;
+                  const y = height - padding - (bucket.units / maxUnitsInBucket) * (height - padding * 2);
+                  const isRecent = i === timeBuckets.length - 1;
+                  return (
+                    <circle
+                      key={i}
+                      cx={x}
+                      cy={y}
+                      r="2.5"
+                      className={`${quota.percentage >= 90 ? 'text-red-400' : quota.percentage >= 70 ? 'text-amber-400' : 'text-emerald-400'} ${isRecent ? 'animate-pulse' : ''}`}
+                      fill="currentColor"
+                      stroke="currentColor"
+                      strokeWidth="0.5"
+                    />
+                  );
+                })}
+              </svg>
+
+              {/* Hover overlay for tooltips */}
+              <div className="absolute inset-0 flex">
+                {timeBuckets.map((bucket, index) => (
                   <div
                     key={index}
-                    className="flex-1 flex flex-col items-center justify-end group/bar relative"
+                    className="flex-1 relative group/point"
                   >
-                    {/* Bar */}
-                    <div
-                      className={`w-full rounded-t transition-all duration-200 ${
-                        bucket.units > 0 ? colors.bar : 'bg-slate-700/30'
-                      } ${isRecent && bucket.units > 0 ? 'animate-pulse' : ''}`}
-                      style={{ height: `${height}%`, minHeight: bucket.units > 0 ? '4px' : '2px' }}
-                    />
-                    {/* Tooltip on hover */}
                     {bucket.units > 0 && (
-                      <div className="absolute bottom-full mb-1 px-1.5 py-0.5 bg-slate-800 border border-slate-600 rounded text-[9px] text-slate-300 whitespace-nowrap opacity-0 group-hover/bar:opacity-100 transition-opacity pointer-events-none z-10">
+                      <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-1 px-1.5 py-0.5 bg-slate-800 border border-slate-600 rounded text-[9px] text-slate-300 whitespace-nowrap opacity-0 group-hover/point:opacity-100 transition-opacity pointer-events-none z-10">
                         {bucket.units} {t('quota.units')} ({bucket.calls}x)
                       </div>
                     )}
                   </div>
-                );
-              })}
+                ))}
+              </div>
             </div>
             {/* Time labels */}
             <div className="flex justify-between mt-1 text-[9px] text-slate-600">
