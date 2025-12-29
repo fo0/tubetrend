@@ -7,6 +7,71 @@ const QUOTA_TRACKING_KEY = 'yt_quota_tracking';
 const AUTOCOMPLETE_CACHE_TTL = 5 * 60 * 1000; // 5 Minuten TTL
 const DEFAULT_DAILY_QUOTA = 10000; // YouTube API default quota
 
+// =============================================================================
+// LOGGING SYSTEM für YouTube API Transparenz
+// =============================================================================
+// Strukturiertes Logging für Analyse und Optimierung der API-Nutzung
+// Alle Logs folgen dem Format: [KATEGORIE] Aktion | Details
+
+const LOG_STYLES = {
+  api: 'color: #4CAF50; font-weight: bold',      // Grün für API-Calls
+  cache: 'color: #2196F3; font-weight: bold',    // Blau für Cache
+  quota: 'color: #FF9800; font-weight: bold',    // Orange für Quota
+  error: 'color: #f44336; font-weight: bold',    // Rot für Fehler
+  info: 'color: #9E9E9E',                        // Grau für Info
+  success: 'color: #8BC34A; font-weight: bold',  // Hellgrün für Erfolg
+};
+
+const logApi = (message: string, data?: any) => {
+  if (data) {
+    console.log(`%c[YT-API] ${message}`, LOG_STYLES.api, data);
+  } else {
+    console.log(`%c[YT-API] ${message}`, LOG_STYLES.api);
+  }
+};
+
+const logCache = (message: string, data?: any) => {
+  if (data) {
+    console.log(`%c[YT-CACHE] ${message}`, LOG_STYLES.cache, data);
+  } else {
+    console.log(`%c[YT-CACHE] ${message}`, LOG_STYLES.cache);
+  }
+};
+
+const logQuota = (message: string, data?: any) => {
+  if (data) {
+    console.log(`%c[YT-QUOTA] ${message}`, LOG_STYLES.quota, data);
+  } else {
+    console.log(`%c[YT-QUOTA] ${message}`, LOG_STYLES.quota);
+  }
+};
+
+const logError = (message: string, error?: any) => {
+  console.error(`%c[YT-ERROR] ${message}`, LOG_STYLES.error, error || '');
+};
+
+const logInfo = (message: string, data?: any) => {
+  if (data) {
+    console.log(`%c[YT-INFO] ${message}`, LOG_STYLES.info, data);
+  } else {
+    console.log(`%c[YT-INFO] ${message}`, LOG_STYLES.info);
+  }
+};
+
+const logSuccess = (message: string, data?: any) => {
+  if (data) {
+    console.log(`%c[YT-SUCCESS] ${message}`, LOG_STYLES.success, data);
+  } else {
+    console.log(`%c[YT-SUCCESS] ${message}`, LOG_STYLES.success);
+  }
+};
+
+// Performance-Tracking Helper
+const formatDuration = (ms: number): string => {
+  if (ms < 1000) return `${ms}ms`;
+  return `${(ms / 1000).toFixed(2)}s`;
+};
+
 // History entry for API usage tracking
 interface QuotaHistoryEntry {
   timestamp: number; // Unix timestamp in ms
@@ -60,6 +125,7 @@ const saveQuotaData = (data: QuotaData) => {
 // Track quota usage with history
 const trackQuotaUsage = (units: number, endpoint: string = 'unknown') => {
   const data = getQuotaData();
+  const previousUsed = data.used;
   data.used += units;
 
   // Add history entry
@@ -77,6 +143,19 @@ const trackQuotaUsage = (units: number, endpoint: string = 'unknown') => {
   }
 
   saveQuotaData(data);
+
+  // Logging: Quota-Verbrauch
+  const limit = data.detectedLimit || DEFAULT_DAILY_QUOTA;
+  const percentage = Math.round((data.used / limit) * 100);
+  logQuota(`+${units} Units (${endpoint}) | Gesamt: ${data.used}/${limit} (${percentage}%)`, {
+    endpoint,
+    units,
+    previousUsed,
+    newTotal: data.used,
+    limit,
+    percentage,
+    remaining: limit - data.used
+  });
 };
 
 // Mark quota as exhausted (called when API returns quota error)
@@ -86,6 +165,11 @@ const markQuotaExhausted = () => {
   // The current usage becomes our detected limit
   data.detectedLimit = data.used;
   saveQuotaData(data);
+
+  logError(`⚠️ QUOTA ERSCHÖPFT! Erkanntes Limit: ${data.used} Units`, {
+    detectedLimit: data.used,
+    date: data.date
+  });
 };
 
 // Export quota info for UI - dynamically calculates based on actual data
@@ -133,6 +217,11 @@ const saveChannelToCache = (key: string, data: any) => {
     const cache = getChannelCache();
     cache[key] = data;
     localStorage.setItem(CHANNEL_CACHE_KEY, JSON.stringify(cache));
+    logCache(`💾 Channel gespeichert: "${key}"`, {
+      channelName: data.name,
+      channelId: data.id,
+      cacheSize: Object.keys(cache).length
+    });
   } catch (e) { console.warn("Cache save failed", e); }
 };
 
@@ -153,12 +242,24 @@ const getAutocompleteCache = (): Record<string, AutocompleteCacheEntry> => {
 const getAutocompleteFromCache = (query: string): ChannelSuggestion[] | null => {
   const cache = getAutocompleteCache();
   const entry = cache[query.toLowerCase()];
-  if (!entry) return null;
+  if (!entry) {
+    logCache(`❌ Autocomplete MISS: "${query}"`);
+    return null;
+  }
 
   // Prüfe TTL
-  if (Date.now() - entry.timestamp > AUTOCOMPLETE_CACHE_TTL) {
+  const age = Date.now() - entry.timestamp;
+  if (age > AUTOCOMPLETE_CACHE_TTL) {
+    logCache(`⏰ Autocomplete EXPIRED: "${query}" (${formatDuration(age)} alt)`);
     return null; // Abgelaufen
   }
+
+  logCache(`✅ Autocomplete HIT: "${query}" | ${entry.results.length} Ergebnisse | ${formatDuration(age)} alt`, {
+    query,
+    results: entry.results.length,
+    ageMs: age,
+    savedUnits: 100 // Search-API würde 100 Units kosten
+  });
   return entry.results;
 };
 
@@ -169,14 +270,24 @@ const saveAutocompleteToCache = (query: string, results: ChannelSuggestion[]) =>
 
     // Alte Einträge bereinigen (älter als TTL)
     const now = Date.now();
+    let cleanedCount = 0;
     Object.keys(cache).forEach(key => {
       if (now - cache[key].timestamp > AUTOCOMPLETE_CACHE_TTL) {
         delete cache[key];
+        cleanedCount++;
       }
     });
 
     cache[query.toLowerCase()] = { results, timestamp: now };
     localStorage.setItem(AUTOCOMPLETE_CACHE_KEY, JSON.stringify(cache));
+
+    logCache(`💾 Autocomplete gespeichert: "${query}" | ${results.length} Ergebnisse`, {
+      query,
+      results: results.length,
+      cacheSize: Object.keys(cache).length,
+      expiredCleaned: cleanedCount,
+      ttlMinutes: AUTOCOMPLETE_CACHE_TTL / 60000
+    });
   } catch (e) { console.warn("Autocomplete cache save failed", e); }
 };
 
@@ -200,16 +311,34 @@ const fetchFromApi = async (endpoint: string, params: Record<string, string>) =>
   url.searchParams.append("key", API_KEY);
   Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
 
-  const response = await fetch(url.toString());
-  const data = await response.json();
-
   // Berechne Kosten für diesen Endpoint
   const cost = API_COSTS[endpoint as keyof typeof API_COSTS] || 1;
+
+  // Logging: API Request Start
+  const startTime = performance.now();
+  const requestId = Math.random().toString(36).substring(2, 8);
+  logApi(`→ REQUEST [${requestId}] ${endpoint.toUpperCase()}`, {
+    endpoint,
+    params: { ...params, key: '***' }, // API-Key ausblenden
+    estimatedCost: `${cost} Units`
+  });
+
+  const response = await fetch(url.toString());
+  const data = await response.json();
+  const duration = performance.now() - startTime;
 
   if (!response.ok) {
     // Handle specific API errors
     if (data.error) {
       const msg = data.error.message;
+
+      // Logging: Fehler
+      logError(`← ERROR [${requestId}] ${endpoint.toUpperCase()} | ${formatDuration(duration)}`, {
+        status: response.status,
+        error: msg,
+        cost: response.status >= 400 && response.status < 500 ? `${cost} Units (4xx = charged)` : '0 Units (5xx = free)'
+      });
+
       if (msg.includes("API key not valid")) throw new Error("Der eingegebene API Key ist ungültig.");
       if (msg.includes("quota")) {
         // Mark quota as exhausted for dynamic UI update
@@ -228,11 +357,23 @@ const fetchFromApi = async (endpoint: string, params: Record<string, string>) =>
     if (response.status >= 400 && response.status < 500) {
       trackQuotaUsage(cost, endpoint);
     }
+    logError(`← ERROR [${requestId}] ${endpoint.toUpperCase()} | HTTP ${response.status} | ${formatDuration(duration)}`);
     throw new Error(`HTTP Fehler: ${response.status}`);
   }
 
   // Track quota usage on successful API calls
   trackQuotaUsage(cost, endpoint);
+
+  // Logging: Erfolgreiche Response
+  const itemCount = data.items?.length || 0;
+  const totalResults = data.pageInfo?.totalResults || itemCount;
+  logSuccess(`← RESPONSE [${requestId}] ${endpoint.toUpperCase()} | ${formatDuration(duration)} | ${itemCount} Items`, {
+    duration: formatDuration(duration),
+    itemsReturned: itemCount,
+    totalResults,
+    hasNextPage: !!data.nextPageToken,
+    cost: `${cost} Units`
+  });
 
   return data;
 };
@@ -316,11 +457,20 @@ export const findChannelInfo = async (channelName: string): Promise<{
   id: string, name: string, uploadsPlaylistId: string
 }> => {
   const query = channelName.trim();
+  const startTime = performance.now();
+
+  logInfo(`🔍 Kanal-Suche gestartet: "${query}"`);
 
   // 1. Check Cache
   const cache = getChannelCache();
   if (cache[query.toLowerCase()]) {
-    return cache[query.toLowerCase()];
+    const cached = cache[query.toLowerCase()];
+    logCache(`✅ Channel CACHE HIT: "${query}" → ${cached.name}`, {
+      channelId: cached.id,
+      channelName: cached.name,
+      savedUnits: 'min. 1 Unit (bis zu 101 Units bei Search-Fallback)'
+    });
+    return cached;
   }
 
   let channelId: string;
@@ -338,6 +488,13 @@ export const findChannelInfo = async (channelName: string): Promise<{
     const params: Record<string, string> = {
       part: "snippet,contentDetails"
     };
+
+    const lookupType = isHandle ? 'Handle (@)' : 'Channel-ID (UC...)';
+    logInfo(`⚡ Optimierter Pfad: ${lookupType} erkannt → Nutze channels-Endpoint (1 Unit)`, {
+      query,
+      lookupType,
+      expectedCost: '1 Unit (statt 100+ für Search)'
+    });
 
     if (isHandle) {
       // forHandle erwartet den Handle MIT @ Zeichen
@@ -357,13 +514,29 @@ export const findChannelInfo = async (channelName: string): Promise<{
         const result = { id: channelId, name: channelTitle, uploadsPlaylistId };
         saveChannelToCache(query.toLowerCase(), result);
 
+        const duration = performance.now() - startTime;
+        logSuccess(`✅ Kanal gefunden (optimiert): "${channelTitle}" | ${formatDuration(duration)} | 1 Unit`, {
+          channelId,
+          channelName: channelTitle,
+          uploadsPlaylistId,
+          method: 'direct-lookup',
+          totalCost: '1 Unit',
+          duration: formatDuration(duration)
+        });
+
         return result;
       }
       // Kein Ergebnis → Fallback auf Search API (siehe unten)
+      logInfo(`⚠️ Direkter Lookup fehlgeschlagen für "${query}" → Fallback auf Search API`);
     } catch (e) {
       // Bei Fehler (z.B. ungültiger Handle) → Fallback auf Search API
-      console.warn("Direct channel lookup failed, falling back to search:", e);
+      logInfo(`⚠️ Direkter Lookup Fehler für "${query}" → Fallback auf Search API`, e);
     }
+  } else {
+    logInfo(`🔎 Standard-Pfad: Kein Handle/ID erkannt → Nutze Search API (100 Units)`, {
+      query,
+      expectedCost: '101 Units (100 Search + 1 Channel-Details)'
+    });
   }
 
   // Fallback: Search API für Namen/URLs ohne @handle (100 Units)
@@ -372,6 +545,7 @@ export const findChannelInfo = async (channelName: string): Promise<{
   });
 
   if (!searchData.items || searchData.items.length === 0) {
+    logError(`❌ Kanal nicht gefunden: "${channelName}"`);
     throw new Error(`Kanal "${channelName}" nicht gefunden.`);
   }
 
@@ -384,6 +558,7 @@ export const findChannelInfo = async (channelName: string): Promise<{
   });
 
   if (!channelDetails.items || channelDetails.items.length === 0) {
+    logError(`❌ Kanaldetails nicht gefunden für: ${channelId}`);
     throw new Error("Kanaldetails konnten nicht geladen werden.");
   }
 
@@ -392,10 +567,28 @@ export const findChannelInfo = async (channelName: string): Promise<{
   const result = { id: channelId, name: channelTitle, uploadsPlaylistId };
   saveChannelToCache(query.toLowerCase(), result);
 
+  const duration = performance.now() - startTime;
+  logSuccess(`✅ Kanal gefunden (Search): "${channelTitle}" | ${formatDuration(duration)} | 101 Units`, {
+    channelId,
+    channelName: channelTitle,
+    uploadsPlaylistId,
+    method: 'search-fallback',
+    totalCost: '101 Units',
+    duration: formatDuration(duration)
+  });
+
   return result;
 };
 
 export const getVideosFromChannel = async (uploadsPlaylistId: string, timeFrame: TimeFrame, maxResults: number): Promise<ChannelVideosResult> => {
+  const functionStartTime = performance.now();
+
+  logInfo(`📺 Video-Abruf gestartet | Zeitraum: ${timeFrame} | Max: ${maxResults || 'Alle'}`, {
+    playlistId: uploadsPlaylistId,
+    timeFrame,
+    maxResults: maxResults || 'unbegrenzt'
+  });
+
   const now = Date.now();
   // Helper for calendar-month based cutoffs
   const monthsAgo = (n: number) => {
@@ -511,8 +704,15 @@ export const getVideosFromChannel = async (uploadsPlaylistId: string, timeFrame:
   }
 
   if (allVideos.length === 0) {
+    logInfo(`📺 Keine Videos im Zeitraum gefunden | ${pageCount} Seite(n) durchsucht`);
     return { videos: [], totalInTimeFrame: 0 };
   }
+
+  logInfo(`📺 Playlist-Scan abgeschlossen | ${pageCount} Seite(n) | ${allVideos.length} Videos im Zeitraum`, {
+    pagesScanned: pageCount,
+    videosInTimeframe: allVideos.length,
+    playlistCost: `${pageCount} Units`
+  });
 
   // Optimierung: Limitierung der Videos
   // Wir nutzen mindestens 50 Items (1 Batch), auch wenn maxResults < 50 ist,
@@ -572,11 +772,29 @@ export const getVideosFromChannel = async (uploadsPlaylistId: string, timeFrame:
 
   const batchResults = await Promise.all(batchPromises);
   let finalVideoItems: YouTubeVideoItem[] = batchResults.flat();
+  const shortsFiltered = totalInTimeFrame - finalVideoItems.length;
 
   // Am Ende nochmal strikt auf maxResults kürzen
   if (maxResults > 0 && finalVideoItems.length > maxResults) {
     finalVideoItems = finalVideoItems.slice(0, maxResults);
   }
+
+  const totalDuration = performance.now() - functionStartTime;
+  const totalCost = pageCount + batches.length; // playlistItems + videos Batches
+
+  logSuccess(`✅ Video-Abruf (Channel) abgeschlossen | ${finalVideoItems.length} Videos | ${formatDuration(totalDuration)} | ${totalCost} Units`, {
+    videosReturned: finalVideoItems.length,
+    totalInTimeFrame,
+    shortsFiltered,
+    playlistPages: pageCount,
+    statsBatches: batches.length,
+    totalApiCost: `${totalCost} Units`,
+    breakdown: {
+      playlistItems: `${pageCount} Units`,
+      videoStats: `${batches.length} Units`
+    },
+    duration: formatDuration(totalDuration)
+  });
 
   return { videos: finalVideoItems, totalInTimeFrame };
 };
@@ -660,8 +878,17 @@ export const searchVideosByKeyword = async (
     return { videos: [], totalInTimeFrame: 0 };
   }
 
+  const functionStartTime = performance.now();
   const publishedAfter = getPublishedAfterDate(timeFrame);
-  
+
+  logInfo(`🔎 Keyword-Suche gestartet: "${keyword}" | Zeitraum: ${timeFrame} | Max: ${maxResults || 'Alle'}`, {
+    keyword,
+    timeFrame,
+    publishedAfter,
+    maxResults: maxResults || 'unbegrenzt',
+    estimatedCost: 'min. 100 Units pro Seite (Search API)'
+  });
+
   // YouTube Search API erlaubt maximal 50 Ergebnisse pro Seite
   // Wir holen mehrere Seiten, wenn mehr Ergebnisse gewünscht sind
   const effectiveMax = maxResults > 0 ? maxResults : 500; // Limit für "Alle"
@@ -697,14 +924,29 @@ export const searchVideosByKeyword = async (
     pageCount++;
   }
 
+  // pageCount wurde im Loop bei jedem Durchlauf erhöht, jetzt die finale Anzahl
+  const searchPagesUsed = pageCount + 1; // +1 weil pageCount bei 0 startet und nach dem letzten break nicht erhöht wird
+
   if (allVideoIds.length === 0) {
+    logInfo(`🔎 Keyword-Suche: Keine Videos gefunden für "${keyword}"`);
     return { videos: [], totalInTimeFrame: 0 };
   }
+
+  logInfo(`🔎 Search-Phase abgeschlossen | ${searchPagesUsed} Seite(n) | ${allVideoIds.length} Video-IDs`, {
+    searchPages: searchPagesUsed,
+    videoIds: allVideoIds.length,
+    searchCost: `${searchPagesUsed * 100} Units`
+  });
 
   // Optimierung: Deduplizierung - entferne doppelte Video-IDs vor der Stats-Abfrage
   // Dies spart API-Calls wenn die Suche Duplikate zurückgibt
   const uniqueVideoIds = [...new Set(allVideoIds)];
+  const duplicatesRemoved = allVideoIds.length - uniqueVideoIds.length;
   allVideoIds = uniqueVideoIds;
+
+  if (duplicatesRemoved > 0) {
+    logInfo(`🔄 Duplikate entfernt: ${duplicatesRemoved} | Verbleibend: ${allVideoIds.length} Videos`);
+  }
 
   // Auf maxResults begrenzen
   if (maxResults > 0 && allVideoIds.length > maxResults) {
@@ -752,11 +994,33 @@ export const searchVideosByKeyword = async (
 
   const batchResults = await Promise.all(batchPromises);
   let finalVideoItems: YouTubeVideoItem[] = batchResults.flat();
+  const shortsFiltered = totalInTimeFrame - finalVideoItems.length;
 
   // Am Ende nochmal strikt auf maxResults kürzen
   if (maxResults > 0 && finalVideoItems.length > maxResults) {
     finalVideoItems = finalVideoItems.slice(0, maxResults);
   }
+
+  const totalDuration = performance.now() - functionStartTime;
+  const searchCost = searchPagesUsed * 100; // 100 Units pro Search-Seite
+  const statsCost = batches.length; // 1 Unit pro Videos-Batch
+  const totalCost = searchCost + statsCost;
+
+  logSuccess(`✅ Keyword-Suche abgeschlossen: "${keyword}" | ${finalVideoItems.length} Videos | ${formatDuration(totalDuration)} | ${totalCost} Units`, {
+    keyword,
+    videosReturned: finalVideoItems.length,
+    totalInTimeFrame,
+    shortsFiltered,
+    duplicatesRemoved,
+    searchPages: searchPagesUsed,
+    statsBatches: batches.length,
+    totalApiCost: `${totalCost} Units`,
+    breakdown: {
+      search: `${searchCost} Units (${searchPagesUsed} Seiten × 100)`,
+      videoStats: `${statsCost} Units (${batches.length} Batches × 1)`
+    },
+    duration: formatDuration(totalDuration)
+  });
 
   return { videos: finalVideoItems, totalInTimeFrame };
 };
