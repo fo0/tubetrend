@@ -5,8 +5,8 @@ const FAVORITES_CACHE_KEY = 'tt.favorites.cache.v1';
 
 const FAVORITES_CHANGED_EVENT = 'favorites-changed';
 
-// TTL für Cache (Millisekunden) – 30 Minuten
-const DEFAULT_CACHE_TTL = 30 * 60 * 1000;
+// TTL für Cache (Millisekunden) – 120 Minuten
+const DEFAULT_CACHE_TTL = 120 * 60 * 1000;
 
 const safeRead = <T>(key: string, fallback: T): T => {
   if (typeof window === 'undefined') return fallback;
