@@ -232,10 +232,15 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, on
   // Sicherstellen, dass der Kanal-Titel klickbar ist – auch wenn wir nur Cache-Daten nutzen.
   // Falls keine channelId vorhanden ist, laden wir einmalig die Kanal-Metadaten (ID/Name).
   // Nur bei Channel-Suche relevant, nicht bei Keyword-Suche.
+  // WICHTIG: Warten bis loading === false, um Race Condition mit dem Haupt-useEffect zu vermeiden
+  // (verhindert doppelten findChannelInfo() Aufruf)
   useEffect(() => {
     // Bei Keyword-Suche gibt es keinen Kanal
     const searchType = favorite.searchType ?? SearchType.CHANNEL;
     if (searchType === SearchType.KEYWORD) return;
+
+    // Race Condition Fix: Warten bis der Haupt-useEffect fertig ist
+    if (loading) return;
 
     let cancelled = false;
     // Ohne API-Key kein Versuch, die Metadaten zu laden
@@ -258,7 +263,7 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, on
     return () => {
       cancelled = true;
     };
-  }, [favorite.query, favorite.searchType, channelId]);
+  }, [favorite.query, favorite.searchType, channelId, loading]);
 
   const channelUrl = useMemo(() => {
     // Bei Keyword-Suche gibt es keinen Kanal-Link

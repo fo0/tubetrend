@@ -1,4 +1,5 @@
 import {ChannelSuggestion, TimeFrame, YouTubeVideoItem, ChannelVideosResult, SearchType} from "../types";
+import { AUTO_LIMIT_KEYWORD, AUTO_LIMIT_CHANNEL } from "../constants";
 
 const STORAGE_KEY = 'yt_api_key';
 const CHANNEL_CACHE_KEY = 'yt_channel_cache';
@@ -583,10 +584,17 @@ export const findChannelInfo = async (channelName: string): Promise<{
 export const getVideosFromChannel = async (uploadsPlaylistId: string, timeFrame: TimeFrame, maxResults: number): Promise<ChannelVideosResult> => {
   const functionStartTime = performance.now();
 
-  logInfo(`📺 Video-Abruf gestartet | Zeitraum: ${timeFrame} | Max: ${maxResults || 'Alle'}`, {
+  // Auto-Modus (-1): Quota-optimiert (500 Videos)
+  // Ohne Limit (0): Unbegrenzt
+  // Sonst: gewählter Wert
+  const effectiveMax = maxResults === -1 ? AUTO_LIMIT_CHANNEL : (maxResults > 0 ? maxResults : 0);
+  const modeLabel = maxResults === -1 ? 'Auto' : (maxResults === 0 ? 'Ohne Limit' : String(maxResults));
+
+  logInfo(`📺 Video-Abruf gestartet | Zeitraum: ${timeFrame} | Max: ${modeLabel}${maxResults === -1 ? ` (effektiv: ${effectiveMax})` : ''}`, {
     playlistId: uploadsPlaylistId,
     timeFrame,
-    maxResults: maxResults || 'unbegrenzt'
+    maxResults: modeLabel,
+    effectiveMax: effectiveMax || 'unbegrenzt'
   });
 
   const now = Date.now();
@@ -726,9 +734,10 @@ export const getVideosFromChannel = async (uploadsPlaylistId: string, timeFrame:
   // Optimierung: Limitierung der Videos
   // Wir nutzen mindestens 50 Items (1 Batch), auch wenn maxResults < 50 ist,
   // um mehr Chancen zu haben, Shorts herauszufiltern, ohne mehr zu bezahlen.
+  // effectiveMax: 0 = unbegrenzt, >0 = Limit
   let processingLimit = allVideos.length;
-  if (maxResults > 0) {
-    const effectiveLimit = Math.max(maxResults, 50);
+  if (effectiveMax > 0) {
+    const effectiveLimit = Math.max(effectiveMax, 50);
     if (allVideos.length > effectiveLimit) {
       processingLimit = effectiveLimit;
       allVideos = allVideos.slice(0, processingLimit);
@@ -783,9 +792,9 @@ export const getVideosFromChannel = async (uploadsPlaylistId: string, timeFrame:
   let finalVideoItems: YouTubeVideoItem[] = batchResults.flat();
   const shortsFiltered = totalInTimeFrame - finalVideoItems.length;
 
-  // Am Ende nochmal strikt auf maxResults kürzen
-  if (maxResults > 0 && finalVideoItems.length > maxResults) {
-    finalVideoItems = finalVideoItems.slice(0, maxResults);
+  // Am Ende nochmal strikt auf effectiveMax kürzen (effectiveMax: 0 = unbegrenzt)
+  if (effectiveMax > 0 && finalVideoItems.length > effectiveMax) {
+    finalVideoItems = finalVideoItems.slice(0, effectiveMax);
   }
 
   const totalDuration = performance.now() - functionStartTime;
@@ -899,17 +908,23 @@ export const searchVideosByKeyword = async (
   const functionStartTime = performance.now();
   const publishedAfter = getPublishedAfterDate(timeFrame);
 
-  logInfo(`🔎 Keyword-Suche gestartet: "${keyword}" | Zeitraum: ${timeFrame} | Max: ${maxResults || 'Alle'}`, {
+  // Auto-Modus (-1): Quota-optimiert (250 Videos = 5 Seiten = 500 Units)
+  // Ohne Limit (0): Unbegrenzt (bis zu 5000 Videos, aber YouTube API limitiert praktisch auf ~500)
+  // Sonst: gewählter Wert
+  const effectiveMax = maxResults === -1 ? AUTO_LIMIT_KEYWORD : (maxResults > 0 ? maxResults : 5000);
+  const modeLabel = maxResults === -1 ? 'Auto' : (maxResults === 0 ? 'Ohne Limit' : String(maxResults));
+
+  logInfo(`🔎 Keyword-Suche gestartet: "${keyword}" | Zeitraum: ${timeFrame} | Max: ${modeLabel} (effektiv: ${effectiveMax})`, {
     keyword,
     timeFrame,
     publishedAfter,
-    maxResults: maxResults || 'unbegrenzt',
+    maxResults: modeLabel,
+    effectiveMax,
     estimatedCost: 'min. 100 Units pro Seite (Search API)'
   });
 
   // YouTube Search API erlaubt maximal 50 Ergebnisse pro Seite
   // Wir holen mehrere Seiten, wenn mehr Ergebnisse gewünscht sind
-  const effectiveMax = maxResults > 0 ? maxResults : 500; // Limit für "Alle"
   let allVideoIds: string[] = [];
   let nextPageToken = "";
   const MAX_PAGES = Math.ceil(effectiveMax / 50);
@@ -1014,9 +1029,9 @@ export const searchVideosByKeyword = async (
   let finalVideoItems: YouTubeVideoItem[] = batchResults.flat();
   const shortsFiltered = totalInTimeFrame - finalVideoItems.length;
 
-  // Am Ende nochmal strikt auf maxResults kürzen
-  if (maxResults > 0 && finalVideoItems.length > maxResults) {
-    finalVideoItems = finalVideoItems.slice(0, maxResults);
+  // Am Ende nochmal strikt auf effectiveMax kürzen
+  if (finalVideoItems.length > effectiveMax) {
+    finalVideoItems = finalVideoItems.slice(0, effectiveMax);
   }
 
   const totalDuration = performance.now() - functionStartTime;

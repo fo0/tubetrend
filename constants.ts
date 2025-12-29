@@ -36,7 +36,12 @@ export const MAX_RESULTS_OPTIONS = [
   { labelKey: 'maxResults.topN', n: 1000, value: 1000 },
   { labelKey: 'maxResults.topN', n: 2500, value: 2500 },
   { labelKey: 'maxResults.topN', n: 5000, value: 5000 },
-  { labelKey: 'maxResults.allNoLimit', value: 0 },
+  { labelKey: 'maxResults.auto', value: -1 },       // Auto: 250 für Keyword, 500 für Channel
+  { labelKey: 'maxResults.noLimit', value: 0 },     // Ohne Limit: wirklich unbegrenzt
 ];
+
+// Auto-Modus Limits (zur Quota-Optimierung)
+export const AUTO_LIMIT_KEYWORD = 250;   // Keyword-Suche: max 250 (spart API Quota)
+export const AUTO_LIMIT_CHANNEL = 500;   // Channel-Suche: max 500
 
 export const PLACEHOLDER_IMAGE = "https://picsum.photos/640/360";
