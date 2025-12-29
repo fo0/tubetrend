@@ -17,6 +17,13 @@ const DEFAULT_SEARCH_INPUT: string = (
 interface InputSectionProps {
   onSearch: (query: string, timeFrame: TimeFrame, maxResults: number, searchType: SearchType) => void;
   isLoading: boolean;
+  // Optional: Externe Werte zum Synchronisieren (z.B. von Favoriten)
+  externalQuery?: string;
+  externalTimeFrame?: TimeFrame;
+  externalMaxResults?: number;
+  externalSearchType?: SearchType;
+  // Ändert sich bei jedem externen Sync, um useEffect-Trigger zu garantieren
+  externalSyncToken?: number;
 }
 
 // Hilfsfunktion: Ermittelt den SearchType aus dem Input-Präfix
@@ -38,7 +45,15 @@ const stripSearchPrefix = (input: string): string => {
   return trimmed;
 };
 
-export const InputSection: React.FC<InputSectionProps> = ({ onSearch, isLoading }) => {
+export const InputSection: React.FC<InputSectionProps> = ({
+  onSearch,
+  isLoading,
+  externalQuery,
+  externalTimeFrame,
+  externalMaxResults,
+  externalSearchType,
+  externalSyncToken,
+}) => {
   const { t } = useTranslation();
   const [inputValue, setInputValue] = useState<string>(DEFAULT_SEARCH_INPUT);
   const [timeFrame, setTimeFrame] = useState<TimeFrame>(TimeFrame.LAST_MONTH);
@@ -79,6 +94,28 @@ export const InputSection: React.FC<InputSectionProps> = ({ onSearch, isLoading 
       // ignore storage errors
     }
   }, []);
+
+  // Synchronisiere externe Werte (z.B. von Favoriten-Analyse)
+  // externalSyncToken als Dependency sorgt dafür, dass auch bei gleichem Favoriten die Werte aktualisiert werden
+  useEffect(() => {
+    if (externalQuery !== undefined && externalSyncToken !== undefined) {
+      // Bei Keyword-Suche: Präfix # hinzufügen, falls nicht vorhanden
+      const prefix = externalSearchType === SearchType.KEYWORD && !externalQuery.startsWith('#') ? '#' : '';
+      setInputValue(prefix + externalQuery);
+    }
+  }, [externalQuery, externalSearchType, externalSyncToken]);
+
+  useEffect(() => {
+    if (externalTimeFrame !== undefined && externalSyncToken !== undefined) {
+      setTimeFrame(externalTimeFrame);
+    }
+  }, [externalTimeFrame, externalSyncToken]);
+
+  useEffect(() => {
+    if (externalMaxResults !== undefined && externalSyncToken !== undefined) {
+      setMaxResults(externalMaxResults);
+    }
+  }, [externalMaxResults, externalSyncToken]);
 
   // Persist timeframe and maxResults on change
   useEffect(() => {

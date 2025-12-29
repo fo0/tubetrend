@@ -40,6 +40,16 @@ const App: React.FC = () => {
     data: null,
     channelName: ''
   });
+
+  // Externe Werte für InputSection (werden gesetzt, wenn von Favorit navigiert wird)
+  // syncToken sorgt dafür, dass die Werte auch bei gleichem Favoriten erneut synchronisiert werden
+  const [externalInputValues, setExternalInputValues] = useState<{
+    query?: string;
+    timeFrame?: TimeFrame;
+    maxResults?: number;
+    searchType?: SearchType;
+    syncToken?: number;
+  }>({});
   
   // Initial check: if no key in storage, open modal
   useEffect(() => {
@@ -382,6 +392,16 @@ const App: React.FC = () => {
   ) => {
     // Zur Analyser-Seite wechseln
     setActivePage('analyser');
+
+    // Externe Werte für InputSection setzen (damit Suchfeld befüllt wird)
+    // syncToken ändert sich bei jedem Klick, um useEffect-Trigger zu garantieren
+    setExternalInputValues({
+      query: favorite.query,
+      timeFrame: favorite.timeFrame,
+      maxResults: favorite.maxResults,
+      searchType: favorite.searchType,
+      syncToken: Date.now(),
+    });
 
     // Wenn Cache-Daten vorhanden, direkt anzeigen (kein API-Call)
     if (cachedVideos && cachedVideos.length > 0) {
@@ -830,9 +850,14 @@ const App: React.FC = () => {
           </div>
         ) : (
           <>
-            <InputSection 
-              onSearch={handleSearch} 
-              isLoading={searchState.isLoading} 
+            <InputSection
+              onSearch={handleSearch}
+              isLoading={searchState.isLoading}
+              externalQuery={externalInputValues.query}
+              externalTimeFrame={externalInputValues.timeFrame}
+              externalMaxResults={externalInputValues.maxResults}
+              externalSearchType={externalInputValues.searchType}
+              externalSyncToken={externalInputValues.syncToken}
             />
 
             {/* Error Message */}
