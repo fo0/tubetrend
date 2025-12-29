@@ -4,12 +4,12 @@ import { getQuotaInfo, getQuotaHistory, QuotaHistoryEntry } from '../services/yo
 import { useTranslation } from 'react-i18next';
 
 // Group history entries by time buckets for the timeline
-const groupHistoryByTimeBuckets = (history: QuotaHistoryEntry[], bucketCount: number = 12) => {
+const groupHistoryByTimeBuckets = (history: QuotaHistoryEntry[], bucketCount: number = 24) => {
   if (history.length === 0) return [];
 
   const now = Date.now();
-  // Show last 2 hours of activity
-  const timeWindow = 2 * 60 * 60 * 1000; // 2 hours in ms
+  // Show last 24 hours of activity (matches API quota reset period)
+  const timeWindow = 24 * 60 * 60 * 1000; // 24 hours in ms
   const bucketSize = timeWindow / bucketCount;
 
   const buckets: { startTime: number; endTime: number; units: number; calls: number }[] = [];
@@ -236,7 +236,7 @@ export const ApiQuotaIndicator: React.FC = () => {
 
           {/* Timeline line chart */}
           <div className="px-3 py-3 border-b border-slate-700/50">
-            <div className="text-[10px] text-slate-500 mb-2">{t('quota.last2Hours')}</div>
+            <div className="text-[10px] text-slate-500 mb-2">{t('quota.last24Hours')}</div>
             <div className="relative h-12">
               <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
                 {/* Grid lines */}
@@ -337,8 +337,8 @@ export const ApiQuotaIndicator: React.FC = () => {
             </div>
             {/* Time labels */}
             <div className="flex justify-between mt-1 text-[9px] text-slate-600">
-              <span>-2h</span>
-              <span>-1h</span>
+              <span>-24h</span>
+              <span>-12h</span>
               <span>{t('quota.now')}</span>
             </div>
           </div>
