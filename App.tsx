@@ -7,7 +7,7 @@ import { ApiKeyModal } from './components/ApiKeyModal';
 import { FavoriteRow } from './components/FavoriteRow';
 import { analyzeVideoStats } from './services/trendAnalysisService';
 import { findChannelInfo, getVideosFromChannel, setYoutubeApiKey, searchVideosByKeyword } from './services/youtubeService';
-import { TimeFrame, SearchState, FavoriteConfig, SearchType } from './types';
+import { TimeFrame, SearchState, FavoriteConfig, SearchType, VideoData } from './types';
 import { favoritesService } from './services/favoritesService';
 import { dashboardBackupService } from './services/dashboardBackupService';
 import { hiddenHighlightsService } from './services/hiddenHighlightsService';
@@ -371,6 +371,32 @@ const App: React.FC = () => {
   const handleRemoveFavorite = (id: string) => {
     favoritesService.remove(id);
     setFavorites(favoritesService.list());
+  };
+
+  // Handler: Favorit im Analyser öffnen (mit Cache-Daten, spart API-Tokens)
+  const handleAnalyzeFavorite = (
+    favorite: FavoriteConfig,
+    cachedVideos: VideoData[] | null,
+    channelTitle: string,
+    channelId: string | null
+  ) => {
+    // Zur Analyser-Seite wechseln
+    setActivePage('analyser');
+
+    // Wenn Cache-Daten vorhanden, direkt anzeigen (kein API-Call)
+    if (cachedVideos && cachedVideos.length > 0) {
+      setSearchState({
+        isLoading: false,
+        step: 'complete',
+        error: null,
+        data: cachedVideos,
+        channelName: channelTitle || favorite.query,
+        channelId: channelId || undefined,
+      });
+    } else {
+      // Falls keine Cache-Daten, normalen Suchvorgang starten
+      handleSearch(favorite.query, favorite.timeFrame, favorite.maxResults, favorite.searchType);
+    }
   };
 
   // Klick auf Sortier-Buttons: gleiches erneut → Reihenfolge umkehren, anderer Modus → Modus wechseln + Default-Reihenfolge setzen
@@ -797,7 +823,7 @@ const App: React.FC = () => {
             ) : (
               <div className="space-y-10">
                 {sortedFavorites.map((fav, idx) => (
-                  <FavoriteRow key={fav.id} favorite={fav} onRemove={handleRemoveFavorite} globalRefreshToken={dashRefreshToken} staggerIndex={idx} />
+                  <FavoriteRow key={fav.id} favorite={fav} onRemove={handleRemoveFavorite} onAnalyze={handleAnalyzeFavorite} globalRefreshToken={dashRefreshToken} staggerIndex={idx} />
                 ))}
               </div>
             )}

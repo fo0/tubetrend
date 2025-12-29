@@ -4,13 +4,15 @@ import { favoritesService } from '../services/favoritesService';
 import { analyzeVideoStats } from '../services/trendAnalysisService';
 import { findChannelInfo, getVideosFromChannel, searchVideosByKeyword } from '../services/youtubeService';
 import { VideoCard } from './VideoCard';
-import { AlertCircle, AlertTriangle, ChevronRight, Loader2, Trash2, RefreshCw, Youtube, Hash } from 'lucide-react';
+import { AlertCircle, AlertTriangle, ChevronRight, Loader2, Trash2, RefreshCw, Youtube, Hash, BarChart3 } from 'lucide-react';
 import { MAX_RESULTS_OPTIONS, TIME_FRAMES } from '../constants';
 import { useTranslation } from 'react-i18next';
 
 interface FavoriteRowProps {
   favorite: FavoriteConfig;
   onRemove?: (id: string) => void;
+  // Callback um diesen Favoriten im Analyser zu öffnen (mit Cache-Daten)
+  onAnalyze?: (favorite: FavoriteConfig, cachedVideos: VideoData[] | null, channelTitle: string, channelId: string | null) => void;
   // Wird vom Dashboard erhöht, um alle Reihen neu zu laden
   globalRefreshToken?: number;
   // Optimierung: Index für gestaffelten Refresh (verhindert gleichzeitige API-Calls)
@@ -20,7 +22,7 @@ interface FavoriteRowProps {
 // Optimierung: Gestaffelter Refresh - Delay zwischen den Favorites (in ms)
 const STAGGER_DELAY_MS = 300;
 
-export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, globalRefreshToken = 0, staggerIndex = 0 }) => {
+export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, onAnalyze, globalRefreshToken = 0, staggerIndex = 0 }) => {
   const { t } = useTranslation();
   const [videos, setVideos] = useState<VideoData[] | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -443,6 +445,32 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, gl
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {/* Analyse-Button: Wechselt zum Analyser mit Cache-Daten */}
+          {onAnalyze && (
+            <button
+              type="button"
+              onClick={() => {
+                // Alle verfügbaren Videos aus dem Cache holen (nicht nur die gecachten Top 6)
+                const cached = favoritesService.getCache(currentFavId);
+                onAnalyze(
+                  { ...favorite, id: currentFavId, timeFrame: currentTimeFrame, maxResults: currentMax },
+                  cached?.videos ?? videos,
+                  channelTitle,
+                  channelId
+                );
+              }}
+              disabled={loading || (!videos && !favoritesService.getCache(currentFavId))}
+              className={`inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-md border transition-colors ${
+                loading || (!videos && !favoritesService.getCache(currentFavId))
+                  ? 'border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500 cursor-not-allowed'
+                  : 'border-indigo-500/30 text-indigo-500 dark:text-indigo-400 hover:bg-indigo-500/10'
+              }`}
+              title={t('favorites.analyze')}
+            >
+              <BarChart3 className="w-3 h-3" /> {t('actions.analyze')}
+            </button>
+          )}
+
           <button
             type="button"
             onClick={() => setLocalRefreshToken(v => v + 1)}
