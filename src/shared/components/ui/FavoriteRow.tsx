@@ -1,7 +1,8 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import type {FavoriteConfig} from '@/src/features/favorites';
 import type {VideoData} from '@/src/features/videos';
-import type {SearchType, TimeFrame} from '@/src/shared/types';
+import {SearchType} from '@/src/shared/types';
+import type {TimeFrame} from '@/src/shared/types';
 import {favoritesService} from '@/src/features/favorites';
 import {analyzeVideoStats} from '@/src/features/videos';
 import {findChannelInfo, getVideosFromChannel, searchVideosByKeyword} from '@/src/features/youtube';
