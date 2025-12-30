@@ -113,7 +113,7 @@ export function DashboardPage({
       />
 
       {favorites.length > 0 && (
-        <section className="mb-6 rounded-2xl border border-indigo-200/70 bg-indigo-50/40 p-4 shadow-sm dark:border-indigo-500/20 dark:bg-indigo-500/10">
+        <section className={`mb-6 rounded-2xl border border-indigo-200/70 bg-indigo-50/40 p-4 shadow-sm dark:border-indigo-500/20 dark:bg-indigo-500/10 ${refreshingIds.size > 0 ? 'highlights-loading-border' : ''}`}>
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-3">
             <div>
               <div className="text-xs font-extrabold uppercase tracking-wide text-indigo-700 dark:text-indigo-300">

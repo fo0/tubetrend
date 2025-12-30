@@ -58,3 +58,49 @@ body, .theme-surface {
 .animate-fade-in {
   animation: fade-in 0.2s ease-out;
 }
+
+/* Loading border animation for highlights section */
+@keyframes loading-border-glow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.highlights-loading-border {
+  position: relative;
+  overflow: hidden;
+}
+
+.highlights-loading-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 2px;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    rgba(34, 197, 94, 0.1) 0%,
+    rgba(34, 197, 94, 0.6) 25%,
+    rgba(74, 222, 128, 0.8) 50%,
+    rgba(34, 197, 94, 0.6) 75%,
+    rgba(34, 197, 94, 0.1) 100%
+  );
+  background-size: 200% 100%;
+  animation: loading-border-glow 1.5s ease-in-out infinite;
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  pointer-events: none;
+  z-index: 1;
+}
