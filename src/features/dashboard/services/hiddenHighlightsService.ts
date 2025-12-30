@@ -1,9 +1,8 @@
 /**
  * Service für das Ausblenden von Highlight-Karten im Dashboard.
- * 
- * Speichert welche Karten (Kombination aus sourceId + videoId) ausgeblendet sind.
- * Wenn sich das Video für einen Kanal ändert (neue videoId), wird die Karte
- * automatisch wieder angezeigt.
+ *
+ * Videos werden über ihre eindeutige videoId ausgeblendet.
+ * Einmal ausgeblendete Videos bleiben dauerhaft versteckt.
  */
 
 import {safeRead, safeWrite} from '@/src/shared/lib/storage';
@@ -12,8 +11,8 @@ import {dispatchEvent} from '@/src/shared/lib/eventBus';
 const HIDDEN_HIGHLIGHTS_KEY = 'tt.dashboard.hiddenHighlights.v1';
 
 export interface HiddenHighlight {
-  sourceId: string;  // Favorit/Kanal-ID
-  videoId: string;   // Video-ID zum Zeitpunkt des Ausblendens
+  videoId: string;   // Eindeutige Video-ID (primärer Schlüssel)
+  sourceId: string;  // Favorit/Kanal-ID (für Anzeige/Kontext)
   hiddenAt: number;  // Zeitstempel wann ausgeblendet wurde (für chronologische Sortierung)
   videoTitle?: string;  // Video-Titel für die Anzeige in der Liste
   thumbnailUrl?: string;  // Thumbnail-URL für die Anzeige in der Liste
@@ -62,25 +61,24 @@ export const hiddenHighlightsService = {
   },
 
   /**
-   * Blendet eine Highlight-Karte aus.
-   * Speichert die Kombination aus sourceId (Kanal) und videoId (aktuelles Video).
+   * Blendet ein Video dauerhaft aus (über die eindeutige videoId).
    */
   hide(sourceId: string, videoId: string, meta?: { videoTitle?: string; thumbnailUrl?: string; sourceLabel?: string }): void {
     const list = this.list();
     const now = Date.now();
-    // Prüfen ob bereits ausgeblendet (für diesen sourceId)
-    const existingIdx = list.findIndex(h => h.sourceId === sourceId);
+    // Prüfen ob Video bereits ausgeblendet ist (nach videoId)
+    const existingIdx = list.findIndex(h => h.videoId === videoId);
     if (existingIdx >= 0) {
-      // Aktualisiere die videoId und Metadaten (falls sich das Video geändert hat und erneut ausgeblendet wird)
-      list[existingIdx].videoId = videoId;
+      // Video bereits ausgeblendet - nur Metadaten aktualisieren falls nötig
       list[existingIdx].hiddenAt = now;
       if (meta?.videoTitle) list[existingIdx].videoTitle = meta.videoTitle;
       if (meta?.thumbnailUrl) list[existingIdx].thumbnailUrl = meta.thumbnailUrl;
       if (meta?.sourceLabel) list[existingIdx].sourceLabel = meta.sourceLabel;
     } else {
+      // Neues Video ausblenden
       list.push({
-        sourceId,
         videoId,
+        sourceId,
         hiddenAt: now,
         videoTitle: meta?.videoTitle,
         thumbnailUrl: meta?.thumbnailUrl,
@@ -92,10 +90,10 @@ export const hiddenHighlightsService = {
   },
 
   /**
-   * Zeigt eine ausgeblendete Highlight-Karte wieder an.
+   * Zeigt ein ausgeblendetes Video wieder an (entfernt es aus der Liste).
    */
-  show(sourceId: string): void {
-    const list = this.list().filter(h => h.sourceId !== sourceId);
+  show(videoId: string): void {
+    const list = this.list().filter(h => h.videoId !== videoId);
     safeWrite(HIDDEN_HIGHLIGHTS_KEY, list);
     dispatchEvent('hidden-highlights-changed');
   },
@@ -103,37 +101,23 @@ export const hiddenHighlightsService = {
   /**
    * Alias for show() - for API compatibility
    */
-  unhide(sourceId: string, _videoId?: string): void {
-    this.show(sourceId);
+  unhide(videoId: string): void {
+    this.show(videoId);
   },
 
   /**
    * Alias for show() - for API compatibility
    */
-  remove(sourceId: string, _videoId?: string): void {
-    this.show(sourceId);
+  remove(videoId: string): void {
+    this.show(videoId);
   },
 
   /**
-   * Prüft ob eine Karte ausgeblendet ist.
-   * Gibt true zurück, wenn die Karte ausgeblendet ist UND die videoId noch übereinstimmt.
-   * Wenn die videoId sich geändert hat, wird der Eintrag automatisch entfernt und false zurückgegeben.
+   * Prüft ob ein Video ausgeblendet ist (über die eindeutige videoId).
+   * Einmal ausgeblendete Videos bleiben dauerhaft versteckt.
    */
-  isHidden(sourceId: string, currentVideoId: string): boolean {
-    const list = this.list();
-    const entry = list.find(h => h.sourceId === sourceId);
-    
-    if (!entry) {
-      return false;
-    }
-    
-    // Wenn die videoId sich geändert hat, Eintrag entfernen und Karte wieder anzeigen
-    if (entry.videoId !== currentVideoId) {
-      this.show(sourceId);
-      return false;
-    }
-    
-    return true;
+  isHidden(videoId: string): boolean {
+    return this.list().some(h => h.videoId === videoId);
   },
 
   /**
