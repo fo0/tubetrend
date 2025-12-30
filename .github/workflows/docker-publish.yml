@@ -72,6 +72,10 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Get short commit hash
+        id: git_info
+        run: echo "short_sha=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
@@ -81,6 +85,11 @@ jobs:
           platforms: linux/amd64
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          # Pass git info to Docker build
+          build-args: |
+            GIT_COMMIT_HASH=${{ github.sha }}
+            GIT_COMMIT_SHORT=${{ steps.git_info.outputs.short_sha }}
+            GIT_BRANCH=${{ github.ref_name }}
           # 2. Caching aktivieren für schnellere Builds
           cache-from: type=gha
           cache-to: type=gha,mode=max
