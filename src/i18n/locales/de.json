@@ -189,6 +189,7 @@
     "units": "Einheiten",
     "calls": "Aufrufe",
     "last24Hours": "Letzte 24 Stunden",
+    "lastTimeWindow": "Letzte {{time}}",
     "now": "Jetzt",
     "recentCalls": "Letzte Aufrufe",
     "noCalls": "Noch keine API-Aufrufe",

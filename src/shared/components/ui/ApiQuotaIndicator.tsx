@@ -4,14 +4,41 @@ import {quotaService} from '@/src/features/youtube';
 import type {QuotaCallContext, QuotaHistoryEntry} from '@/src/shared/types';
 import {useTranslation} from 'react-i18next';
 
+// Determine optimal time window based on actual data
+const getOptimalTimeWindow = (history: QuotaHistoryEntry[]): { windowMs: number; label: string } => {
+  if (history.length === 0) return { windowMs: 24 * 60 * 60 * 1000, label: '24h' };
+
+  const now = Date.now();
+  const oldestEntry = Math.min(...history.map(h => h.timestamp));
+  const dataSpan = now - oldestEntry;
+
+  // Choose time window based on data span with some buffer
+  if (dataSpan < 30 * 60 * 1000) {
+    // Less than 30 min -> show last 30 minutes
+    return { windowMs: 30 * 60 * 1000, label: '30 Min.' };
+  } else if (dataSpan < 60 * 60 * 1000) {
+    // Less than 1 hour -> show last hour
+    return { windowMs: 60 * 60 * 1000, label: '1 Std.' };
+  } else if (dataSpan < 3 * 60 * 60 * 1000) {
+    // Less than 3 hours -> show last 3 hours
+    return { windowMs: 3 * 60 * 60 * 1000, label: '3 Std.' };
+  } else if (dataSpan < 6 * 60 * 60 * 1000) {
+    // Less than 6 hours -> show last 6 hours
+    return { windowMs: 6 * 60 * 60 * 1000, label: '6 Std.' };
+  } else if (dataSpan < 12 * 60 * 60 * 1000) {
+    // Less than 12 hours -> show last 12 hours
+    return { windowMs: 12 * 60 * 60 * 1000, label: '12 Std.' };
+  }
+  // Default: 24 hours
+  return { windowMs: 24 * 60 * 60 * 1000, label: '24 Std.' };
+};
+
 // Group history entries by time buckets for the timeline
-const groupHistoryByTimeBuckets = (history: QuotaHistoryEntry[], bucketCount: number = 24) => {
+const groupHistoryByTimeBuckets = (history: QuotaHistoryEntry[], timeWindowMs: number, bucketCount: number = 24) => {
   if (history.length === 0) return [];
 
   const now = Date.now();
-  // Show last 24 hours of activity (matches API quota reset period)
-  const timeWindow = 24 * 60 * 60 * 1000; // 24 hours in ms
-  const bucketSize = timeWindow / bucketCount;
+  const bucketSize = timeWindowMs / bucketCount;
 
   const buckets: { startTime: number; endTime: number; units: number; calls: number }[] = [];
 
@@ -88,10 +115,34 @@ const formatRelativeTime = (timestamp: number): string => {
   return `vor ${hours} Std.`;
 };
 
-// Format bucket time for tooltip
-const formatBucketTime = (bucket: { startTime: number; endTime: number }): string => {
+// Format bucket time for tooltip - more precise based on time window
+const formatBucketTime = (bucket: { startTime: number; endTime: number }, timeWindowMs: number): string => {
   const now = Date.now();
-  const hoursAgo = Math.round((now - bucket.endTime) / (60 * 60 * 1000));
+  const diffMs = now - bucket.endTime;
+
+  // For short time windows (< 1 hour), show minutes
+  if (timeWindowMs <= 60 * 60 * 1000) {
+    const minutesAgo = Math.round(diffMs / (60 * 1000));
+    if (minutesAgo <= 0) return 'Jetzt';
+    if (minutesAgo === 1) return 'vor 1 Min.';
+    return `vor ${minutesAgo} Min.`;
+  }
+
+  // For medium time windows (< 6 hours), show minutes or hours
+  if (timeWindowMs <= 6 * 60 * 60 * 1000) {
+    const minutesAgo = Math.round(diffMs / (60 * 1000));
+    if (minutesAgo < 60) {
+      if (minutesAgo <= 0) return 'Jetzt';
+      if (minutesAgo === 1) return 'vor 1 Min.';
+      return `vor ${minutesAgo} Min.`;
+    }
+    const hoursAgo = Math.round(diffMs / (60 * 60 * 1000));
+    if (hoursAgo === 1) return 'vor 1 Std.';
+    return `vor ${hoursAgo} Std.`;
+  }
+
+  // For longer time windows, show hours
+  const hoursAgo = Math.round(diffMs / (60 * 60 * 1000));
   if (hoursAgo === 0) return 'Jetzt';
   if (hoursAgo === 1) return 'vor 1 Std.';
   return `vor ${hoursAgo} Std.`;
@@ -143,8 +194,11 @@ export const ApiQuotaIndicator: React.FC = () => {
     };
   }, [isOpen]);
 
+  // Determine optimal time window for chart
+  const timeWindow = useMemo(() => getOptimalTimeWindow(history), [history]);
+
   // Group history into time buckets for chart
-  const timeBuckets = useMemo(() => groupHistoryByTimeBuckets(history), [history]);
+  const timeBuckets = useMemo(() => groupHistoryByTimeBuckets(history, timeWindow.windowMs), [history, timeWindow.windowMs]);
   const maxUnitsInBucket = useMemo(() => Math.max(...timeBuckets.map(b => b.units), 1), [timeBuckets]);
 
   // Grouped calls by context (for better overview)
@@ -317,7 +371,7 @@ export const ApiQuotaIndicator: React.FC = () => {
 
           {/* Timeline line chart - pure line chart showing usage over time */}
           <div className="px-3 py-3 border-b border-slate-700/50">
-            <div className="text-[10px] text-slate-500 mb-2">{t('quota.last24Hours')}</div>
+            <div className="text-[10px] text-slate-500 mb-2">{t('quota.lastTimeWindow', { time: timeWindow.label })}</div>
             <div className="relative h-16">
               <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
                 {/* Grid lines */}
@@ -375,7 +429,7 @@ export const ApiQuotaIndicator: React.FC = () => {
                   >
                     {bucket.units > 0 && (
                       <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-1 px-2 py-1 bg-slate-800 border border-slate-600 rounded text-[10px] text-slate-300 whitespace-nowrap opacity-0 group-hover/point:opacity-100 transition-opacity pointer-events-none z-10">
-                        <div className="font-medium">{formatBucketTime(bucket)}</div>
+                        <div className="font-medium">{formatBucketTime(bucket, timeWindow.windowMs)}</div>
                         <div>{bucket.units} {t('quota.units')} ({bucket.calls} {t('quota.calls')})</div>
                       </div>
                     )}
@@ -383,10 +437,10 @@ export const ApiQuotaIndicator: React.FC = () => {
                 ))}
               </div>
             </div>
-            {/* Time labels */}
+            {/* Time labels - dynamic based on time window */}
             <div className="flex justify-between mt-1 text-[9px] text-slate-600">
-              <span>-24h</span>
-              <span>-12h</span>
+              <span>-{timeWindow.label}</span>
+              <span>-{timeWindow.label.replace(/(\d+)/, (m) => String(Math.round(parseInt(m) / 2)))}</span>
               <span>{t('quota.now')}</span>
             </div>
           </div>
