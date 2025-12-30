@@ -191,5 +191,14 @@
     "now": "Jetzt",
     "recentCalls": "Letzte Aufrufe",
     "noCalls": "Noch keine API-Aufrufe"
+  },
+  "footer": {
+    "buildInfo": "Build-Info",
+    "toggleDetails": "Build-Details anzeigen/ausblenden",
+    "commitHash": "Commit-Hash",
+    "commit": "Commit",
+    "branch": "Branch",
+    "buildDate": "Build-Datum",
+    "built": "Gebaut"
   }
 }
