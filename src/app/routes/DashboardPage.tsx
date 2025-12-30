@@ -1,4 +1,4 @@
-import React, {useMemo, useRef} from 'react';
+import {useMemo, useRef} from 'react';
 import {Activity, Download, EyeOff, RefreshCw, Upload} from 'lucide-react';
 import {FavoriteRow} from '@/src/shared/components/ui/FavoriteRow';
 import {HighlightVideoCard} from '@/src/shared/components/ui/HighlightVideoCard';

@@ -1,4 +1,4 @@
-import React, {useMemo, useState} from 'react';
+import {useMemo, useState} from 'react';
 import {AlertCircle, Eye, List, Trophy, Youtube} from 'lucide-react';
 import {InputSection} from '@/src/shared/components/ui/InputSection';
 import {VideoCard} from '@/src/shared/components/ui/VideoCard';

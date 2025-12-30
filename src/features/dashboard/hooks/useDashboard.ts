@@ -195,7 +195,7 @@ export function useDashboardSort() {
 /**
  * Hook for managing highlights with hidden items
  */
-export function useHighlights(sortedFavorites: FavoriteConfig[]) {
+export function useHighlights(_sortedFavorites: FavoriteConfig[]) {
   const [hiddenTick, setHiddenTick] = useState(0);
 
   // Listen for hidden highlights changes

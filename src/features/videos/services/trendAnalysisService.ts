@@ -6,8 +6,8 @@ import type {VideoData} from '../types';
  */
 export async function analyzeVideoStats(
   videos: YouTubeVideoItem[],
-  channelName: string,
-  timeFrame: string
+  _channelName: string,
+  _timeFrame: string
 ): Promise<VideoData[]> {
   const now = Date.now();
 

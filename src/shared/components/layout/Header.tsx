@@ -1,4 +1,3 @@
-import React from 'react';
 import {Activity, BarChart3, LayoutDashboard, Settings} from 'lucide-react';
 import {ThemeToggle} from '@/src/shared/components/ui/ThemeToggle';
 import {LanguageSwitcher} from '@/src/shared/components/ui/LanguageSwitcher';

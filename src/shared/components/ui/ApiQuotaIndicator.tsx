@@ -35,14 +35,6 @@ const groupHistoryByTimeBuckets = (history: QuotaHistoryEntry[], bucketCount: nu
   return buckets;
 };
 
-// Format time for tooltip
-const formatTime = (timestamp: number): string => {
-  return new Date(timestamp).toLocaleTimeString('de-DE', {
-    hour: '2-digit',
-    minute: '2-digit'
-  });
-};
-
 // Format relative time
 const formatRelativeTime = (timestamp: number): string => {
   const diff = Date.now() - timestamp;
