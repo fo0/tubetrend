@@ -7,7 +7,7 @@ interface VideoCardProps {
   rank: number;
 }
 
-export const VideoCard: React.FC<VideoCardProps> = ({ video, rank }) => {
+export const VideoCard: React.FC<VideoCardProps> = ({ video }) => {
   // Determine color based on score
   const getScoreColor = (score: number) => {
     if (score >= 80) return 'text-red-400 bg-red-400/10 border-red-400/20 shadow-[0_0_15px_rgba(248,113,113,0.2)]';

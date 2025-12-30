@@ -103,14 +103,14 @@ export const hiddenHighlightsService = {
   /**
    * Alias for show() - for API compatibility
    */
-  unhide(sourceId: string, videoId?: string): void {
+  unhide(sourceId: string, _videoId?: string): void {
     this.show(sourceId);
   },
 
   /**
    * Alias for show() - for API compatibility
    */
-  remove(sourceId: string, videoId?: string): void {
+  remove(sourceId: string, _videoId?: string): void {
     this.show(sourceId);
   },
 
