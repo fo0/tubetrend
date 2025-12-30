@@ -19,13 +19,13 @@ export const HiddenHighlightsModal: React.FC<HiddenHighlightsModalProps> = ({ is
     }
   }, [isOpen]);
 
-  const handleUnhide = (sourceId: string) => {
-    hiddenHighlightsService.show(sourceId);
+  const handleUnhide = (videoId: string) => {
+    hiddenHighlightsService.show(videoId);
     setHiddenItems(hiddenHighlightsService.listChronological());
   };
 
-  const handleDelete = (sourceId: string) => {
-    hiddenHighlightsService.show(sourceId); // Entfernt den Eintrag aus der Liste
+  const handleDelete = (videoId: string) => {
+    hiddenHighlightsService.show(videoId); // Entfernt den Eintrag aus der Liste
     setHiddenItems(hiddenHighlightsService.listChronological());
   };
 
@@ -78,7 +78,7 @@ export const HiddenHighlightsModal: React.FC<HiddenHighlightsModalProps> = ({ is
             <ul className="space-y-3">
               {hiddenItems.map((item) => (
                 <li
-                  key={item.sourceId}
+                  key={item.videoId}
                   className="flex items-center gap-4 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700"
                 >
                   {/* Thumbnail */}
@@ -113,7 +113,7 @@ export const HiddenHighlightsModal: React.FC<HiddenHighlightsModalProps> = ({ is
                     {/* Unhide Button */}
                     <button
                       type="button"
-                      onClick={() => handleUnhide(item.sourceId)}
+                      onClick={() => handleUnhide(item.videoId)}
                       className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium
                                bg-indigo-100 text-indigo-700 hover:bg-indigo-200
                                dark:bg-indigo-900/30 dark:text-indigo-400 dark:hover:bg-indigo-900/50
@@ -126,7 +126,7 @@ export const HiddenHighlightsModal: React.FC<HiddenHighlightsModalProps> = ({ is
                     {/* Delete Button */}
                     <button
                       type="button"
-                      onClick={() => handleDelete(item.sourceId)}
+                      onClick={() => handleDelete(item.videoId)}
                       className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium
                                bg-red-100 text-red-700 hover:bg-red-200
                                dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50

@@ -80,7 +80,7 @@ export function DashboardPage({
     });
 
     const visible = sorted.filter(
-      (item) => !hiddenHighlightsService.isHidden(item.sourceId, item.video.id)
+      (item) => !hiddenHighlightsService.isHidden(item.video.id)
     );
     const hiddenCount = sorted.length - visible.length;
 
