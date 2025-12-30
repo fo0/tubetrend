@@ -1,7 +1,7 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
-import {Activity, AlertTriangle, X, Zap} from 'lucide-react';
+import {Activity, AlertTriangle, Hash, Search, User, Video, X, Zap} from 'lucide-react';
 import {quotaService} from '@/src/features/youtube';
-import type {QuotaHistoryEntry} from '@/src/shared/types';
+import type {QuotaCallContext, QuotaHistoryEntry} from '@/src/shared/types';
 import {useTranslation} from 'react-i18next';
 
 // Group history entries by time buckets for the timeline
@@ -35,6 +35,49 @@ const groupHistoryByTimeBuckets = (history: QuotaHistoryEntry[], bucketCount: nu
   return buckets;
 };
 
+// Group recent calls by context (source + name)
+interface GroupedCall {
+  source: QuotaCallContext['source'];
+  name: string;
+  totalUnits: number;
+  callCount: number;
+  lastTimestamp: number;
+  favoriteId?: string;
+}
+
+const groupCallsByContext = (history: QuotaHistoryEntry[]): GroupedCall[] => {
+  const grouped = new Map<string, GroupedCall>();
+
+  // Process in reverse order (newest first)
+  [...history].reverse().forEach(entry => {
+    const source = entry.context?.source || 'unknown';
+    const name = entry.context?.name || '';
+    const key = `${source}:${name}`;
+
+    if (!grouped.has(key)) {
+      grouped.set(key, {
+        source,
+        name,
+        totalUnits: 0,
+        callCount: 0,
+        lastTimestamp: entry.timestamp,
+        favoriteId: entry.context?.favoriteId,
+      });
+    }
+
+    const group = grouped.get(key)!;
+    group.totalUnits += entry.units;
+    group.callCount += 1;
+    // Keep the most recent timestamp
+    if (entry.timestamp > group.lastTimestamp) {
+      group.lastTimestamp = entry.timestamp;
+    }
+  });
+
+  // Sort by most recent activity
+  return Array.from(grouped.values()).sort((a, b) => b.lastTimestamp - a.lastTimestamp);
+};
+
 // Format relative time
 const formatRelativeTime = (timestamp: number): string => {
   const diff = Date.now() - timestamp;
@@ -43,6 +86,15 @@ const formatRelativeTime = (timestamp: number): string => {
   if (minutes < 60) return `vor ${minutes} Min.`;
   const hours = Math.floor(minutes / 60);
   return `vor ${hours} Std.`;
+};
+
+// Format bucket time for tooltip
+const formatBucketTime = (bucket: { startTime: number; endTime: number }): string => {
+  const now = Date.now();
+  const hoursAgo = Math.round((now - bucket.endTime) / (60 * 60 * 1000));
+  if (hoursAgo === 0) return 'Jetzt';
+  if (hoursAgo === 1) return 'vor 1 Std.';
+  return `vor ${hoursAgo} Std.`;
 };
 
 export const ApiQuotaIndicator: React.FC = () => {
@@ -95,8 +147,8 @@ export const ApiQuotaIndicator: React.FC = () => {
   const timeBuckets = useMemo(() => groupHistoryByTimeBuckets(history), [history]);
   const maxUnitsInBucket = useMemo(() => Math.max(...timeBuckets.map(b => b.units), 1), [timeBuckets]);
 
-  // Recent calls (last 10)
-  const recentCalls = useMemo(() => [...history].reverse().slice(0, 10), [history]);
+  // Grouped calls by context (for better overview)
+  const groupedCalls = useMemo(() => groupCallsByContext(history).slice(0, 8), [history]);
 
   // Color based on percentage and exhausted state
   const getColorClasses = () => {
@@ -106,7 +158,8 @@ export const ApiQuotaIndicator: React.FC = () => {
         border: 'border-red-500/50',
         text: 'text-red-400',
         glow: 'shadow-red-500/30',
-        bar: 'bg-red-500'
+        bar: 'bg-red-500',
+        stroke: '#f87171'
       };
     }
     if (quota.percentage >= 90) {
@@ -115,7 +168,8 @@ export const ApiQuotaIndicator: React.FC = () => {
         border: 'border-red-500/30',
         text: 'text-red-400',
         glow: 'shadow-red-500/20',
-        bar: 'bg-red-400'
+        bar: 'bg-red-400',
+        stroke: '#f87171'
       };
     }
     if (quota.percentage >= 70) {
@@ -124,7 +178,8 @@ export const ApiQuotaIndicator: React.FC = () => {
         border: 'border-amber-500/30',
         text: 'text-amber-400',
         glow: 'shadow-amber-500/20',
-        bar: 'bg-amber-400'
+        bar: 'bg-amber-400',
+        stroke: '#fbbf24'
       };
     }
     return {
@@ -132,7 +187,8 @@ export const ApiQuotaIndicator: React.FC = () => {
       border: 'border-emerald-500/30',
       text: 'text-emerald-400',
       glow: 'shadow-emerald-500/20',
-      bar: 'bg-emerald-400'
+      bar: 'bg-emerald-400',
+      stroke: '#34d399'
     };
   };
 
@@ -141,26 +197,58 @@ export const ApiQuotaIndicator: React.FC = () => {
   // Format numbers with locale
   const formatNumber = (n: number) => n.toLocaleString('de-DE');
 
-  // Endpoint display names
-  const getEndpointLabel = (endpoint: string): string => {
-    const labels: Record<string, string> = {
-      search: 'Suche',
-      channels: 'Kanal',
-      playlistItems: 'Playlist',
-      videos: 'Videos'
-    };
-    return labels[endpoint] || endpoint;
+  // Get icon for source type
+  const getSourceIcon = (source: QuotaCallContext['source']) => {
+    switch (source) {
+      case 'channel':
+        return <User className="w-3 h-3" />;
+      case 'keyword':
+        return <Hash className="w-3 h-3" />;
+      case 'autocomplete':
+        return <Search className="w-3 h-3" />;
+      case 'video-stats':
+        return <Video className="w-3 h-3" />;
+      case 'channel-info':
+        return <User className="w-3 h-3" />;
+      default:
+        return <Activity className="w-3 h-3" />;
+    }
   };
 
-  // Endpoint colors
-  const getEndpointColor = (endpoint: string): string => {
-    const endpointColors: Record<string, string> = {
-      search: 'text-red-400',
-      channels: 'text-blue-400',
-      playlistItems: 'text-purple-400',
-      videos: 'text-green-400'
-    };
-    return endpointColors[endpoint] || 'text-slate-400';
+  // Get color for source type
+  const getSourceColor = (source: QuotaCallContext['source']): string => {
+    switch (source) {
+      case 'channel':
+        return 'text-red-400';
+      case 'keyword':
+        return 'text-indigo-400';
+      case 'autocomplete':
+        return 'text-cyan-400';
+      case 'video-stats':
+        return 'text-green-400';
+      case 'channel-info':
+        return 'text-blue-400';
+      default:
+        return 'text-slate-400';
+    }
+  };
+
+  // Get label for source type
+  const getSourceLabel = (source: QuotaCallContext['source']): string => {
+    switch (source) {
+      case 'channel':
+        return t('quota.sourceChannel');
+      case 'keyword':
+        return t('quota.sourceKeyword');
+      case 'autocomplete':
+        return t('quota.sourceAutocomplete');
+      case 'video-stats':
+        return t('quota.sourceVideoStats');
+      case 'channel-info':
+        return t('quota.sourceChannelInfo');
+      default:
+        return t('quota.sourceUnknown');
+    }
   };
 
   return (
@@ -195,7 +283,7 @@ export const ApiQuotaIndicator: React.FC = () => {
 
       {/* Dropdown popup with history */}
       {isOpen && (
-        <div className="absolute top-full right-0 mt-2 w-72 bg-slate-900 border border-slate-700 rounded-lg shadow-xl z-50 overflow-hidden">
+        <div className="absolute top-full right-0 mt-2 w-80 bg-slate-900 border border-slate-700 rounded-lg shadow-xl z-50 overflow-hidden">
           {/* Header */}
           <div className="flex items-center justify-between px-3 py-2 border-b border-slate-700/50 bg-slate-800/50">
             <div className="flex items-center gap-2">
@@ -227,62 +315,30 @@ export const ApiQuotaIndicator: React.FC = () => {
             </div>
           </div>
 
-          {/* Timeline line chart */}
+          {/* Timeline line chart - pure line chart showing usage over time */}
           <div className="px-3 py-3 border-b border-slate-700/50">
             <div className="text-[10px] text-slate-500 mb-2">{t('quota.last24Hours')}</div>
-            <div className="relative h-12">
+            <div className="relative h-16">
               <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
                 {/* Grid lines */}
+                <line x1="0" y1="25" x2="100" y2="25" stroke="currentColor" className="text-slate-700/20" strokeWidth="0.5" strokeDasharray="2,2" />
                 <line x1="0" y1="50" x2="100" y2="50" stroke="currentColor" className="text-slate-700/30" strokeWidth="0.5" strokeDasharray="2,2" />
+                <line x1="0" y1="75" x2="100" y2="75" stroke="currentColor" className="text-slate-700/20" strokeWidth="0.5" strokeDasharray="2,2" />
 
-                {/* Gradient fill under the line */}
-                <defs>
-                  <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" className={quota.percentage >= 90 ? 'text-red-500' : quota.percentage >= 70 ? 'text-amber-500' : 'text-emerald-500'} stopColor="currentColor" stopOpacity="0.3" />
-                    <stop offset="100%" className={quota.percentage >= 90 ? 'text-red-500' : quota.percentage >= 70 ? 'text-amber-500' : 'text-emerald-500'} stopColor="currentColor" stopOpacity="0.05" />
-                  </linearGradient>
-                </defs>
-
-                {/* Area under line */}
-                {timeBuckets.length > 0 && (
-                  <path
-                    d={(() => {
-                      const width = 100;
-                      const height = 100;
-                      const padding = 2;
-                      const points = timeBuckets.map((bucket, i) => {
-                        const x = (i / (timeBuckets.length - 1)) * (width - padding * 2) + padding;
-                        const y = height - padding - (bucket.units / maxUnitsInBucket) * (height - padding * 2);
-                        return { x, y };
-                      });
-                      let path = `M ${points[0].x} ${height}`;
-                      path += ` L ${points[0].x} ${points[0].y}`;
-                      for (let i = 1; i < points.length; i++) {
-                        path += ` L ${points[i].x} ${points[i].y}`;
-                      }
-                      path += ` L ${points[points.length - 1].x} ${height} Z`;
-                      return path;
-                    })()}
-                    fill="url(#areaGradient)"
-                    vectorEffect="non-scaling-stroke"
-                  />
-                )}
-
-                {/* Line */}
+                {/* Line chart */}
                 {timeBuckets.length > 0 && (
                   <polyline
                     points={timeBuckets.map((bucket, i) => {
                       const width = 100;
                       const height = 100;
-                      const padding = 2;
+                      const padding = 4;
                       const x = (i / (timeBuckets.length - 1)) * (width - padding * 2) + padding;
                       const y = height - padding - (bucket.units / maxUnitsInBucket) * (height - padding * 2);
                       return `${x},${y}`;
                     }).join(' ')}
                     fill="none"
-                    className={quota.percentage >= 90 ? 'text-red-400' : quota.percentage >= 70 ? 'text-amber-400' : 'text-emerald-400'}
-                    stroke="currentColor"
-                    strokeWidth="1.5"
+                    stroke={colors.stroke}
+                    strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
@@ -293,20 +349,18 @@ export const ApiQuotaIndicator: React.FC = () => {
                   if (bucket.units === 0) return null;
                   const width = 100;
                   const height = 100;
-                  const padding = 2;
+                  const padding = 4;
                   const x = (i / (timeBuckets.length - 1)) * (width - padding * 2) + padding;
                   const y = height - padding - (bucket.units / maxUnitsInBucket) * (height - padding * 2);
-                  const isRecent = i === timeBuckets.length - 1;
+                  const isRecent = i === timeBuckets.length - 1 && bucket.calls > 0;
                   return (
                     <circle
                       key={i}
                       cx={x}
                       cy={y}
-                      r="2.5"
-                      className={`${quota.percentage >= 90 ? 'text-red-400' : quota.percentage >= 70 ? 'text-amber-400' : 'text-emerald-400'} ${isRecent ? 'animate-pulse' : ''}`}
-                      fill="currentColor"
-                      stroke="currentColor"
-                      strokeWidth="0.5"
+                      r="3"
+                      fill={colors.stroke}
+                      className={isRecent ? 'animate-pulse' : ''}
                     />
                   );
                 })}
@@ -320,8 +374,9 @@ export const ApiQuotaIndicator: React.FC = () => {
                     className="flex-1 relative group/point"
                   >
                     {bucket.units > 0 && (
-                      <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-1 px-1.5 py-0.5 bg-slate-800 border border-slate-600 rounded text-[9px] text-slate-300 whitespace-nowrap opacity-0 group-hover/point:opacity-100 transition-opacity pointer-events-none z-10">
-                        {bucket.units} {t('quota.units')} ({bucket.calls}x)
+                      <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-1 px-2 py-1 bg-slate-800 border border-slate-600 rounded text-[10px] text-slate-300 whitespace-nowrap opacity-0 group-hover/point:opacity-100 transition-opacity pointer-events-none z-10">
+                        <div className="font-medium">{formatBucketTime(bucket)}</div>
+                        <div>{bucket.units} {t('quota.units')} ({bucket.calls} {t('quota.calls')})</div>
                       </div>
                     )}
                   </div>
@@ -336,29 +391,43 @@ export const ApiQuotaIndicator: React.FC = () => {
             </div>
           </div>
 
-          {/* Recent calls list */}
-          <div className="px-3 py-2 max-h-32 overflow-y-auto">
-            <div className="text-[10px] text-slate-500 mb-1.5">{t('quota.recentCalls')}</div>
-            {recentCalls.length === 0 ? (
+          {/* Grouped calls by source/context */}
+          <div className="px-3 py-2 max-h-48 overflow-y-auto">
+            <div className="text-[10px] text-slate-500 mb-1.5">{t('quota.usageBySource')}</div>
+            {groupedCalls.length === 0 ? (
               <div className="text-xs text-slate-500 italic py-2">{t('quota.noCalls')}</div>
             ) : (
-              <div className="space-y-1">
-                {recentCalls.map((call, index) => (
+              <div className="space-y-1.5">
+                {groupedCalls.map((group, index) => (
                   <div
                     key={index}
-                    className="flex items-center justify-between text-[11px] py-0.5"
+                    className="flex items-start justify-between text-[11px] py-1 px-2 rounded bg-slate-800/50 hover:bg-slate-800 transition-colors"
                   >
-                    <div className="flex items-center gap-1.5">
-                      <span className={`font-medium ${getEndpointColor(call.endpoint)}`}>
-                        {getEndpointLabel(call.endpoint)}
+                    <div className="flex items-start gap-2 min-w-0 flex-1">
+                      <span className={`${getSourceColor(group.source)} mt-0.5 flex-shrink-0`}>
+                        {getSourceIcon(group.source)}
                       </span>
-                      <span className="text-slate-500">
-                        {call.units} {call.units === 1 ? 'Unit' : 'Units'}
-                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5">
+                          <span className={`font-medium ${getSourceColor(group.source)}`}>
+                            {getSourceLabel(group.source)}
+                          </span>
+                        </div>
+                        {group.name && (
+                          <div className="text-slate-400 truncate text-[10px]" title={group.name}>
+                            {group.name}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <span className="text-slate-600 text-[10px]">
-                      {formatRelativeTime(call.timestamp)}
-                    </span>
+                    <div className="text-right flex-shrink-0 ml-2">
+                      <div className="text-slate-300 font-medium">
+                        {formatNumber(group.totalUnits)} {t('quota.units')}
+                      </div>
+                      <div className="text-slate-600 text-[9px]">
+                        {group.callCount}x · {formatRelativeTime(group.lastTimestamp)}
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>

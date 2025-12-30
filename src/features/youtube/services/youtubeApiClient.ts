@@ -1,4 +1,5 @@
 import {API_COSTS, STORAGE_KEYS} from '@/src/shared/constants';
+import type {QuotaCallContext} from '@/src/shared/types';
 import {quotaService} from './quotaService';
 
 type Endpoint = keyof typeof API_COSTS;
@@ -36,7 +37,8 @@ export class YouTubeApiError extends Error {
 
 export async function fetchFromApi<T>(
   endpoint: Endpoint,
-  params: Record<string, string>
+  params: Record<string, string>,
+  context?: QuotaCallContext
 ): Promise<T> {
   if (!API_KEY) {
     throw new YouTubeApiError('YouTube API Key fehlt.', 401);
@@ -65,21 +67,21 @@ export async function fetchFromApi<T>(
 
       // 4xx errors still cost quota
       if (response.status >= 400 && response.status < 500) {
-        quotaService.track(cost, endpoint);
+        quotaService.track(cost, endpoint, context);
       }
 
       throw new YouTubeApiError(`YouTube API Fehler: ${msg}`, response.status);
     }
 
     if (response.status >= 400 && response.status < 500) {
-      quotaService.track(cost, endpoint);
+      quotaService.track(cost, endpoint, context);
     }
 
     throw new YouTubeApiError(`HTTP Fehler: ${response.status}`, response.status);
   }
 
   // Track successful request
-  quotaService.track(cost, endpoint);
+  quotaService.track(cost, endpoint, context);
 
   return data as T;
 }

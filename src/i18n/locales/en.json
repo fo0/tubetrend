@@ -187,10 +187,18 @@
     "exhausted": "Quota exhausted! Resets at midnight PT.",
     "historyTitle": "API Usage",
     "units": "Units",
+    "calls": "Calls",
     "last24Hours": "Last 24 hours",
     "now": "Now",
     "recentCalls": "Recent calls",
-    "noCalls": "No API calls yet"
+    "noCalls": "No API calls yet",
+    "usageBySource": "Usage by source",
+    "sourceChannel": "Channel",
+    "sourceKeyword": "Keyword",
+    "sourceAutocomplete": "Autocomplete",
+    "sourceVideoStats": "Video stats",
+    "sourceChannelInfo": "Channel info",
+    "sourceUnknown": "Other"
   },
   "footer": {
     "buildInfo": "Build info",
