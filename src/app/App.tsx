@@ -1,7 +1,7 @@
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {ApiKeyModal} from '@/src/shared/components/ui/ApiKeyModal';
 import {HiddenHighlightsModal} from '@/src/shared/components/ui/HiddenHighlightsModal';
-import {Header, type PageType} from '@/src/shared/components/layout';
+import {Header, Footer, type PageType} from '@/src/shared/components/layout';
 import {DashboardPage} from './routes/DashboardPage';
 import {AnalyserPage} from './routes/AnalyserPage';
 import {useTranslation} from 'react-i18next';
@@ -218,6 +218,8 @@ const App: React.FC = () => {
           />
         )}
       </main>
+
+      <Footer />
     </div>
   );
 };
