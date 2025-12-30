@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Info, Github, Code2, Calendar, GitBranch } from 'lucide-react';
+import { Info, Github, Calendar, GitBranch } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 const buildInfo = __BUILD_INFO__;
@@ -40,10 +40,6 @@ export function Footer() {
         <div className="flex items-center gap-3">
           {showDetails && (
             <div className="hidden md:flex items-center gap-3 text-xs">
-              <span className="flex items-center gap-1" title={t('footer.commitHash')}>
-                <Code2 className="w-3.5 h-3.5" />
-                <code className="font-mono">{buildInfo.commitHashShort}</code>
-              </span>
               <span className="flex items-center gap-1" title={t('footer.branch')}>
                 <GitBranch className="w-3.5 h-3.5" />
                 <span>{buildInfo.branch}</span>
@@ -70,11 +66,6 @@ export function Footer() {
       {showDetails && (
         <div className="md:hidden border-t border-slate-200 dark:border-slate-800 px-4 py-2 bg-slate-50 dark:bg-slate-800">
           <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
-            <span className="flex items-center gap-1">
-              <Code2 className="w-3.5 h-3.5" />
-              <span>{t('footer.commit')}:</span>
-              <code className="font-mono">{buildInfo.commitHashShort}</code>
-            </span>
             <span className="flex items-center gap-1">
               <GitBranch className="w-3.5 h-3.5" />
               <span>{t('footer.branch')}:</span>

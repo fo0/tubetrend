@@ -2,7 +2,6 @@ import path from 'path';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { execSync } from 'child_process';
-import fs from 'fs';
 
 // Get build information
 function getBuildInfo() {
@@ -19,12 +18,9 @@ function getBuildInfo() {
     // Not a git repo or git not available - use env vars from Docker build args
   }
 
-  const packageJson = JSON.parse(fs.readFileSync('./package.json', 'utf-8'));
-
   return {
-    version: packageJson.version || '0.0.0',
+    version: commitHashShort,
     commitHash,
-    commitHashShort,
     branch,
     buildDate: new Date().toISOString(),
   };
