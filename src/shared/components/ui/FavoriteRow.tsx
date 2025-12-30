@@ -62,16 +62,20 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, on
   const tfMenuRef = useRef<HTMLDivElement | null>(null);
   const maxMenuRef = useRef<HTMLDivElement | null>(null);
 
+  // Vorherige Token, um zu erkennen, ob ein erzwungener Refresh nötig ist
+  const prevGlobalTokenRef = useRef<number>(globalRefreshToken);
+  const prevLocalTokenRef = useRef<number>(localRefreshToken);
+  // Ref um zu tracken ob channelId bereits aus Cache/API gesetzt wurde (verhindert doppelte API-Calls)
+  const channelIdLoadedRef = useRef<boolean>(false);
+
   // Sync bei Prop-Wechsel (z.B. nach Seiten-Neuladen)
   useEffect(() => {
     setCurrentTimeFrame(favorite.timeFrame);
     setCurrentMax(favorite.maxResults);
     setCurrentFavId(favorite.id);
+    // Reset channelId tracking wenn sich der Favorit ändert
+    channelIdLoadedRef.current = false;
   }, [favorite.id]);
-
-  // Vorherige Token, um zu erkennen, ob ein erzwungener Refresh nötig ist
-  const prevGlobalTokenRef = useRef<number>(globalRefreshToken);
-  const prevLocalTokenRef = useRef<number>(localRefreshToken);
 
   const displayMax = useMemo(() => {
     if (currentMax === -1) return t('maxResults.auto');      // Auto
@@ -185,22 +189,31 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, on
         });
         if (cancelled) return;
       }
-      // Cache verwenden, wenn frisch und kein erzwungener Refresh
-      if (!forced) {
-        const cachedOk = favoritesService.isCacheValid(currentFavId);
-        const cached = favoritesService.getCache(currentFavId);
-        if (cachedOk && cached) {
-          if (!cancelled) setVideos(cached.videos);
-          if (!cancelled) setTotalInTimeFrame(cached.meta?.totalInTimeFrame ?? null);
-          // Optimierung: channelId und channelTitle aus Cache wiederherstellen
-          // Verhindert redundanten findChannelInfo() Call (spart 101 API Units)
-          if (!cancelled && cached.meta?.channelId) setChannelId(cached.meta.channelId);
-          if (!cancelled && cached.meta?.channelTitle) setChannelTitle(cached.meta.channelTitle);
-          return;
+
+      // Immer zuerst gecachte Daten anzeigen (auch wenn abgelaufen)
+      // Das verhindert "Lädt..." bei abgelaufenem Cache
+      const cached = favoritesService.getCache(currentFavId);
+      if (cached) {
+        if (!cancelled) setVideos(cached.videos);
+        if (!cancelled) setTotalInTimeFrame(cached.meta?.totalInTimeFrame ?? null);
+        if (!cancelled && cached.meta?.channelId) {
+          setChannelId(cached.meta.channelId);
+          channelIdLoadedRef.current = true;
         }
+        if (!cancelled && cached.meta?.channelTitle) setChannelTitle(cached.meta.channelTitle);
       }
 
-      setLoading(true);
+      // Cache verwenden, wenn frisch und kein erzwungener Refresh
+      const cachedOk = favoritesService.isCacheValid(currentFavId);
+      if (!forced && cachedOk && cached) {
+        // Cache ist gültig, keine API-Calls nötig
+        return;
+      }
+
+      // Nur "Lädt..." zeigen wenn keine gecachten Daten vorhanden
+      if (!cached) {
+        setLoading(true);
+      }
       // Globales Event: Start des Refresh für diesen Favoriten
       let dispatchedStart = false;
       try {
@@ -237,7 +250,10 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, on
         }
 
         if (!cancelled) setChannelTitle(displayName);
-        if (!cancelled) setChannelId(fetchedChannelId ?? null);
+        if (!cancelled) {
+          setChannelId(fetchedChannelId ?? null);
+          if (fetchedChannelId) channelIdLoadedRef.current = true;
+        }
         if (!cancelled) setTotalInTimeFrame(totalInTimeFrame);
 
         const analyzed = await analyzeVideoStats(apiVideos, displayName, currentTimeFrame);
@@ -283,38 +299,44 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, on
   // Sicherstellen, dass der Kanal-Titel klickbar ist – auch wenn wir nur Cache-Daten nutzen.
   // Falls keine channelId vorhanden ist, laden wir einmalig die Kanal-Metadaten (ID/Name).
   // Nur bei Channel-Suche relevant, nicht bei Keyword-Suche.
-  // WICHTIG: Warten bis loading === false, um Race Condition mit dem Haupt-useEffect zu vermeiden
+  // WICHTIG: Verwendet channelIdLoadedRef um Race Condition mit dem Haupt-useEffect zu vermeiden
   // (verhindert doppelten findChannelInfo() Aufruf)
   useEffect(() => {
     // Bei Keyword-Suche gibt es keinen Kanal
     const searchType = favorite.searchType ?? SearchType.CHANNEL;
     if (searchType === SearchType.KEYWORD) return;
 
-    // Race Condition Fix: Warten bis der Haupt-useEffect fertig ist
-    if (loading) return;
+    // Prüfen ob channelId bereits vom Haupt-useEffect geladen wurde/wird
+    if (channelIdLoadedRef.current) return;
+    if (channelId) return; // bereits vorhanden
 
     let cancelled = false;
     // Ohne API-Key kein Versuch, die Metadaten zu laden
     const hasKey = typeof window !== 'undefined' && !!localStorage.getItem('yt_api_key');
     if (!hasKey) return;
-    if (channelId) return; // bereits vorhanden
 
-    (async () => {
+    // Kurze Verzögerung um dem Haupt-useEffect Zeit zu geben, Cache-Daten zu laden
+    const timeout = setTimeout(async () => {
+      // Nochmal prüfen ob inzwischen geladen
+      if (channelIdLoadedRef.current || cancelled) return;
+
       try {
         const { id, name } = await findChannelInfo(favorite.query);
         if (!cancelled) {
           setChannelId(id);
           setChannelTitle(name);
+          channelIdLoadedRef.current = true;
         }
       } catch {
         // stiller Fallback – Link bleibt dann einfach deaktiviert
       }
-    })();
+    }, 100);
 
     return () => {
       cancelled = true;
+      clearTimeout(timeout);
     };
-  }, [favorite.query, favorite.searchType, channelId, loading]);
+  }, [favorite.query, favorite.searchType, channelId]);
 
   const channelUrl = useMemo(() => {
     // Bei Keyword-Suche gibt es keinen Kanal-Link
