@@ -6,16 +6,17 @@ import fs from 'fs';
 
 // Get build information
 function getBuildInfo() {
-  let commitHash = 'unknown';
-  let commitHashShort = 'unknown';
-  let branch = 'unknown';
+  // Try git first, then fall back to environment variables (for Docker builds)
+  let commitHash = process.env.VITE_GIT_COMMIT_HASH || 'unknown';
+  let commitHashShort = process.env.VITE_GIT_COMMIT_SHORT || 'unknown';
+  let branch = process.env.VITE_GIT_BRANCH || 'unknown';
 
   try {
     commitHash = execSync('git rev-parse HEAD', { encoding: 'utf-8' }).trim();
     commitHashShort = execSync('git rev-parse --short HEAD', { encoding: 'utf-8' }).trim();
     branch = execSync('git rev-parse --abbrev-ref HEAD', { encoding: 'utf-8' }).trim();
   } catch {
-    // Not a git repo or git not available
+    // Not a git repo or git not available - use env vars from Docker build args
   }
 
   const packageJson = JSON.parse(fs.readFileSync('./package.json', 'utf-8'));

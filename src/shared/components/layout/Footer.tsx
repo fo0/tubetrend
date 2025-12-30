@@ -55,7 +55,7 @@ export function Footer() {
             </div>
           )}
           <a
-            href="https://github.com"
+            href="https://github.com/fo0/tubetrend"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"

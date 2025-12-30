@@ -4,6 +4,11 @@
 ARG NODE_VERSION=22-alpine
 FROM node:${NODE_VERSION} AS builder
 
+# Build arguments for git info (passed from CI)
+ARG GIT_COMMIT_HASH=unknown
+ARG GIT_COMMIT_SHORT=unknown
+ARG GIT_BRANCH=unknown
+
 WORKDIR /app
 
 # Install dependencies first (better layer caching)
@@ -12,6 +17,11 @@ RUN npm ci
 
 # Copy the rest of the source
 COPY . .
+
+# Set environment variables for the build
+ENV VITE_GIT_COMMIT_HASH=$GIT_COMMIT_HASH
+ENV VITE_GIT_COMMIT_SHORT=$GIT_COMMIT_SHORT
+ENV VITE_GIT_BRANCH=$GIT_BRANCH
 
 # Build the production bundle
 RUN npm run build
