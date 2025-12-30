@@ -4,7 +4,9 @@ import {getTodayDateString} from '@/src/shared/lib/dateUtils';
 import {API_COSTS, DEFAULT_DAILY_QUOTA, STORAGE_KEYS} from '@/src/shared/constants';
 import type {QuotaCallContext, QuotaData, QuotaHistoryEntry, QuotaInfo} from '@/src/shared/types';
 
-const MAX_HISTORY_ENTRIES = 500;
+// No fixed limit - history resets daily with quota (in getQuotaData when date changes)
+// Safety limit only to prevent localStorage overflow (very unlikely to hit)
+const MAX_HISTORY_ENTRIES = 10000;
 
 function getQuotaData(): QuotaData {
   const emptyData = (): QuotaData => ({
