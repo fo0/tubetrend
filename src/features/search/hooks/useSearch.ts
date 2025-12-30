@@ -67,7 +67,7 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
           channelId = undefined;
         } else {
           const { id, name: officialName, uploadsPlaylistId } = await findChannelInfo(query);
-          const { videos } = await getVideosFromChannel(uploadsPlaylistId, timeFrame, maxResults);
+          const { videos } = await getVideosFromChannel(uploadsPlaylistId, timeFrame, maxResults, { name: officialName });
           apiVideos = videos;
           displayName = officialName;
           channelId = id;

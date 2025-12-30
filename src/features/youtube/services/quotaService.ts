@@ -4,7 +4,7 @@ import {getTodayDateString} from '@/src/shared/lib/dateUtils';
 import {API_COSTS, DEFAULT_DAILY_QUOTA, STORAGE_KEYS} from '@/src/shared/constants';
 import type {QuotaCallContext, QuotaData, QuotaHistoryEntry, QuotaInfo} from '@/src/shared/types';
 
-const MAX_HISTORY_ENTRIES = 100;
+const MAX_HISTORY_ENTRIES = 500;
 
 function getQuotaData(): QuotaData {
   const emptyData = (): QuotaData => ({

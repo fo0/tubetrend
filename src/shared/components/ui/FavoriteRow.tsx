@@ -234,15 +234,15 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, on
 
         if (searchType === SearchType.KEYWORD) {
           // Keyword-Suche: Videos direkt nach Schlagwort suchen
-          const result = await searchVideosByKeyword(favorite.query, currentTimeFrame as TimeFrame, currentMax);
+          const result = await searchVideosByKeyword(favorite.query, currentTimeFrame as TimeFrame, currentMax, { favoriteId: currentFavId });
           apiVideos = result.videos;
           totalInTimeFrame = result.totalInTimeFrame;
           displayName = favorite.query; // Bei Keyword-Suche zeigen wir das Keyword als "Name"
           fetchedChannelId = undefined;
         } else {
           // Kanal-Suche: Erst Kanal finden, dann Videos aus Uploads-Playlist
-          const { id, name, uploadsPlaylistId } = await findChannelInfo(favorite.query);
-          const result = await getVideosFromChannel(uploadsPlaylistId, currentTimeFrame as TimeFrame, currentMax);
+          const { id, name, uploadsPlaylistId } = await findChannelInfo(favorite.query, { favoriteId: currentFavId });
+          const result = await getVideosFromChannel(uploadsPlaylistId, currentTimeFrame as TimeFrame, currentMax, { name, favoriteId: currentFavId });
           apiVideos = result.videos;
           totalInTimeFrame = result.totalInTimeFrame;
           displayName = name;
