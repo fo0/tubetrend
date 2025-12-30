@@ -1,6 +1,7 @@
 import {useMemo, useRef} from 'react';
 import {Activity, Download, EyeOff, RefreshCw, Upload} from 'lucide-react';
 import {FavoriteRow} from '@/src/shared/components/ui/FavoriteRow';
+import {FavoriteAvatar} from '@/src/shared/components/ui/FavoriteAvatar';
 import {HighlightVideoCard} from '@/src/shared/components/ui/HighlightVideoCard';
 import {useTranslation} from 'react-i18next';
 import type {FavoriteConfig} from '@/src/features/favorites/types';
@@ -233,7 +234,7 @@ export function DashboardPage({
       {/* Sorting controls */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-4">
         {favorites.length > 0 ? (
-          <div className="flex items-center gap-2 text-xs font-medium">
+          <div className="flex items-center gap-3 text-xs font-medium">
             <span className="text-slate-600 dark:text-slate-400">
               {t('dashboard.sorting.label')}
             </span>
@@ -277,6 +278,27 @@ export function DashboardPage({
                 </span>
               </button>
             </div>
+
+            {/* Favorite Avatars */}
+            {sortedFavorites.length > 0 && (
+              <div className="flex items-center gap-1.5 ml-2 pl-3 border-l border-slate-300 dark:border-slate-700">
+                {sortedFavorites.map((fav) => (
+                  <FavoriteAvatar
+                    key={fav.id}
+                    favorite={fav}
+                    isRefreshing={refreshingIds.has(fav.id)}
+                    size="sm"
+                    onClick={() => {
+                      // Scroll to the favorite section
+                      const element = document.getElementById(`favorite-${fav.id}`);
+                      if (element) {
+                        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      }
+                    }}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         ) : (
           <div />
@@ -309,14 +331,15 @@ export function DashboardPage({
       ) : (
         <div className="space-y-10">
           {sortedFavorites.map((fav, idx) => (
-            <FavoriteRow
-              key={fav.id}
-              favorite={fav}
-              onRemove={onRemoveFavorite}
-              onAnalyze={onAnalyzeFavorite}
-              globalRefreshToken={refreshToken}
-              staggerIndex={idx}
-            />
+            <div key={fav.id} id={`favorite-${fav.id}`}>
+              <FavoriteRow
+                favorite={fav}
+                onRemove={onRemoveFavorite}
+                onAnalyze={onAnalyzeFavorite}
+                globalRefreshToken={refreshToken}
+                staggerIndex={idx}
+              />
+            </div>
           ))}
         </div>
       )}

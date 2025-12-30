@@ -104,3 +104,47 @@ body, .theme-surface {
   pointer-events: none;
   z-index: 1;
 }
+
+/* Rotating green border animation for favorite avatars */
+@keyframes avatar-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.avatar-spinning-border {
+  pointer-events: none;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    transparent 60deg,
+    rgba(34, 197, 94, 0.9) 120deg,
+    rgba(74, 222, 128, 1) 180deg,
+    rgba(34, 197, 94, 0.9) 240deg,
+    transparent 300deg,
+    transparent 360deg
+  );
+  animation: avatar-spin 1s linear infinite;
+  mask:
+    radial-gradient(farthest-side, transparent calc(100% - 3px), #fff calc(100% - 3px));
+  -webkit-mask:
+    radial-gradient(farthest-side, transparent calc(100% - 3px), #fff calc(100% - 3px));
+}
+
+/* Subtle pulse effect on the avatar while loading */
+.avatar-loading-spin {
+  animation: avatar-pulse 1s ease-in-out infinite;
+}
+
+@keyframes avatar-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
