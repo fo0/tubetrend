@@ -4,6 +4,7 @@ import type {
   ChannelInfo,
   ChannelSuggestion,
   ChannelVideosResult,
+  QuotaCallContext,
   YouTubeVideoItem
 } from '@/src/shared/types';
 import {TimeFrame} from '@/src/shared/types';
@@ -94,18 +95,23 @@ export async function searchChannels(query: string): Promise<ChannelSuggestion[]
   if (cached) return cached;
 
   try {
+    const autocompleteContext: QuotaCallContext = {
+      source: 'autocomplete',
+      name: query,
+    };
+
     const data = await fetchFromApi<any>('search', {
       part: 'snippet',
       q: query,
       type: 'channel',
       maxResults: '5',
-    });
+    }, autocompleteContext);
 
     if (!data.items) return [];
 
     // Sammle Channel-IDs für den Batch-Call
     const channelIds = data.items.map((item: any) => item.snippet.channelId).filter(Boolean);
-    
+
     // Hole korrekte Thumbnails über den channels-Endpoint (1 Unit für bis zu 50 Kanäle)
     let thumbnailMap: Record<string, string> = {};
     if (channelIds.length > 0) {
@@ -113,12 +119,12 @@ export async function searchChannels(query: string): Promise<ChannelSuggestion[]
         const channelsData = await fetchFromApi<any>('channels', {
           part: 'snippet',
           id: channelIds.join(','),
-        });
-        
+        }, autocompleteContext);
+
         if (channelsData.items) {
           for (const channel of channelsData.items) {
-            const thumbUrl = channel.snippet?.thumbnails?.default?.url || 
-                            channel.snippet?.thumbnails?.medium?.url || 
+            const thumbUrl = channel.snippet?.thumbnails?.default?.url ||
+                            channel.snippet?.thumbnails?.medium?.url ||
                             channel.snippet?.thumbnails?.high?.url || '';
             thumbnailMap[channel.id] = thumbUrl;
           }
@@ -149,7 +155,7 @@ export async function searchChannels(query: string): Promise<ChannelSuggestion[]
 /**
  * Find channel information by name, handle, or ID
  */
-export async function findChannelInfo(channelName: string): Promise<ChannelInfo> {
+export async function findChannelInfo(channelName: string, context?: Partial<QuotaCallContext>): Promise<ChannelInfo> {
   const query = channelName.trim();
 
   // Check cache first
@@ -157,6 +163,12 @@ export async function findChannelInfo(channelName: string): Promise<ChannelInfo>
   if (cache[query.toLowerCase()]) {
     return cache[query.toLowerCase()];
   }
+
+  const channelContext: QuotaCallContext = {
+    source: 'channel-info',
+    name: query,
+    ...context,
+  };
 
   const isHandle = query.startsWith('@');
   const isChannelId = query.startsWith('UC') && query.length >= 20;
@@ -174,7 +186,7 @@ export async function findChannelInfo(channelName: string): Promise<ChannelInfo>
     }
 
     try {
-      const channelData = await fetchFromApi<any>('channels', params);
+      const channelData = await fetchFromApi<any>('channels', params, channelContext);
 
       if (channelData.items && channelData.items.length > 0) {
         const item = channelData.items[0];
@@ -198,7 +210,7 @@ export async function findChannelInfo(channelName: string): Promise<ChannelInfo>
     q: query,
     type: 'channel',
     maxResults: '1',
-  });
+  }, channelContext);
 
   if (!searchData.items || searchData.items.length === 0) {
     throw new Error(`Kanal "${channelName}" nicht gefunden.`);
@@ -211,7 +223,7 @@ export async function findChannelInfo(channelName: string): Promise<ChannelInfo>
   const channelDetails = await fetchFromApi<any>('channels', {
     part: 'contentDetails',
     id: channelId,
-  });
+  }, channelContext);
 
   if (!channelDetails.items || channelDetails.items.length === 0) {
     throw new Error('Kanaldetails konnten nicht geladen werden.');
@@ -233,10 +245,16 @@ export async function findChannelInfo(channelName: string): Promise<ChannelInfo>
 export async function getVideosFromChannel(
   uploadsPlaylistId: string,
   timeFrame: TimeFrame,
-  maxResults: number
+  maxResults: number,
+  context?: Partial<QuotaCallContext>
 ): Promise<ChannelVideosResult> {
   const effectiveMax = maxResults === -1 ? AUTO_LIMIT_CHANNEL : maxResults > 0 ? maxResults : 0;
   const cutoffTime = getCutoffTime(timeFrame);
+
+  const channelContext: QuotaCallContext = {
+    source: 'channel',
+    ...context,
+  };
 
   let allVideos: any[] = [];
   let nextPageToken = '';
@@ -253,7 +271,7 @@ export async function getVideosFromChannel(
 
     if (nextPageToken) params.pageToken = nextPageToken;
 
-    const playlistData = await fetchFromApi<any>('playlistItems', params);
+    const playlistData = await fetchFromApi<any>('playlistItems', params, channelContext);
 
     if (!playlistData.items || playlistData.items.length === 0) {
       shouldContinue = false;
@@ -309,7 +327,7 @@ export async function getVideosFromChannel(
     const statsData = await fetchFromApi<any>('videos', {
       part: 'statistics,contentDetails',
       id: videoIds,
-    });
+    }, { ...channelContext, source: 'video-stats' });
 
     if (!statsData.items) return [];
 

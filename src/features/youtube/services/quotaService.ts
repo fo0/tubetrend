@@ -2,7 +2,7 @@ import {safeRead, safeWrite} from '@/src/shared/lib/storage';
 import {dispatchEvent} from '@/src/shared/lib/eventBus';
 import {getTodayDateString} from '@/src/shared/lib/dateUtils';
 import {API_COSTS, DEFAULT_DAILY_QUOTA, STORAGE_KEYS} from '@/src/shared/constants';
-import type {QuotaData, QuotaHistoryEntry, QuotaInfo} from '@/src/shared/types';
+import type {QuotaCallContext, QuotaData, QuotaHistoryEntry, QuotaInfo} from '@/src/shared/types';
 
 const MAX_HISTORY_ENTRIES = 100;
 
@@ -42,7 +42,7 @@ function saveQuotaData(data: QuotaData): void {
 }
 
 export const quotaService = {
-  track(units: number, endpoint: string = 'unknown'): void {
+  track(units: number, endpoint: string = 'unknown', context?: QuotaCallContext): void {
     const data = getQuotaData();
     data.used += units;
 
@@ -51,6 +51,7 @@ export const quotaService = {
       timestamp: Date.now(),
       units,
       endpoint,
+      context,
     };
     data.history = data.history || [];
     data.history.push(entry);

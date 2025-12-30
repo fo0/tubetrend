@@ -187,10 +187,18 @@
     "exhausted": "Kontingent erschöpft! Reset um Mitternacht PT.",
     "historyTitle": "API-Nutzung",
     "units": "Einheiten",
+    "calls": "Aufrufe",
     "last24Hours": "Letzte 24 Stunden",
     "now": "Jetzt",
     "recentCalls": "Letzte Aufrufe",
-    "noCalls": "Noch keine API-Aufrufe"
+    "noCalls": "Noch keine API-Aufrufe",
+    "usageBySource": "Verbrauch nach Quelle",
+    "sourceChannel": "Kanal",
+    "sourceKeyword": "Suchbegriff",
+    "sourceAutocomplete": "Autovervollständigung",
+    "sourceVideoStats": "Video-Statistiken",
+    "sourceChannelInfo": "Kanal-Info",
+    "sourceUnknown": "Sonstige"
   },
   "footer": {
     "buildInfo": "Build-Info",

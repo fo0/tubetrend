@@ -41,10 +41,24 @@ export interface ChannelInfo {
   uploadsPlaylistId: string;
 }
 
+/**
+ * Context information for API calls to better understand quota usage
+ */
+export interface QuotaCallContext {
+  /** Type of request: channel search, keyword search, autocomplete, etc. */
+  source: 'channel' | 'keyword' | 'autocomplete' | 'channel-info' | 'video-stats' | 'unknown';
+  /** Display name: channel name or search term */
+  name?: string;
+  /** Favorite ID if triggered by a favorite */
+  favoriteId?: string;
+}
+
 export interface QuotaHistoryEntry {
   timestamp: number;
   units: number;
   endpoint: string;
+  /** Optional context about what triggered this API call */
+  context?: QuotaCallContext;
 }
 
 export interface QuotaData {

@@ -1,4 +1,4 @@
-import type {ChannelVideosResult, YouTubeVideoItem} from '@/src/shared/types';
+import type {ChannelVideosResult, QuotaCallContext, YouTubeVideoItem} from '@/src/shared/types';
 import {TimeFrame} from '@/src/shared/types';
 import {AUTO_LIMIT_KEYWORD} from '@/src/shared/constants';
 import {getPublishedAfterDate} from '@/src/shared/lib/dateUtils';
@@ -10,11 +10,18 @@ import {fetchFromApi} from './youtubeApiClient';
 export async function searchVideosByKeyword(
   keyword: string,
   timeFrame: TimeFrame,
-  maxResults: number
+  maxResults: number,
+  context?: Partial<QuotaCallContext>
 ): Promise<ChannelVideosResult> {
   if (!keyword || keyword.trim().length === 0) {
     return { videos: [], totalInTimeFrame: 0 };
   }
+
+  const keywordContext: QuotaCallContext = {
+    source: 'keyword',
+    name: keyword.trim(),
+    ...context,
+  };
 
   const publishedAfter = getPublishedAfterDate(timeFrame);
   const effectiveMax = maxResults === -1 ? AUTO_LIMIT_KEYWORD : maxResults > 0 ? maxResults : 5000;
@@ -36,7 +43,7 @@ export async function searchVideosByKeyword(
 
     if (nextPageToken) params.pageToken = nextPageToken;
 
-    const searchData = await fetchFromApi<any>('search', params);
+    const searchData = await fetchFromApi<any>('search', params, keywordContext);
 
     if (!searchData.items || searchData.items.length === 0) {
       break;
@@ -77,7 +84,7 @@ export async function searchVideosByKeyword(
     const videoData = await fetchFromApi<any>('videos', {
       part: 'snippet,statistics,contentDetails',
       id: videoIds,
-    });
+    }, { ...keywordContext, source: 'video-stats' });
 
     if (!videoData.items) return [];
 
