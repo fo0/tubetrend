@@ -20,7 +20,7 @@ export function Footer() {
   });
 
   return (
-    <footer className="fixed bottom-0 left-0 right-0 bg-white/80 border-t border-slate-200 dark:bg-slate-900/80 dark:border-slate-800 backdrop-blur-md z-40">
+    <footer className="mt-auto bg-white border-t border-slate-200 dark:bg-slate-900 dark:border-slate-800">
       <div className="max-w-[101.2rem] mx-auto px-4 sm:px-6 lg:px-8 h-10 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
         <div className="flex items-center gap-4">
           <span className="font-medium text-slate-700 dark:text-slate-300">
@@ -68,7 +68,7 @@ export function Footer() {
 
       {/* Mobile details panel */}
       {showDetails && (
-        <div className="md:hidden border-t border-slate-200 dark:border-slate-800 px-4 py-2 bg-slate-50 dark:bg-slate-900/50">
+        <div className="md:hidden border-t border-slate-200 dark:border-slate-800 px-4 py-2 bg-slate-50 dark:bg-slate-800">
           <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
             <span className="flex items-center gap-1">
               <Code2 className="w-3.5 h-3.5" />

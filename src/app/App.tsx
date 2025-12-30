@@ -175,7 +175,7 @@ const App: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100 pb-20 font-sans selection:bg-indigo-500/30">
+    <div className="min-h-screen flex flex-col bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100 font-sans selection:bg-indigo-500/30">
       {isApiKeyModalOpen && <ApiKeyModal onSave={handleSaveKey} />}
       <HiddenHighlightsModal
         isOpen={isHiddenHighlightsModalOpen}
@@ -191,7 +191,7 @@ const App: React.FC = () => {
         onResetApiKey={handleResetKey}
       />
 
-      <main className="max-w-[101.2rem] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="flex-1 max-w-[101.2rem] mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
         {activePage === 'dashboard' ? (
           <DashboardPage
             favorites={favorites}
