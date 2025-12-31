@@ -337,7 +337,7 @@ export const ApiQuotaIndicator: React.FC = () => {
 
       {/* Dropdown popup with history */}
       {isOpen && (
-        <div className="absolute top-full right-0 mt-2 w-80 bg-slate-900 border border-slate-700 rounded-lg shadow-xl z-50 overflow-hidden">
+        <div className="absolute top-full right-0 mt-2 w-80 bg-slate-900 border border-slate-700 rounded-lg shadow-xl z-50">
           {/* Header */}
           <div className="flex items-center justify-between px-3 py-2 border-b border-slate-700/50 bg-slate-800/50">
             <div className="flex items-center gap-2">
@@ -428,7 +428,7 @@ export const ApiQuotaIndicator: React.FC = () => {
                     className="flex-1 relative group/point"
                   >
                     {bucket.units > 0 && (
-                      <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-1 px-2 py-1 bg-slate-800 border border-slate-600 rounded text-[10px] text-slate-300 whitespace-nowrap opacity-0 group-hover/point:opacity-100 transition-opacity pointer-events-none z-10">
+                      <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-1 px-2 py-1 bg-slate-800 border border-slate-600 rounded text-[10px] text-slate-300 whitespace-nowrap opacity-0 group-hover/point:opacity-100 transition-opacity pointer-events-none z-[100]">
                         <div className="font-medium">{formatBucketTime(bucket, timeWindow.windowMs)}</div>
                         <div>{bucket.units} {t('quota.units')} ({bucket.calls} {t('quota.calls')})</div>
                       </div>
