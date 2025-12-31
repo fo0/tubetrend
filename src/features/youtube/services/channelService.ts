@@ -59,6 +59,14 @@ function saveAutocompleteToCache(query: string, results: ChannelSuggestion[]): v
 }
 
 /**
+ * Determine the query type based on the input format
+ * @returns 'handle' if query starts with @, otherwise 'channel'
+ */
+export function getChannelQueryType(query: string): 'channel' | 'handle' {
+  return query.trim().startsWith('@') ? 'handle' : 'channel';
+}
+
+/**
  * Extract channel identifier from URL or input string
  */
 export function extractChannelIdentifier(input: string): string {
@@ -164,12 +172,13 @@ export async function findChannelInfo(channelName: string, context?: Partial<Quo
     return cache[query.toLowerCase()];
   }
 
-  const isHandle = query.startsWith('@');
+  const queryType = getChannelQueryType(query);
+  const isHandle = queryType === 'handle';
 
   const channelContext: QuotaCallContext = {
     source: 'channel-info',
     name: query,
-    favoriteType: isHandle ? 'handle' : 'channel',
+    favoriteType: queryType,
     ...context,
   };
   const isChannelId = query.startsWith('UC') && query.length >= 20;

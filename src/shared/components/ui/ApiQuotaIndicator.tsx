@@ -1,7 +1,7 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {Activity, AlertTriangle, AtSign, Hash, Search, User, X, Zap} from 'lucide-react';
 import {quotaService} from '@/src/features/youtube';
-import type {QuotaCallContext, QuotaHistoryEntry} from '@/src/shared/types';
+import type {QuotaHistoryEntry} from '@/src/shared/types';
 import {useTranslation} from 'react-i18next';
 
 // Determine optimal time window based on actual data
@@ -126,47 +126,43 @@ const groupCallsByContext = (history: QuotaHistoryEntry[]): GroupedCall[] => {
   return Array.from(grouped.values()).sort((a, b) => b.lastTimestamp - a.lastTimestamp);
 };
 
-// Format relative time
-const formatRelativeTime = (timestamp: number): string => {
+// Format relative time - returns translation key params, actual formatting done in component
+const getRelativeTimeParts = (timestamp: number): { key: string; count?: number } => {
   const diff = Date.now() - timestamp;
   const minutes = Math.floor(diff / 60000);
-  if (minutes < 1) return 'gerade eben';
-  if (minutes < 60) return `vor ${minutes} Min.`;
+  if (minutes < 1) return { key: 'quota.timeJustNow' };
+  if (minutes < 60) return { key: 'quota.timeMinutesAgo', count: minutes };
   const hours = Math.floor(minutes / 60);
-  return `vor ${hours} Std.`;
+  return { key: 'quota.timeHoursAgo', count: hours };
 };
 
-// Format bucket time for tooltip - more precise based on time window
-const formatBucketTime = (bucket: { startTime: number; endTime: number }, timeWindowMs: number): string => {
+// Format bucket time for tooltip - returns translation key params
+const getBucketTimeParts = (bucket: { startTime: number; endTime: number }, timeWindowMs: number): { key: string; count?: number } => {
   const now = Date.now();
   const diffMs = now - bucket.endTime;
 
   // For short time windows (< 1 hour), show minutes
   if (timeWindowMs <= 60 * 60 * 1000) {
     const minutesAgo = Math.round(diffMs / (60 * 1000));
-    if (minutesAgo <= 0) return 'Jetzt';
-    if (minutesAgo === 1) return 'vor 1 Min.';
-    return `vor ${minutesAgo} Min.`;
+    if (minutesAgo <= 0) return { key: 'quota.now' };
+    return { key: 'quota.timeMinutesAgo', count: minutesAgo };
   }
 
   // For medium time windows (< 6 hours), show minutes or hours
   if (timeWindowMs <= 6 * 60 * 60 * 1000) {
     const minutesAgo = Math.round(diffMs / (60 * 1000));
     if (minutesAgo < 60) {
-      if (minutesAgo <= 0) return 'Jetzt';
-      if (minutesAgo === 1) return 'vor 1 Min.';
-      return `vor ${minutesAgo} Min.`;
+      if (minutesAgo <= 0) return { key: 'quota.now' };
+      return { key: 'quota.timeMinutesAgo', count: minutesAgo };
     }
     const hoursAgo = Math.round(diffMs / (60 * 60 * 1000));
-    if (hoursAgo === 1) return 'vor 1 Std.';
-    return `vor ${hoursAgo} Std.`;
+    return { key: 'quota.timeHoursAgo', count: hoursAgo };
   }
 
   // For longer time windows, show hours
   const hoursAgo = Math.round(diffMs / (60 * 60 * 1000));
-  if (hoursAgo === 0) return 'Jetzt';
-  if (hoursAgo === 1) return 'vor 1 Std.';
-  return `vor ${hoursAgo} Std.`;
+  if (hoursAgo === 0) return { key: 'quota.now' };
+  return { key: 'quota.timeHoursAgo', count: hoursAgo };
 };
 
 export const ApiQuotaIndicator: React.FC = () => {
@@ -444,7 +440,10 @@ export const ApiQuotaIndicator: React.FC = () => {
                   >
                     {bucket.units > 0 && (
                       <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-1 px-2 py-1 bg-slate-800 border border-slate-600 rounded text-[10px] text-slate-300 whitespace-nowrap opacity-0 group-hover/point:opacity-100 transition-opacity pointer-events-none z-[100]">
-                        <div className="font-medium">{formatBucketTime(bucket, timeWindow.windowMs)}</div>
+                        <div className="font-medium">{(() => {
+                          const { key, count } = getBucketTimeParts(bucket, timeWindow.windowMs);
+                          return t(key, { count });
+                        })()}</div>
                         <div>{bucket.units} {t('quota.units')} ({bucket.calls} {t('quota.calls')})</div>
                       </div>
                     )}
@@ -494,7 +493,10 @@ export const ApiQuotaIndicator: React.FC = () => {
                         {formatNumber(group.totalUnits)} {t('quota.units')}
                       </div>
                       <div className="text-slate-600 text-[9px]">
-                        {group.callCount}x · {formatRelativeTime(group.lastTimestamp)}
+                        {group.callCount}x · {(() => {
+                          const { key, count } = getRelativeTimeParts(group.lastTimestamp);
+                          return t(key, { count });
+                        })()}
                       </div>
                     </div>
                   </div>

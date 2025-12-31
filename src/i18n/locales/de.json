@@ -200,7 +200,10 @@
     "sourceAutocomplete": "Autovervollständigung",
     "sourceVideoStats": "Video-Statistiken",
     "sourceChannelInfo": "Kanal-Info",
-    "sourceUnknown": "Sonstige"
+    "sourceUnknown": "Sonstige",
+    "timeJustNow": "gerade eben",
+    "timeMinutesAgo": "vor {{count}} Min.",
+    "timeHoursAgo": "vor {{count}} Std."
   },
   "footer": {
     "buildInfo": "Build-Info",
