@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useState} from 'react';
+import {useCallback, useEffect, useLayoutEffect, useState} from 'react';
 import type {FavoriteConfig} from '@/src/features/favorites/types';
 import {favoritesService} from '@/src/features/favorites';
 import type {DashboardSortMode, SortOrder} from '@/src/shared/types';
@@ -42,7 +42,10 @@ export function useFavorites() {
   }, [loadFavorites]);
 
   // Track refresh start/end events
-  useEffect(() => {
+  // IMPORTANT: useLayoutEffect ensures listeners are attached synchronously
+  // before any regular useEffect runs (like FavoriteRow's fetch effect).
+  // This fixes the issue where events were dispatched before listeners were ready.
+  useLayoutEffect(() => {
     const onStart = (ev: Event) => {
       const e = ev as CustomEvent;
       const id = e?.detail?.id as string | undefined;
