@@ -195,6 +195,7 @@
     "noCalls": "No API calls yet",
     "usageBySource": "Usage by source",
     "sourceChannel": "Channel",
+    "sourceHandle": "Handle",
     "sourceKeyword": "Keyword",
     "sourceAutocomplete": "Autocomplete",
     "sourceVideoStats": "Video stats",

@@ -164,13 +164,14 @@ export async function findChannelInfo(channelName: string, context?: Partial<Quo
     return cache[query.toLowerCase()];
   }
 
+  const isHandle = query.startsWith('@');
+
   const channelContext: QuotaCallContext = {
     source: 'channel-info',
     name: query,
+    favoriteType: isHandle ? 'handle' : 'channel',
     ...context,
   };
-
-  const isHandle = query.startsWith('@');
   const isChannelId = query.startsWith('UC') && query.length >= 20;
 
   // Try optimized path first (direct lookup)
@@ -253,6 +254,7 @@ export async function getVideosFromChannel(
 
   const channelContext: QuotaCallContext = {
     source: 'channel',
+    favoriteType: 'channel',
     ...context,
   };
 

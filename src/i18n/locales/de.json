@@ -195,6 +195,7 @@
     "noCalls": "Noch keine API-Aufrufe",
     "usageBySource": "Verbrauch nach Quelle",
     "sourceChannel": "Kanal",
+    "sourceHandle": "Handle",
     "sourceKeyword": "Suchbegriff",
     "sourceAutocomplete": "Autovervollständigung",
     "sourceVideoStats": "Video-Statistiken",

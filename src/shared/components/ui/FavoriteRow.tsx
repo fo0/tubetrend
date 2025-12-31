@@ -249,8 +249,9 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, on
           fetchedChannelId = undefined;
         } else {
           // Kanal-Suche: Erst Kanal finden, dann Videos aus Uploads-Playlist
+          const isHandle = favorite.query.startsWith('@');
           const { id, name, uploadsPlaylistId } = await findChannelInfo(favorite.query, { favoriteId: currentFavId });
-          const result = await getVideosFromChannel(uploadsPlaylistId, currentTimeFrame as TimeFrame, currentMax, { name, favoriteId: currentFavId });
+          const result = await getVideosFromChannel(uploadsPlaylistId, currentTimeFrame as TimeFrame, currentMax, { name, favoriteId: currentFavId, favoriteType: isHandle ? 'handle' : 'channel' });
           apiVideos = result.videos;
           totalInTimeFrame = result.totalInTimeFrame;
           displayName = name;

@@ -66,8 +66,9 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
           displayName = query;
           channelId = undefined;
         } else {
+          const isHandle = query.startsWith('@');
           const { id, name: officialName, uploadsPlaylistId } = await findChannelInfo(query);
-          const { videos } = await getVideosFromChannel(uploadsPlaylistId, timeFrame, maxResults, { name: officialName });
+          const { videos } = await getVideosFromChannel(uploadsPlaylistId, timeFrame, maxResults, { name: officialName, favoriteType: isHandle ? 'handle' : 'channel' });
           apiVideos = videos;
           displayName = officialName;
           channelId = id;

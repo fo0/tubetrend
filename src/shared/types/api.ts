@@ -51,6 +51,8 @@ export interface QuotaCallContext {
   name?: string;
   /** Favorite ID if triggered by a favorite */
   favoriteId?: string;
+  /** Type of favorite that triggered this call (for grouping in UI) */
+  favoriteType?: 'channel' | 'handle' | 'keyword';
 }
 
 export interface QuotaHistoryEntry {
