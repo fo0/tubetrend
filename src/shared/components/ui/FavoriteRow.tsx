@@ -67,6 +67,8 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, on
   const prevLocalTokenRef = useRef<number>(localRefreshToken);
   // Ref um zu tracken ob channelId bereits aus Cache/API gesetzt wurde (verhindert doppelte API-Calls)
   const channelIdLoadedRef = useRef<boolean>(false);
+  // Ref um zu tracken ob refresh-start Event dispatched wurde (für cleanup)
+  const dispatchedStartRef = useRef<boolean>(false);
 
   // Sync bei Prop-Wechsel (z.B. nach Seiten-Neuladen)
   useEffect(() => {
@@ -181,15 +183,6 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, on
       const isLocalRefresh = prevLocalTokenRef.current !== localRefreshToken;
       const forced = isGlobalRefresh || isLocalRefresh;
 
-      // Optimierung: Bei globalem Refresh gestaffelten Delay verwenden
-      // um nicht alle API-Calls gleichzeitig zu starten
-      if (isGlobalRefresh && staggerIndex > 0) {
-        await new Promise<void>(resolve => {
-          staggerTimeout = setTimeout(resolve, staggerIndex * STAGGER_DELAY_MS);
-        });
-        if (cancelled) return;
-      }
-
       // Immer zuerst gecachte Daten anzeigen (auch wenn abgelaufen)
       // Das verhindert "Lädt..." bei abgelaufenem Cache
       const cached = favoritesService.getCache(currentFavId);
@@ -214,15 +207,30 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, on
       if (!cached) {
         setLoading(true);
       }
+
       // Globales Event: Start des Refresh für diesen Favoriten
-      let dispatchedStart = false;
+      // WICHTIG: Muss VOR dem Stagger-Delay gesendet werden, damit alle Icons
+      // sofort die Lade-Animation zeigen beim "Alle aktualisieren"
       try {
         if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
           window.dispatchEvent(new CustomEvent('favorite-refresh-start', { detail: { id: currentFavId } }));
-          dispatchedStart = true;
+          dispatchedStartRef.current = true;
         }
       } catch {
         // ignore
+      }
+
+      // Optimierung: Bei globalem Refresh gestaffelten Delay verwenden
+      // um nicht alle API-Calls gleichzeitig zu starten
+      if (isGlobalRefresh && staggerIndex > 0) {
+        await new Promise<void>((resolve, reject) => {
+          staggerTimeout = setTimeout(resolve, staggerIndex * STAGGER_DELAY_MS);
+          // Speichere reject-Funktion für sauberes Cleanup
+          (staggerTimeout as any).__reject = reject;
+        }).catch(() => {
+          // Timeout wurde abgebrochen - Ende-Event wird im Cleanup gesendet
+        });
+        if (cancelled) return;
       }
       try {
         let apiVideos: any[];
@@ -278,8 +286,9 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, on
         if (!cancelled) setLoading(false);
         // Globales Event: Ende des Refresh für diesen Favoriten (nur senden, wenn Start gesendet wurde)
         try {
-          if (dispatchedStart && typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
+          if (dispatchedStartRef.current && typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
             window.dispatchEvent(new CustomEvent('favorite-refresh-end', { detail: { id: currentFavId } }));
+            dispatchedStartRef.current = false;
           }
         } catch {
           // ignore
@@ -292,7 +301,24 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, on
     prevLocalTokenRef.current = localRefreshToken;
     return () => {
       cancelled = true;
-      if (staggerTimeout) clearTimeout(staggerTimeout);
+      if (staggerTimeout) {
+        clearTimeout(staggerTimeout);
+        // Reject das Promise damit es nicht hängen bleibt
+        if ((staggerTimeout as any).__reject) {
+          (staggerTimeout as any).__reject();
+        }
+      }
+      // Cleanup: Wenn Start-Event gesendet wurde aber noch kein End-Event, sende es jetzt
+      if (dispatchedStartRef.current) {
+        try {
+          if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
+            window.dispatchEvent(new CustomEvent('favorite-refresh-end', { detail: { id: currentFavId } }));
+          }
+        } catch {
+          // ignore
+        }
+        dispatchedStartRef.current = false;
+      }
     };
   }, [currentFavId, currentMax, favorite.query, favorite.searchType, currentTimeFrame, globalRefreshToken, localRefreshToken, staggerIndex]);
 
