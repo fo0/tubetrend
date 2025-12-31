@@ -5,6 +5,7 @@ import type {VideoData} from '@/src/features/videos/types';
 import {analyzeVideoStats} from '@/src/features/videos';
 import {
   findChannelInfo,
+  getChannelQueryType,
   getVideosFromChannel,
   searchVideosByKeyword,
 } from '@/src/features/youtube';
@@ -66,8 +67,9 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
           displayName = query;
           channelId = undefined;
         } else {
+          const queryType = getChannelQueryType(query);
           const { id, name: officialName, uploadsPlaylistId } = await findChannelInfo(query);
-          const { videos } = await getVideosFromChannel(uploadsPlaylistId, timeFrame, maxResults, { name: officialName });
+          const { videos } = await getVideosFromChannel(uploadsPlaylistId, timeFrame, maxResults, { name: officialName, favoriteType: queryType });
           apiVideos = videos;
           displayName = officialName;
           channelId = id;

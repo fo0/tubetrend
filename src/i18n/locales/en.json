@@ -195,11 +195,15 @@
     "noCalls": "No API calls yet",
     "usageBySource": "Usage by source",
     "sourceChannel": "Channel",
+    "sourceHandle": "Handle",
     "sourceKeyword": "Keyword",
     "sourceAutocomplete": "Autocomplete",
     "sourceVideoStats": "Video stats",
     "sourceChannelInfo": "Channel info",
-    "sourceUnknown": "Other"
+    "sourceUnknown": "Other",
+    "timeJustNow": "just now",
+    "timeMinutesAgo": "{{count}} min ago",
+    "timeHoursAgo": "{{count}} hrs ago"
   },
   "footer": {
     "buildInfo": "Build info",

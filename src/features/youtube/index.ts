@@ -15,5 +15,6 @@ export {
   getVideosFromChannel,
   searchChannels,
   extractChannelIdentifier,
+  getChannelQueryType,
 } from './services/channelService';
 export { searchVideosByKeyword } from './services/searchService';

@@ -20,6 +20,7 @@ export async function searchVideosByKeyword(
   const keywordContext: QuotaCallContext = {
     source: 'keyword',
     name: keyword.trim(),
+    favoriteType: 'keyword',
     ...context,
   };
 

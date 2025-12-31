@@ -5,7 +5,7 @@ import {SearchType} from '@/src/shared/types';
 import type {TimeFrame} from '@/src/shared/types';
 import {favoritesService} from '@/src/features/favorites';
 import {analyzeVideoStats} from '@/src/features/videos';
-import {findChannelInfo, getVideosFromChannel, searchVideosByKeyword} from '@/src/features/youtube';
+import {findChannelInfo, getChannelQueryType, getVideosFromChannel, searchVideosByKeyword} from '@/src/features/youtube';
 import {VideoCard} from './VideoCard';
 import {
   AlertCircle,
@@ -249,8 +249,9 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, on
           fetchedChannelId = undefined;
         } else {
           // Kanal-Suche: Erst Kanal finden, dann Videos aus Uploads-Playlist
+          const queryType = getChannelQueryType(favorite.query);
           const { id, name, uploadsPlaylistId } = await findChannelInfo(favorite.query, { favoriteId: currentFavId });
-          const result = await getVideosFromChannel(uploadsPlaylistId, currentTimeFrame as TimeFrame, currentMax, { name, favoriteId: currentFavId });
+          const result = await getVideosFromChannel(uploadsPlaylistId, currentTimeFrame as TimeFrame, currentMax, { name, favoriteId: currentFavId, favoriteType: queryType });
           apiVideos = result.videos;
           totalInTimeFrame = result.totalInTimeFrame;
           displayName = name;

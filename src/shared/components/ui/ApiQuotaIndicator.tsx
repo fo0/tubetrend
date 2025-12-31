@@ -1,7 +1,7 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
-import {Activity, AlertTriangle, Hash, Search, User, Video, X, Zap} from 'lucide-react';
+import {Activity, AlertTriangle, AtSign, Hash, Search, User, X, Zap} from 'lucide-react';
 import {quotaService} from '@/src/features/youtube';
-import type {QuotaCallContext, QuotaHistoryEntry} from '@/src/shared/types';
+import type {QuotaHistoryEntry} from '@/src/shared/types';
 import {useTranslation} from 'react-i18next';
 
 // Determine optimal time window based on actual data
@@ -62,9 +62,10 @@ const groupHistoryByTimeBuckets = (history: QuotaHistoryEntry[], timeWindowMs: n
   return buckets;
 };
 
-// Group recent calls by context (source + name)
+// Group recent calls by context (favoriteType + name, or source for non-favorite calls)
 interface GroupedCall {
-  source: QuotaCallContext['source'];
+  /** Display type: favoriteType if available, otherwise source */
+  displayType: 'channel' | 'handle' | 'keyword' | 'autocomplete' | 'unknown';
   name: string;
   totalUnits: number;
   callCount: number;
@@ -77,13 +78,33 @@ const groupCallsByContext = (history: QuotaHistoryEntry[]): GroupedCall[] => {
 
   // Process in reverse order (newest first)
   [...history].reverse().forEach(entry => {
+    const favoriteType = entry.context?.favoriteType;
     const source = entry.context?.source || 'unknown';
     const name = entry.context?.name || '';
-    const key = `${source}:${name}`;
+
+    // Determine display type:
+    // 1. Use favoriteType if available (new entries)
+    // 2. Fallback to source-based mapping for backward compatibility with old entries
+    let displayType: GroupedCall['displayType'];
+    if (favoriteType) {
+      displayType = favoriteType;
+    } else if (source === 'autocomplete') {
+      displayType = 'autocomplete';
+    } else if (source === 'channel' || source === 'channel-info' || source === 'video-stats') {
+      // Old entries without favoriteType - check if name starts with @ for handle detection
+      displayType = name.startsWith('@') ? 'handle' : 'channel';
+    } else if (source === 'keyword') {
+      // Old keyword entries
+      displayType = 'keyword';
+    } else {
+      displayType = 'unknown';
+    }
+
+    const key = `${displayType}:${name}`;
 
     if (!grouped.has(key)) {
       grouped.set(key, {
-        source,
+        displayType,
         name,
         totalUnits: 0,
         callCount: 0,
@@ -105,47 +126,43 @@ const groupCallsByContext = (history: QuotaHistoryEntry[]): GroupedCall[] => {
   return Array.from(grouped.values()).sort((a, b) => b.lastTimestamp - a.lastTimestamp);
 };
 
-// Format relative time
-const formatRelativeTime = (timestamp: number): string => {
+// Format relative time - returns translation key params, actual formatting done in component
+const getRelativeTimeParts = (timestamp: number): { key: string; count?: number } => {
   const diff = Date.now() - timestamp;
   const minutes = Math.floor(diff / 60000);
-  if (minutes < 1) return 'gerade eben';
-  if (minutes < 60) return `vor ${minutes} Min.`;
+  if (minutes < 1) return { key: 'quota.timeJustNow' };
+  if (minutes < 60) return { key: 'quota.timeMinutesAgo', count: minutes };
   const hours = Math.floor(minutes / 60);
-  return `vor ${hours} Std.`;
+  return { key: 'quota.timeHoursAgo', count: hours };
 };
 
-// Format bucket time for tooltip - more precise based on time window
-const formatBucketTime = (bucket: { startTime: number; endTime: number }, timeWindowMs: number): string => {
+// Format bucket time for tooltip - returns translation key params
+const getBucketTimeParts = (bucket: { startTime: number; endTime: number }, timeWindowMs: number): { key: string; count?: number } => {
   const now = Date.now();
   const diffMs = now - bucket.endTime;
 
   // For short time windows (< 1 hour), show minutes
   if (timeWindowMs <= 60 * 60 * 1000) {
     const minutesAgo = Math.round(diffMs / (60 * 1000));
-    if (minutesAgo <= 0) return 'Jetzt';
-    if (minutesAgo === 1) return 'vor 1 Min.';
-    return `vor ${minutesAgo} Min.`;
+    if (minutesAgo <= 0) return { key: 'quota.now' };
+    return { key: 'quota.timeMinutesAgo', count: minutesAgo };
   }
 
   // For medium time windows (< 6 hours), show minutes or hours
   if (timeWindowMs <= 6 * 60 * 60 * 1000) {
     const minutesAgo = Math.round(diffMs / (60 * 1000));
     if (minutesAgo < 60) {
-      if (minutesAgo <= 0) return 'Jetzt';
-      if (minutesAgo === 1) return 'vor 1 Min.';
-      return `vor ${minutesAgo} Min.`;
+      if (minutesAgo <= 0) return { key: 'quota.now' };
+      return { key: 'quota.timeMinutesAgo', count: minutesAgo };
     }
     const hoursAgo = Math.round(diffMs / (60 * 60 * 1000));
-    if (hoursAgo === 1) return 'vor 1 Std.';
-    return `vor ${hoursAgo} Std.`;
+    return { key: 'quota.timeHoursAgo', count: hoursAgo };
   }
 
   // For longer time windows, show hours
   const hoursAgo = Math.round(diffMs / (60 * 60 * 1000));
-  if (hoursAgo === 0) return 'Jetzt';
-  if (hoursAgo === 1) return 'vor 1 Std.';
-  return `vor ${hoursAgo} Std.`;
+  if (hoursAgo === 0) return { key: 'quota.now' };
+  return { key: 'quota.timeHoursAgo', count: hoursAgo };
 };
 
 export const ApiQuotaIndicator: React.FC = () => {
@@ -251,55 +268,49 @@ export const ApiQuotaIndicator: React.FC = () => {
   // Format numbers with locale
   const formatNumber = (n: number) => n.toLocaleString('de-DE');
 
-  // Get icon for source type
-  const getSourceIcon = (source: QuotaCallContext['source']) => {
-    switch (source) {
+  // Get icon for display type (favoriteType or autocomplete)
+  const getDisplayTypeIcon = (displayType: GroupedCall['displayType']) => {
+    switch (displayType) {
       case 'channel':
         return <User className="w-3 h-3" />;
+      case 'handle':
+        return <AtSign className="w-3 h-3" />;
       case 'keyword':
         return <Hash className="w-3 h-3" />;
       case 'autocomplete':
         return <Search className="w-3 h-3" />;
-      case 'video-stats':
-        return <Video className="w-3 h-3" />;
-      case 'channel-info':
-        return <User className="w-3 h-3" />;
       default:
         return <Activity className="w-3 h-3" />;
     }
   };
 
-  // Get color for source type
-  const getSourceColor = (source: QuotaCallContext['source']): string => {
-    switch (source) {
+  // Get color for display type
+  const getDisplayTypeColor = (displayType: GroupedCall['displayType']): string => {
+    switch (displayType) {
       case 'channel':
         return 'text-red-400';
+      case 'handle':
+        return 'text-orange-400';
       case 'keyword':
         return 'text-indigo-400';
       case 'autocomplete':
         return 'text-cyan-400';
-      case 'video-stats':
-        return 'text-green-400';
-      case 'channel-info':
-        return 'text-blue-400';
       default:
         return 'text-slate-400';
     }
   };
 
-  // Get label for source type
-  const getSourceLabel = (source: QuotaCallContext['source']): string => {
-    switch (source) {
+  // Get label for display type
+  const getDisplayTypeLabel = (displayType: GroupedCall['displayType']): string => {
+    switch (displayType) {
       case 'channel':
         return t('quota.sourceChannel');
+      case 'handle':
+        return t('quota.sourceHandle');
       case 'keyword':
         return t('quota.sourceKeyword');
       case 'autocomplete':
         return t('quota.sourceAutocomplete');
-      case 'video-stats':
-        return t('quota.sourceVideoStats');
-      case 'channel-info':
-        return t('quota.sourceChannelInfo');
       default:
         return t('quota.sourceUnknown');
     }
@@ -429,7 +440,10 @@ export const ApiQuotaIndicator: React.FC = () => {
                   >
                     {bucket.units > 0 && (
                       <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-1 px-2 py-1 bg-slate-800 border border-slate-600 rounded text-[10px] text-slate-300 whitespace-nowrap opacity-0 group-hover/point:opacity-100 transition-opacity pointer-events-none z-[100]">
-                        <div className="font-medium">{formatBucketTime(bucket, timeWindow.windowMs)}</div>
+                        <div className="font-medium">{(() => {
+                          const { key, count } = getBucketTimeParts(bucket, timeWindow.windowMs);
+                          return t(key, { count });
+                        })()}</div>
                         <div>{bucket.units} {t('quota.units')} ({bucket.calls} {t('quota.calls')})</div>
                       </div>
                     )}
@@ -458,13 +472,13 @@ export const ApiQuotaIndicator: React.FC = () => {
                     className="flex items-start justify-between text-[11px] py-1 px-2 rounded bg-slate-800/50 hover:bg-slate-800 transition-colors"
                   >
                     <div className="flex items-start gap-2 min-w-0 flex-1">
-                      <span className={`${getSourceColor(group.source)} mt-0.5 flex-shrink-0`}>
-                        {getSourceIcon(group.source)}
+                      <span className={`${getDisplayTypeColor(group.displayType)} mt-0.5 flex-shrink-0`}>
+                        {getDisplayTypeIcon(group.displayType)}
                       </span>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1.5">
-                          <span className={`font-medium ${getSourceColor(group.source)}`}>
-                            {getSourceLabel(group.source)}
+                          <span className={`font-medium ${getDisplayTypeColor(group.displayType)}`}>
+                            {getDisplayTypeLabel(group.displayType)}
                           </span>
                         </div>
                         {group.name && (
@@ -479,7 +493,10 @@ export const ApiQuotaIndicator: React.FC = () => {
                         {formatNumber(group.totalUnits)} {t('quota.units')}
                       </div>
                       <div className="text-slate-600 text-[9px]">
-                        {group.callCount}x · {formatRelativeTime(group.lastTimestamp)}
+                        {group.callCount}x · {(() => {
+                          const { key, count } = getRelativeTimeParts(group.lastTimestamp);
+                          return t(key, { count });
+                        })()}
                       </div>
                     </div>
                   </div>
