@@ -348,7 +348,7 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, on
       if (channelIdLoadedRef.current || cancelled) return;
 
       try {
-        const { id, name } = await findChannelInfo(favorite.query);
+        const { id, name } = await findChannelInfo(favorite.query, { favoriteId: currentFavId });
         if (!cancelled) {
           setChannelId(id);
           setChannelTitle(name);
