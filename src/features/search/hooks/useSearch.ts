@@ -62,13 +62,13 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
         let channelId: string | undefined;
 
         if (searchType === ST.KEYWORD) {
-          const { videos } = await searchVideosByKeyword(query, timeFrame, maxResults);
+          const { videos } = await searchVideosByKeyword(query, timeFrame, maxResults, { name: query });
           apiVideos = videos;
           displayName = query;
           channelId = undefined;
         } else {
           const queryType = getChannelQueryType(query);
-          const { id, name: officialName, uploadsPlaylistId } = await findChannelInfo(query);
+          const { id, name: officialName, uploadsPlaylistId } = await findChannelInfo(query, { name: query });
           const { videos } = await getVideosFromChannel(uploadsPlaylistId, timeFrame, maxResults, { name: officialName, favoriteType: queryType });
           apiVideos = videos;
           displayName = officialName;
