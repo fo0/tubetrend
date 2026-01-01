@@ -219,7 +219,8 @@ export const ApiQuotaIndicator: React.FC = () => {
   const maxUnitsInBucket = useMemo(() => Math.max(...timeBuckets.map(b => b.units), 1), [timeBuckets]);
 
   // Grouped calls by context (for better overview)
-  const groupedCalls = useMemo(() => groupCallsByContext(history).slice(0, 8), [history]);
+  // Show all sources - the container is scrollable (max-h-48 overflow-y-auto)
+  const groupedCalls = useMemo(() => groupCallsByContext(history), [history]);
 
   // Color based on percentage and exhausted state
   const getColorClasses = () => {
