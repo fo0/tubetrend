@@ -35,7 +35,7 @@ src/
 │   ├── lib/          # Utilities (storage, eventBus, formatters)
 │   └── types/        # Shared TypeScript types
 ├── providers/        # React context providers (ThemeProvider)
-├── i18n/             # i18n config + locales (13 languages)
+├── i18n/             # i18n config + locales (en, de)
 └── styles/           # Global CSS
 ```
 
