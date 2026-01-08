@@ -86,7 +86,7 @@ export const HighlightVideoCard: React.FC<HighlightVideoCardProps> = ({
           <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 truncate" title={`${sourceLabel} • Top ${sourceRank}`}>
             {sourceLabel} <span className="text-slate-400 dark:text-slate-500">•</span> Top {sourceRank}
           </div>
-          <h3 className="text-base font-bold leading-snug line-clamp-2">
+          <h3 className="text-base font-bold leading-snug line-clamp-2 min-h-[2.75rem]">
             <a
               href={video.url}
               target="_blank"
