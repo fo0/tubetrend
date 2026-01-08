@@ -41,7 +41,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video }) => {
       {/* Content Area */}
       <div className="p-4 flex flex-col flex-grow">
         <div className="mb-2">
-          <h3 className="text-base font-bold leading-snug line-clamp-2">
+          <h3 className="text-base font-bold leading-snug line-clamp-2 min-h-[2.75rem]">
             <a 
               href={video.url} 
               target="_blank" 
