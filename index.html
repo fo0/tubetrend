@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TubeTrend</title>
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind CDN config: enable class-based dark mode for manual toggling -->
+    <script>
+      tailwind.config = { darkMode: 'class' };
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Apply theme class (dark/light) before React mounts to avoid FOUC -->
+    <script>
+      (function() {
+        try {
+          var storageKey = 'tt.theme.explicit';
+          var explicit = localStorage.getItem(storageKey); // 'light' | 'dark' | null
+          var systemPrefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+          var shouldDark = explicit ? (explicit === 'dark') : systemPrefersDark;
+          if (shouldDark) {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+        } catch (e) {
+          // ignore
+        }
+      })();
+    </script>
+  <script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.554.0",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/src/styles/index.css">
+<style>
+  /* Base font family */
+  body { font-family: 'Inter', sans-serif; }
+</style>
+    </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

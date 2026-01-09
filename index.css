@@ -1,0 +1,50 @@
+/* Light/Dark Theme base styles */
+:root {
+  color-scheme: light dark;
+}
+
+html, body, #root {
+  min-height: 100%;
+}
+
+/* Light theme defaults */
+body {
+  background-color: #ffffff; /* white */
+  color: #0f172a; /* slate-900 */
+}
+
+/* Dark theme overrides (activated by .dark on html element) */
+.dark body {
+  background-color: #0b1220; /* slightly darker than slate-950 */
+  color: #f8fafc; /* slate-50 */
+}
+
+/* Smooth theme transitions for backgrounds and color on main surfaces */
+body, .theme-surface {
+  transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease;
+}
+
+/* Custom Scrollbar */
+/* width */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+/* Track */
+::-webkit-scrollbar-track { background: #e2e8f0; /* slate-200 */ }
+/* Handle */
+::-webkit-scrollbar-thumb { background: #94a3b8; /* slate-400 */ border-radius: 4px; }
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover { background: #64748b; /* slate-500 */ }
+
+/* Dark scrollbar */
+.dark ::-webkit-scrollbar-track { background: #1e293b; }
+.dark ::-webkit-scrollbar-thumb { background: #475569; }
+.dark ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+/* Fresh (<24h) video highlight border for dashboard cards */
+.fresh-green-border {
+  /* Dezent: dünner, etwas stärker sichtbarer Ring ohne Border-Farbänderung */
+  box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.50);
+}
+
+.dark .fresh-green-border {
+  box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.60);
+}
