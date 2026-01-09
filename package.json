@@ -1,7 +1,24 @@
 {
   "name": "tubetrend",
-  "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "YouTube trend analysis tool - analyze video performance, track favorites, and discover trending content",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fo0/tubetrend.git"
+  },
+  "bugs": {
+    "url": "https://github.com/fo0/tubetrend/issues"
+  },
+  "homepage": "https://github.com/fo0/tubetrend#readme",
+  "keywords": [
+    "youtube",
+    "trends",
+    "analytics",
+    "react",
+    "vite",
+    "typescript"
+  ],
   "type": "module",
   "scripts": {
     "dev": "vite",
