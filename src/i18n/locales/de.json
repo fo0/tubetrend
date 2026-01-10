@@ -158,7 +158,17 @@
       "title": "YouTube API-Schlüssel",
       "description": "Gib deinen YouTube Data API-Schlüssel ein, um fortzufahren.",
       "save": "Speichern",
-      "cancel": "Abbrechen"
+      "cancel": "Abbrechen",
+      "helpToggle": "Wie bekomme ich einen API-Key?",
+      "quotaTitle": "Kostenloses Kontingent",
+      "quotaInfo": "Jeder API-Key hat 10.000 Einheiten pro Tag kostenlos. Eine Suche kostet ~100 Einheiten, Video-Details nur 1 Einheit. Das reicht für ca. 100 Suchen täglich.",
+      "stepsTitle": "So erstellst du einen API-Key:",
+      "step1": "YouTube Data API v3 in Google Cloud öffnen",
+      "step2": "Melde dich mit deinem Google-Konto an (falls nötig)",
+      "step3": "Klicke auf \"Aktivieren\" um die API für dein Projekt zu aktivieren",
+      "step4": "Gehe zu \"Anmeldedaten\" → \"Anmeldedaten erstellen\" → \"API-Schlüssel\"",
+      "step5": "Kopiere den erstellten Schlüssel und füge ihn hier ein",
+      "keyFormat": "Der Schlüssel beginnt mit \"AIza\" und hat ca. 39 Zeichen."
     }
   },
   "confirm": {

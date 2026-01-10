@@ -158,7 +158,17 @@
       "title": "YouTube API key",
       "description": "Enter your YouTube Data API key to continue.",
       "save": "Save",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "helpToggle": "How do I get an API key?",
+      "quotaTitle": "Free quota",
+      "quotaInfo": "Each API key includes 10,000 free units per day. A search costs ~100 units, video details only 1 unit. That's enough for about 100 searches daily.",
+      "stepsTitle": "How to create an API key:",
+      "step1": "Open YouTube Data API v3 in Google Cloud",
+      "step2": "Sign in with your Google account (if needed)",
+      "step3": "Click \"Enable\" to activate the API for your project",
+      "step4": "Go to \"Credentials\" → \"Create credentials\" → \"API key\"",
+      "step5": "Copy the generated key and paste it here",
+      "keyFormat": "The key starts with \"AIza\" and is about 39 characters long."
     }
   },
   "confirm": {
