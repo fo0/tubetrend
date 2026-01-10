@@ -2,7 +2,10 @@
 
 A YouTube trend analysis tool built with Vite + React + TypeScript. Analyze video performance, track favorites, and discover trending content across channels.
 
+## Dashboard
 ![Dashboard](docs/dashboard_image_doc.jpeg)
+
+## Analyzer
 ![Analyser](docs/analyzer_image_doc.jpeg)
 
 ---
