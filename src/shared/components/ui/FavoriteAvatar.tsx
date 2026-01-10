@@ -90,11 +90,21 @@ export const FavoriteAvatar: React.FC<FavoriteAvatarProps> = ({
     ? 'w-7 h-7 text-xs'
     : 'w-9 h-9 text-sm';
 
+  // Button needs same size as avatar for proper spinning border positioning
+  const buttonSizeClasses = size === 'sm'
+    ? 'w-7 h-7'
+    : 'w-9 h-9';
+
+  // Spinning border thickness varies by size
+  const spinnerClass = size === 'sm'
+    ? 'avatar-spinning-border avatar-spinning-border-sm'
+    : 'avatar-spinning-border';
+
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`relative flex-shrink-0 group ${isRefreshing ? 'avatar-loading-spin' : ''}`}
+      className={`relative flex-shrink-0 group ${buttonSizeClasses} ${isRefreshing ? 'avatar-loading-spin' : ''}`}
       title={channelTitle}
     >
       {/* Avatar circle */}
@@ -116,7 +126,7 @@ export const FavoriteAvatar: React.FC<FavoriteAvatarProps> = ({
 
       {/* Rotating green border when refreshing */}
       {isRefreshing && (
-        <div className="absolute inset-0 rounded-full avatar-spinning-border" />
+        <div className={`absolute inset-0 rounded-full ${spinnerClass}`} />
       )}
     </button>
   );
