@@ -1,16 +1,21 @@
 # TubeTrend
 
-A YouTube trend analysis tool built with Vite + React + TypeScript. Analyze video performance, track favorites, and discover trending content across channels.
+A YouTube trend analysis tool built with Vite + React + TypeScript. Analyze video performance, track
+favorites, and discover trending content across channels.
 
 ### Dashboard
-Track your favorite YouTube channels and keywords with an intuitive dashboard that displays highlights and video performance metrics.
 
-![Dashboard](docs/dashboard_image_doc.png)
+Track your favorite YouTube channels and keywords with an intuitive dashboard that displays
+highlights and video performance metrics.
+
+![Dashboard](docs/dashboard_image_doc.jpeg)
 
 ### Analyser
-Search and analyze videos by channel or keyword with trend scoring to discover top-performing content.
 
-![Analyser](docs/analyzer_image_doc.png)
+Search and analyze videos by channel or keyword with trend scoring to discover top-performing
+content.
+
+![Analyser](docs/analyzer_image_doc.jpeg)
 
 ---
 
@@ -107,10 +112,10 @@ This project uses Vite. Client-exposed variables must be prefixed with `VITE_`.
    ```
 
 2. Available variables:
-   - `VITE_DEFAULT_SEARCH` — Default value shown in the search input when the app loads.
-     - If not set, the app falls back to:
-       - Dev mode: `TEDx`
-       - Production builds: empty string
+    - `VITE_DEFAULT_SEARCH` — Default value shown in the search input when the app loads.
+        - If not set, the app falls back to:
+            - Dev mode: `TEDx`
+            - Production builds: empty string
 
 3. After changing env vars, restart the dev server so Vite reloads them.
 
