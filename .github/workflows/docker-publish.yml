@@ -3,6 +3,14 @@ name: Build and Push Docker image to GHCR
 on:
   push:
     branches: [ main, master ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.env.example'
+      - '.gitignore'
+      - '.editorconfig'
+      - 'LICENSE*'
+      - '.vscode/**'
     # Trigger auch bei Release-Tags (z.B. v1.0.0)
   workflow_dispatch:
 

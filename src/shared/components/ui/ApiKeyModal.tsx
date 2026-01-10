@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {Check, HelpCircle, Key} from 'lucide-react';
+import {Check, HelpCircle, Key, ExternalLink, Zap} from 'lucide-react';
 import {useTranslation} from 'react-i18next';
 
 interface ApiKeyModalProps {
@@ -57,21 +57,48 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ onSave }) => {
           </form>
 
           <div className="pt-4 border-t border-slate-200 dark:border-slate-800">
-            <button 
+            <button
               onClick={() => setShowHelp(!showHelp)}
               className="flex items-center gap-2 text-indigo-500 dark:text-indigo-400 text-sm hover:text-indigo-400 dark:hover:text-indigo-300 transition-colors mx-auto"
             >
               <HelpCircle className="w-4 h-4" />
-              <span>Wie bekomme ich einen Key?</span>
+              <span>{t('modal.apiKey.helpToggle')}</span>
             </button>
-            
+
             {showHelp && (
-              <div className="mt-4 text-xs text-slate-500 dark:text-slate-400 space-y-2 bg-slate-100/50 dark:bg-slate-950/50 p-4 rounded-lg border border-slate-200 dark:border-slate-800">
-                <p>1. Gehe zur <a href="https://console.cloud.google.com/" target="_blank" rel="noreferrer" className="text-indigo-500 dark:text-indigo-400 underline decoration-indigo-500/30">Google Cloud Console</a>.</p>
-                <p>2. Erstelle ein neues Projekt.</p>
-                <p>3. Suche in der Bibliothek nach <strong>"YouTube Data API v3"</strong> und aktiviere sie.</p>
-                <p>4. Erstelle unter "Zugangsdaten" einen <strong>API-Schlüssel</strong>.</p>
-                <p>5. Kopiere den Schlüssel (beginnt meist mit "AIza...") und füge ihn hier ein.</p>
+              <div className="mt-4 text-xs text-slate-600 dark:text-slate-300 space-y-3 bg-slate-100/50 dark:bg-slate-950/50 p-4 rounded-lg border border-slate-200 dark:border-slate-800">
+                <div className="flex items-start gap-2 pb-3 border-b border-slate-200 dark:border-slate-700">
+                  <Zap className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-medium text-slate-700 dark:text-slate-200">{t('modal.apiKey.quotaTitle')}</p>
+                    <p className="text-slate-500 dark:text-slate-400 mt-0.5">{t('modal.apiKey.quotaInfo')}</p>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <p className="font-medium text-slate-700 dark:text-slate-200">{t('modal.apiKey.stepsTitle')}</p>
+                  <ol className="list-decimal list-inside space-y-1.5 text-slate-500 dark:text-slate-400">
+                    <li>
+                      <a
+                        href="https://console.cloud.google.com/marketplace/product/google/youtube.googleapis.com"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-indigo-500 dark:text-indigo-400 underline decoration-indigo-500/30 hover:text-indigo-400 inline-flex items-center gap-1"
+                      >
+                        {t('modal.apiKey.step1')}
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                    </li>
+                    <li>{t('modal.apiKey.step2')}</li>
+                    <li>{t('modal.apiKey.step3')}</li>
+                    <li>{t('modal.apiKey.step4')}</li>
+                    <li>{t('modal.apiKey.step5')}</li>
+                  </ol>
+                </div>
+
+                <div className="pt-2 text-slate-400 dark:text-slate-500 text-[10px]">
+                  {t('modal.apiKey.keyFormat')}
+                </div>
               </div>
             )}
           </div>
