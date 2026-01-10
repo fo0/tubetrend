@@ -28,9 +28,21 @@ export function useFavorites() {
   }, [loadFavorites]);
 
   // Refresh all favorites
+  // IMPORTANT: We immediately mark ALL favorites as refreshing to ensure
+  // the mini icons show the spinning border animation right away.
+  // This fixes the timing issue where start/end events could be batched together.
   const refreshAll = useCallback(() => {
+    // Mark all favorites as refreshing immediately
+    setRefreshingIds((prev) => {
+      const next = new Set(prev);
+      for (const fav of favorites) {
+        next.add(fav.id);
+      }
+      return next;
+    });
+    // Then trigger the actual refresh
     setRefreshToken((v) => v + 1);
-  }, []);
+  }, [favorites]);
 
   // Listen for favorites-changed events
   useEffect(() => {
