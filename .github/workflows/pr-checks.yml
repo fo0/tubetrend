@@ -4,6 +4,14 @@ on:
   pull_request:
     branches: [main, master]
     types: [opened, synchronize, reopened]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.env.example'
+      - '.gitignore'
+      - '.editorconfig'
+      - 'LICENSE*'
+      - '.vscode/**'
 
 # Cancel in-progress runs for the same PR
 concurrency:
