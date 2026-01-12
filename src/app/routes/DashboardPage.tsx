@@ -3,6 +3,7 @@ import {Activity, Download, EyeOff, RefreshCw, Upload} from 'lucide-react';
 import {FavoriteRow} from '@/src/shared/components/ui/FavoriteRow';
 import {FavoriteAvatar} from '@/src/shared/components/ui/FavoriteAvatar';
 import {HighlightVideoCard} from '@/src/shared/components/ui/HighlightVideoCard';
+import {FloatingScrollButton} from '@/src/shared/components/ui/FloatingScrollButton';
 import {useTranslation} from 'react-i18next';
 import type {FavoriteConfig} from '@/src/features/favorites/types';
 import type {VideoData} from '@/src/features/videos/types';
@@ -343,6 +344,9 @@ export function DashboardPage({
           ))}
         </div>
       )}
+
+      {/* Floating scroll button - subtle, appears based on scroll direction */}
+      <FloatingScrollButton />
     </div>
   );
 }
