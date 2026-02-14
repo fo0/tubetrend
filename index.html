@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TubeTrend</title>
+    <!-- Apply theme class (dark/light) before React mounts to avoid FOUC -->
+    <script>
+      (function() {
+        try {
+          var storageKey = 'tt.theme.explicit';
+          var explicit = localStorage.getItem(storageKey);
+          var systemPrefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+          var shouldDark = explicit ? (explicit === 'dark') : systemPrefersDark;
+          if (shouldDark) {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+        } catch (e) {
+          // ignore
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

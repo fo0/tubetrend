@@ -1,0 +1,227 @@
+{
+  "appTitle": "TubeTrend",
+  "language": {
+    "label": "Language:",
+    "system": "System"
+  },
+  "actions": {
+    "search": "Search",
+    "resetApiKey": "Delete API key",
+    "refreshAll": "Refresh all",
+    "remove": "Remove",
+    "refresh": "Refresh",
+    "analyze": "Analyze",
+    "importDashboard": "Import",
+    "exportDashboard": "Export"
+  },
+  "labels": {
+    "search": "Search",
+    "channelName": "Channel name",
+    "keyword": "Keyword",
+    "searchType": "Search type",
+    "timeFrame": "Time frame",
+    "maxResults": "Max results"
+  },
+  "searchType": {
+    "channel": "Channel",
+    "keyword": "Keyword"
+  },
+  "history": {
+    "recent": "Recently searched"
+  },
+  "timeFrames": {
+    "lastHour": "Last hour",
+    "last3Hours": "Last 3 hours",
+    "last5Hours": "Last 5 hours",
+    "last12Hours": "Last 12 hours",
+    "last24Hours": "Last 24 hours",
+    "today": "Today",
+    "last2Days": "Last 2 days",
+    "last3Days": "Last 3 days",
+    "last4Days": "Last 4 days",
+    "last5Days": "Last 5 days",
+    "last6Days": "Last 6 days",
+    "lastWeek": "Last 7 days",
+    "last2Weeks": "Last 2 weeks",
+    "last3Weeks": "Last 3 weeks",
+    "last4Weeks": "Last 4 weeks",
+    "lastMonth": "Last month",
+    "last2Months": "Last 2 months",
+    "last3Months": "Last 3 months",
+    "last4Months": "Last 4 months",
+    "last5Months": "Last 5 months",
+    "last6Months": "Last 6 months"
+  },
+  "maxResultsText": {
+    "all": "All",
+    "topN": "Top {{n}}"
+  },
+  "input": {
+    "searchPlaceholder": "Channel name, @handle or #searchtext",
+    "channelPlaceholder": "Enter channel name or @handle",
+    "keywordPlaceholder": "Enter search keyword (e.g. \"React tutorial\")"
+  },
+  "maxResults": {
+    "all": "All",
+    "auto": "Auto",
+    "noLimit": "No limit",
+    "topN": "Top {{n}}"
+  },
+  "favorites": {
+    "alreadySaved": "Already saved as favorite",
+    "saveTitle": "Save as favorite",
+    "saveButton": "Favorite",
+    "saved": "Saved",
+    "favorite": "Favorite",
+    "changeTimeFrame": "Change time frame",
+    "changeMaxResults": "Change max results",
+    "overflowWarning": "There are {{total}} videos in this time frame – showing only {{shown}}.",
+    "status": {
+      "refreshing": "Refreshing…",
+      "asOf": "As of: {{time}}",
+      "asOfUnknown": "As of: —",
+      "videoCount_one": "{{count}} video",
+      "videoCount_other": "{{count}} videos"
+    },
+    "refresh": "Refresh channel",
+    "remove": "Remove favorite",
+    "analyze": "Open in Analyzer (uses cached data)"
+  },
+  "dashboard": {
+    "noFavorites": "No favorites yet. Create a favorite from the analyzer.",
+    "highlights": {
+      "title": "Highlights",
+      "subtitle": "Top videos across all favorites (click to open)",
+      "count_one": "{{count}} highlight",
+      "count_other": "{{count}} highlights",
+      "hide": "Hide this highlight",
+      "hiddenCount_one": "{{count}} hidden",
+      "hiddenCount_other": "{{count}} hidden",
+      "showHidden": "Show hidden",
+      "clearHidden": "Show all hidden",
+      "hiddenButton": "Hidden",
+      "showHiddenList": "Show hidden videos",
+      "hiddenModalTitle": "Hidden Videos",
+      "noHiddenItems": "No hidden videos.",
+      "unhide": "Show",
+      "delete": "Delete",
+      "empty": "No highlights available yet. Highlights will appear once your favorites have loaded videos."
+    },
+    "sorting": {
+      "label": "Sorting:",
+      "alphaTitle": "Sort alphabetically (click again to reverse order)",
+      "velocityTitle": "Sort by activity (velocity = views per hour, best video in time frame) – click again to reverse order",
+      "activity": "Activity"
+    }
+  },
+  "results": {
+    "openChannelTitle": "Open YouTube channel: {{channel}}",
+    "resultsFor": "Results for",
+    "videosCount_one": "{{count}} video",
+    "videosCount_other": "{{count}} videos",
+    "sortedBy": "Sorted by",
+    "sortModes": {
+      "trend": "Trend score (velocity)",
+      "views": "Views"
+    },
+    "sortTitles": {
+      "trend": "Sort by trend score",
+      "views": "Sort by views"
+    },
+    "sortButtons": {
+      "trendScore": "Trend score",
+      "views": "Views"
+    },
+    "highlightTopN": "Highlight top {{n}}",
+    "topPerformance": "Top {{n}} performance",
+    "moreVideos": "More videos"
+  },
+  "timeAgo": {
+    "justNow": "just now",
+    "seconds_one": "{{count}}s ago",
+    "seconds_other": "{{count}}s ago",
+    "minutes_one": "{{count}}m ago",
+    "minutes_other": "{{count}}m ago",
+    "hours_one": "{{count}}h ago",
+    "hours_other": "{{count}}h ago",
+    "days_one": "{{count}}d ago",
+    "days_other": "{{count}}d ago",
+    "weeks_one": "{{count}}w ago",
+    "weeks_other": "{{count}}w ago",
+    "months_one": "{{count}}mo ago",
+    "months_other": "{{count}}mo ago",
+    "years_one": "{{count}}y ago",
+    "years_other": "{{count}}y ago"
+  },
+  "modal": {
+    "apiKey": {
+      "title": "YouTube API key",
+      "description": "Enter your YouTube Data API key to continue.",
+      "save": "Save",
+      "cancel": "Cancel",
+      "helpToggle": "How do I get an API key?",
+      "quotaTitle": "Free quota",
+      "quotaInfo": "Each API key includes 10,000 free units per day. A search costs ~100 units, video details only 1 unit. That's enough for about 100 searches daily.",
+      "stepsTitle": "How to create an API key:",
+      "step1": "Open YouTube Data API v3 in Google Cloud",
+      "step2": "Sign in with your Google account (if needed)",
+      "step3": "Click \"Enable\" to activate the API for your project",
+      "step4": "Go to \"Credentials\" → \"Create credentials\" → \"API key\"",
+      "step5": "Copy the generated key and paste it here",
+      "keyFormat": "The key starts with \"AIza\" and is about 39 characters long."
+    }
+  },
+  "confirm": {
+    "deleteApiKey": "Do you really want to delete the API key?",
+    "importDashboardReplace": "Import will replace your current dashboard favorites and cache ({{count}} favorites). Continue?"
+  },
+  "backup": {
+    "exportSuccess": "Backup downloaded.",
+    "importSuccess": "Import completed. {{count}} favorites restored.",
+    "importInvalid": "Invalid backup file.",
+    "importFailedStorage": "Import failed (could not write to browser storage)."
+  },
+  "errors": {
+    "favoriteLoad": "Failed to load favorite data.",
+    "somethingWentWrong": "Something went wrong",
+    "tryAgain": "Try again"
+  },
+  "loading": "Loading…",
+  "empty": {
+    "title": "Analyze YouTube channels",
+    "desc": "Search a channel and get trend insights for different time frames."
+  },
+  "quota": {
+    "label": "API Quota",
+    "tooltip": "YouTube API: {{used}} / {{limit}} units ({{percentage}}%)",
+    "exhausted": "Quota exhausted! Resets at midnight PT.",
+    "historyTitle": "API Usage",
+    "units": "Units",
+    "calls": "Calls",
+    "last24Hours": "Last 24 hours",
+    "lastTimeWindow": "Last {{time}}",
+    "now": "Now",
+    "recentCalls": "Recent calls",
+    "noCalls": "No API calls yet",
+    "usageBySource": "Usage by source",
+    "sourceChannel": "Channel",
+    "sourceHandle": "Handle",
+    "sourceKeyword": "Keyword",
+    "sourceAutocomplete": "Autocomplete",
+    "sourceVideoStats": "Video stats",
+    "sourceChannelInfo": "Channel info",
+    "sourceUnknown": "Other",
+    "timeJustNow": "just now",
+    "timeMinutesAgo": "{{count}} min ago",
+    "timeHoursAgo": "{{count}} hrs ago"
+  },
+  "footer": {
+    "buildInfo": "Build info",
+    "toggleDetails": "Show/hide build details",
+    "commitHash": "Commit hash",
+    "commit": "Commit",
+    "branch": "Branch",
+    "buildDate": "Build date",
+    "built": "Built"
+  }
+}

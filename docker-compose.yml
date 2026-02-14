@@ -1,0 +1,8 @@
+version: "3.9"
+
+services:
+  web:
+    # Build a production image (multi-stage) and serve via Nginx
+    image: ghcr.io/fo0/tubetrend:latest
+    ports:
+      - "8889:80"

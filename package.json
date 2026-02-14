@@ -1,0 +1,59 @@
+{
+  "name": "tubetrend",
+  "version": "1.0.0",
+  "description": "YouTube trend analysis tool - analyze video performance, track favorites, and discover trending content",
+  "author": "fo0 <fo0@fo0.me>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fo0/tubetrend.git"
+  },
+  "bugs": {
+    "url": "https://github.com/fo0/tubetrend/issues"
+  },
+  "homepage": "https://github.com/fo0/tubetrend#readme",
+  "keywords": [
+    "youtube",
+    "trends",
+    "analytics",
+    "react",
+    "vite",
+    "typescript"
+  ],
+  "type": "module",
+  "main": "dist-electron/main.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite build && vite preview",
+    "electron:dev": "ELECTRON=true vite",
+    "electron:preview": "ELECTRON=true vite build && electron .",
+    "electron:dist": "ELECTRON=true vite build && npm run electron:icon && electron-builder --config electron-builder.json",
+    "electron:icon": "node scripts/generate-icon.mjs",
+    "build:win": "ELECTRON=true vite build && electron-builder --config electron-builder.json --win portable",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@fontsource/inter": "^5.2.8",
+    "i18next": "^23.15.1",
+    "i18next-browser-languagedetector": "^7.2.1",
+    "lucide-react": "^0.554.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "react-i18next": "^15.5.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.0",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.0.0",
+    "autoprefixer": "^10.4.24",
+    "electron": "^35.0.0",
+    "electron-builder": "^26.0.0",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.19",
+    "typescript": "~5.8.2",
+    "vite": "^6.2.0",
+    "vite-plugin-electron": "^0.28.8"
+  }
+}

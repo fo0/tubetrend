@@ -1,0 +1,168 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Light/Dark Theme base styles */
+:root {
+  color-scheme: light dark;
+}
+
+html, body, #root {
+  min-height: 100%;
+}
+
+/* Light theme defaults */
+body {
+  background-color: #ffffff; /* white */
+  color: #0f172a; /* slate-900 */
+}
+
+/* Dark theme overrides (activated by .dark on html element) */
+.dark body {
+  background-color: #0b1220; /* slightly darker than slate-950 */
+  color: #f8fafc; /* slate-50 */
+}
+
+/* Smooth theme transitions for backgrounds and color on main surfaces */
+body, .theme-surface {
+  transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease;
+}
+
+/* Custom Scrollbar */
+/* width */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+/* Track */
+::-webkit-scrollbar-track { background: #e2e8f0; /* slate-200 */ }
+/* Handle */
+::-webkit-scrollbar-thumb { background: #94a3b8; /* slate-400 */ border-radius: 4px; }
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover { background: #64748b; /* slate-500 */ }
+
+/* Dark scrollbar */
+.dark ::-webkit-scrollbar-track { background: #1e293b; }
+.dark ::-webkit-scrollbar-thumb { background: #475569; }
+.dark ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+/* Fresh (<24h) video highlight border for dashboard cards */
+.fresh-green-border {
+  /* Dezent: dünner, etwas stärker sichtbarer Ring ohne Border-Farbänderung */
+  box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.50);
+}
+
+.dark .fresh-green-border {
+  box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.60);
+}
+
+/* Animation utilities */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out;
+}
+
+/* Loading border animation for highlights section */
+@keyframes loading-border-glow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.highlights-loading-border {
+  position: relative;
+  overflow: hidden;
+}
+
+.highlights-loading-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 2px;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    rgba(34, 197, 94, 0.1) 0%,
+    rgba(34, 197, 94, 0.6) 25%,
+    rgba(74, 222, 128, 0.8) 50%,
+    rgba(34, 197, 94, 0.6) 75%,
+    rgba(34, 197, 94, 0.1) 100%
+  );
+  background-size: 200% 100%;
+  animation: loading-border-glow 1.5s ease-in-out infinite;
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Rotating green border animation for favorite avatars */
+@keyframes avatar-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.avatar-spinning-border {
+  pointer-events: none;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    transparent 45deg,
+    rgba(34, 197, 94, 0.95) 90deg,
+    rgba(74, 222, 128, 1) 135deg,
+    rgba(16, 185, 129, 1) 180deg,
+    rgba(74, 222, 128, 1) 225deg,
+    rgba(34, 197, 94, 0.95) 270deg,
+    transparent 315deg,
+    transparent 360deg
+  );
+  animation: avatar-spin 1.2s linear infinite;
+  mask:
+    radial-gradient(farthest-side, transparent calc(100% - 4px), #fff calc(100% - 4px));
+  -webkit-mask:
+    radial-gradient(farthest-side, transparent calc(100% - 4px), #fff calc(100% - 4px));
+  filter: drop-shadow(0 0 3px rgba(34, 197, 94, 0.4));
+}
+
+/* Smaller variant for mini avatars (28px / w-7 h-7) */
+.avatar-spinning-border-sm {
+  mask:
+    radial-gradient(farthest-side, transparent calc(100% - 3px), #fff calc(100% - 3px));
+  -webkit-mask:
+    radial-gradient(farthest-side, transparent calc(100% - 3px), #fff calc(100% - 3px));
+  filter: drop-shadow(0 0 2px rgba(34, 197, 94, 0.5));
+}
+
+/* Subtle pulse effect on the avatar while loading */
+.avatar-loading-spin {
+  animation: avatar-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes avatar-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.75;
+    transform: scale(0.98);
+  }
+}

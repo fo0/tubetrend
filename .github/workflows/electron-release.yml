@@ -1,0 +1,138 @@
+name: Build and Release Electron App
+
+on:
+  push:
+    branches: [ main, master ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.env.example'
+      - '.gitignore'
+      - '.editorconfig'
+      - 'LICENSE*'
+      - '.vscode/**'
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      build_version: ${{ steps.version.outputs.build_version }}
+      release_tag: ${{ steps.version.outputs.release_tag }}
+
+    steps:
+      - name: Generate build version
+        id: version
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            RELEASE_TAG="${{ github.ref_name }}"
+          else
+            RELEASE_TAG="v$(date -u +'%Y%m%d.%H%M.0')"
+          fi
+          BUILD_VERSION="${RELEASE_TAG#v}"
+          echo "build_version=$BUILD_VERSION" >> "$GITHUB_OUTPUT"
+          echo "release_tag=$RELEASE_TAG" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: prepare
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux
+          - os: windows-latest
+            platform: win
+          - os: macos-latest
+            platform: mac
+
+    runs-on: ${{ matrix.os }}
+    name: Build (${{ matrix.platform }})
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run TypeScript type check
+        run: npx tsc --noEmit
+
+      - name: Build web app + Electron sources
+        run: npm run build
+        env:
+          ELECTRON: 'true'
+
+      - name: Generate app icon
+        run: npm run electron:icon
+
+      - name: Build Electron app
+        shell: bash
+        run: npx electron-builder --config electron-builder.json --${{ matrix.platform }} -c.extraMetadata.version="${{ needs.prepare.outputs.build_version }}"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: tubetrend-${{ matrix.platform }}
+          path: |
+            release/*.exe
+            release/*.deb
+            release/*.dmg
+            release/*.AppImage
+            release/*.zip
+            release/latest*.yml
+          if-no-files-found: warn
+
+  release:
+    needs: [prepare, build]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: List artifacts
+        run: find artifacts -type f | sort
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ needs.prepare.outputs.release_tag }}"
+          gh release create "$TAG" \
+            --target "${{ github.sha }}" \
+            --generate-release-notes \
+            --title "TubeTrend $TAG"
+
+      - name: Upload release assets
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ needs.prepare.outputs.release_tag }}"
+          sleep 3
+          gh release upload "$TAG" artifacts/*/*

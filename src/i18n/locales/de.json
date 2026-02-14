@@ -1,0 +1,227 @@
+{
+  "appTitle": "TubeTrend",
+  "language": {
+    "label": "Sprache:",
+    "system": "System"
+  },
+  "actions": {
+    "search": "Suchen",
+    "resetApiKey": "API-Schlüssel löschen",
+    "refreshAll": "Alle aktualisieren",
+    "remove": "Entfernen",
+    "refresh": "Aktualisieren",
+    "analyze": "Analysieren",
+    "importDashboard": "Importieren",
+    "exportDashboard": "Exportieren"
+  },
+  "labels": {
+    "search": "Suche",
+    "channelName": "Kanalname",
+    "keyword": "Schlagwort",
+    "searchType": "Suchtyp",
+    "timeFrame": "Zeitraum",
+    "maxResults": "Max. Ergebnisse"
+  },
+  "searchType": {
+    "channel": "Kanal",
+    "keyword": "Schlagwort"
+  },
+  "history": {
+    "recent": "Zuletzt gesucht"
+  },
+  "timeFrames": {
+    "lastHour": "Letzte Stunde",
+    "last3Hours": "Letzte 3 Stunden",
+    "last5Hours": "Letzte 5 Stunden",
+    "last12Hours": "Letzte 12 Stunden",
+    "last24Hours": "Letzte 24 Stunden",
+    "today": "Heute",
+    "last2Days": "Letzte 2 Tage",
+    "last3Days": "Letzte 3 Tage",
+    "last4Days": "Letzte 4 Tage",
+    "last5Days": "Letzte 5 Tage",
+    "last6Days": "Letzte 6 Tage",
+    "lastWeek": "Letzte 7 Tage",
+    "last2Weeks": "Letzte 2 Wochen",
+    "last3Weeks": "Letzte 3 Wochen",
+    "last4Weeks": "Letzte 4 Wochen",
+    "lastMonth": "Letzter Monat",
+    "last2Months": "Letzte 2 Monate",
+    "last3Months": "Letzte 3 Monate",
+    "last4Months": "Letzte 4 Monate",
+    "last5Months": "Letzte 5 Monate",
+    "last6Months": "Letzte 6 Monate"
+  },
+  "maxResultsText": {
+    "all": "Alle",
+    "topN": "Top {{n}}"
+  },
+  "input": {
+    "searchPlaceholder": "Kanalname, @handle oder #suchtext",
+    "channelPlaceholder": "Kanalnamen oder @handle eingeben",
+    "keywordPlaceholder": "Suchbegriff eingeben (z.B. \"React Tutorial\")"
+  },
+  "maxResults": {
+    "all": "Alle",
+    "auto": "Auto",
+    "noLimit": "Ohne Limit",
+    "topN": "Top {{n}}"
+  },
+  "favorites": {
+    "alreadySaved": "Bereits als Favorit gespeichert",
+    "saveTitle": "Als Favorit speichern",
+    "saveButton": "Als Favorit",
+    "saved": "Gespeichert",
+    "favorite": "Favorit",
+    "changeTimeFrame": "Zeitraum ändern",
+    "changeMaxResults": "Max. Ergebnisse ändern",
+    "overflowWarning": "Es gibt {{total}} Videos im Zeitraum – angezeigt werden nur {{shown}}.",
+    "status": {
+      "refreshing": "Aktualisiere…",
+      "asOf": "Stand: {{time}}",
+      "asOfUnknown": "Stand: —",
+      "videoCount_one": "{{count}} Video",
+      "videoCount_other": "{{count}} Videos"
+    },
+    "refresh": "Kanal aktualisieren",
+    "remove": "Favorit entfernen",
+    "analyze": "Im Analyser öffnen (nutzt Cache-Daten)"
+  },
+  "dashboard": {
+    "noFavorites": "Noch keine Favoriten. Lege im Analyser eine Suche als Favorit an.",
+    "highlights": {
+      "title": "Highlights",
+      "subtitle": "Top-Videos aus allen Favoriten (klickbar)",
+      "count_one": "{{count}} Highlight",
+      "count_other": "{{count}} Highlights",
+      "hide": "Dieses Highlight ausblenden",
+      "hiddenCount_one": "{{count}} ausgeblendet",
+      "hiddenCount_other": "{{count}} ausgeblendet",
+      "showHidden": "Ausgeblendete anzeigen",
+      "clearHidden": "Alle wieder einblenden",
+      "hiddenButton": "Ausgeblendet",
+      "showHiddenList": "Ausgeblendete Videos anzeigen",
+      "hiddenModalTitle": "Ausgeblendete Videos",
+      "noHiddenItems": "Keine ausgeblendeten Videos.",
+      "unhide": "Einblenden",
+      "delete": "Löschen",
+      "empty": "Noch keine Highlights verfügbar. Highlights erscheinen, sobald deine Favoriten Videos geladen haben."
+    },
+    "sorting": {
+      "label": "Sortierung:",
+      "alphaTitle": "Alphabetisch sortieren (erneut klicken: Reihenfolge umkehren)",
+      "velocityTitle": "Nach Aktivität (Velocity = Aufrufe pro Stunde, bestes Video im Zeitraum) sortieren – erneut klicken: Reihenfolge umkehren",
+      "activity": "Aktivität"
+    }
+  },
+  "results": {
+    "openChannelTitle": "YouTube-Kanal öffnen: {{channel}}",
+    "resultsFor": "Ergebnisse für",
+    "videosCount_one": "{{count}} Video",
+    "videosCount_other": "{{count}} Videos",
+    "sortedBy": "Sortiert nach",
+    "sortModes": {
+      "trend": "Trend Score (Velocity)",
+      "views": "Views"
+    },
+    "sortTitles": {
+      "trend": "Nach Trend Score sortieren",
+      "views": "Nach Views sortieren"
+    },
+    "sortButtons": {
+      "trendScore": "Trend Score",
+      "views": "Views"
+    },
+    "highlightTopN": "Top {{n}} hervorheben",
+    "topPerformance": "Top {{n}} Performance",
+    "moreVideos": "Weitere Videos"
+  },
+  "timeAgo": {
+    "justNow": "gerade eben",
+    "seconds_one": "vor {{count}} Sek.",
+    "seconds_other": "vor {{count}} Sek.",
+    "minutes_one": "vor {{count}} Min.",
+    "minutes_other": "vor {{count}} Min.",
+    "hours_one": "vor {{count}} Std.",
+    "hours_other": "vor {{count}} Std.",
+    "days_one": "vor {{count}} Tg.",
+    "days_other": "vor {{count}} Tg.",
+    "weeks_one": "vor {{count}} Wo.",
+    "weeks_other": "vor {{count}} Wo.",
+    "months_one": "vor {{count}} Mon.",
+    "months_other": "vor {{count}} Mon.",
+    "years_one": "vor {{count}} J.",
+    "years_other": "vor {{count}} J."
+  },
+  "modal": {
+    "apiKey": {
+      "title": "YouTube API-Schlüssel",
+      "description": "Gib deinen YouTube Data API-Schlüssel ein, um fortzufahren.",
+      "save": "Speichern",
+      "cancel": "Abbrechen",
+      "helpToggle": "Wie bekomme ich einen API-Key?",
+      "quotaTitle": "Kostenloses Kontingent",
+      "quotaInfo": "Jeder API-Key hat 10.000 Einheiten pro Tag kostenlos. Eine Suche kostet ~100 Einheiten, Video-Details nur 1 Einheit. Das reicht für ca. 100 Suchen täglich.",
+      "stepsTitle": "So erstellst du einen API-Key:",
+      "step1": "YouTube Data API v3 in Google Cloud öffnen",
+      "step2": "Melde dich mit deinem Google-Konto an (falls nötig)",
+      "step3": "Klicke auf \"Aktivieren\" um die API für dein Projekt zu aktivieren",
+      "step4": "Gehe zu \"Anmeldedaten\" → \"Anmeldedaten erstellen\" → \"API-Schlüssel\"",
+      "step5": "Kopiere den erstellten Schlüssel und füge ihn hier ein",
+      "keyFormat": "Der Schlüssel beginnt mit \"AIza\" und hat ca. 39 Zeichen."
+    }
+  },
+  "confirm": {
+    "deleteApiKey": "Möchtest du den API Key wirklich löschen?",
+    "importDashboardReplace": "Import ersetzt deine aktuellen Dashboard-Favoriten und den Cache ({{count}} Favoriten). Fortfahren?"
+  },
+  "backup": {
+    "exportSuccess": "Backup-Datei wurde heruntergeladen.",
+    "importSuccess": "Import abgeschlossen. {{count}} Favoriten wurden wiederhergestellt.",
+    "importInvalid": "Ungültige Backup-Datei.",
+    "importFailedStorage": "Import fehlgeschlagen (konnte nicht in den Browser-Speicher schreiben)."
+  },
+  "errors": {
+    "favoriteLoad": "Fehler beim Laden der Favoriten-Daten.",
+    "somethingWentWrong": "Etwas ist schiefgelaufen",
+    "tryAgain": "Erneut versuchen"
+  },
+  "loading": "Lädt…",
+  "empty": {
+    "title": "YouTube-Kanäle analysieren",
+    "desc": "Suche einen Kanal und erhalte Trend-Einblicke für verschiedene Zeiträume."
+  },
+  "quota": {
+    "label": "API-Kontingent",
+    "tooltip": "YouTube API: {{used}} / {{limit}} Einheiten ({{percentage}}%)",
+    "exhausted": "Kontingent erschöpft! Reset um Mitternacht PT.",
+    "historyTitle": "API-Nutzung",
+    "units": "Einheiten",
+    "calls": "Aufrufe",
+    "last24Hours": "Letzte 24 Stunden",
+    "lastTimeWindow": "Letzte {{time}}",
+    "now": "Jetzt",
+    "recentCalls": "Letzte Aufrufe",
+    "noCalls": "Noch keine API-Aufrufe",
+    "usageBySource": "Verbrauch nach Quelle",
+    "sourceChannel": "Kanal",
+    "sourceHandle": "Handle",
+    "sourceKeyword": "Suchbegriff",
+    "sourceAutocomplete": "Autovervollständigung",
+    "sourceVideoStats": "Video-Statistiken",
+    "sourceChannelInfo": "Kanal-Info",
+    "sourceUnknown": "Sonstige",
+    "timeJustNow": "gerade eben",
+    "timeMinutesAgo": "vor {{count}} Min.",
+    "timeHoursAgo": "vor {{count}} Std."
+  },
+  "footer": {
+    "buildInfo": "Build-Info",
+    "toggleDetails": "Build-Details anzeigen/ausblenden",
+    "commitHash": "Commit-Hash",
+    "commit": "Commit",
+    "branch": "Branch",
+    "buildDate": "Build-Datum",
+    "built": "Gebaut"
+  }
+}
