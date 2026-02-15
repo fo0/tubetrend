@@ -81,7 +81,7 @@ export const HighlightVideoCard: React.FC<HighlightVideoCardProps> = ({
       </div>
 
       {/* Content Area */}
-      <div className="p-4 flex flex-col flex-grow">
+      <div className="p-4 flex flex-col grow">
         <div className="mb-2">
           <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 truncate" title={`${sourceLabel} • Top ${sourceRank}`}>
             {sourceLabel} <span className="text-slate-400 dark:text-slate-500">•</span> Top {sourceRank}

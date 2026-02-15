@@ -209,7 +209,7 @@ export function DashboardPage({
                   className="bg-white/50 dark:bg-slate-800/50 rounded-xl overflow-hidden border border-slate-200/50 dark:border-slate-700/50 flex flex-col h-full"
                 >
                   <div className="h-40 bg-slate-200 dark:bg-slate-700" />
-                  <div className="p-4 flex flex-col flex-grow">
+                  <div className="p-4 flex flex-col grow">
                     <div className="mb-2">
                       <div className="h-3 w-24 bg-slate-200 dark:bg-slate-700 rounded mb-2" />
                       <div className="h-4 w-full bg-slate-200 dark:bg-slate-700 rounded mb-1" />
