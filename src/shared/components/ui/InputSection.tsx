@@ -363,7 +363,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
                         onClick={() => selectSuggestion(sug)}
                         className="w-full text-left px-4 py-3 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex items-center gap-3 group/item"
                       >
-                        <div className="w-8 h-8 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-950 flex-shrink-0 border border-slate-200 dark:border-slate-700">
+                        <div className="w-8 h-8 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-950 shrink-0 border border-slate-200 dark:border-slate-700">
                           <img src={sug.thumbnailUrl} alt="" className="w-full h-full object-cover" />
                         </div>
                         <div className="min-w-0">
@@ -388,7 +388,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
                         onClick={() => selectHistoryItem(item)}
                         className="w-full text-left px-4 py-3 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex items-center gap-3 group/item"
                       >
-                        <div className="w-8 h-8 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-950 flex-shrink-0 border border-slate-200 dark:border-slate-700 flex items-center justify-center">
+                        <div className="w-8 h-8 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-950 shrink-0 border border-slate-200 dark:border-slate-700 flex items-center justify-center">
                           <History className="w-4 h-4 text-slate-500" />
                         </div>
                         <div className="min-w-0">

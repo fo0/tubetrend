@@ -104,7 +104,7 @@ export const FavoriteAvatar: React.FC<FavoriteAvatarProps> = ({
     <button
       type="button"
       onClick={onClick}
-      className={`relative flex-shrink-0 group ${buttonSizeClasses} ${isRefreshing ? 'avatar-loading-spin' : ''}`}
+      className={`relative shrink-0 group ${buttonSizeClasses} ${isRefreshing ? 'avatar-loading-spin' : ''}`}
       title={channelTitle}
     >
       {/* Avatar circle */}

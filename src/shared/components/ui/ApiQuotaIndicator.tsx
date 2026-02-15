@@ -473,7 +473,7 @@ export const ApiQuotaIndicator: React.FC = () => {
                     className="flex items-start justify-between text-[11px] py-1 px-2 rounded bg-slate-800/50 hover:bg-slate-800 transition-colors"
                   >
                     <div className="flex items-start gap-2 min-w-0 flex-1">
-                      <span className={`${getDisplayTypeColor(group.displayType)} mt-0.5 flex-shrink-0`}>
+                      <span className={`${getDisplayTypeColor(group.displayType)} mt-0.5 shrink-0`}>
                         {getDisplayTypeIcon(group.displayType)}
                       </span>
                       <div className="min-w-0 flex-1">
@@ -489,7 +489,7 @@ export const ApiQuotaIndicator: React.FC = () => {
                         )}
                       </div>
                     </div>
-                    <div className="text-right flex-shrink-0 ml-2">
+                    <div className="text-right shrink-0 ml-2">
                       <div className="text-slate-300 font-medium">
                         {formatNumber(group.totalUnits)} {t('quota.units')}
                       </div>

@@ -86,10 +86,10 @@ export const HiddenHighlightsModal: React.FC<HiddenHighlightsModalProps> = ({ is
                     <img
                       src={item.thumbnailUrl}
                       alt={item.videoTitle || 'Video'}
-                      className="w-24 h-14 object-cover rounded-lg flex-shrink-0"
+                      className="w-24 h-14 object-cover rounded-lg shrink-0"
                     />
                   ) : (
-                    <div className="w-24 h-14 bg-slate-200 dark:bg-slate-700 rounded-lg flex-shrink-0 flex items-center justify-center">
+                    <div className="w-24 h-14 bg-slate-200 dark:bg-slate-700 rounded-lg shrink-0 flex items-center justify-center">
                       <span className="text-slate-400 dark:text-slate-500 text-xs">—</span>
                     </div>
                   )}
@@ -109,7 +109,7 @@ export const HiddenHighlightsModal: React.FC<HiddenHighlightsModalProps> = ({ is
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="flex-shrink-0 flex items-center gap-2">
+                  <div className="shrink-0 flex items-center gap-2">
                     {/* Unhide Button */}
                     <button
                       type="button"

@@ -44,7 +44,7 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({ videos, startInd
                         href={video.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="relative w-24 h-14 flex-shrink-0 rounded-md overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 cursor-pointer"
+                        className="relative w-24 h-14 shrink-0 rounded-md overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 cursor-pointer"
                       >
                         <img 
                           src={video.thumbnailUrl} 
