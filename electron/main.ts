@@ -1,5 +1,10 @@
 import { app, BrowserWindow, shell } from 'electron';
 import path from 'path';
+import { fileURLToPath } from 'node:url';
+
+// ESM does not provide __dirname — derive it from import.meta.url
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Fallback to software rendering when GPU is unavailable
 // (e.g. Chromebook/Crostini, VMs, headless Linux containers)
