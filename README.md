@@ -55,6 +55,12 @@ For a quick preview without packaging:
 npm run electron:preview
 ```
 
+**Chromebook (ChromeOS / Crostini):** Download the `TubeTrend-*-Chromebook.deb` from [Releases](https://github.com/fo0/tubetrend/releases). This build includes `--no-sandbox` and Wayland auto-detection flags required for Crostini's Linux container. Install via:
+
+```bash
+sudo dpkg -i TubeTrend-*-Chromebook.deb
+```
+
 ### Option 4: Run from Source
 
 **Prerequisites:** Node.js v22+

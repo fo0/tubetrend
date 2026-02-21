@@ -300,6 +300,7 @@ tubetrend/
 │   ├── main.ts                      # Main process: BrowserWindow, app lifecycle
 │   └── preload.ts                   # Preload script: contextBridge API exposure
 ├── electron-builder.json            # Electron packaging config (Win/Mac/Linux)
+├── electron-builder.chromebook.json # Chromebook .deb config (--no-sandbox, Ozone auto-detect)
 ├── build/                            # Build resources
 │   └── icon.png                     # App icon (512x512, generated via npm run electron:icon)
 ├── scripts/                          # Build/utility scripts
@@ -528,6 +529,7 @@ npm test
 - **External links** — Opened in system browser via `shell.openExternal()`, not in Electron window
 - **Dev mode** — `npm run electron:dev` sets `ELECTRON=true` which activates `vite-plugin-electron`; the plugin sets `VITE_DEV_SERVER_URL` env var; Electron loads the dev server URL in dev, `dist/index.html` in production
 - **Packaging** — `electron-builder` creates platform-specific installers (Windows NSIS/portable, macOS DMG, Linux AppImage) in `release/`. Config in `electron-builder.json` references `dist/**/*` + `dist-electron/**/*`.
+- **Chromebook release** — A separate `electron-builder.chromebook.json` builds a Chromebook-optimized `.deb` into `release-chromebook/`. It adds `--no-sandbox` (required for Crostini's container sandbox) and `--ozone-platform-hint=auto` (Wayland/X11 auto-detection) via `executableArgs` in the `.desktop` file. Artifact name: `TubeTrend-<version>-Chromebook.deb`.
 - **App icon** — Generated via `npm run electron:icon` (`scripts/generate-icon.mjs`), outputs `build/icon.png` (512x512)
 - **Requires internet** — YouTube Data API calls require internet; Tailwind CSS and fonts are bundled locally
 - **CI/CD** — `electron-release.yml` workflow builds for all platforms on version tags (`v*`), creates GitHub Release with `--generate-release-notes`. Uses `env: ELECTRON: 'true'` on the build step for cross-platform compatibility.

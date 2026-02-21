@@ -1,0 +1,25 @@
+{
+  "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
+  "appId": "com.tubetrend.app",
+  "productName": "TubeTrend",
+  "icon": "build/icon.png",
+  "directories": {
+    "output": "release-chromebook"
+  },
+  "files": [
+    "dist/**/*",
+    "dist-electron/**/*",
+    "package.json"
+  ],
+  "linux": {
+    "target": [
+      "deb"
+    ],
+    "category": "Utility",
+    "executableArgs": [
+      "--no-sandbox",
+      "--ozone-platform-hint=auto"
+    ]
+  },
+  "artifactName": "TubeTrend-${version}-Chromebook.${ext}"
+}
