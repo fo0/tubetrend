@@ -84,7 +84,7 @@ jobs:
 
       - name: Build Electron app
         shell: bash
-        run: npx electron-builder --config electron-builder.json --${{ matrix.platform }} -c.extraMetadata.version="${{ needs.prepare.outputs.build_version }}"
+        run: npx electron-builder --config electron-builder.json --${{ matrix.platform }} --publish never -c.extraMetadata.version="${{ needs.prepare.outputs.build_version }}"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -123,10 +123,27 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          set -euo pipefail
           TAG="${{ needs.prepare.outputs.release_tag }}"
+          REPO="${{ github.repository }}"
+          echo "Creating release: $TAG for repo: $REPO (target: ${{ github.sha }})"
+
+          # Delete existing release if present (e.g. from a previous failed run)
+          if gh release view "$TAG" --repo "$REPO" &>/dev/null; then
+            echo "Release $TAG already exists, deleting it first..."
+            gh release delete "$TAG" --repo "$REPO" --yes --cleanup-tag
+          fi
+
+          # Create release with auto-generated notes, fall back to simple notes
           gh release create "$TAG" \
+            --repo "$REPO" \
             --target "${{ github.sha }}" \
             --generate-release-notes \
+            --title "TubeTrend $TAG" \
+          || gh release create "$TAG" \
+            --repo "$REPO" \
+            --target "${{ github.sha }}" \
+            --notes "Release $TAG" \
             --title "TubeTrend $TAG"
 
       - name: Upload release assets
@@ -134,5 +151,6 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           TAG="${{ needs.prepare.outputs.release_tag }}"
+          REPO="${{ github.repository }}"
           sleep 3
-          gh release upload "$TAG" artifacts/*/*
+          gh release upload "$TAG" --repo "$REPO" --clobber artifacts/*/*
