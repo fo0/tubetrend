@@ -101,6 +101,21 @@ jobs:
             release/latest*.yml
           if-no-files-found: warn
 
+      - name: Build Chromebook .deb
+        if: matrix.platform == 'linux'
+        shell: bash
+        run: npx electron-builder --config electron-builder.chromebook.json --linux --publish never -c.extraMetadata.version="${{ needs.prepare.outputs.build_version }}"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Chromebook artifact
+        if: matrix.platform == 'linux'
+        uses: actions/upload-artifact@v6
+        with:
+          name: tubetrend-chromebook
+          path: release-chromebook/*.deb
+          if-no-files-found: warn
+
   release:
     needs: [prepare, build]
     runs-on: ubuntu-latest
