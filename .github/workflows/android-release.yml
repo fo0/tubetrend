@@ -57,11 +57,11 @@ jobs:
 
       - name: Build APK
         working-directory: android
-        run: ./gradlew assembleRelease
+        run: ./gradlew assembleDebug
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v6
         with:
           name: tubetrend-android
-          path: android/app/build/outputs/apk/release/*.apk
+          path: android/app/build/outputs/apk/debug/*.apk
           if-no-files-found: error

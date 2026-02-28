@@ -19,13 +19,13 @@ dist-ssr
 electron/dist
 dist-electron
 release
+release-chromebook
 
 # Capacitor Android build output
 android/app/build/
 android/.gradle/
 android/build/
 android/local.properties
-release-chromebook
 
 # Local Environment Files
 .env
