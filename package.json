@@ -30,6 +30,7 @@
     "electron:preview": "ELECTRON=true vite build && electron .",
     "electron:dist": "ELECTRON=true vite build && npm run electron:icon && electron-builder --config electron-builder.json",
     "electron:icon": "node scripts/generate-icon.mjs",
+    "build:chromebook": "ELECTRON=true vite build && npm run electron:icon && electron-builder --config electron-builder.chromebook.json --linux",
     "build:win": "ELECTRON=true vite build && electron-builder --config electron-builder.json --win portable",
     "typecheck": "tsc --noEmit"
   },

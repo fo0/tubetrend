@@ -55,10 +55,14 @@ For a quick preview without packaging:
 npm run electron:preview
 ```
 
-**Chromebook (ChromeOS / Crostini):** Download the `TubeTrend-*-Chromebook.deb` from [Releases](https://github.com/fo0/tubetrend/releases). This build includes `--no-sandbox` and Wayland auto-detection flags required for Crostini's Linux container. Install via:
+**Chromebook (ChromeOS / Crostini):** Download the matching `.deb` for your architecture from [Releases](https://github.com/fo0/tubetrend/releases):
+- `TubeTrend-*-Chromebook-x64.deb` — Intel/AMD Chromebooks (e.g., ASUS Chromebook CX1, Flip CX5)
+- `TubeTrend-*-Chromebook-arm64.deb` — ARM Chromebooks (e.g., ASUS Chromebook CM14, MediaTek models)
+
+These builds include `--no-sandbox` and Wayland auto-detection flags required for Crostini's Linux container. Install via:
 
 ```bash
-sudo dpkg -i TubeTrend-*-Chromebook.deb
+sudo dpkg -i TubeTrend-*-Chromebook-*.deb
 ```
 
 ### Option 4: Run from Source
