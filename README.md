@@ -65,7 +65,26 @@ These builds include `--no-sandbox` and Wayland auto-detection flags required fo
 sudo dpkg -i TubeTrend-*-Chromebook-*.deb
 ```
 
-### Option 4: Run from Source
+### Option 4: Android APK (Chromebook / ChromeOS)
+
+**No Linux (Crostini) required — runs natively on ChromeOS via ARCVM.**
+
+Download the `.apk` from [Releases](https://github.com/fo0/tubetrend/releases).
+
+1. On your Chromebook: Settings → Apps → Android → Enable "Unknown sources"
+2. Open the downloaded `.apk` file
+3. Install and launch from the app launcher
+
+To build from source:
+
+```bash
+npm install
+npm run cap:build:debug
+```
+
+The APK will be in `android/app/build/outputs/apk/debug/`.
+
+### Option 5: Run from Source
 
 **Prerequisites:** Node.js v22+
 

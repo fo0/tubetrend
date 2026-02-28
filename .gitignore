@@ -20,6 +20,13 @@ electron/dist
 dist-electron
 release
 
+# Capacitor Android build output
+android/app/build/
+android/.gradle/
+android/build/
+android/local.properties
+release-chromebook
+
 # Local Environment Files
 .env
 .env.local

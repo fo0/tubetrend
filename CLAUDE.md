@@ -242,8 +242,9 @@ Repository: `https://github.com/fo0/tubetrend`
 | Electron Integration | vite-plugin-electron (conditional) | ^0.28.8 |
 | Desktop App | Electron | ^35.0.0 |
 | Desktop Packaging | electron-builder | ^26.0.0 |
+| Android Build | Capacitor | ^8.1.0 |
 | Container | Docker (multi-stage) | Node 22-alpine + Nginx alpine |
-| CI/CD | GitHub Actions | typecheck, build, lint, security audit, electron release, chromebook release |
+| CI/CD | GitHub Actions | typecheck, build, lint, security audit, electron release, chromebook release, android APK |
 
 ## Project Structure
 
@@ -296,6 +297,9 @@ tubetrend/
 │   │   └── locales/                 # en.json, de.json
 │   ├── styles/                       # Global CSS (themes, scrollbars, animations)
 │   └── main.tsx                      # React entry point (StrictMode, ThemeProvider, ErrorBoundary)
+├── android/                          # Capacitor Android project (ChromeOS APK build)
+│   ├── app/src/main/AndroidManifest.xml  # ChromeOS-optimized manifest (resizable, keyboard/mouse)
+│   └── ...                          # Gradle build files, resources (committed per Capacitor convention)
 ├── electron/                         # Electron desktop app wrapper (compiled by vite-plugin-electron)
 │   ├── main.ts                      # Main process: BrowserWindow, app lifecycle
 │   └── preload.ts                   # Preload script: contextBridge API exposure
@@ -305,8 +309,9 @@ tubetrend/
 │   └── icon.png                     # App icon (512x512, generated via npm run electron:icon)
 ├── scripts/                          # Build/utility scripts
 │   └── generate-icon.mjs           # Generates app icon PNG from code
+├── capacitor.config.ts               # Capacitor config (appId, webDir, Android/ChromeOS settings)
 ├── .github/                          # GitHub configuration
-│   ├── workflows/                    # CI: pr-checks.yml, docker-publish.yml, electron-release.yml
+│   ├── workflows/                    # CI: pr-checks.yml, docker-publish.yml, electron-release.yml, android-release.yml
 │   ├── ISSUE_TEMPLATE/              # Bug report & feature request templates
 │   └── pull_request_template.md
 ├── docs/                             # Documentation images
@@ -349,6 +354,12 @@ npm run electron:preview # Build + run Electron with production build
 npm run electron:dist    # Build + package as portable app (output: release/)
 npm run build:chromebook # Build Chromebook .deb (output: release-chromebook/)
 npm run build:win        # Build + package Windows portable directly
+
+# Capacitor (Android APK for ChromeOS) — no ELECTRON env var needed
+npm run cap:sync         # Build web app + sync to Android project
+npm run cap:open         # Open Android project in Android Studio
+npm run cap:build        # Build + sync + assemble release APK
+npm run cap:build:debug  # Build + sync + assemble debug APK
 
 # Docker
 docker-compose up        # Run production image at http://localhost:8889
@@ -534,6 +545,16 @@ npm test
 - **App icon** — Generated via `npm run electron:icon` (`scripts/generate-icon.mjs`), outputs `build/icon.png` (512x512)
 - **Requires internet** — YouTube Data API calls require internet; Tailwind CSS and fonts are bundled locally
 - **CI/CD** — `electron-release.yml` workflow builds all platforms (Win/Mac/Linux) and Chromebook `.deb` (x64 + arm64) in a single pipeline. Triggers on tag pushes (`v*`), main/master branch pushes, and manual dispatch. Creates GitHub Release with `--generate-release-notes`. Chromebook builds run in parallel but are non-blocking — if they fail, the main release still proceeds.
+
+### Capacitor (Android / ChromeOS)
+- **Alternative to Electron Chromebook .deb** — Produces a native Android APK that runs on ChromeOS via ARCVM, without requiring Crostini (Linux VM). Eliminates GPU issues, sandbox workarounds, and VM boot delays.
+- **Zero changes to `src/` code** — Capacitor wraps the same `dist/` web build output. No code changes needed in the web app.
+- **ChromeOS-optimized AndroidManifest.xml** — `resizeableActivity="true"`, `screenOrientation="unspecified"`, touchscreen not required, freeform window support.
+- **`androidScheme: 'https'`** — Ensures localStorage and other Web APIs work correctly when loading from local files.
+- **Icon** — Uses the same `build/icon.png` (512x512) as Electron, copied to `android/app/src/main/res/mipmap-xxxhdpi/`.
+- **CI/CD** — `android-release.yml` workflow builds APK on push to main/master. Requires JDK 17 + Android SDK.
+- **Signing** — Currently unsigned (debug key). For production Play Store distribution, a signing keystore would need to be added.
+- **The `android/` directory is committed** — This is Capacitor convention. Build outputs (`android/app/build/`, `android/.gradle/`) are gitignored.
 
 ### Build Info
 `vite.config.ts` injects `__BUILD_INFO__` global with `version` (date-based, format `YYYYMMDD-HHMM`), `commitHash`, `branch`, `buildDate`. Available at runtime via the global variable.
