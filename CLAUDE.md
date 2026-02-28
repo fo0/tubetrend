@@ -243,7 +243,7 @@ Repository: `https://github.com/fo0/tubetrend`
 | Desktop App | Electron | ^35.0.0 |
 | Desktop Packaging | electron-builder | ^26.0.0 |
 | Container | Docker (multi-stage) | Node 22-alpine + Nginx alpine |
-| CI/CD | GitHub Actions | typecheck, build, lint, security audit, electron release |
+| CI/CD | GitHub Actions | typecheck, build, lint, security audit, electron release, chromebook release |
 
 ## Project Structure
 
@@ -306,7 +306,7 @@ tubetrend/
 ├── scripts/                          # Build/utility scripts
 │   └── generate-icon.mjs           # Generates app icon PNG from code
 ├── .github/                          # GitHub configuration
-│   ├── workflows/                    # CI: pr-checks.yml, docker-publish.yml, electron-release.yml
+│   ├── workflows/                    # CI: pr-checks.yml, docker-publish.yml, electron-release.yml, electron-chromebook-release.yml
 │   ├── ISSUE_TEMPLATE/              # Bug report & feature request templates
 │   └── pull_request_template.md
 ├── docs/                             # Documentation images
@@ -347,6 +347,7 @@ npm run typecheck        # TypeScript type check (tsc --noEmit)
 npm run electron:dev     # Start Vite dev server with Electron (auto-launches window)
 npm run electron:preview # Build + run Electron with production build
 npm run electron:dist    # Build + package as portable app (output: release/)
+npm run build:chromebook # Build Chromebook .deb (output: release-chromebook/)
 npm run build:win        # Build + package Windows portable directly
 
 # Docker
@@ -529,10 +530,10 @@ npm test
 - **External links** — Opened in system browser via `shell.openExternal()`, not in Electron window
 - **Dev mode** — `npm run electron:dev` sets `ELECTRON=true` which activates `vite-plugin-electron`; the plugin sets `VITE_DEV_SERVER_URL` env var; Electron loads the dev server URL in dev, `dist/index.html` in production
 - **Packaging** — `electron-builder` creates platform-specific installers (Windows NSIS/portable, macOS DMG, Linux AppImage) in `release/`. Config in `electron-builder.json` references `dist/**/*` + `dist-electron/**/*`.
-- **Chromebook release** — A separate `electron-builder.chromebook.json` builds a Chromebook-optimized `.deb` into `release-chromebook/`. It adds `--no-sandbox` (required for Crostini's container sandbox) and `--ozone-platform-hint=auto` (Wayland/X11 auto-detection) via `executableArgs` in the `.desktop` file. Artifact name: `TubeTrend-<version>-Chromebook.deb`.
+- **Chromebook release** — A separate `electron-builder.chromebook.json` builds Chromebook-optimized `.deb` packages into `release-chromebook/`. It adds `--no-sandbox` (required for Crostini's container sandbox) and `--ozone-platform-hint=auto` (Wayland/X11 auto-detection) via `executableArgs` in the `.desktop` file. Builds both x64 and arm64 architectures (ASUS Chromebooks use Intel and MediaTek/ARM chips). Artifact naming: `TubeTrend-<version>-Chromebook-<arch>.deb`. Local build: `npm run build:chromebook`.
 - **App icon** — Generated via `npm run electron:icon` (`scripts/generate-icon.mjs`), outputs `build/icon.png` (512x512)
 - **Requires internet** — YouTube Data API calls require internet; Tailwind CSS and fonts are bundled locally
-- **CI/CD** — `electron-release.yml` workflow builds for all platforms on version tags (`v*`), creates GitHub Release with `--generate-release-notes`. Uses `env: ELECTRON: 'true'` on the build step for cross-platform compatibility.
+- **CI/CD** — `electron-release.yml` workflow builds for all platforms (Win/Mac/Linux) on version tags (`v*`), creates GitHub Release with `--generate-release-notes`. Uses `env: ELECTRON: 'true'` on the build step for cross-platform compatibility. A separate `electron-chromebook-release.yml` pipeline builds Chromebook `.deb` packages for x64 and arm64 and uploads them to the same GitHub Release (with retry/fallback logic).
 
 ### Build Info
 `vite.config.ts` injects `__BUILD_INFO__` global with `version` (date-based, format `YYYYMMDD-HHMM`), `commitHash`, `branch`, `buildDate`. Available at runtime via the global variable.

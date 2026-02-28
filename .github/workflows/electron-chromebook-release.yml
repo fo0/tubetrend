@@ -1,0 +1,133 @@
+name: Build Chromebook Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      build_version: ${{ steps.version.outputs.build_version }}
+      release_tag: ${{ steps.version.outputs.release_tag }}
+
+    steps:
+      - name: Generate build version
+        id: version
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            RELEASE_TAG="${{ github.ref_name }}"
+          else
+            RELEASE_TAG="v$(date -u +'%Y%m%d.%H%M.0')"
+          fi
+          BUILD_VERSION="${RELEASE_TAG#v}"
+          echo "build_version=$BUILD_VERSION" >> "$GITHUB_OUTPUT"
+          echo "release_tag=$RELEASE_TAG" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: prepare
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [x64, arm64]
+
+    runs-on: ubuntu-latest
+    name: Build Chromebook .deb (${{ matrix.arch }})
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run TypeScript type check
+        run: npx tsc --noEmit
+
+      - name: Build web app + Electron sources
+        run: npm run build
+        env:
+          ELECTRON: 'true'
+
+      - name: Generate app icon
+        run: npm run electron:icon
+
+      - name: Build Chromebook .deb (${{ matrix.arch }})
+        shell: bash
+        run: npx electron-builder --config electron-builder.chromebook.json --linux --${{ matrix.arch }} --publish never -c.extraMetadata.version="${{ needs.prepare.outputs.build_version }}"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: tubetrend-chromebook-${{ matrix.arch }}
+          path: release-chromebook/*.deb
+          if-no-files-found: error
+
+  release:
+    needs: [prepare, build]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download all Chromebook artifacts
+        uses: actions/download-artifact@v7
+        with:
+          path: artifacts
+          pattern: tubetrend-chromebook-*
+
+      - name: List artifacts
+        run: find artifacts -type f | sort
+
+      - name: Upload Chromebook .deb to GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          TAG="${{ needs.prepare.outputs.release_tag }}"
+          REPO="${{ github.repository }}"
+
+          # Collect all .deb files
+          DEB_FILES=$(find artifacts -name '*.deb' -type f)
+          echo "Found Chromebook artifacts:"
+          echo "$DEB_FILES"
+
+          echo "Waiting for release $TAG to become available..."
+
+          # Wait up to 10 minutes for the main electron-release workflow to create the release.
+          # We must NOT create a fallback release here because the main workflow's release job
+          # deletes pre-existing releases on rerun — creating one here risks a race condition
+          # where the main workflow wipes our artifacts.
+          for i in $(seq 1 60); do
+            if gh release view "$TAG" --repo "$REPO" &>/dev/null; then
+              echo "Release $TAG found. Uploading Chromebook artifacts..."
+              echo "$DEB_FILES" | xargs gh release upload "$TAG" --repo "$REPO" --clobber
+              echo "Chromebook .deb files uploaded successfully."
+              exit 0
+            fi
+            echo "Release not yet available (attempt $i/60). Waiting 10s..."
+            sleep 10
+          done
+
+          echo "ERROR: Release $TAG not found after 10 minutes."
+          echo "The main electron-release workflow may still be running or has failed."
+          echo "Re-run this workflow after the main release has been created."
+          exit 1
