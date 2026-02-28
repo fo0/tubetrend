@@ -306,7 +306,7 @@ tubetrend/
 ├── scripts/                          # Build/utility scripts
 │   └── generate-icon.mjs           # Generates app icon PNG from code
 ├── .github/                          # GitHub configuration
-│   ├── workflows/                    # CI: pr-checks.yml, docker-publish.yml, electron-release.yml, electron-chromebook-release.yml
+│   ├── workflows/                    # CI: pr-checks.yml, docker-publish.yml, electron-release.yml
 │   ├── ISSUE_TEMPLATE/              # Bug report & feature request templates
 │   └── pull_request_template.md
 ├── docs/                             # Documentation images
@@ -533,7 +533,7 @@ npm test
 - **Chromebook release** — A separate `electron-builder.chromebook.json` builds Chromebook-optimized `.deb` packages into `release-chromebook/`. It adds `--no-sandbox` (required for Crostini's container sandbox) and `--ozone-platform-hint=auto` (Wayland/X11 auto-detection) via `executableArgs` in the `.desktop` file. Builds both x64 and arm64 architectures (ASUS Chromebooks use Intel and MediaTek/ARM chips). Artifact naming: `TubeTrend-<version>-Chromebook-<arch>.deb`. Local build: `npm run build:chromebook`.
 - **App icon** — Generated via `npm run electron:icon` (`scripts/generate-icon.mjs`), outputs `build/icon.png` (512x512)
 - **Requires internet** — YouTube Data API calls require internet; Tailwind CSS and fonts are bundled locally
-- **CI/CD** — `electron-release.yml` workflow builds for all platforms (Win/Mac/Linux) on version tags (`v*`), creates GitHub Release with `--generate-release-notes`. Uses `env: ELECTRON: 'true'` on the build step for cross-platform compatibility. A separate `electron-chromebook-release.yml` pipeline builds Chromebook `.deb` packages for x64 and arm64 and uploads them to the same GitHub Release (with retry/fallback logic).
+- **CI/CD** — `electron-release.yml` workflow builds all platforms (Win/Mac/Linux) and Chromebook `.deb` (x64 + arm64) in a single pipeline. Triggers on tag pushes (`v*`), main/master branch pushes, and manual dispatch. Creates GitHub Release with `--generate-release-notes`. Chromebook builds run in parallel but are non-blocking — if they fail, the main release still proceeds.
 
 ### Build Info
 `vite.config.ts` injects `__BUILD_INFO__` global with `version` (date-based, format `YYYYMMDD-HHMM`), `commitHash`, `branch`, `buildDate`. Available at runtime via the global variable.
