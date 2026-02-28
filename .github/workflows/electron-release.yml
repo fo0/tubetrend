@@ -101,8 +101,56 @@ jobs:
             release/latest*.yml
           if-no-files-found: warn
 
+  build-chromebook:
+    needs: prepare
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [x64, arm64]
+
+    runs-on: ubuntu-latest
+    name: Build Chromebook .deb (${{ matrix.arch }})
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run TypeScript type check
+        run: npx tsc --noEmit
+
+      - name: Build web app + Electron sources
+        run: npm run build
+        env:
+          ELECTRON: 'true'
+
+      - name: Generate app icon
+        run: npm run electron:icon
+
+      - name: Build Chromebook .deb (${{ matrix.arch }})
+        shell: bash
+        run: npx electron-builder --config electron-builder.chromebook.json --linux --${{ matrix.arch }} --publish never -c.extraMetadata.version="${{ needs.prepare.outputs.build_version }}"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: tubetrend-chromebook-${{ matrix.arch }}
+          path: release-chromebook/*.deb
+          if-no-files-found: error
+
   release:
-    needs: [prepare, build]
+    needs: [prepare, build, build-chromebook]
+    if: always() && needs.build.result == 'success'
     runs-on: ubuntu-latest
     permissions:
       contents: write
