@@ -112,7 +112,10 @@ jobs:
 
           echo "Waiting for release $TAG to become available..."
 
-          # Wait up to 10 minutes for the main electron-release workflow to create the release
+          # Wait up to 10 minutes for the main electron-release workflow to create the release.
+          # We must NOT create a fallback release here because the main workflow's release job
+          # deletes pre-existing releases on rerun — creating one here risks a race condition
+          # where the main workflow wipes our artifacts.
           for i in $(seq 1 60); do
             if gh release view "$TAG" --repo "$REPO" &>/dev/null; then
               echo "Release $TAG found. Uploading Chromebook artifacts..."
@@ -124,11 +127,7 @@ jobs:
             sleep 10
           done
 
-          # Fallback: create standalone release if main release was not created
-          echo "Main release $TAG not found after 10 minutes. Creating Chromebook release..."
-          # shellcheck disable=SC2086
-          gh release create "$TAG" \
-            --repo "$REPO" \
-            --title "TubeTrend $TAG - Chromebook" \
-            --notes "Chromebook .deb packages (x64 + arm64) for ChromeOS / Crostini." \
-            $DEB_FILES
+          echo "ERROR: Release $TAG not found after 10 minutes."
+          echo "The main electron-release workflow may still be running or has failed."
+          echo "Re-run this workflow after the main release has been created."
+          exit 1

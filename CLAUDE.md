@@ -243,7 +243,7 @@ Repository: `https://github.com/fo0/tubetrend`
 | Desktop App | Electron | ^35.0.0 |
 | Desktop Packaging | electron-builder | ^26.0.0 |
 | Container | Docker (multi-stage) | Node 22-alpine + Nginx alpine |
-| CI/CD | GitHub Actions | typecheck, build, lint, security audit, electron release |
+| CI/CD | GitHub Actions | typecheck, build, lint, security audit, electron release, chromebook release |
 
 ## Project Structure
 
