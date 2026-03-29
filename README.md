@@ -84,7 +84,28 @@ npm run cap:build:debug
 
 The APK will be in `android/app/build/outputs/apk/debug/`.
 
-### Option 5: Run from Source
+### Option 5: Chrome Extension
+
+**Install as a Chrome browser extension:**
+
+```bash
+git clone https://github.com/fo0/tubetrend.git
+cd tubetrend
+npm install
+npm run build:extension
+```
+
+Then load in Chrome:
+1. Open `chrome://extensions/`
+2. Enable **Developer mode** (top right)
+3. Click **Load unpacked**
+4. Select the `dist-extension/` folder
+
+Click the TubeTrend extension icon to open the app in a new tab.
+
+Or download the pre-built ZIP from [Actions artifacts](https://github.com/fo0/tubetrend/actions/workflows/extension-release.yml), extract, and load unpacked.
+
+### Option 6: Run from Source
 
 **Prerequisites:** Node.js v22+
 
@@ -114,6 +135,7 @@ Enter your API key in the app when prompted.
 - **Analyser** — Search and analyze videos with trend scoring
 - **Highlights** — Auto-surface top-performing videos
 - **Desktop App** — Portable Electron app for Windows, macOS, and Linux
+- **Chrome Extension** — Install as browser extension, opens in a new tab
 - **Multi-language** — 13 languages with auto-detection
 - **Dark Mode** — System-aware with manual toggle
 - **Offline-ready** — All CSS and fonts bundled locally (only YouTube API needs internet)

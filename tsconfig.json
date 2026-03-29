@@ -32,5 +32,5 @@
     "baseUrl": "."
   },
   "include": ["src/**/*", "*.tsx", "*.ts", "components/**/*", "services/**/*", "utils/**/*"],
-  "exclude": ["node_modules", "dist", "electron"]
+  "exclude": ["node_modules", "dist", "electron", "chrome-extension"]
 }

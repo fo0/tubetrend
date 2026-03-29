@@ -8,10 +8,10 @@
     <script>
       (function() {
         try {
-          var storageKey = 'tt.theme.explicit';
+          var storageKey = 'tt.theme';
           var explicit = localStorage.getItem(storageKey);
           var systemPrefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-          var shouldDark = explicit ? (explicit === 'dark') : systemPrefersDark;
+          var shouldDark = explicit === 'dark' || (explicit !== 'light' && systemPrefersDark);
           if (shouldDark) {
             document.documentElement.classList.add('dark');
           } else {

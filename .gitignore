@@ -21,6 +21,9 @@ dist-electron
 release
 release-chromebook
 
+# Chrome Extension build output
+dist-extension
+
 # Capacitor Android build output
 android/app/build/
 android/.gradle/

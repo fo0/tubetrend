@@ -244,7 +244,8 @@ Repository: `https://github.com/fo0/tubetrend`
 | Desktop Packaging | electron-builder | ^26.0.0 |
 | Android Build | Capacitor | ^8.1.0 |
 | Container | Docker (multi-stage) | Node 22-alpine + Nginx alpine |
-| CI/CD | GitHub Actions | typecheck, build, lint, security audit, electron release, chromebook release, android APK |
+| Chrome Extension | Manifest V3 | Tab-based, manual install via chrome://extensions/ |
+| CI/CD | GitHub Actions | typecheck, build, lint, security audit, electron release, chromebook release, android APK, chrome extension |
 
 ## Project Structure
 
@@ -300,6 +301,10 @@ tubetrend/
 ├── android/                          # Capacitor Android project (ChromeOS APK build)
 │   ├── app/src/main/AndroidManifest.xml  # ChromeOS-optimized manifest (resizable, keyboard/mouse)
 │   └── ...                          # Gradle build files, resources (committed per Capacitor convention)
+├── chrome-extension/                  # Chrome Extension source files (Manifest V3)
+│   ├── manifest.json                # Extension manifest (icons, permissions, service worker)
+│   ├── background.js                # Service worker: opens TubeTrend tab on icon click
+│   └── theme-init.js                # FOUC prevention (extracted from index.html for CSP)
 ├── electron/                         # Electron desktop app wrapper (compiled by vite-plugin-electron)
 │   ├── main.ts                      # Main process: BrowserWindow, app lifecycle
 │   └── preload.ts                   # Preload script: contextBridge API exposure
@@ -308,10 +313,11 @@ tubetrend/
 ├── build/                            # Build resources
 │   └── icon.png                     # App icon (512x512, generated via npm run electron:icon)
 ├── scripts/                          # Build/utility scripts
-│   └── generate-icon.mjs           # Generates app icon PNG from code
+│   ├── generate-icon.mjs           # Generates app icon PNG from code
+│   └── build-extension.mjs         # Assembles Chrome Extension from dist/ + chrome-extension/
 ├── capacitor.config.ts               # Capacitor config (appId, webDir, Android/ChromeOS settings)
 ├── .github/                          # GitHub configuration
-│   ├── workflows/                    # CI: pr-checks.yml, docker-publish.yml, electron-release.yml, android-release.yml
+│   ├── workflows/                    # CI: pr-checks.yml, docker-publish.yml, electron-release.yml, android-release.yml, extension-release.yml
 │   ├── ISSUE_TEMPLATE/              # Bug report & feature request templates
 │   └── pull_request_template.md
 ├── docs/                             # Documentation images
@@ -361,6 +367,9 @@ npm run cap:open         # Open Android project in Android Studio
 npm run cap:build        # Build + sync + assemble release APK
 npm run cap:build:debug  # Build + sync + assemble debug APK
 
+# Chrome Extension
+npm run build:extension  # Build extension to dist-extension/ (load unpacked in chrome://extensions/)
+
 # Docker
 docker-compose up        # Run production image at http://localhost:8889
 docker run -d -p 8889:80 ghcr.io/fo0/tubetrend:latest  # Run directly
@@ -396,7 +405,7 @@ The app communicates exclusively with the YouTube Data API v3. All calls go thro
 | `tt.search.maxResults` | Search max results preference | `InputSection.tsx` |
 | `tt.search.history` | Search input history | `InputSection.tsx` |
 | `tt.lang.explicit` | Explicit language selection | `i18n/config.ts` |
-| `tt.theme.explicit` | Theme preference (light/dark/system) | `ThemeProvider.tsx` |
+| `tt.theme` | Theme preference (light/dark/system) | `ThemeProvider.tsx` |
 | `tt.quota.tracking` | API quota usage tracking & history | `quotaService.ts` |
 
 ## Key Patterns
@@ -555,6 +564,17 @@ npm test
 - **CI/CD** — `android-release.yml` workflow builds APK on push to main/master. Requires JDK 17 + Android SDK.
 - **Signing** — Currently unsigned (debug key). For production Play Store distribution, a signing keystore would need to be added.
 - **The `android/` directory is committed** — This is Capacitor convention. Build outputs (`android/app/build/`, `android/.gradle/`) are gitignored.
+
+### Chrome Extension
+- **Tab-based approach** — Clicking the extension icon opens TubeTrend in a new Chrome tab. If a tab already exists, it is focused instead of opening a duplicate.
+- **Zero changes to `src/` code** — Wraps the same `dist/` web build output, like Electron and Capacitor.
+- **Manifest V3** — Uses the latest Chrome Extension manifest version with a background service worker.
+- **CSP compliance** — The inline FOUC prevention script from `index.html` is extracted to an external `theme-init.js` file, since Manifest V3 forbids inline scripts.
+- **No special permissions** — Extension pages can fetch from `googleapis.com` without declaring `host_permissions`. localStorage works in extension tabs without `chrome.storage`.
+- **Icons** — Generated at 16/48/128px by `scripts/build-extension.mjs` using the same rendering logic as `scripts/generate-icon.mjs`.
+- **Build** — `npm run build:extension` runs `vite build` then assembles `dist-extension/` (copies dist/, patches index.html, adds extension files, generates icons).
+- **Installation** — Load unpacked via `chrome://extensions/` in developer mode, pointing to `dist-extension/`.
+- **CI/CD** — `extension-release.yml` workflow builds extension and uploads ZIP artifact on push to main/master.
 
 ### Build Info
 `vite.config.ts` injects `__BUILD_INFO__` global with `version` (date-based, format `YYYYMMDD-HHMM`), `commitHash`, `branch`, `buildDate`. Available at runtime via the global variable.
