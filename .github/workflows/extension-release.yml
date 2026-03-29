@@ -47,7 +47,7 @@ jobs:
         run: cd dist-extension && zip -r ../tubetrend-chrome-extension.zip .
 
       - name: Upload extension artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: tubetrend-chrome-extension
           path: tubetrend-chrome-extension.zip

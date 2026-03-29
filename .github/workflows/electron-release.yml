@@ -89,7 +89,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: tubetrend-${{ matrix.platform }}
           path: |
@@ -142,7 +142,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: tubetrend-chromebook-${{ matrix.arch }}
           path: release-chromebook/*.deb
@@ -173,7 +173,7 @@ jobs:
         run: cd dist-extension && zip -r ../tubetrend-chrome-extension.zip .
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: tubetrend-chrome-extension
           path: tubetrend-chrome-extension.zip
@@ -223,7 +223,7 @@ jobs:
              "TubeTrend-${VERSION}-Android.apk"
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: tubetrend-android
           path: TubeTrend-*-Android.apk
