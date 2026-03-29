@@ -148,8 +148,39 @@ jobs:
           path: release-chromebook/*.deb
           if-no-files-found: error
 
+  build-extension:
+    needs: prepare
+    runs-on: ubuntu-latest
+    name: Build Chrome Extension
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Chrome Extension
+        run: npm run build:extension
+
+      - name: Create extension zip
+        run: cd dist-extension && zip -r ../tubetrend-chrome-extension.zip .
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: tubetrend-chrome-extension
+          path: tubetrend-chrome-extension.zip
+          if-no-files-found: error
+
   release:
-    needs: [prepare, build, build-chromebook]
+    needs: [prepare, build, build-chromebook, build-extension]
     if: always() && needs.build.result == 'success'
     runs-on: ubuntu-latest
     permissions:

@@ -574,7 +574,7 @@ npm test
 - **Icons** — Generated at 16/48/128px by `scripts/build-extension.mjs` using the same rendering logic as `scripts/generate-icon.mjs`.
 - **Build** — `npm run build:extension` runs `vite build` then assembles `dist-extension/` (copies dist/, patches index.html, adds extension files, generates icons).
 - **Installation** — Load unpacked via `chrome://extensions/` in developer mode, pointing to `dist-extension/`.
-- **CI/CD** — `extension-release.yml` workflow builds extension and uploads ZIP artifact on push to main/master.
+- **CI/CD** — `extension-release.yml` builds extension ZIP on push to main/master (Actions artifact). Additionally, `electron-release.yml` includes a parallel `build-extension` job that adds the ZIP to each GitHub Release alongside Electron and Chromebook builds.
 
 ### Build Info
 `vite.config.ts` injects `__BUILD_INFO__` global with `version` (date-based, format `YYYYMMDD-HHMM`), `commitHash`, `branch`, `buildDate`. Available at runtime via the global variable.
