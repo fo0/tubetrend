@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Info, Github, Calendar, GitBranch, GitCommitHorizontal } from 'lucide-react';
+import { Info, Calendar, GitBranch, GitCommitHorizontal } from 'lucide-react';
+import { Github } from '@/src/shared/components/ui/BrandIcons';
 import { useTranslation } from 'react-i18next';
 
 const buildInfo = __BUILD_INFO__;

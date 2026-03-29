@@ -16,8 +16,8 @@ import {
   Loader2,
   RefreshCw,
   Trash2,
-  Youtube
 } from 'lucide-react';
+import {Youtube} from '@/src/shared/components/ui/BrandIcons';
 import {MAX_RESULTS_OPTIONS, TIME_FRAMES} from '@/src/shared/constants';
 import {useTranslation} from 'react-i18next';
 

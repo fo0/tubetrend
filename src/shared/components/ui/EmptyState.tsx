@@ -1,5 +1,5 @@
 import React from 'react';
-import {Youtube} from 'lucide-react';
+import {Youtube} from '@/src/shared/components/ui/BrandIcons';
 
 export const EmptyState: React.FC = () => {
   return (

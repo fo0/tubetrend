@@ -1,5 +1,6 @@
 import {useMemo, useState} from 'react';
-import {AlertCircle, Eye, List, Trophy, Youtube} from 'lucide-react';
+import {AlertCircle, Eye, List, Trophy} from 'lucide-react';
+import {Youtube} from '@/src/shared/components/ui/BrandIcons';
 import {InputSection} from '@/src/shared/components/ui/InputSection';
 import {VideoCard} from '@/src/shared/components/ui/VideoCard';
 import {VideoListTable} from '@/src/shared/components/ui/VideoListTable';
