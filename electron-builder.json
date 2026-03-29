@@ -13,15 +13,9 @@
   ],
   "win": {
     "target": [
-      "nsis",
       "portable"
     ],
     "icon": "build/icon.png"
-  },
-  "nsis": {
-    "oneClick": false,
-    "allowToChangeInstallationDirectory": true,
-    "artifactName": "TubeTrend-${version}-Setup.${ext}"
   },
   "portable": {
     "artifactName": "TubeTrend-${version}-Portable.exe"
