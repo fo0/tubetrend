@@ -20,7 +20,8 @@
   },
   "nsis": {
     "oneClick": false,
-    "allowToChangeInstallationDirectory": true
+    "allowToChangeInstallationDirectory": true,
+    "artifactName": "TubeTrend-${version}-Setup.${ext}"
   },
   "portable": {
     "artifactName": "TubeTrend-${version}-Portable.exe"

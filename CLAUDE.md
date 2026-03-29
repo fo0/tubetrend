@@ -549,11 +549,11 @@ npm test
 - **Security defaults** — `nodeIntegration: false`, `contextIsolation: true`
 - **External links** — Opened in system browser via `shell.openExternal()`, not in Electron window
 - **Dev mode** — `npm run electron:dev` sets `ELECTRON=true` which activates `vite-plugin-electron`; the plugin sets `VITE_DEV_SERVER_URL` env var; Electron loads the dev server URL in dev, `dist/index.html` in production
-- **Packaging** — `electron-builder` creates platform-specific installers (Windows NSIS/portable, macOS DMG, Linux AppImage) in `release/`. Config in `electron-builder.json` references `dist/**/*` + `dist-electron/**/*`.
+- **Packaging** — `electron-builder` creates platform-specific installers (Windows NSIS/portable, macOS DMG, Linux AppImage) in `release/`. Config in `electron-builder.json` references `dist/**/*` + `dist-electron/**/*`. Artifact naming: `TubeTrend-<version>-Setup.exe` (NSIS installer), `TubeTrend-<version>-Portable.exe` (portable).
 - **Chromebook release** — A separate `electron-builder.chromebook.json` builds Chromebook-optimized `.deb` packages into `release-chromebook/`. It adds `--no-sandbox` (required for Crostini's container sandbox) and `--ozone-platform-hint=auto` (Wayland/X11 auto-detection) via `executableArgs` in the `.desktop` file. Builds both x64 and arm64 architectures (ASUS Chromebooks use Intel and MediaTek/ARM chips). Artifact naming: `TubeTrend-<version>-Chromebook-<arch>.deb`. Local build: `npm run build:chromebook`.
 - **App icon** — Generated via `npm run electron:icon` (`scripts/generate-icon.mjs`), outputs `build/icon.png` (512x512)
 - **Requires internet** — YouTube Data API calls require internet; Tailwind CSS and fonts are bundled locally
-- **CI/CD** — `electron-release.yml` workflow builds all platforms (Win/Mac/Linux) and Chromebook `.deb` (x64 + arm64) in a single pipeline. Triggers on tag pushes (`v*`), main/master branch pushes, and manual dispatch. Creates GitHub Release with `--generate-release-notes`. Chromebook builds run in parallel but are non-blocking — if they fail, the main release still proceeds.
+- **CI/CD** — `electron-release.yml` workflow builds all platforms (Win/Mac/Linux), Chromebook `.deb` (x64 + arm64), Chrome Extension ZIP, and Android APK in a single pipeline. Triggers on tag pushes (`v*`), main/master branch pushes, and manual dispatch. Creates GitHub Release with `--generate-release-notes`. Non-Electron builds (Chromebook, Extension, Android) run in parallel and are non-blocking. Auto-updater metadata (`latest*.yml`) is excluded from the Release to keep assets user-friendly.
 
 ### Capacitor (Android / ChromeOS)
 - **Alternative to Electron Chromebook .deb** — Produces a native Android APK that runs on ChromeOS via ARCVM, without requiring Crostini (Linux VM). Eliminates GPU issues, sandbox workarounds, and VM boot delays.
@@ -561,7 +561,7 @@ npm test
 - **ChromeOS-optimized AndroidManifest.xml** — `resizeableActivity="true"`, `screenOrientation="unspecified"`, touchscreen not required, freeform window support.
 - **`androidScheme: 'https'`** — Ensures localStorage and other Web APIs work correctly when loading from local files.
 - **Icon** — Uses the same `build/icon.png` (512x512) as Electron, copied to `android/app/src/main/res/mipmap-xxxhdpi/`.
-- **CI/CD** — `android-release.yml` workflow builds APK on push to main/master. Requires JDK 17 + Android SDK.
+- **CI/CD** — `android-release.yml` builds APK on push to main/master (Actions artifact). Additionally, `electron-release.yml` includes a parallel `build-android` job that adds `TubeTrend-<version>-Android.apk` to each GitHub Release.
 - **Signing** — Currently unsigned (debug key). For production Play Store distribution, a signing keystore would need to be added.
 - **The `android/` directory is committed** — This is Capacitor convention. Build outputs (`android/app/build/`, `android/.gradle/`) are gitignored.
 

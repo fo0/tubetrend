@@ -179,8 +179,58 @@ jobs:
           path: tubetrend-chrome-extension.zip
           if-no-files-found: error
 
+  build-android:
+    needs: prepare
+    runs-on: ubuntu-latest
+    name: Build Android APK
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build web app
+        run: npm run build
+
+      - name: Sync Capacitor
+        run: npx cap sync android
+
+      - name: Build APK
+        working-directory: android
+        run: ./gradlew assembleDebug
+
+      - name: Rename APK
+        run: |
+          VERSION="${{ needs.prepare.outputs.build_version }}"
+          mv android/app/build/outputs/apk/debug/app-debug.apk \
+             "TubeTrend-${VERSION}-Android.apk"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: tubetrend-android
+          path: TubeTrend-*-Android.apk
+          if-no-files-found: error
+
   release:
-    needs: [prepare, build, build-chromebook, build-extension]
+    needs: [prepare, build, build-chromebook, build-extension, build-android]
     if: always() && needs.build.result == 'success'
     runs-on: ubuntu-latest
     permissions:
@@ -232,4 +282,6 @@ jobs:
           TAG="${{ needs.prepare.outputs.release_tag }}"
           REPO="${{ github.repository }}"
           sleep 3
-          gh release upload "$TAG" --repo "$REPO" --clobber artifacts/*/*
+          # Upload all artifacts except auto-updater metadata (latest*.yml)
+          find artifacts -type f ! -name "latest*.yml" \
+            -exec gh release upload "$TAG" --repo "$REPO" --clobber {} +
