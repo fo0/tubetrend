@@ -47,6 +47,18 @@ if (inlineScriptPattern.test(html)) {
   }
 }
 
+// --- Icon reference points (designed at 512, scaled to target size) ---
+const REF_TREND = [
+  [100, 340],
+  [180, 300],
+  [240, 320],
+  [310, 240],
+  [370, 200],
+  [430, 140],
+];
+const REF_TRI = [[155, 370], [155, 430], [200, 400]];
+const REF_GLOW = [430, 140];
+
 // --- Step 4: Generate extension icons ---
 const ICON_SIZES = [16, 48, 128];
 const iconsDir = join(OUT, 'icons');
@@ -122,18 +134,6 @@ function createChunk(type, data) {
   crcVal.writeUInt32BE(crc32(crcInput));
   return Buffer.concat([length, typeBytes, data, crcVal]);
 }
-
-// Trend line reference points (designed at 512, scaled to target size)
-const REF_TREND = [
-  [100, 340],
-  [180, 300],
-  [240, 320],
-  [310, 240],
-  [370, 200],
-  [430, 140],
-];
-const REF_TRI = [[155, 370], [155, 430], [200, 400]];
-const REF_GLOW = [430, 140];
 
 function generateIcon(SIZE) {
   const scale = SIZE / 512;
