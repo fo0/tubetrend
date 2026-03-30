@@ -2,6 +2,8 @@
 
 A YouTube trend analysis tool built with Vite + React + TypeScript. Analyze video performance, track favorites, and discover trending content across channels.
 
+> **🧩 New: Chrome Extension available!** — Use TubeTrend directly in your browser as a local Chrome Extension. [See setup instructions](#option-5-chrome-extension)
+
 ## Dashboard
 ![Dashboard](docs/dashboard_image_doc.jpeg)
 
