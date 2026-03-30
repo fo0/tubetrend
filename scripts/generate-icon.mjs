@@ -1,5 +1,6 @@
 /**
  * Generates a 512x512 PNG app icon for TubeTrend using only Node.js built-ins.
+ * Design: Purple gradient background + cyan ascending trend line + glow dot + play triangle
  * Run: node scripts/generate-icon.mjs
  * Output: build/icon.png
  */
@@ -19,43 +20,27 @@ function blendPixel(bg, fg, alpha) {
 
 // --- Shape helpers ---
 function isInRoundedRect(x, y, size, radius) {
-  if (x < radius && y < radius) {
-    return Math.hypot(x - radius, y - radius) <= radius;
-  }
-  if (x > size - radius && y < radius) {
-    return Math.hypot(x - (size - radius), y - radius) <= radius;
-  }
-  if (x < radius && y > size - radius) {
-    return Math.hypot(x - radius, y - (size - radius)) <= radius;
-  }
-  if (x > size - radius && y > size - radius) {
-    return Math.hypot(x - (size - radius), y - (size - radius)) <= radius;
-  }
+  const margin = size * 16 / 512; // 16px margin at 512
+  const inner = size - 2 * margin;
+  const lx = x - margin;
+  const ly = y - margin;
+  if (lx < 0 || ly < 0 || lx >= inner || ly >= inner) return false;
+  if (lx < radius && ly < radius) return Math.hypot(lx - radius, ly - radius) <= radius;
+  if (lx > inner - radius && ly < radius) return Math.hypot(lx - (inner - radius), ly - radius) <= radius;
+  if (lx < radius && ly > inner - radius) return Math.hypot(lx - radius, ly - (inner - radius)) <= radius;
+  if (lx > inner - radius && ly > inner - radius) return Math.hypot(lx - (inner - radius), ly - (inner - radius)) <= radius;
   return true;
 }
 
-function isInTriangle(x, y, cx, cy, triSize) {
-  // Play button triangle pointing right
-  const halfH = triSize * 0.5;
-  const triW = triSize * 0.866; // sqrt(3)/2
-  const left = cx - triW * 0.4;
-  const right = cx + triW * 0.6;
-  const top = cy - halfH;
-  const bottom = cy + halfH;
-
-  if (x < left || x > right || y < top || y > bottom) return 0;
-
-  // Right-pointing triangle: full height at left edge, point at right edge
-  const progress = (x - left) / (right - left);
-  const allowedHalf = halfH * (1 - progress);
-  const distFromCenter = Math.abs(y - cy);
-
-  if (distFromCenter <= allowedHalf) {
-    // Anti-aliasing at edges
-    const edgeDist = allowedHalf - distFromCenter;
-    return Math.min(1, edgeDist * 2);
-  }
-  return 0;
+// Distance from point to line segment
+function distToSegment(px, py, x1, y1, x2, y2) {
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const lenSq = dx * dx + dy * dy;
+  if (lenSq === 0) return Math.hypot(px - x1, py - y1);
+  let t = ((px - x1) * dx + (py - y1) * dy) / lenSq;
+  t = Math.max(0, Math.min(1, t));
+  return Math.hypot(px - (x1 + t * dx), py - (y1 + t * dy));
 }
 
 // --- PNG creation helpers ---
@@ -74,21 +59,50 @@ function createChunk(type, data) {
   const typeBytes = Buffer.from(type, 'ascii');
   const length = Buffer.alloc(4);
   length.writeUInt32BE(data.length);
-
   const crcInput = Buffer.concat([typeBytes, data]);
   const crcVal = Buffer.alloc(4);
   crcVal.writeUInt32BE(crc32(crcInput));
-
   return Buffer.concat([length, typeBytes, data, crcVal]);
 }
 
+// --- Trend line points (mapped to 512x512) ---
+const trendPoints = [
+  [100, 340],
+  [180, 300],
+  [240, 320],
+  [310, 240],
+  [370, 200],
+  [430, 140],
+];
+
+const LINE_WIDTH = 11; // half-width for the stroke (22px total)
+
 // --- Generate pixel data ---
-const rowSize = 1 + SIZE * 4; // filter byte + RGBA per pixel
+const rowSize = 1 + SIZE * 4;
 const rawData = Buffer.alloc(SIZE * rowSize);
-const cornerRadius = SIZE * 0.16;
-const cx = SIZE / 2;
-const cy = SIZE / 2;
-const triSize = SIZE * 0.38;
+const cornerRadius = SIZE * 0.188; // ~96px at 512
+
+// Play triangle vertices
+const triAx = 155, triAy = 370;
+const triBx = 155, triBy = 430;
+const triCx = 200, triCy = 400;
+
+function sign(p1x, p1y, p2x, p2y, p3x, p3y) {
+  return (p1x - p3x) * (p2y - p3y) - (p2x - p3x) * (p1y - p3y);
+}
+
+function isInTriangle(px, py) {
+  const d1 = sign(px, py, triAx, triAy, triBx, triBy);
+  const d2 = sign(px, py, triBx, triBy, triCx, triCy);
+  const d3 = sign(px, py, triCx, triCy, triAx, triAy);
+  const hasNeg = (d1 < 0) || (d2 < 0) || (d3 < 0);
+  const hasPos = (d1 > 0) || (d2 > 0) || (d3 > 0);
+  return !(hasNeg && hasPos);
+}
+
+// Glow dot center & radii
+const glowCx = 430, glowCy = 140;
+const glowOuterR = 16, glowInnerR = 9;
 
 for (let y = 0; y < SIZE; y++) {
   const rowOffset = y * rowSize;
@@ -99,7 +113,6 @@ for (let y = 0; y < SIZE; y++) {
     const t = y / SIZE;
 
     if (!isInRoundedRect(x, y, SIZE, cornerRadius)) {
-      // Transparent outside rounded rect
       rawData[idx] = 0;
       rawData[idx + 1] = 0;
       rawData[idx + 2] = 0;
@@ -107,17 +120,56 @@ for (let y = 0; y < SIZE; y++) {
       continue;
     }
 
-    // Background gradient: deep red (#CC0000) to darker red (#8B0000)
-    const bgR = Math.round(lerp(204, 139, t));
-    const bgG = 0;
-    const bgB = 0;
+    // Background gradient: indigo (#6366f1) to violet (#8b5cf6)
+    let r = Math.round(lerp(99, 139, t));
+    let g = Math.round(lerp(102, 92, t));
+    let b = Math.round(lerp(241, 246, t));
 
-    // Play button triangle (white)
-    const triAlpha = isInTriangle(x, y, cx, cy, triSize);
+    // --- Trend line ---
+    let minDist = Infinity;
+    for (let i = 0; i < trendPoints.length - 1; i++) {
+      const d = distToSegment(x, y, trendPoints[i][0], trendPoints[i][1], trendPoints[i + 1][0], trendPoints[i + 1][1]);
+      if (d < minDist) minDist = d;
+    }
+    if (minDist <= LINE_WIDTH + 1) {
+      // Gradient along x: #38bdf8 -> #22d3ee
+      const xt = Math.max(0, Math.min(1, (x - 100) / 330));
+      const lineR = Math.round(lerp(56, 34, xt));
+      const lineG = Math.round(lerp(189, 211, xt));
+      const lineB = Math.round(lerp(248, 238, xt));
+      const lineAlpha = Math.min(1, Math.max(0, (LINE_WIDTH + 1 - minDist)));
+      r = blendPixel(r, lineR, lineAlpha);
+      g = blendPixel(g, lineG, lineAlpha);
+      b = blendPixel(b, lineB, lineAlpha);
+    }
 
-    rawData[idx] = blendPixel(bgR, 255, triAlpha);
-    rawData[idx + 1] = blendPixel(bgG, 255, triAlpha);
-    rawData[idx + 2] = blendPixel(bgB, 255, triAlpha);
+    // --- Glow dot (outer, cyan, 40% opacity) ---
+    const glowDist = Math.hypot(x - glowCx, y - glowCy);
+    if (glowDist <= glowOuterR + 1) {
+      const glowAlpha = Math.min(1, Math.max(0, glowOuterR + 1 - glowDist)) * 0.4;
+      r = blendPixel(r, 34, glowAlpha);
+      g = blendPixel(g, 211, glowAlpha);
+      b = blendPixel(b, 238, glowAlpha);
+    }
+    // --- Glow dot (inner, white) ---
+    if (glowDist <= glowInnerR + 1) {
+      const innerAlpha = Math.min(1, Math.max(0, glowInnerR + 1 - glowDist));
+      r = blendPixel(r, 255, innerAlpha);
+      g = blendPixel(g, 255, innerAlpha);
+      b = blendPixel(b, 255, innerAlpha);
+    }
+
+    // --- Play triangle (white, 85% opacity) ---
+    if (isInTriangle(x, y)) {
+      const triAlpha = 0.85;
+      r = blendPixel(r, 255, triAlpha);
+      g = blendPixel(g, 255, triAlpha);
+      b = blendPixel(b, 255, triAlpha);
+    }
+
+    rawData[idx] = r;
+    rawData[idx + 1] = g;
+    rawData[idx + 2] = b;
     rawData[idx + 3] = 255;
   }
 }
@@ -125,20 +177,16 @@ for (let y = 0; y < SIZE; y++) {
 // --- Assemble PNG ---
 const signature = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
 
-// IHDR
 const ihdr = Buffer.alloc(13);
-ihdr.writeUInt32BE(SIZE, 0);  // width
-ihdr.writeUInt32BE(SIZE, 4);  // height
-ihdr[8] = 8;                   // bit depth
-ihdr[9] = 6;                   // color type: RGBA
-ihdr[10] = 0;                  // compression
-ihdr[11] = 0;                  // filter
-ihdr[12] = 0;                  // interlace
+ihdr.writeUInt32BE(SIZE, 0);
+ihdr.writeUInt32BE(SIZE, 4);
+ihdr[8] = 8;
+ihdr[9] = 6;
+ihdr[10] = 0;
+ihdr[11] = 0;
+ihdr[12] = 0;
 
-// IDAT (compressed image data)
 const compressed = deflateSync(rawData, { level: 9 });
-
-// IEND
 const iend = Buffer.alloc(0);
 
 const png = Buffer.concat([
