@@ -62,7 +62,7 @@ console.log('\nChrome Extension built successfully!');
 console.log(`Output: dist-extension/`);
 console.log('Load via: chrome://extensions/ -> Developer mode -> Load unpacked');
 
-// --- Icon generation (reuses logic from scripts/generate-icon.mjs) ---
+// --- Icon generation (matches scripts/generate-icon.mjs — purple gradient + trend line) ---
 
 function lerp(a, b, t) {
   return a + (b - a) * t;
@@ -88,25 +88,18 @@ function isInRoundedRect(x, y, size, radius) {
   return true;
 }
 
-function isInTriangle(x, y, cx, cy, triSize) {
-  const halfH = triSize * 0.5;
-  const triW = triSize * 0.866;
-  const left = cx - triW * 0.4;
-  const right = cx + triW * 0.6;
-  const top = cy - halfH;
-  const bottom = cy + halfH;
+function distToSegment(px, py, x1, y1, x2, y2) {
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const lenSq = dx * dx + dy * dy;
+  if (lenSq === 0) return Math.hypot(px - x1, py - y1);
+  let t = ((px - x1) * dx + (py - y1) * dy) / lenSq;
+  t = Math.max(0, Math.min(1, t));
+  return Math.hypot(px - (x1 + t * dx), py - (y1 + t * dy));
+}
 
-  if (x < left || x > right || y < top || y > bottom) return 0;
-
-  const progress = (x - left) / (right - left);
-  const allowedHalf = halfH * (1 - progress);
-  const distFromCenter = Math.abs(y - cy);
-
-  if (distFromCenter <= allowedHalf) {
-    const edgeDist = allowedHalf - distFromCenter;
-    return Math.min(1, edgeDist * 2);
-  }
-  return 0;
+function signTri(p1x, p1y, p2x, p2y, p3x, p3y) {
+  return (p1x - p3x) * (p2y - p3y) - (p2x - p3x) * (p1y - p3y);
 }
 
 function crc32(buf) {
@@ -130,13 +123,30 @@ function createChunk(type, data) {
   return Buffer.concat([length, typeBytes, data, crcVal]);
 }
 
+// Trend line reference points (designed at 512, scaled to target size)
+const REF_TREND = [
+  [100, 340],
+  [180, 300],
+  [240, 320],
+  [310, 240],
+  [370, 200],
+  [430, 140],
+];
+const REF_TRI = [[155, 370], [155, 430], [200, 400]];
+const REF_GLOW = [430, 140];
+
 function generateIcon(SIZE) {
+  const scale = SIZE / 512;
   const rowSize = 1 + SIZE * 4;
   const rawData = Buffer.alloc(SIZE * rowSize);
-  const cornerRadius = SIZE * 0.16;
-  const cx = SIZE / 2;
-  const cy = SIZE / 2;
-  const triSize = SIZE * 0.38;
+  const cornerRadius = SIZE * 0.188;
+  const lineHalfW = Math.max(1, 11 * scale);
+
+  const trend = REF_TREND.map(([x, y]) => [x * scale, y * scale]);
+  const tri = REF_TRI.map(([x, y]) => [x * scale, y * scale]);
+  const glow = [REF_GLOW[0] * scale, REF_GLOW[1] * scale];
+  const glowOuterR = 16 * scale;
+  const glowInnerR = 9 * scale;
 
   for (let y = 0; y < SIZE; y++) {
     const rowOffset = y * rowSize;
@@ -154,14 +164,59 @@ function generateIcon(SIZE) {
         continue;
       }
 
-      const bgR = Math.round(lerp(204, 139, t));
-      const bgG = 0;
-      const bgB = 0;
-      const triAlpha = isInTriangle(x, y, cx, cy, triSize);
+      // Background gradient: indigo (#6366f1) to violet (#8b5cf6)
+      let r = Math.round(lerp(99, 139, t));
+      let g = Math.round(lerp(102, 92, t));
+      let b = Math.round(lerp(241, 246, t));
 
-      rawData[idx] = blendPixel(bgR, 255, triAlpha);
-      rawData[idx + 1] = blendPixel(bgG, 255, triAlpha);
-      rawData[idx + 2] = blendPixel(bgB, 255, triAlpha);
+      // Trend line
+      let minDist = Infinity;
+      for (let i = 0; i < trend.length - 1; i++) {
+        const d = distToSegment(x, y, trend[i][0], trend[i][1], trend[i + 1][0], trend[i + 1][1]);
+        if (d < minDist) minDist = d;
+      }
+      if (minDist <= lineHalfW + 1) {
+        const xt = Math.max(0, Math.min(1, (x - trend[0][0]) / (trend[trend.length - 1][0] - trend[0][0])));
+        const lineR = Math.round(lerp(56, 34, xt));
+        const lineG = Math.round(lerp(189, 211, xt));
+        const lineB = Math.round(lerp(248, 238, xt));
+        const lineAlpha = Math.min(1, Math.max(0, lineHalfW + 1 - minDist));
+        r = blendPixel(r, lineR, lineAlpha);
+        g = blendPixel(g, lineG, lineAlpha);
+        b = blendPixel(b, lineB, lineAlpha);
+      }
+
+      // Glow dot outer (cyan, 40%)
+      const glowDist = Math.hypot(x - glow[0], y - glow[1]);
+      if (glowDist <= glowOuterR + 1) {
+        const ga = Math.min(1, Math.max(0, glowOuterR + 1 - glowDist)) * 0.4;
+        r = blendPixel(r, 34, ga);
+        g = blendPixel(g, 211, ga);
+        b = blendPixel(b, 238, ga);
+      }
+      // Glow dot inner (white)
+      if (glowDist <= glowInnerR + 1) {
+        const ia = Math.min(1, Math.max(0, glowInnerR + 1 - glowDist));
+        r = blendPixel(r, 255, ia);
+        g = blendPixel(g, 255, ia);
+        b = blendPixel(b, 255, ia);
+      }
+
+      // Play triangle (white, 85%)
+      const d1 = signTri(x, y, tri[0][0], tri[0][1], tri[1][0], tri[1][1]);
+      const d2 = signTri(x, y, tri[1][0], tri[1][1], tri[2][0], tri[2][1]);
+      const d3 = signTri(x, y, tri[2][0], tri[2][1], tri[0][0], tri[0][1]);
+      const hasNeg = (d1 < 0) || (d2 < 0) || (d3 < 0);
+      const hasPos = (d1 > 0) || (d2 > 0) || (d3 > 0);
+      if (!(hasNeg && hasPos)) {
+        r = blendPixel(r, 255, 0.85);
+        g = blendPixel(g, 255, 0.85);
+        b = blendPixel(b, 255, 0.85);
+      }
+
+      rawData[idx] = r;
+      rawData[idx + 1] = g;
+      rawData[idx + 2] = b;
       rawData[idx + 3] = 255;
     }
   }
