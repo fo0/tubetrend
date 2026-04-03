@@ -1,0 +1,142 @@
+flowchart TD
+    subgraph "Entry Points"
+        MAIN["main.tsx"]:::frontend
+        HTML["index.html"]:::frontend
+    end
+
+    subgraph "App Shell"
+        APP("App.tsx"):::frontend
+        DASHBOARD["DashboardPage"]:::frontend
+        ANALYSER["AnalyserPage"]:::frontend
+    end
+
+    subgraph "Providers"
+        THEME("ThemeProvider"):::frontend
+        I18N("i18n Config"):::frontend
+        ERRBND("ErrorBoundary"):::frontend
+    end
+
+    subgraph "Features"
+        subgraph "Dashboard Feature"
+            USEDASH("useDashboard hooks"):::feature
+            DASHSVC("dashboardServices"):::service
+            HIDDEN("hiddenHighlightsService"):::service
+        end
+
+        subgraph "Favorites Feature"
+            FAVSVC("favoritesService"):::service
+            FAVTYPES["FavoriteConfig types"]:::feature
+        end
+
+        subgraph "Search Feature"
+            USESEARCH("useSearch"):::feature
+        end
+
+        subgraph "Videos Feature"
+            TREND("trendAnalysisService"):::service
+        end
+
+        subgraph "YouTube Feature"
+            APICLIENT("youtubeApiClient"):::service
+            CHANSVC("channelService"):::service
+            SEARCHSVC("searchService"):::service
+            QUOTASVC("quotaService"):::service
+        end
+    end
+
+    subgraph "Shared"
+        EVENTBUS("eventBus"):::shared
+        STORAGE("StorageAdapter"):::shared
+        UICOMPS["UI Components"]:::shared
+        HOOKS["Custom Hooks"]:::shared
+        CONSTANTS["Constants"]:::shared
+    end
+
+    subgraph "External"
+        YTAPI{{"YouTube Data API v3"}}:::external
+        LOCALSTORAGE[("localStorage")]:::storage
+    end
+
+    subgraph "Distribution"
+        ELECTRON["Electron Desktop"]:::infra
+        CAPACITOR["Capacitor Android"]:::infra
+        CHROMEEXT["Chrome Extension"]:::infra
+        DOCKER["Docker / Nginx"]:::infra
+    end
+
+    HTML --> MAIN
+    MAIN --> THEME
+    MAIN --> I18N
+    MAIN --> ERRBND
+    ERRBND --> APP
+    APP --> DASHBOARD
+    APP --> ANALYSER
+
+    DASHBOARD --> USEDASH
+    USEDASH --> DASHSVC
+    USEDASH --> FAVSVC
+    USEDASH --> HIDDEN
+    ANALYSER --> USESEARCH
+    USESEARCH --> SEARCHSVC
+    USESEARCH --> TREND
+
+    SEARCHSVC --> APICLIENT
+    CHANSVC --> APICLIENT
+    FAVSVC -->|"fetch videos"| APICLIENT
+    APICLIENT -->|"REST calls"| YTAPI
+    APICLIENT -->|"track usage"| QUOTASVC
+
+    FAVSVC --> STORAGE
+    QUOTASVC --> STORAGE
+    HIDDEN --> STORAGE
+    DASHSVC --> STORAGE
+    THEME --> STORAGE
+    STORAGE --> LOCALSTORAGE
+
+    FAVSVC -->|"emit events"| EVENTBUS
+    QUOTASVC -->|"emit events"| EVENTBUS
+    HIDDEN -->|"emit events"| EVENTBUS
+    USEDASH -->|"listen events"| EVENTBUS
+
+    APP --> UICOMPS
+
+    ELECTRON -->|"wraps dist/"| APP
+    CAPACITOR -->|"wraps dist/"| APP
+    CHROMEEXT -->|"wraps dist/"| APP
+    DOCKER -->|"serves dist/"| APP
+
+    click MAIN "src/main.tsx"
+    click HTML "index.html"
+    click APP "src/app/App.tsx"
+    click DASHBOARD "src/app/routes/DashboardPage.tsx"
+    click ANALYSER "src/app/routes/AnalyserPage.tsx"
+    click THEME "src/providers/ThemeProvider.tsx"
+    click I18N "src/i18n/config.ts"
+    click ERRBND "src/shared/components/feedback"
+    click USEDASH "src/features/dashboard/hooks/useDashboard.ts"
+    click DASHSVC "src/features/dashboard/services"
+    click HIDDEN "src/features/dashboard/services"
+    click FAVSVC "src/features/favorites/services/favoritesService.ts"
+    click USESEARCH "src/features/search/hooks/useSearch.ts"
+    click TREND "src/features/videos/services/trendAnalysisService.ts"
+    click APICLIENT "src/features/youtube/services/youtubeApiClient.ts"
+    click CHANSVC "src/features/youtube/services/channelService.ts"
+    click SEARCHSVC "src/features/youtube/services/searchService.ts"
+    click QUOTASVC "src/features/youtube/services/quotaService.ts"
+    click EVENTBUS "src/shared/lib/eventBus.ts"
+    click STORAGE "src/shared/lib/storage.ts"
+    click UICOMPS "src/shared/components/ui"
+    click HOOKS "src/shared/hooks"
+    click CONSTANTS "src/shared/constants"
+    click ELECTRON "electron/main.ts"
+    click CAPACITOR "capacitor.config.ts"
+    click CHROMEEXT "chrome-extension/manifest.json"
+    click DOCKER "Dockerfile"
+
+    classDef frontend fill:#42b883,stroke:#35495e,color:#fff
+    classDef feature fill:#3178c6,stroke:#265a8f,color:#fff
+    classDef service fill:#336791,stroke:#264d73,color:#fff
+    classDef storage fill:#dc382c,stroke:#a02a22,color:#fff
+    classDef external fill:#ff6347,stroke:#cc4f39,color:#fff
+    classDef infra fill:#7b42bc,stroke:#5e338f,color:#fff
+    classDef shared fill:#ff6600,stroke:#cc5200,color:#fff

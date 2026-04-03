@@ -1,32 +1,14 @@
-# CLAUDE.md - Project Guide
+# CLAUDE.md — Project Guide
 
-## Documentation Workflow (MANDATORY)
-
-### 1. Read documentation FIRST
-- **Always** read these files before starting work:
-  1. `CLAUDE.md` (this file) - Technical details and coding guidelines
-  2. `README.md` - Project overview and user guide
-  3. `.env.example` - Environment variable configuration
-  4. `.junie/guidelines.md` - Additional agent guidelines (JetBrains Junie)
-
-### 2. Update documentation AFTER every change
-After every code change, review and update:
-
-| File | Update when... |
-|------|---------------|
-| `CLAUDE.md` | New components, config files, patterns, or technical details |
-| `README.md` | New features, API endpoints, environment variables for users |
-| `BACKLOG.md` | Unfixed review findings (Accepted/Deferred) after code review |
-| `.env.example` | New environment variables added |
-
-### 3. Documentation checklist before commit
-- [ ] New components/modules documented in project structure?
-- [ ] New config files documented in project structure?
-- [ ] New environment variables/configuration in all relevant files?
-- [ ] README.md updated with new features?
-- [ ] New coding patterns documented?
-
----
+> **Session-Start:** Read `MEMORY.md` first to restore context from previous sessions.
+> After every implementation, follow the review process in `agent_docs/review_process.md`.
+> Unresolved findings go to `BACKLOG.md` as defined in `agent_docs/backlog_process.md`.
+> Session-spanning context and learnings go to `MEMORY.md` as defined in `agent_docs/memory_process.md`.
+> **Diagram generation:** When the user requests an architecture diagram, follow `agent_docs/diagram_prompt.md`.
+>   Write result to `docs/ARCHITECTURE.mmd` and generate `docs/ARCHITECTURE.svg`.
+> **On "done" / "fertig":** Commit uncommitted changes (if any), and if the work relates to a GitHub
+>   issue, comment on it (in English) with a summary and close it. Do NOT push unless explicitly asked.
+> **On GitHub issue work:** Reference the issue number in commit messages (e.g. `fix: resolve crash #42`).
 
 ## AUTOMATIC CODE-REVIEW (after EVERY implementation)
 
@@ -34,179 +16,35 @@ After every code change, review and update:
 > After EVERY implementation, a complete code review is performed AUTOMATICALLY.
 > The user does NOT need to request this — it is a fixed part of every loop.
 > You must NEVER commit without completing this review first.
+>
+> **Full process details:** `agent_docs/review_process.md`
 
-### TODO Structure (MANDATORY!)
+## Documentation Rules
 
-Your TODO list MUST contain these steps for EVERY task:
+After every code change, check and update:
 
-```
-1. Implement feature
-2. Update documentation (if needed)
-3. Run automated checks (see Step A)
-4. AUTOMATIC CODE-REVIEW (see Step B)                      ← SEPARATE TODO!
-5. Auto-fix findings (Critical/High immediately, Medium by judgment)
-6. Unfixed findings (Accepted/Deferred) → BACKLOG.md       ← SEPARATE TODO!
-7. UI review (if UI was changed)                            ← SEPARATE TODO!
-8. Commit & Push
-```
+| File | Update when... |
+|------|---------------|
+| `CLAUDE.md` | New components, configs, patterns, technical details |
+| `README.md` | New features, endpoints, env vars for users |
+| `BACKLOG.md` | Unfixed review findings (Accepted/Deferred) |
+| `MEMORY.md` | Project learnings, context, decisions, gotchas |
+| `docs/ARCHITECTURE.mmd` | Structural changes (new modules, changed data flow, new external deps) |
+| `.env.example` | New environment variables |
 
-**Rules:**
-- Step 3 and Step 4 are SEPARATE TODOs — NEVER combine them
-- Step 4 is **automatically triggered** after every implementation — no user request needed
-- When issues are found: **Fix immediately** → re-run checks → repeat review until clean
+### Size monitoring
+If `CLAUDE.md` exceeds ~40,000 characters: extract the largest section into `agent_docs/` and replace with a one-line reference. Do this proactively.
 
-### Step A: Automated Checks
+## Refactoring Notes
 
-```bash
-npm ci                   # ALWAYS first — install dependencies
-npx tsc --noEmit         # TypeScript type checking must pass
-npm run build            # Production build must succeed
-```
+- **`FavoriteRow.tsx` (~636 lines)** — God component. Split into sub-components + `useFavoriteRowData()` hook.
+- **Duplicate event listeners** — Raw `window.addEventListener` instead of `useEventBus()` hook.
+- **German strings in API client** — `youtubeApiClient.ts` has hardcoded German error messages.
+- **Magic numbers in trend analysis** — `trendAnalysisService.ts` hardcoded thresholds and weights.
+- **Module-level API key state** — `youtubeApiClient.ts` dual storage (variable + localStorage).
+- **No test coverage** — Critical services need unit tests.
 
-> **Note:** No linter or test framework is configured yet. When added, extend this section:
-> - Lint: `npm run lint` (once ESLint is configured)
-> - Test: `npm test` (once Vitest is configured — see [Testing](#testing))
-
-### Step B: Code Review — Full Checklist (THE CRITICAL STEP!)
-
-**This step runs AUTOMATICALLY after every implementation. No user prompt required.**
-
-**You MUST ACTUALLY PERFORM these actions — not just check them off:**
-
-1. **RE-READ EVERY changed file** — Use the Read tool, read COMPLETELY again. Not from memory!
-2. Walk through every review category below and evaluate each changed file against it.
-3. **Fix all issues immediately** — do not just list them.
-4. Present the results as a **review table** (format below).
-
-#### Review Categories
-
-| # | Category | What to check |
-|---|----------|---------------|
-| 1 | **Modern Coding Standards** | Idiomatic React 19 / TypeScript patterns, current best practices, no deprecated APIs, clean imports with path aliases, proper naming conventions, DRY, KISS, SRP |
-| 2 | **Security** | XSS, injection (SQL/command/template), unsafe dynamic code execution, prototype pollution, CSRF, insecure crypto, hardcoded secrets, improper auth checks, unvalidated input at system boundaries |
-| 3 | **Code Smells** | Duplicated code, dead code, overly complex functions (high cyclomatic complexity), god objects/functions, long parameter lists, magic numbers/strings, tight coupling, missing single-responsibility |
-| 4 | **Bugs & Logic Errors** | Off-by-one errors, null/undefined access, race conditions, incorrect conditionals, missing error handling at boundaries, wrong operator precedence, async pitfalls, unclosed resources |
-| 5 | **Edge Cases** | Empty collections, null/undefined, boundary values (0, -1, MAX), empty strings, concurrent access, missing/malformed input, network failures, timeout handling |
-| 6 | **Typing & Type Safety** | Correct types, no unsafe casts without reason, proper generics, exhaustive switch/union/enum handling, return type accuracy, TypeScript strict compliance |
-| 7 | **Performance & Optimization** | Unnecessary re-renders/recomputations, missing memoization/caching where beneficial, N+1 queries, unbounded loops/allocations, large imports that could be lazy-loaded, inefficient algorithms |
-| 8 | **Readability & Maintainability** | Clear variable/function names, self-documenting code, no confusing abbreviations, consistent style, logical code organization, appropriate comments for non-obvious logic |
-
-#### Mandatory Review Output Format
-
-```
-### Code Review Results
-
-| # | Category | Status | Findings | Action |
-|---|----------|--------|----------|--------|
-| 1 | Modern Coding Standards | ✅ Pass | — | — |
-| 2 | Security | ⚠️ Issue | Unvalidated user input in X | Fixed: added validation |
-| 3 | Code Smells | ✅ Pass | — | — |
-| 4 | Bugs & Logic Errors | ❌ Bug | Off-by-one in loop at Y:42 | Fixed: changed < to <= |
-| 5 | Edge Cases | ✅ Pass | — | — |
-| 6 | Typing & Type Safety | ✅ Pass | — | — |
-| 7 | Performance & Optimization | 💡 Suggestion | Could memoize expensive calc | Deferred → Backlog |
-| 8 | Readability & Maintainability | ✅ Pass | — | — |
-
-**Summary:** 8 categories checked | 1 bug fixed | 1 security issue fixed | 1 optimization deferred → Backlog
-```
-
-**Status Icons:**
-- ✅ **Pass** — No issues found
-- ⚠️ **Issue** — Problem found and **fixed**
-- ❌ **Bug** — Bug found and **fixed**
-- 💡 **Suggestion** — Optional improvement (applied or deferred with reasoning)
-
-### Step C: Auto-Fixing Rules
-
-- **Critical + High**: ALWAYS fix immediately, no asking
-- **Medium**: Fix by judgment — when in doubt, fix
-- **Low**: Only fix if effort is trivial
-- **Info/Suggestion**: No fix required, defer to Backlog if valuable
-
-After fixing: If changes were made, repeat Step A (checks), then re-review only affected categories.
-
-### Step D: UI Review (for UI changes)
-
-If UI code was changed:
-- **Responsive**: Different screen sizes considered?
-- **Accessibility**: Relevant attributes present?
-- **Consistency**: Matches existing Tailwind CSS design system (dark mode support, Inter font)?
-
-### Step E: Backlog Tracking (BACKLOG.md)
-
-All review findings with status **Accepted** or **Deferred** are entered in `BACKLOG.md` so they are not lost.
-
-> **IMPORTANT:** Backlog items are ONLY worked on upon explicit user request.
-> The backlog serves exclusively as memory — never work through it independently!
-
-**BACKLOG.md Format:**
-
-```markdown
-# Backlog
-
-Open review findings that were not immediately fixed.
-
-**Only work on these upon explicit request!**
-
-## Open
-
-| # | Date | Category | File:Line | Finding | Severity | Status | Source |
-|---|------|----------|-----------|---------|----------|--------|--------|
-| 1 | 2026-02-12 | Standards | foo.tsx:15 | ... | Medium | Deferred | Review from Task XY |
-
-## Done
-
-| # | Date | Done at | Category | File:Line | Finding | Severity |
-|---|------|---------|----------|-----------|---------|----------|
-```
-
-**Rules:**
-1. New entries go under `## Open`
-2. **Date** = date of the review where the finding occurred
-3. **Source** = short description of the task/feature where the finding occurred
-4. **No duplicates** — check if finding already exists before adding
-5. **Done items** move from `## Open` to `## Done` (with "Done at" date)
-6. **Clean up backlog** — if a file/line changed through other modifications, update or remove finding if no longer relevant
-
-### Commit Gate
-
-**Only when ALL review steps (A, B, optionally C+D) are completed and all ⚠️/❌ findings are fixed → commit.**
-
-If issues are found: Fix → re-run checks → re-review affected categories → then commit.
-
----
-
-## Refactoring Guidelines
-
-### When to Refactor
-
-Evaluate refactoring opportunities when the codebase has grown significantly. This does NOT happen automatically — only when:
-- The user explicitly requests a refactoring pass
-- During code review, a pattern of repeated code smells emerges across multiple files
-- A new feature implementation is significantly harder than expected due to code structure
-
-### Refactoring Principles
-
-1. **No over-engineering** — Only refactor what provides measurable benefit (readability, maintainability, performance)
-2. **AI-optimized code structure** — This code is primarily maintained by AI agents, therefore:
-   - Prefer explicit over implicit patterns (easier for AI to parse and modify)
-   - Keep files focused and single-responsibility (AI works better with smaller, clear files)
-   - Use descriptive naming over clever abstractions
-   - Maintain consistent patterns across similar components (AI can pattern-match)
-   - Document non-obvious decisions inline (AI lacks project history context)
-3. **Follow framework idioms** — Use current React 19 + TypeScript best practices, not custom abstractions
-4. **Incremental refactoring** — Break into small, reviewable chunks. Each chunk must pass the full review cycle.
-5. **Extract, don't abstract** — Prefer extracting into focused files over creating abstract base classes or complex generics
-
-### Refactoring Notes
-
-- **`FavoriteRow.tsx` (~636 lines)** — God component handling data fetching, caching, UI menus, state management, and event handling. Should be split into sub-components (`FavoriteRowHeader`, `FavoriteRowMenus`, `FavoriteRowVideos`) and a custom `useFavoriteRowData()` hook.
-- **Duplicate event listener patterns** — Multiple components use raw `window.addEventListener('favorites-changed', ...)` instead of the type-safe `useEventBus()` hook from `eventBus.ts`. Should be migrated consistently.
-- **Hard-coded German strings in API client** — `youtubeApiClient.ts` contains German error messages (`'YouTube API Key fehlt.'`, `'Der eingegebene API Key ist ungültig.'`) instead of i18n translation keys. Should use `t()` or throw error codes that the UI translates.
-- **Magic numbers in trend analysis** — `trendAnalysisService.ts` uses hardcoded thresholds (e.g., `viewsPerHour > 10000`, `engagementRate > 10`, `ageInHours < 2`) and scoring weights (`0.7`, `0.3`). Should be extracted to named constants.
-- **Module-level API key state** — `youtubeApiClient.ts` stores the API key both in a module-level variable and localStorage, risking sync issues. Could be simplified to read from storage directly.
-- **No test coverage** — No test setup exists. Critical services (`favoritesService`, `trendAnalysisService`, `quotaService`, `eventBus`) would benefit from unit tests.
-- **Complex `useEffect` chains in FavoriteRow** — Multiple interdependent `useEffect` hooks with complex dependency arrays and refs for synchronization. Should be extracted into a custom hook.
+Full details: `agent_docs/refactoring_guidelines.md`
 
 ---
 
@@ -228,20 +66,19 @@ Repository: `https://github.com/fo0/tubetrend`
 | Component | Technology | Version |
 |-----------|-----------|---------|
 | Runtime | Node.js | 22+ |
-| Language | TypeScript | ~5.8.2 |
+| Language | TypeScript | ~5.9.3 |
 | UI Framework | React | ^19.2.0 |
-| Build Tool | Vite | ^6.2.0 |
+| Build Tool | Vite | ^7.3.1 |
 | Vite Plugin | @vitejs/plugin-react | ^5.0.0 |
-| CSS Framework | Tailwind CSS | ^3.4 (PostCSS bundled) |
-| CSS Tooling | PostCSS + Autoprefixer | ^8.5 / ^10.4 |
+| CSS Framework | Tailwind CSS | ^4.2.2 (@tailwindcss/vite plugin) |
 | Font | @fontsource/inter | ^5.2 (locally bundled) |
-| Icons | Lucide React | ^0.554.0 |
-| i18n | i18next + react-i18next | ^23.15.1 / ^15.5.2 |
-| Language Detection | i18next-browser-languagedetector | ^7.2.1 |
+| Icons | Lucide React | ^1.7.0 |
+| i18n | i18next + react-i18next | ^26.0.1 / ^16.5.4 |
+| Language Detection | i18next-browser-languagedetector | ^8.2.1 |
 | Package Manager | npm | (lockfile v3) |
-| Electron Integration | vite-plugin-electron (conditional) | ^0.28.8 |
-| Desktop App | Electron | ^35.0.0 |
-| Desktop Packaging | electron-builder | ^26.0.0 |
+| Electron Integration | vite-plugin-electron (conditional) | ^0.29.0 |
+| Desktop App | Electron | ^41.1.0 |
+| Desktop Packaging | electron-builder | ^26.8.1 |
 | Android Build | Capacitor | ^8.1.0 |
 | Container | Docker (multi-stage) | Node 22-alpine + Nginx alpine |
 | Chrome Extension | Manifest V3 | Tab-based, manual install via chrome://extensions/ |
@@ -320,20 +157,22 @@ tubetrend/
 │   ├── workflows/                    # CI: pr-checks.yml, docker-publish.yml, electron-release.yml, android-release.yml, extension-release.yml
 │   ├── ISSUE_TEMPLATE/              # Bug report & feature request templates
 │   └── pull_request_template.md
-├── docs/                             # Documentation images
+├── agent_docs/                        # Agent process docs (review, backlog, memory, API ref, refactoring)
+├── docs/                             # Documentation (images, architecture diagram)
+│   └── ARCHITECTURE.mmd             # Mermaid architecture diagram (generated)
 ├── .junie/guidelines.md              # JetBrains Junie agent guidelines
 ├── index.html                        # Vite entry: theme FOUC prevention script
 ├── index.css                         # Root-level global CSS
 ├── package.json                      # Dependencies & scripts
 ├── tsconfig.json                     # TypeScript strict config with path aliases
-├── tailwind.config.js                # Tailwind CSS v3 config (darkMode: class, Inter font)
-├── postcss.config.js                 # PostCSS config (Tailwind + Autoprefixer)
-├── vite.config.ts                    # Vite config: aliases, build info, dev server (port 3000), conditional vite-plugin-electron
+├── postcss.config.js                 # Empty (PostCSS handled by Vite internally since Tailwind v4)
+├── vite.config.ts                    # Vite config: aliases, @tailwindcss/vite, build info, dev server (port 3000), conditional vite-plugin-electron
 ├── Dockerfile                        # Multi-stage: Node builder → Nginx runner
 ├── docker-compose.yml                # ghcr.io/fo0/tubetrend:latest on port 8889
 ├── metadata.json                     # App metadata (name, description)
 ├── .env.example                      # Environment variable template
-├── CLAUDE.md                         # This file
+├── CLAUDE.md                         # This file — agent project guide
+├── MEMORY.md                         # Agent long-term memory (session-spanning context)
 ├── README.md                         # User-facing project documentation
 ├── BACKLOG.md                        # Deferred review findings
 ├── CONTRIBUTING.md                   # Contribution guidelines
@@ -375,38 +214,11 @@ docker-compose up        # Run production image at http://localhost:8889
 docker run -d -p 8889:80 ghcr.io/fo0/tubetrend:latest  # Run directly
 ```
 
-## External Interfaces
+## API / Interfaces
 
-### YouTube Data API v3
+YouTube Data API v3 (REST, API key auth). All calls go through `youtubeApiClient.ts`. Client-side storage via localStorage with type-safe `StorageAdapter`.
 
-The app communicates exclusively with the YouTube Data API v3. All calls go through `youtubeApiClient.ts`.
-
-| Endpoint | API Cost | Description |
-|----------|----------|-------------|
-| `search` | 100 units | Search videos by keyword or channel, supports pagination |
-| `videos` | 1 unit | Fetch video details (statistics, snippet, contentDetails) |
-| `channels` | 1 unit | Resolve channel ID from handle/URL/name |
-
-**API Key:** User-provided via modal, stored in `localStorage` key `yt_api_key`. Daily quota limit: 10,000 units (free tier).
-
-### Client-Side Storage (localStorage)
-
-| Key | Purpose | Used by |
-|-----|---------|---------|
-| `yt_api_key` | YouTube API key | `youtubeApiClient.ts` |
-| `yt_channel_cache` | Channel ID ↔ name resolution cache | `channelService.ts` |
-| `yt_autocomplete_cache_v2` | Autocomplete suggestions cache (TTL: 5 min) | `channelService.ts` |
-| `tt.favorites.v1` | Favorites list (channels + keywords) | `favoritesService.ts` |
-| `tt.favorites.cache.v1` | Cached video data per favorite (TTL: 2 hours) | `favoritesService.ts` |
-| `tt.dashboard.sort.v1` | Dashboard sort field | `useDashboard.ts` |
-| `tt.dashboard.sortOrder.v1` | Dashboard sort order (asc/desc) | `useDashboard.ts` |
-| `tt.dashboard.hiddenHighlights.v1` | Hidden highlight video IDs | `hiddenHighlightsService.ts` |
-| `tt.search.timeframe` | Search timeframe preference | `InputSection.tsx` |
-| `tt.search.maxResults` | Search max results preference | `InputSection.tsx` |
-| `tt.search.history` | Search input history | `InputSection.tsx` |
-| `tt.lang.explicit` | Explicit language selection | `i18n/config.ts` |
-| `tt.theme` | Theme preference (light/dark/system) | `ThemeProvider.tsx` |
-| `tt.quota.tracking` | API quota usage tracking & history | `quotaService.ts` |
+Full API reference: `agent_docs/api-reference.md`
 
 ## Key Patterns
 
@@ -470,7 +282,7 @@ Each feature in `src/features/` follows a consistent structure:
 - **Imports**: Always use path aliases (`@features/`, `@shared/`, `@providers/`, `@i18n/`). Use `import type` for type-only imports.
 - **Exports**: Feature modules export via barrel files (`index.ts`)
 - **Components**: Functional components with hooks. One class component for `ErrorBoundary`.
-- **Styling**: Tailwind CSS utility classes with `dark:` variants, processed via PostCSS at build time. No CSS modules or styled-components.
+- **Styling**: Tailwind CSS v4 utility classes with `dark:` variants via `@tailwindcss/vite` plugin. No CSS modules or styled-components.
 - **State**: Distributed via custom hooks + localStorage. React Context only for theme. No external state library.
 - **Error handling**: Try-catch with fallback values for storage. Custom `YouTubeApiError` class for API errors. `ErrorBoundary` for fatal React crashes.
 
@@ -520,7 +332,7 @@ npm test
 
 ### Architecture Decisions
 - **No router library** — Simple state-based page switching (`activePage` state in `App.tsx`). Sufficient for a 2-page app.
-- **Tailwind via PostCSS** — Build-time processing via PostCSS plugin. Enables tree-shaking, offline capability, and custom font bundling. Inter font loaded via `@fontsource/inter`.
+- **Tailwind via @tailwindcss/vite** — Tailwind CSS v4 integrated as Vite plugin (not PostCSS). Enables tree-shaking, offline capability, and custom font bundling. Inter font loaded via `@fontsource/inter`. Config in `src/styles/index.css` using CSS-first approach (`@import "tailwindcss"`, `@custom-variant dark`).
 - **No external state library** — Distributed hooks + event bus. Works well given the app's complexity level.
 - **Trend scoring is pure math** — `trendAnalysisService.ts` does not call any external AI API. Comment in code confirms this.
 - **Electron as optional wrapper** — The `electron/` directory wraps the same `dist/` output in a desktop app. Zero changes to `src/` code. `vite-plugin-electron` is conditionally loaded only when `ELECTRON=true` env var is set, keeping the web app completely unaffected. The web/Docker deployment is the primary delivery method; Electron is an alternative distribution channel.
