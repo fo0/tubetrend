@@ -41,7 +41,7 @@
   },
   "dependencies": {
     "@capacitor/android": "^8.1.0",
-    "@capacitor/core": "^8.1.0",
+    "@capacitor/core": "^8.3.0",
     "@fontsource/inter": "^5.2.8",
     "i18next": "^26.0.1",
     "i18next-browser-languagedetector": "^8.2.1",
