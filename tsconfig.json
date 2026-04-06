@@ -27,9 +27,7 @@
       "@shared/*": ["./src/shared/*"],
       "@providers/*": ["./src/providers/*"],
       "@i18n/*": ["./src/i18n/*"]
-    },
-
-    "baseUrl": "."
+    }
   },
   "include": ["src/**/*", "*.tsx", "*.ts", "components/**/*", "services/**/*", "utils/**/*"],
   "exclude": ["node_modules", "dist", "electron", "chrome-extension"]
