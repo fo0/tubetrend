@@ -66,14 +66,14 @@ Repository: `https://github.com/fo0/tubetrend`
 | Component | Technology | Version |
 |-----------|-----------|---------|
 | Runtime | Node.js | 22+ |
-| Language | TypeScript | ~5.9.3 |
+| Language | TypeScript | ~6.0.2 |
 | UI Framework | React | ^19.2.0 |
-| Build Tool | Vite | ^7.3.1 |
-| Vite Plugin | @vitejs/plugin-react | ^5.0.0 |
+| Build Tool | Vite | ^8.0.3 |
+| Vite Plugin | @vitejs/plugin-react | ^6.0.1 |
 | CSS Framework | Tailwind CSS | ^4.2.2 (@tailwindcss/vite plugin) |
 | Font | @fontsource/inter | ^5.2 (locally bundled) |
 | Icons | Lucide React | ^1.7.0 |
-| i18n | i18next + react-i18next | ^26.0.1 / ^16.5.4 |
+| i18n | i18next + react-i18next | ^26.0.3 / ^17.0.2 |
 | Language Detection | i18next-browser-languagedetector | ^8.2.1 |
 | Package Manager | npm | (lockfile v3) |
 | Electron Integration | vite-plugin-electron (conditional) | ^0.29.0 |

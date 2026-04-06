@@ -10,6 +10,10 @@ Session-spanning project knowledge. **Read at session start, update during work.
 
 - **Lucide React 1.x breaking change** — Lucide React migrated from 0.x to 1.x. Some brand icons (YouTube, GitHub) were removed in v0.577+ and replaced with custom SVG components. Check for removed icons when updating. (2026-04-03)
 
+- **Vite 8 + Rolldown migration (2026-04)** — Vite 8 replaces Rollup with Rolldown. `rollupOptions` still works via compatibility layer but is deprecated; migrate to `rolldownOptions` when vite-plugin-electron has a stable Vite 8 release. `vite-plugin-electron` 0.29.1 has no explicit Vite 8 support but works for web builds. Electron desktop builds may need `vite-plugin-electron@1.0.0+` when stable. Build time dropped from ~7s to ~1s. (2026-04-06)
+
+- **TypeScript 6 defaults changed (2026-04)** — TS 6 changes many defaults (types=[], esModuleInterop=true, noUncheckedSideEffectImports=true). Our tsconfig explicitly sets most values so impact was minimal. `baseUrl` is deprecated in TS 6 — removed it since paths already use `"./"` prefixes. (2026-04-06)
+
 ## Working Context
 
 ## Failed Approaches
