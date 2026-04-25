@@ -3,6 +3,7 @@ import type {FavoriteConfig} from '@/src/features/favorites/types';
 import {favoritesService} from '@/src/features/favorites';
 import type {DashboardSortMode, SortOrder} from '@/src/shared/types';
 import {STORAGE_KEYS} from '@/src/shared/constants';
+import {getLocale} from '@/src/shared/lib/locale';
 
 /**
  * Hook for managing favorites state with event-driven updates
@@ -158,7 +159,7 @@ export function useDashboardSort() {
         return arr.sort((a, b) => {
           const an = (a.label || a.query || '').toString();
           const bn = (b.label || b.query || '').toString();
-          const cmp = an.localeCompare(bn, 'de', { sensitivity: 'base' });
+          const cmp = an.localeCompare(bn, getLocale(), { sensitivity: 'base' });
           return sortOrder === 'asc' ? cmp : -cmp;
         });
       }
@@ -192,7 +193,7 @@ export function useDashboardSort() {
 
         const an = (a.label || a.query || '').toString();
         const bn = (b.label || b.query || '').toString();
-        return an.localeCompare(bn, 'de', { sensitivity: 'base' });
+        return an.localeCompare(bn, getLocale(), { sensitivity: 'base' });
       });
     },
     [sortMode, sortOrder, cacheTick]

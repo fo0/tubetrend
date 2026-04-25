@@ -2,10 +2,14 @@
  * Formatting utilities
  */
 
+import {getLocale} from './locale';
+
 /**
- * Format a number with locale-aware thousands separators
+ * Format a number with locale-aware thousands separators.
+ * Defaults to the active i18n language so output follows the user's
+ * chosen UI language rather than a fixed locale.
  */
-export function formatNumber(value: number, locale = 'de-DE'): string {
+export function formatNumber(value: number, locale: string = getLocale()): string {
   return new Intl.NumberFormat(locale).format(value);
 }
 

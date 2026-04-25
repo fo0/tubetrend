@@ -12,6 +12,7 @@ import {
   hiddenHighlightsService,
   selectHighlightVideosFromFavorites
 } from '@/src/features/dashboard';
+import {getLocale} from '@/src/shared/lib/locale';
 import type {DashboardSortMode} from '@/src/shared/types';
 
 interface DashboardPageProps {
@@ -78,7 +79,7 @@ export function DashboardPage({
       const aTs = typeof a.video?.trendingScore === 'number' ? a.video.trendingScore : -1;
       const bTs = typeof b.video?.trendingScore === 'number' ? b.video.trendingScore : -1;
       if (aTs !== bTs) return bTs - aTs;
-      return a.sourceLabel.localeCompare(b.sourceLabel, 'de', { sensitivity: 'base' });
+      return a.sourceLabel.localeCompare(b.sourceLabel, getLocale(), { sensitivity: 'base' });
     });
 
     const visible = sorted.filter(

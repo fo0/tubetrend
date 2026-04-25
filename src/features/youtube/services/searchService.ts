@@ -1,7 +1,9 @@
 import type {ChannelVideosResult, QuotaCallContext, YouTubeVideoItem} from '@/src/shared/types';
 import {TimeFrame} from '@/src/shared/types';
 import {AUTO_LIMIT_KEYWORD} from '@/src/shared/constants';
-import {getPublishedAfterDate} from '@/src/shared/lib/dateUtils';
+import {getPublishedAfterDate, parseISO8601DurationToSeconds} from '@/src/shared/lib/dateUtils';
+
+const SHORTS_DURATION_THRESHOLD_SECONDS = 180;
 import {fetchFromApi} from './youtubeApiClient';
 
 /**
@@ -91,18 +93,10 @@ export async function searchVideosByKeyword(
 
     return videoData.items
       .filter((item: any) => {
-        const duration = item.contentDetails?.duration;
-        if (!duration) return true;
-
-        const match = duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
-        let seconds = 0;
-        if (match) {
-          const h = parseInt(match[1]?.replace('H', '') || '0');
-          const m = parseInt(match[2]?.replace('M', '') || '0');
-          const s = parseInt(match[3]?.replace('S', '') || '0');
-          seconds = h * 3600 + m * 60 + s;
-        }
-        return seconds >= 180; // Filter shorts
+        const seconds = parseISO8601DurationToSeconds(item.contentDetails?.duration);
+        // Keep videos whose duration is unknown; only filter confirmed shorts.
+        if (seconds === null) return true;
+        return seconds >= SHORTS_DURATION_THRESHOLD_SECONDS;
       })
       .map((item: any) => ({
         id: item.id,
