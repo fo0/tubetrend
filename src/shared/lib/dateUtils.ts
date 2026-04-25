@@ -97,3 +97,18 @@ export function isWithinTimeFrame(timestamp: number, timeFrame: TimeFrame): bool
   const cutoffTime = getCutoffTime(timeFrame);
   return timestamp >= cutoffTime;
 }
+
+/**
+ * Parse a YouTube ISO 8601 duration (e.g. "PT1H23M45S") into total seconds.
+ * Returns null when the string cannot be parsed — callers decide the policy
+ * (e.g. include or exclude videos with unknown duration).
+ */
+export function parseISO8601DurationToSeconds(duration: string | undefined | null): number | null {
+  if (!duration) return null;
+  const match = duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
+  if (!match) return null;
+  const h = parseInt(match[1]?.replace('H', '') || '0', 10);
+  const m = parseInt(match[2]?.replace('M', '') || '0', 10);
+  const s = parseInt(match[3]?.replace('S', '') || '0', 10);
+  return h * 3600 + m * 60 + s;
+}
