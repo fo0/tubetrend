@@ -7,8 +7,9 @@
 
 import {safeRead, safeWrite} from '@/src/shared/lib/storage';
 import {dispatchEvent} from '@/src/shared/lib/eventBus';
+import {STORAGE_KEYS} from '@/src/shared/constants';
 
-const HIDDEN_HIGHLIGHTS_KEY = 'tt.dashboard.hiddenHighlights.v1';
+const HIDDEN_HIGHLIGHTS_KEY = STORAGE_KEYS.HIDDEN_HIGHLIGHTS;
 
 export interface HiddenHighlight {
   videoId: string;   // Eindeutige Video-ID (primärer Schlüssel)

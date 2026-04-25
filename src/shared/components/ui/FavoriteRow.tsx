@@ -18,7 +18,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import {Youtube} from '@/src/shared/components/ui/BrandIcons';
-import {MAX_RESULTS_OPTIONS, TIME_FRAMES} from '@/src/shared/constants';
+import {MAX_RESULTS_OPTIONS, STORAGE_KEYS, TIME_FRAMES} from '@/src/shared/constants';
 import {useTranslation} from 'react-i18next';
 
 interface FavoriteRowProps {
@@ -339,7 +339,7 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, on
 
     let cancelled = false;
     // Ohne API-Key kein Versuch, die Metadaten zu laden
-    const hasKey = typeof window !== 'undefined' && !!localStorage.getItem('yt_api_key');
+    const hasKey = typeof window !== 'undefined' && !!localStorage.getItem(STORAGE_KEYS.API_KEY);
     if (!hasKey) return;
 
     // Kurze Verzögerung um dem Haupt-useEffect Zeit zu geben, Cache-Daten zu laden
