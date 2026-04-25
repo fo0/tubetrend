@@ -13,10 +13,13 @@ export async function analyzeVideoStats(
 
   return videos.map((video) => {
     const publishedAt = new Date(video.snippet.publishedAt).getTime();
-    const ageInHours = Math.max(1, (now - publishedAt) / (1000 * 60 * 60));
-    const views = parseInt(video.statistics?.viewCount || '0', 10);
-    const likes = parseInt(video.statistics?.likeCount || '0', 10);
-    const comments = parseInt(video.statistics?.commentCount || '0', 10);
+    const rawAgeHours = Number.isFinite(publishedAt)
+      ? (now - publishedAt) / (1000 * 60 * 60)
+      : 1;
+    const ageInHours = Math.max(1, Number.isFinite(rawAgeHours) ? rawAgeHours : 1);
+    const views = parseInt(video.statistics?.viewCount || '0', 10) || 0;
+    const likes = parseInt(video.statistics?.likeCount || '0', 10) || 0;
+    const comments = parseInt(video.statistics?.commentCount || '0', 10) || 0;
 
     // Calculate views per hour (velocity)
     const viewsPerHour = views / ageInHours;

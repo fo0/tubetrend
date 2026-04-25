@@ -8,6 +8,7 @@ import {
   getChannelQueryType,
   getVideosFromChannel,
   searchVideosByKeyword,
+  YouTubeApiError,
 } from '@/src/features/youtube';
 
 export interface SearchState {
@@ -92,11 +93,16 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
         });
       } catch (err: any) {
         console.error(err);
-        const errorMessage = err.message || 'Fehler bei der Analyse.';
+        const errorMessage = err?.message || 'Fehler bei der Analyse.';
 
-        if (errorMessage.includes('API key not valid') || errorMessage.includes('403')) {
+        const isApiKeyInvalid =
+          err instanceof YouTubeApiError && err.status === 403 && !err.isQuotaError;
+
+        if (isApiKeyInvalid) {
           setSearchState((prev) => ({
             ...prev,
+            isLoading: false,
+            step: 'idle',
             error: 'Der API Key scheint ungültig zu sein. Bitte überprüfe ihn.',
           }));
           options?.onApiKeyInvalid?.();

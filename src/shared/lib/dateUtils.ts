@@ -5,10 +5,18 @@ import {TimeFrame} from '../types';
  */
 
 /**
- * Get today's date as YYYY-MM-DD string
+ * Get today's date as YYYY-MM-DD string in America/Los_Angeles timezone.
+ * YouTube API quota resets at midnight Pacific Time, so daily tracking
+ * must be anchored to that timezone — not UTC.
  */
 export function getTodayDateString(): string {
-  return new Date().toISOString().split('T')[0];
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Los_Angeles',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date());
+  return parts; // en-CA produces YYYY-MM-DD
 }
 
 /**

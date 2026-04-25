@@ -54,13 +54,14 @@ export async function fetchFromApi<T>(
 
   if (!response.ok) {
     if (data.error) {
-      const msg = data.error.message;
+      const msg: string = typeof data.error.message === 'string' ? data.error.message : '';
+      const lower = msg.toLowerCase();
 
-      if (msg.includes('API key not valid')) {
+      if (lower.includes('api key not valid')) {
         throw new YouTubeApiError('Der eingegebene API Key ist ungültig.', 403);
       }
 
-      if (msg.includes('quota')) {
+      if (lower.includes('quota')) {
         quotaService.markExhausted();
         throw new YouTubeApiError('YouTube API Quota überschritten.', 403, true);
       }
@@ -70,7 +71,10 @@ export async function fetchFromApi<T>(
         quotaService.track(cost, endpoint, context);
       }
 
-      throw new YouTubeApiError(`YouTube API Fehler: ${msg}`, response.status);
+      throw new YouTubeApiError(
+        msg ? `YouTube API Fehler: ${msg}` : `YouTube API Fehler (${response.status})`,
+        response.status,
+      );
     }
 
     if (response.status >= 400 && response.status < 500) {
