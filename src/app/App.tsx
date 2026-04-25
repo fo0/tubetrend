@@ -17,6 +17,7 @@ import type {FavoriteConfig} from '@/src/features/favorites/types';
 import type {VideoData} from '@/src/features/videos/types';
 import type {SearchType, TimeFrame} from '@/src/shared/types';
 import {STORAGE_KEYS} from '@/src/shared/constants';
+import {dispatchEvent} from '@/src/shared/lib/eventBus';
 
 const App: React.FC = () => {
   const { t } = useTranslation();
@@ -45,13 +46,14 @@ const App: React.FC = () => {
   const { sortMode, sortOrder, cacheTick, handleSortClick, sortFavorites } = useDashboardSort();
   const { hiddenTick } = useHighlights(favorites);
 
-  const { searchState, handleSearch, setSearchResult } = useSearch(apiKey, {
-    onApiKeyInvalid: () => {
-      setYoutubeApiKey('');
-      setApiKey(null);
-      setIsApiKeyModalOpen(true);
-    },
-  });
+  const onApiKeyInvalid = useCallback(() => {
+    setYoutubeApiKey('');
+    setApiKey(null);
+    setIsApiKeyModalOpen(true);
+  }, []);
+
+  const searchOptions = useMemo(() => ({ onApiKeyInvalid }), [onApiKeyInvalid]);
+  const { searchState, handleSearch, setSearchResult } = useSearch(apiKey, searchOptions);
 
   // Sorted favorites
   const sortedFavorites = useMemo(() => sortFavorites(favorites), [favorites, sortFavorites]);
@@ -138,12 +140,7 @@ const App: React.FC = () => {
     }
 
     loadFavorites();
-
-    try {
-      window.dispatchEvent(new CustomEvent('favorites-cache-updated', { detail: { id: '*' } }));
-    } catch {
-      // ignore
-    }
+    dispatchEvent('favorites-cache-updated', { id: '*' });
 
     window.alert(t('backup.importSuccess', { count }));
   }, [loadFavorites, t]);

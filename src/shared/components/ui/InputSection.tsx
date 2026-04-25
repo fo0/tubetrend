@@ -1,7 +1,7 @@
 import React, {useEffect, useRef, useState} from 'react';
 import type {ChannelSuggestion} from '@/src/shared/types';
 import {coerceTimeFrame, SearchType, TimeFrame} from '@/src/shared/types';
-import {MAX_RESULTS_OPTIONS, TIME_FRAMES} from '@/src/shared/constants';
+import {MAX_RESULTS_OPTIONS, STORAGE_KEYS, TIME_FRAMES} from '@/src/shared/constants';
 import {Hash, History, Link2, ListFilter, Loader2, Search, Star, X} from 'lucide-react';
 import {Youtube} from '@/src/shared/components/ui/BrandIcons';
 import {extractChannelIdentifier, searchChannels} from '@/src/features/youtube';
@@ -81,11 +81,11 @@ export const InputSection: React.FC<InputSectionProps> = ({
   // Load last selected timeframe and max results from localStorage once
   useEffect(() => {
     try {
-      const tf = localStorage.getItem('tt.search.timeframe');
+      const tf = localStorage.getItem(STORAGE_KEYS.SEARCH_TIMEFRAME);
       if (tf) {
         setTimeFrame(coerceTimeFrame(tf));
       }
-      const mr = localStorage.getItem('tt.search.maxResults');
+      const mr = localStorage.getItem(STORAGE_KEYS.SEARCH_MAX_RESULTS);
       if (mr) {
         const n = parseInt(mr, 10);
         if (!Number.isNaN(n)) {
@@ -122,8 +122,8 @@ export const InputSection: React.FC<InputSectionProps> = ({
   // Persist timeframe and maxResults on change
   useEffect(() => {
     try {
-      localStorage.setItem('tt.search.timeframe', timeFrame);
-      localStorage.setItem('tt.search.maxResults', String(maxResults));
+      localStorage.setItem(STORAGE_KEYS.SEARCH_TIMEFRAME, timeFrame);
+      localStorage.setItem(STORAGE_KEYS.SEARCH_MAX_RESULTS, String(maxResults));
     } catch (e) {
       // ignore storage errors
     }
@@ -132,7 +132,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
   // Load history from storage once
   useEffect(() => {
     try {
-      const raw = localStorage.getItem('tt.search.history');
+      const raw = localStorage.getItem(STORAGE_KEYS.SEARCH_HISTORY);
       if (raw) {
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed)) setHistory(parsed.filter((x) => typeof x === 'string'));
@@ -156,7 +156,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
 
   const persistHistory = (next: string[]) => {
     try {
-      localStorage.setItem('tt.search.history', JSON.stringify(next));
+      localStorage.setItem(STORAGE_KEYS.SEARCH_HISTORY, JSON.stringify(next));
     } catch (e) {
       // ignore
     }
