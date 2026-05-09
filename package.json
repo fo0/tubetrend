@@ -40,29 +40,29 @@
     "build:extension": "vite build && node scripts/build-extension.mjs"
   },
   "dependencies": {
-    "@capacitor/android": "^8.3.1",
-    "@capacitor/core": "^8.3.1",
+    "@capacitor/android": "^8.3.3",
+    "@capacitor/core": "^8.3.3",
     "@fontsource/inter": "^5.2.8",
-    "i18next": "^26.0.8",
+    "i18next": "^26.0.10",
     "i18next-browser-languagedetector": "^8.2.1",
     "lucide-react": "^1.14.0",
-    "react": "^19.2.5",
-    "react-dom": "^19.2.5",
-    "react-i18next": "^17.0.6"
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "react-i18next": "^17.0.7"
   },
   "devDependencies": {
-    "@capacitor/cli": "^8.3.1",
-    "@tailwindcss/vite": "^4.2.4",
-    "@types/node": "^25.6.0",
+    "@capacitor/cli": "^8.3.3",
+    "@tailwindcss/vite": "^4.3.0",
+    "@types/node": "^25.6.2",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
     "electron": "^41.5.0",
     "electron-builder": "^26.8.1",
-    "postcss": "^8.5.13",
+    "postcss": "^8.5.14",
     "tailwindcss": "^4.2.4",
     "typescript": "~6.0.3",
-    "vite": "^8.0.10",
+    "vite": "^8.0.11",
     "vite-plugin-electron": "^0.29.1"
   }
 }
