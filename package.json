@@ -43,7 +43,7 @@
     "@capacitor/android": "^8.3.3",
     "@capacitor/core": "^8.3.3",
     "@fontsource/inter": "^5.2.8",
-    "i18next": "^26.0.10",
+    "i18next": "^26.1.0",
     "i18next-browser-languagedetector": "^8.2.1",
     "lucide-react": "^1.14.0",
     "react": "^19.2.6",
@@ -62,7 +62,7 @@
     "postcss": "^8.5.14",
     "tailwindcss": "^4.2.4",
     "typescript": "~6.0.3",
-    "vite": "^8.0.11",
+    "vite": "^8.0.12",
     "vite-plugin-electron": "^0.29.1"
   }
 }
