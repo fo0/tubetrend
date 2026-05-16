@@ -2,7 +2,7 @@ import React, {useEffect, useMemo, useRef, useState} from 'react';
 import type {FavoriteConfig} from '@/src/features/favorites';
 import type {VideoData} from '@/src/features/videos';
 import {SearchType} from '@/src/shared/types';
-import type {TimeFrame} from '@/src/shared/types';
+import type {TimeFrame, YouTubeVideoItem} from '@/src/shared/types';
 import {favoritesService} from '@/src/features/favorites';
 import {analyzeVideoStats} from '@/src/features/videos';
 import {findChannelInfo, getChannelQueryType, getVideosFromChannel, searchVideosByKeyword} from '@/src/features/youtube';
@@ -233,7 +233,7 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, on
         if (cancelled) return;
       }
       try {
-        let apiVideos: any[];
+        let apiVideos: YouTubeVideoItem[];
         let displayName: string;
         let fetchedChannelId: string | undefined;
         let totalInTimeFrame: number;

@@ -1,5 +1,5 @@
 import {useCallback, useState} from 'react';
-import type {SearchType, TimeFrame} from '@/src/shared/types';
+import type {SearchType, TimeFrame, YouTubeVideoItem} from '@/src/shared/types';
 import {SearchType as ST} from '@/src/shared/types';
 import type {VideoData} from '@/src/features/videos/types';
 import {analyzeVideoStats} from '@/src/features/videos';
@@ -58,7 +58,7 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
       }));
 
       try {
-        let apiVideos: any[];
+        let apiVideos: YouTubeVideoItem[];
         let displayName: string;
         let channelId: string | undefined;
 
