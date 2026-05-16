@@ -20,13 +20,18 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ onSave }) => {
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-white/80 dark:bg-slate-950/80 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="apikey-modal-title"
+        className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden"
+      >
         <div className="p-6 md:p-8 space-y-6">
           <div className="text-center space-y-2">
             <div className="w-16 h-16 bg-red-600/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-500/20">
               <Key className="w-8 h-8 text-red-500" />
             </div>
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{t('modal.apiKey.title')}</h2>
+            <h2 id="apikey-modal-title" className="text-2xl font-bold text-slate-900 dark:text-white">{t('modal.apiKey.title')}</h2>
             <p className="text-slate-500 dark:text-slate-400">{t('modal.apiKey.description')}</p>
           </div>
 
@@ -59,6 +64,7 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ onSave }) => {
           <div className="pt-4 border-t border-slate-200 dark:border-slate-800">
             <button
               onClick={() => setShowHelp(!showHelp)}
+              aria-expanded={showHelp}
               className="flex items-center gap-2 text-indigo-500 dark:text-indigo-400 text-sm hover:text-indigo-400 dark:hover:text-indigo-300 transition-colors mx-auto"
             >
               <HelpCircle className="w-4 h-4" />
