@@ -52,7 +52,13 @@ export async function searchVideosByKeyword(
       break;
     }
 
-    const videoIds = searchData.items.map((item: any) => item.id.videoId);
+    // Search API can occasionally return items without `id.videoId` (e.g. if
+    // the response includes a non-video kind despite `type=video`). Filter
+    // falsy values to avoid pushing `undefined` into the IDs list, which
+    // would later corrupt the comma-joined `id` parameter to /videos.
+    const videoIds = searchData.items
+      .map((item: any) => item.id?.videoId)
+      .filter((id: unknown): id is string => typeof id === 'string' && id.length > 0);
     allVideoIds = [...allVideoIds, ...videoIds];
 
     nextPageToken = searchData.nextPageToken;
