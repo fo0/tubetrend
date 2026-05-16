@@ -6,6 +6,7 @@
   },
   "actions": {
     "search": "Search",
+    "clearSearch": "Clear search",
     "resetApiKey": "Delete API key",
     "refreshAll": "Refresh all",
     "remove": "Remove",
@@ -13,6 +14,13 @@
     "analyze": "Analyze",
     "importDashboard": "Import",
     "exportDashboard": "Export"
+  },
+  "nav": {
+    "main": "Main navigation"
+  },
+  "emptyState": {
+    "title": "No results",
+    "description": "Try different search terms or filters."
   },
   "labels": {
     "search": "Search",
