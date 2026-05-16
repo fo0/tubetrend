@@ -69,6 +69,17 @@ export const dashboardBackupService = {
         return { ok: false, payload: parsed };
       }
 
+      // favoritesCache must be a plain object (Record<string, FavoriteCacheEntry>).
+      // Without this guard, importing a malformed backup writes `"undefined"` to
+      // localStorage via JSON.stringify(undefined) and corrupts the cache on next read.
+      if (
+        typeof parsed.data.favoritesCache !== 'object' ||
+        parsed.data.favoritesCache === null ||
+        Array.isArray(parsed.data.favoritesCache)
+      ) {
+        return { ok: false, payload: parsed };
+      }
+
       return { ok: true, payload: parsed as DashboardBackupPayload };
     } catch {
       return {
