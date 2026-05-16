@@ -13,7 +13,7 @@ import {useTranslation} from 'react-i18next';
 // - If VITE_DEFAULT_SEARCH is set, use that value.
 // - Else: in dev mode default to 'TEDx', in prod default to empty string.
 const DEFAULT_SEARCH_INPUT: string = (
-  (import.meta as any)?.env?.VITE_DEFAULT_SEARCH ?? (((import.meta as any)?.env?.DEV) ? 'TEDx' : '')
+  import.meta.env.VITE_DEFAULT_SEARCH ?? (import.meta.env.DEV ? 'TEDx' : '')
 );
 
 interface InputSectionProps {
