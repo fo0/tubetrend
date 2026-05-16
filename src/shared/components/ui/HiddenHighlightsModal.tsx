@@ -53,10 +53,15 @@ export const HiddenHighlightsModal: React.FC<HiddenHighlightsModalProps> = ({ is
       />
       
       {/* Modal */}
-      <div className="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] mx-4 flex flex-col overflow-hidden border border-slate-200 dark:border-slate-700">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="hidden-highlights-modal-title"
+        className="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] mx-4 flex flex-col overflow-hidden border border-slate-200 dark:border-slate-700"
+      >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700">
-          <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+          <h2 id="hidden-highlights-modal-title" className="text-lg font-bold text-slate-900 dark:text-white">
             {t('dashboard.highlights.hiddenModalTitle')}
           </h2>
           <button
@@ -80,62 +85,47 @@ export const HiddenHighlightsModal: React.FC<HiddenHighlightsModalProps> = ({ is
               {hiddenItems.map((item) => (
                 <li
                   key={item.videoId}
-                  className="flex items-center gap-4 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700"
+                  className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
                 >
                   {/* Thumbnail */}
-                  {item.thumbnailUrl ? (
+                  {item.thumbnailUrl && (
                     <img
                       src={item.thumbnailUrl}
-                      alt={item.videoTitle || 'Video'}
-                      className="w-24 h-14 object-cover rounded-lg shrink-0"
+                      alt={item.videoTitle}
+                      className="w-20 h-12 rounded-lg object-cover shrink-0 border border-slate-200 dark:border-slate-700"
                     />
-                  ) : (
-                    <div className="w-24 h-14 bg-slate-200 dark:bg-slate-700 rounded-lg shrink-0 flex items-center justify-center">
-                      <span className="text-slate-400 dark:text-slate-500 text-xs">—</span>
-                    </div>
                   )}
 
                   {/* Info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium text-slate-900 dark:text-white truncate" title={item.videoTitle}>
-                      {item.videoTitle || item.videoId}
-                    </div>
-                    <div className="text-sm text-slate-500 dark:text-slate-400 truncate">
-                      {item.sourceLabel || item.sourceId}
-                    </div>
-                    <div className="flex items-center gap-1 text-xs text-slate-400 dark:text-slate-500 mt-1">
-                      <Clock className="w-3 h-3" />
-                      {formatDate(item.hiddenAt)}
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-slate-800 dark:text-slate-100 truncate">{item.videoTitle}</p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="text-xs text-slate-500 dark:text-slate-400 truncate">{item.sourceLabel}</span>
+                      <span className="text-slate-300 dark:text-slate-600">•</span>
+                      <span className="text-xs text-slate-400 dark:text-slate-500 flex items-center gap-1 shrink-0">
+                        <Clock className="w-3 h-3" />
+                        {formatDate(item.hiddenAt)}
+                      </span>
                     </div>
                   </div>
 
-                  {/* Action Buttons */}
-                  <div className="shrink-0 flex items-center gap-2">
-                    {/* Unhide Button */}
+                  {/* Actions */}
+                  <div className="flex items-center gap-2 shrink-0">
                     <button
                       type="button"
                       onClick={() => handleUnhide(item.videoId)}
-                      className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium
-                               bg-indigo-100 text-indigo-700 hover:bg-indigo-200
-                               dark:bg-indigo-900/30 dark:text-indigo-400 dark:hover:bg-indigo-900/50
-                               transition-colors"
-                      title={t('dashboard.highlights.unhide')}
+                      className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md border border-indigo-500/30 text-indigo-500 dark:text-indigo-400 hover:bg-indigo-500/10 transition-colors"
                     >
-                      <Eye className="w-4 h-4" />
+                      <Eye className="w-3 h-3" />
                       {t('dashboard.highlights.unhide')}
                     </button>
-                    {/* Delete Button */}
                     <button
                       type="button"
                       onClick={() => handleDelete(item.videoId)}
-                      className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium
-                               bg-red-100 text-red-700 hover:bg-red-200
-                               dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50
-                               transition-colors"
-                      title={t('dashboard.highlights.delete')}
+                      className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md border border-red-500/30 text-red-400 dark:text-red-300 hover:bg-red-500/10 transition-colors"
+                      aria-label={t('modal.apiKey.cancel')}
                     >
-                      <Trash2 className="w-4 h-4" />
-                      {t('dashboard.highlights.delete')}
+                      <Trash2 className="w-3 h-3" />
                     </button>
                   </div>
                 </li>

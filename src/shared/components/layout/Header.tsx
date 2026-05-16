@@ -36,10 +36,11 @@ export function Header({
             {t('appTitle')}
           </h1>
 
-          <nav className="ml-4 flex items-center gap-2">
+          <nav aria-label={t('nav.main')} className="ml-4 flex items-center gap-2">
             <button
               type="button"
               onClick={() => onPageChange('dashboard')}
+              aria-current={activePage === 'dashboard' ? 'page' : undefined}
               className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium border transition-colors
                 ${activePage === 'dashboard'
                   ? 'bg-slate-100 text-slate-900 border-slate-200 dark:bg-slate-800 dark:text-white dark:border-slate-700'
@@ -53,6 +54,7 @@ export function Header({
             <button
               type="button"
               onClick={() => onPageChange('analyser')}
+              aria-current={activePage === 'analyser' ? 'page' : undefined}
               className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium border transition-colors
                 ${activePage === 'analyser'
                   ? 'bg-slate-100 text-slate-900 border-slate-200 dark:bg-slate-800 dark:text-white dark:border-slate-700'

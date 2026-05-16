@@ -355,6 +355,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
                 <button 
                   type="button" 
                   onClick={clearInput}
+                  aria-label={t('actions.clearSearch')}
                   className="text-slate-400 dark:text-slate-600 hover:text-slate-600 dark:hover:text-slate-300 transition-colors p-1"
                 >
                   <X className="w-4 h-4" />

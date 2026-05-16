@@ -26,6 +26,7 @@ export const ThemeToggle: React.FC = () => {
                  border-slate-300 text-slate-700 hover:bg-slate-100 \
                  dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
       title={`Theme: ${title} (klicken zum Wechseln)`}
+      aria-label={`Theme: ${title}`}
     >
       {theme === 'system' ? (
         <Monitor className="w-3 h-3" />
