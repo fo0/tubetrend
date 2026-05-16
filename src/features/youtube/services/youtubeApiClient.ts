@@ -38,7 +38,8 @@ export class YouTubeApiError extends Error {
 export async function fetchFromApi<T>(
   endpoint: Endpoint,
   params: Record<string, string>,
-  context?: QuotaCallContext
+  context?: QuotaCallContext,
+  signal?: AbortSignal
 ): Promise<T> {
   if (!API_KEY) {
     throw new YouTubeApiError('YouTube API Key fehlt.', 401);
@@ -49,7 +50,7 @@ export async function fetchFromApi<T>(
   Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
 
   const cost = API_COSTS[endpoint];
-  const response = await fetch(url.toString());
+  const response = await fetch(url.toString(), { signal });
   const data = await response.json();
 
   if (!response.ok) {
