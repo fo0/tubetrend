@@ -41,7 +41,7 @@ function readExplicitLanguage(): ExplicitLang | null {
 
 function getSystemLanguage(): string {
   if (typeof navigator === 'undefined') return 'en';
-  const lang = navigator.language || (navigator as any).userLanguage || 'en';
+  const lang = navigator.language || 'en';
   const short = normalizeLangCode(lang);
   return (SUPPORTED as unknown as string[]).includes(short) ? short : 'en';
 }
