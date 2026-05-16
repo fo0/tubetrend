@@ -1,6 +1,7 @@
 import React from 'react';
 import type {VideoData} from '@/src/features/videos';
 import {Clock, Eye, TrendingUp, Zap} from 'lucide-react';
+import {formatNumber} from '@/src/shared/lib/formatters';
 
 interface VideoCardProps {
   video: VideoData;
@@ -60,14 +61,14 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video }) => {
             <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 text-xs uppercase font-semibold mb-0.5">
               <Eye className="w-3 h-3 text-indigo-500 dark:text-indigo-400" /> Views
             </div>
-            <span className="text-slate-700 dark:text-slate-200 font-mono text-sm">{video.views.toLocaleString('de-DE')}</span>
+            <span className="text-slate-700 dark:text-slate-200 font-mono text-sm">{formatNumber(video.views)}</span>
           </div>
           <div className="flex flex-col justify-center bg-slate-100/50 dark:bg-slate-900/50 p-2 rounded-lg border border-slate-200/50 dark:border-slate-700/50">
             <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 text-xs uppercase font-semibold mb-0.5">
               <Zap className="w-3 h-3 text-yellow-500 dark:text-yellow-400" /> Velocity
             </div>
             <span className="text-slate-700 dark:text-slate-200 font-mono text-sm">
-              {video.viewsPerHour ? `~${video.viewsPerHour.toLocaleString('de-DE')}/h` : 'N/A'}
+              {video.viewsPerHour ? `~${formatNumber(video.viewsPerHour)}/h` : 'N/A'}
             </span>
           </div>
         </div>

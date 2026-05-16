@@ -2,6 +2,7 @@ import React from 'react';
 import {Clock, Eye, Trash2, X} from 'lucide-react';
 import {useTranslation} from 'react-i18next';
 import {hiddenHighlightsService, type HiddenHighlight} from '@/src/features/dashboard';
+import {getLocale} from '@/src/shared/lib/locale';
 
 interface HiddenHighlightsModalProps {
   isOpen: boolean;
@@ -32,7 +33,7 @@ export const HiddenHighlightsModal: React.FC<HiddenHighlightsModalProps> = ({ is
   const formatDate = (timestamp: number): string => {
     if (!timestamp) return '—';
     const date = new Date(timestamp);
-    return date.toLocaleString('de-DE', {
+    return date.toLocaleString(getLocale(), {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
