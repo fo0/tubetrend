@@ -2,6 +2,7 @@ import type {ChannelVideosResult, QuotaCallContext, YouTubeVideoItem} from '@/sr
 import {TimeFrame} from '@/src/shared/types';
 import {AUTO_LIMIT_KEYWORD} from '@/src/shared/constants';
 import {getPublishedAfterDate, parseISO8601DurationToSeconds} from '@/src/shared/lib/dateUtils';
+import type {YoutubeSearchResponse, YoutubeVideoListResponse} from '../types';
 
 const SHORTS_DURATION_THRESHOLD_SECONDS = 180;
 import {fetchFromApi} from './youtubeApiClient';
@@ -46,7 +47,7 @@ export async function searchVideosByKeyword(
 
     if (nextPageToken) params.pageToken = nextPageToken;
 
-    const searchData = await fetchFromApi<any>('search', params, keywordContext);
+    const searchData = await fetchFromApi<YoutubeSearchResponse>('search', params, keywordContext);
 
     if (!searchData.items || searchData.items.length === 0) {
       break;
@@ -57,11 +58,11 @@ export async function searchVideosByKeyword(
     // falsy values to avoid pushing `undefined` into the IDs list, which
     // would later corrupt the comma-joined `id` parameter to /videos.
     const videoIds = searchData.items
-      .map((item: any) => item.id?.videoId)
-      .filter((id: unknown): id is string => typeof id === 'string' && id.length > 0);
+      .map((item) => item.id?.videoId)
+      .filter((id): id is string => typeof id === 'string' && id.length > 0);
     allVideoIds = [...allVideoIds, ...videoIds];
 
-    nextPageToken = searchData.nextPageToken;
+    nextPageToken = searchData.nextPageToken ?? '';
     if (!nextPageToken) break;
 
     pageCount++;
@@ -90,7 +91,7 @@ export async function searchVideosByKeyword(
   const batchPromises = batches.map(async (batch) => {
     const videoIds = batch.join(',');
 
-    const videoData = await fetchFromApi<any>('videos', {
+    const videoData = await fetchFromApi<YoutubeVideoListResponse>('videos', {
       part: 'snippet,statistics,contentDetails',
       id: videoIds,
     }, { ...keywordContext, source: 'video-stats' });
@@ -98,15 +99,18 @@ export async function searchVideosByKeyword(
     if (!videoData.items) return [];
 
     return videoData.items
-      .filter((item: any) => {
+      .filter((item) => {
         const seconds = parseISO8601DurationToSeconds(item.contentDetails?.duration);
         // Keep videos whose duration is unknown; only filter confirmed shorts.
         if (seconds === null) return true;
         return seconds >= SHORTS_DURATION_THRESHOLD_SECONDS;
       })
-      .map((item: any) => ({
+      .map((item): YouTubeVideoItem => ({
         id: item.id,
-        snippet: item.snippet,
+        // Cast through `unknown` to bridge the loose API type (all fields
+        // optional) and the stricter consumer type. Required fields are
+        // guaranteed by the `part=snippet,statistics` request.
+        snippet: item.snippet as unknown as YouTubeVideoItem['snippet'],
         statistics: item.statistics,
       }));
   });
