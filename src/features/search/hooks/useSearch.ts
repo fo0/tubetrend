@@ -92,7 +92,7 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
           channelId,
         });
       } catch (err: any) {
-        console.error(err);
+        if (import.meta.env.DEV) console.error(err);
         const errorMessage = err?.message || 'Fehler bei der Analyse.';
 
         const isApiKeyInvalid =
