@@ -4,24 +4,22 @@ import {quotaService} from './quotaService';
 
 type Endpoint = keyof typeof API_COSTS;
 
-// Module-level API key storage
-let API_KEY = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEYS.API_KEY) || '' : '';
-
+// Single source of truth: localStorage. No module-level mirror to avoid drift
+// when the key is changed in another tab/window or by other code paths.
 export function setApiKey(key: string): void {
-  API_KEY = key;
-  if (typeof window !== 'undefined') {
-    if (key) {
-      localStorage.setItem(STORAGE_KEYS.API_KEY, key);
-    } else {
-      localStorage.removeItem(STORAGE_KEYS.API_KEY);
-      // Reset quota statistics when API key is deleted
-      quotaService.reset();
-    }
+  if (typeof window === 'undefined') return;
+  if (key) {
+    localStorage.setItem(STORAGE_KEYS.API_KEY, key);
+  } else {
+    localStorage.removeItem(STORAGE_KEYS.API_KEY);
+    // Reset quota statistics when API key is deleted
+    quotaService.reset();
   }
 }
 
 export function getApiKey(): string {
-  return API_KEY;
+  if (typeof window === 'undefined') return '';
+  return localStorage.getItem(STORAGE_KEYS.API_KEY) || '';
 }
 
 export class YouTubeApiError extends Error {
@@ -41,12 +39,13 @@ export async function fetchFromApi<T>(
   context?: QuotaCallContext,
   signal?: AbortSignal
 ): Promise<T> {
-  if (!API_KEY) {
+  const apiKey = getApiKey();
+  if (!apiKey) {
     throw new YouTubeApiError('YouTube API Key fehlt.', 401);
   }
 
   const url = new URL(`https://www.googleapis.com/youtube/v3/${endpoint}`);
-  url.searchParams.append('key', API_KEY);
+  url.searchParams.append('key', apiKey);
   Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
 
   const cost = API_COSTS[endpoint];
