@@ -82,7 +82,7 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ onSave }) => {
                       <a
                         href="https://console.cloud.google.com/marketplace/product/google/youtube.googleapis.com"
                         target="_blank"
-                        rel="noreferrer"
+                        rel="noopener noreferrer"
                         className="text-indigo-500 dark:text-indigo-400 underline decoration-indigo-500/30 hover:text-indigo-400 inline-flex items-center gap-1"
                       >
                         {t('modal.apiKey.step1')}
