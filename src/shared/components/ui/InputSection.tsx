@@ -75,8 +75,16 @@ export const InputSection: React.FC<InputSectionProps> = ({
   
   const wrapperRef = useRef<HTMLDivElement>(null);
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const justSavedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [justSaved, setJustSaved] = useState<boolean>(false);
   const [isFavorite, setIsFavorite] = useState<boolean>(false);
+
+  // Clear save-feedback timer on unmount
+  useEffect(() => {
+    return () => {
+      if (justSavedTimerRef.current) clearTimeout(justSavedTimerRef.current);
+    };
+  }, []);
 
   // Load last selected timeframe and max results from localStorage once
   useEffect(() => {
@@ -259,7 +267,8 @@ export const InputSection: React.FC<InputSectionProps> = ({
     favoritesService.add({ query, timeFrame, maxResults, searchType });
     // kurzes visuelles Feedback
     setJustSaved(true);
-    setTimeout(() => setJustSaved(false), 1500);
+    if (justSavedTimerRef.current) clearTimeout(justSavedTimerRef.current);
+    justSavedTimerRef.current = setTimeout(() => setJustSaved(false), 1500);
     // Status aktualisieren
     try {
       const exists = favoritesService.exists(query, timeFrame, maxResults, searchType);
