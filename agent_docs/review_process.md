@@ -22,7 +22,7 @@ Your TODO list MUST contain these steps for EVERY task:
 5. Auto-fix findings (P0/P1 immediately, P2 by judgment)
 6. Unfixed findings (Accepted/Deferred) -> BACKLOG.md      <- SEPARATE TODO!
 7. UI review (if UI was changed)                           <- SEPARATE TODO!
-8. Commit & Push
+8. Commit (push only when user asks)
 ```
 
 **Rules:**
@@ -47,7 +47,7 @@ Implement -> Run automated checks -> Fix failures ->
 Code Review (all categories) -> Fix P0/P1 -> Re-check if needed ->
 Regression & Complexity QA ->
 Unresolved findings -> BACKLOG.md ->
-Learnings/context -> MEMORY.md ->
+Learnings/context -> MEMORY.md / SCRATCHPAD.md ->
 UI Review (if UI changed) ->
 Commit
 ```
@@ -55,7 +55,7 @@ Commit
 ### Error Recovery
 - **Automated checks fail and fix is unclear:** Document the failure, inform the user, do NOT commit. Suggest possible causes.
 - **Review finds issue outside current scope:** Log to BACKLOG.md with context, do not fix unless trivial.
-- **Circular fix loop (fix breaks something else):** After 2nd iteration -> inform user. After 3rd -> stop completely, present full context of the loop.
+- **Circular fix loop (fix breaks something else):** After 2nd iteration -> inform user. After 3rd -> invoke `.claude/skills/stuck/SKILL.md` — the 4th attempt without user input is forbidden.
 
 ## Automated Checks
 
@@ -63,7 +63,7 @@ Run in this order before the review:
 
 ```bash
 npm ci                   # ALWAYS first — install dependencies
-npx tsc --noEmit         # TypeScript type checking must pass
+npm run typecheck        # TypeScript type checking must pass
 npm run build            # Production build must succeed
 ```
 
@@ -71,11 +71,26 @@ npm run build            # Production build must succeed
 > - Lint: `npm run lint` (once ESLint is configured)
 > - Test: `npm test` (once Vitest is configured)
 
+### Test execution constraints (autonomy + zero-cost)
+
+Apps in this workspace are built and verified by AI agents end-to-end. Tests must therefore be:
+
+- **Agent-runnable without setup** — no manual env-var injection, no credentials prompt, no interactive login.
+- **Zero-cost** — no real YouTube API calls (would burn user quota), no real cloud resources, no production data writes.
+- **Deterministic** — fake clocks, fake random, in-memory storage adapters, mocked event bus, mocked YouTube API client.
+- **Self-contained** — runnable on every change as part of the standard test command.
+
+External boundaries (YouTube API, localStorage, event bus) → always mock or use ephemeral in-memory fakes. Real-service smoke/E2E tests only on explicit user request, never as default automated check.
+
 ## Review Scope
 
 ### Default: Diff-based review
 - Review is based on changed files (diff).
 - Only changed and directly affected files are read.
+
+### GitNexus-enhanced review (if available)
+- Use `gitnexus_impact` on changed functions to identify affected downstream code beyond the diff.
+- Use `gitnexus_detect_changes` after fixes to verify change scope matches expectations.
 
 ### Full-read review (when needed)
 - New files are always read completely.
@@ -86,6 +101,7 @@ npm run build            # Production build must succeed
 - Group by change type (refactoring, feature, config etc.).
 - P0 categories for all files.
 - P1/P2 only for feature-relevant files, rest by sampling.
+- If GitNexus available: use `gitnexus_impact` to prioritize files by downstream dependency count.
 
 ## Review Categories
 
@@ -166,14 +182,29 @@ Rules:
 
 ## Subagent Delegation
 
-For isolated, clearly bounded subtasks:
+For isolated, clearly bounded subtasks. Pick the matching `subagent_type` instead of always defaulting to `general-purpose`.
 
-| Task | When to delegate |
-|------|-----------------|
-| **Write tests** | >3 test files needed for a feature |
-| **Doc updates** | >2 documentation files affected |
-| **Refactoring chunks** | Independent subtasks of a larger refactoring |
-| **Boilerplate generation** | Repetitive structures (migrations, schemas, config) |
+| Task                              | When to delegate                | Recommended `subagent_type` |
+|-----------------------------------|--------------------------------|-----------------------------|
+| **Locate code / find symbols**    | Search across >3 paths or unknown location | `Explore` |
+| **Plan refactoring/feature**      | Non-trivial, >3 files affected, architectural choice | `Plan` |
+| **Write tests**                   | >3 test files for a feature    | `general-purpose` |
+| **Doc updates**                   | >2 documentation files         | `general-purpose` |
+| **Refactoring chunks**            | Independent subtasks of larger refactoring | `general-purpose` |
+| **Boilerplate generation**        | Migrations, schemas, repetitive configs | `general-purpose` |
+| **Independent code review**       | Second-opinion on diff         | `general-purpose` |
+| **Q about Claude Code/SDK/API**   | "Can Claude do X?", hooks, MCP, SDK questions | `claude-code-guide` |
+
+## Subagent Selection Rules
+
+- **Use `Explore` for read-only search.** Specify breadth: `quick` / `medium` / `very thorough`. Do NOT use for code review — it reads excerpts, will miss content past its window.
+- **Use `Plan` before non-trivial implementation.** Then act on the plan in main thread, or hand the plan to `general-purpose`.
+- **Use `general-purpose` for write+execute** tasks. Default for "do this work" delegations.
+- **Use `claude-code-guide` for tooling questions** about Claude Code itself.
+- **Parallelize independent work** — multiple Agent calls in one message when no dependencies exist.
+- **Prefer direct tools when target is known** — `Read` for known path, `grep` via Bash for known symbol.
+- **Pass full context** — subagents have no conversation history.
+- **Trust but verify** — inspect diffs after write-capable subagents finish.
 
 The main agent retains responsibility for the review process itself.
 
@@ -183,7 +214,10 @@ Only commit when:
 - [ ] All automated checks pass
 - [ ] All P0/P1 findings are fixed (or explicitly deferred with reasoning)
 - [ ] Deferred findings are logged in BACKLOG.md
-- [ ] Learnings/context captured in MEMORY.md (if applicable)
+- [ ] Learnings/context captured in MEMORY.md or SCRATCHPAD.md (if applicable)
 - [ ] Documentation updated if needed
-- [ ] Commit message follows project's Git Conventions
+- [ ] Commit message follows Conventional Commits
 - [ ] UI review done (if UI changed)
+- [ ] (If GitNexus available) `gitnexus_detect_changes()` confirmed scope
+
+<!-- Generated by claude-code-optimizer v1.7.0 -->
