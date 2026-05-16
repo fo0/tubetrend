@@ -175,6 +175,7 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, on
   useEffect(() => {
     let cancelled = false;
     let staggerTimeout: ReturnType<typeof setTimeout> | null = null;
+    let staggerReject: (() => void) | null = null;
 
     const load = async () => {
       setError(null);
@@ -226,7 +227,7 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, on
         await new Promise<void>((resolve, reject) => {
           staggerTimeout = setTimeout(resolve, staggerIndex * STAGGER_DELAY_MS);
           // Speichere reject-Funktion für sauberes Cleanup
-          (staggerTimeout as any).__reject = reject;
+          staggerReject = reject;
         }).catch(() => {
           // Timeout wurde abgebrochen - Ende-Event wird im Cleanup gesendet
         });
@@ -305,9 +306,7 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, on
       if (staggerTimeout) {
         clearTimeout(staggerTimeout);
         // Reject das Promise damit es nicht hängen bleibt
-        if ((staggerTimeout as any).__reject) {
-          (staggerTimeout as any).__reject();
-        }
+        staggerReject?.();
       }
       // Cleanup: Wenn Start-Event gesendet wurde aber noch kein End-Event, sende es jetzt
       if (dispatchedStartRef.current) {
