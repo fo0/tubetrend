@@ -210,7 +210,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
         setSuggestions(results);
         setShowSuggestions(true);
       } catch (err) {
-        console.error(err);
+        if (import.meta.env.DEV) console.error(err);
       } finally {
         setIsSearchingSuggestions(false);
       }
