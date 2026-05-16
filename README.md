@@ -154,7 +154,7 @@ npm run preview  # Preview production build
 
 ## Tech Stack
 
-React 19 | TypeScript | Vite 6 | Tailwind CSS | i18next | Electron | YouTube Data API v3
+React 19 | TypeScript | Vite 7 | Tailwind CSS 4 | i18next | Electron | YouTube Data API v3
 
 ## License
 
