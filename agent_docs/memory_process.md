@@ -1,35 +1,71 @@
 # Memory Process
 
-Session-spanning project knowledge is tracked in `MEMORY.md` in the project root.
+Project knowledge is split into two files with different lifespans:
 
-## Purpose
+| File          | Purpose                                                                | Lifespan                  | Max Size       |
+|---------------|------------------------------------------------------------------------|---------------------------|----------------|
+| `MEMORY.md`   | Long-term memory — stable knowledge that persists across many sessions | Long-lived (weeks/months) | **~16,000 chars** (~200 lines, ~4k tokens) |
+| `SCRATCHPAD.md` | Short-term memory — temporary context for current work               | Ephemeral (hours/days)    | **~8,000 chars** (~100 lines, ~2k tokens)  |
 
-MEMORY.md is the agent's long-term memory — for knowledge that must persist between sessions but doesn't belong in CLAUDE.md (technical reference), README.md (user docs) or BACKLOG.md (open findings).
+> **Unit:** primary limit is **chars** (matches CLAUDE.md's 40,000 char limit for consistency with Claude's context-window cost model).
 
-Typical contents:
-- **Architecture decisions & reasoning** — Why was X chosen over Y?
-- **Gotchas & pitfalls** — Things discovered while working that prevent future mistakes
-- **Dependencies & couplings** — Non-obvious connections between components
-- **User preferences** — How the user wants certain things solved (style, patterns, priorities)
-- **Working context** — State of subtasks, open questions, next steps
+## When to use which file
+
+### → MEMORY.md (long-term)
+- **Architecture decisions & reasoning** — Why was X chosen over Y? **For non-trivial structured decisions, prefer writing an ADR in `docs/adr/` (see `agent_docs/adr_template.md`).** Use MEMORY.md only for short, loose decision notes that don't justify a full ADR.
+- **Gotchas & pitfalls** — Things discovered that prevent future mistakes
 - **Failed approaches** — What was tried and why it didn't work
-- **External dependencies** — API quirks, library bugs, workarounds
+- **External dependencies** — API quirks, library bugs, workarounds that persist
+- **User preferences** — How the user wants things solved (style, patterns, priorities)
+- **Non-obvious couplings** — Hidden dependencies between components
+- **GitNexus observations** — Recurring stale-index triggers, known graph gaps, index rebuild timing
+
+### → docs/adr/ (structured architecture decisions)
+
+Use ADRs (not MEMORY.md) when ALL of these apply:
+- Decision affects more than one module / file area.
+- Reverting later would cost > 1 hour.
+- A reasonable engineer might disagree with the choice.
+- The decision is non-obvious from the code.
+
+See `agent_docs/adr_template.md` for format and lifecycle (Proposed / Accepted / Deprecated / Superseded). ADRs are immutable once Accepted.
+
+### → SCRATCHPAD.md (short-term)
+- **Current working context** — What you're doing right now, next steps
+- **Open questions** — Things to ask or verify
+- **Quick research notes** — Findings from web searches, version checks, etc.
+- **Multi-session task state** — Progress on tasks spanning 2–3 sessions
+- **Temporary workarounds** — Things that need to be revisited soon
+- **Debug notes** — Observations from troubleshooting (discard once resolved)
+
+### → Neither (don't store)
+- What's already in CLAUDE.md (technical reference)
+- What's already in README.md (user docs)
+- What's already in BACKLOG.md (open findings)
 
 ## Rules
 
-1. **Write without being asked** — When relevant context knowledge emerges during work, store it in MEMORY.md. No user prompt needed.
-2. **Read at session start** — Read MEMORY.md at every new session to restore context.
-3. **Keep compact** — Each entry is a short, concise paragraph. No prose, no redundancy. Max ~200 lines total.
-4. **Remove outdated entries** — When entries become obsolete due to code changes, remove or update them.
-5. **No duplication** — What's already in CLAUDE.md, README.md or BACKLOG.md doesn't belong here.
-6. **Clean up working context** — Completed entries in Working Context get deleted, not marked as done.
+### Both files
+1. **Write without being asked** — Store knowledge as it emerges. No user prompt needed.
+2. **Read both at session start** — Restore context from previous sessions.
+3. **No duplication** — Between files or with CLAUDE.md/README.md/BACKLOG.md.
+
+### MEMORY.md specific
+4. **Keep compact** — Each entry is a short, concise paragraph. Max ~16,000 chars.
+5. **Remove only when fundamentally obsolete** — Architecture decisions stay unless the code changes fundamentally.
+6. **Failed Approaches remain** as long as the alternative exists.
+
+### SCRATCHPAD.md specific
+7. **Aggressively clean up** — Delete entries as soon as they're resolved or no longer relevant.
+8. **Max ~8,000 chars** — If it grows beyond this, completed items haven't been cleaned.
+9. **Promote if long-lived** — If a SCRATCHPAD entry survives 3+ sessions, consider moving it to MEMORY.md.
 
 ## MEMORY.md Format
 
 ```markdown
-# Memory
+# Memory — Long-Term
 
-Session-spanning project knowledge. **Read at session start, update during work.**
+Stable project knowledge. **Read at session start.**
 
 ## Architecture Decisions
 
@@ -42,10 +78,6 @@ Session-spanning project knowledge. **Read at session start, update during work.
 ## Gotchas & Pitfalls
 
 - **{Short title}** — {Description, what happens and how to avoid it} ({date})
-
-## Working Context
-
-- **{Topic}** — {Current state, open questions, next steps} ({date})
 
 ## Failed Approaches
 
@@ -60,8 +92,32 @@ Session-spanning project knowledge. **Read at session start, update during work.
 - **{Preference}** — {How the user wants things solved} ({date})
 ```
 
-### Lifecycle
-- Entries in **Working Context** are temporary — delete when completed.
-- Entries in **Architecture Decisions** and **Gotchas** are long-lived — only remove when code fundamentally changes.
-- Entries in **Failed Approaches** remain as long as the alternative exists.
-- **Monitor size** — when MEMORY.md exceeds 200 lines: remove oldest Working Context and obsolete entries.
+## SCRATCHPAD.md Format
+
+```markdown
+# Scratchpad — Short-Term
+
+Temporary working context. **Clean up aggressively — delete when resolved.**
+
+## Current Work
+
+- **{Task/Topic}** — {What's being done, current state, next steps} ({date})
+
+## Open Questions
+
+- **{Question}** — {Context, who/what to check} ({date})
+
+## Research Notes
+
+- **{Topic}** — {Findings, version info, links} ({date})
+
+## Temporary Notes
+
+- **{Note}** — {Observation, debug finding, etc.} ({date})
+```
+
+## Size monitoring
+- **MEMORY.md > 16,000 chars** → Remove oldest entries that are no longer relevant. Architecture decisions and active gotchas should stay.
+- **SCRATCHPAD.md > 8,000 chars** → Completed items haven't been cleaned. Delete resolved entries first, then promote long-lived entries to MEMORY.md.
+
+<!-- Generated by claude-code-optimizer v1.7.0 -->

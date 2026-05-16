@@ -54,3 +54,6 @@ Thumbs.db
 
 # Docker (optional, normally committed but ignores local overrides if you have them)
 docker-compose.override.yml
+
+# GitNexus index (local code-intelligence cache)
+.gitnexus/
