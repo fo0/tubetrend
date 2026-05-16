@@ -3,6 +3,7 @@ import {Activity, AlertTriangle, AtSign, Hash, Search, User, X, Zap} from 'lucid
 import {quotaService} from '@/src/features/youtube';
 import type {QuotaHistoryEntry} from '@/src/shared/types';
 import {useTranslation} from 'react-i18next';
+import {formatNumber} from '@/src/shared/lib/formatters';
 
 // Determine optimal time window based on actual data
 const getOptimalTimeWindow = (history: QuotaHistoryEntry[]): { windowMs: number; label: string } => {
@@ -265,9 +266,6 @@ export const ApiQuotaIndicator: React.FC = () => {
   };
 
   const colors = getColorClasses();
-
-  // Format numbers with locale
-  const formatNumber = (n: number) => n.toLocaleString('de-DE');
 
   // Get icon for display type (favoriteType or autocomplete)
   const getDisplayTypeIcon = (displayType: GroupedCall['displayType']) => {

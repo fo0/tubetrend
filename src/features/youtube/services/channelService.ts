@@ -340,6 +340,12 @@ export async function getVideosFromChannel(
   // Apply limit
   let processingLimit = allVideos.length;
   if (effectiveMax > 0) {
+    // Over-fetch headroom: the videos.list call below post-filters
+    // confirmed Shorts (duration < SHORTS_DURATION_THRESHOLD_SECONDS),
+    // so we ask for up to 50 candidates even when the caller wants
+    // fewer. Without this margin a channel that posted many Shorts
+    // in the window would return below `effectiveMax` longform videos.
+    // The final slice to `effectiveMax` happens after Shorts filtering.
     const effectiveLimit = Math.max(effectiveMax, 50);
     if (allVideos.length > effectiveLimit) {
       processingLimit = effectiveLimit;

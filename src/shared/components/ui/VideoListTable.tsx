@@ -1,6 +1,7 @@
 import React from 'react';
 import type {VideoData} from '@/src/features/videos';
 import {Clock, ExternalLink} from 'lucide-react';
+import {formatNumber} from '@/src/shared/lib/formatters';
 
 interface VideoListTableProps {
   videos: VideoData[];
@@ -64,7 +65,7 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({ videos, startInd
                           {video.title}
                         </a>
                         <div className="text-xs text-slate-500 mt-1 sm:hidden">
-                          {video.uploadTime} • {video.views.toLocaleString()} Views
+                          {video.uploadTime} • {formatNumber(video.views)} Views
                         </div>
                       </div>
                     </div>
@@ -76,12 +77,12 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({ videos, startInd
                     </div>
                   </td>
                   <td className="p-4 text-right font-mono text-slate-600 dark:text-slate-300">
-                    {video.views.toLocaleString('de-DE')}
+                    {formatNumber(video.views)}
                   </td>
                   <td className="p-4 text-right font-mono text-slate-500 dark:text-slate-400 hidden md:table-cell">
                     {video.viewsPerHour ? (
                       <span className="flex items-center justify-end gap-1 text-yellow-600/80 dark:text-yellow-500/80">
-                         {video.viewsPerHour.toLocaleString('de-DE')}/h
+                         {formatNumber(video.viewsPerHour)}/h
                       </span>
                     ) : '-'}
                   </td>
