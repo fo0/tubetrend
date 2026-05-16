@@ -9,6 +9,13 @@ import type {
 } from '@/src/shared/types';
 import {TimeFrame} from '@/src/shared/types';
 import {getCutoffTime, parseISO8601DurationToSeconds} from '@/src/shared/lib/dateUtils';
+import type {
+  YoutubeChannelListResponse,
+  YoutubePlaylistItemResource,
+  YoutubePlaylistItemsResponse,
+  YoutubeSearchResponse,
+  YoutubeVideoListResponse,
+} from '../types';
 
 const SHORTS_DURATION_THRESHOLD_SECONDS = 180;
 import {fetchFromApi, getApiKey} from './youtubeApiClient';
@@ -110,7 +117,7 @@ export async function searchChannels(query: string): Promise<ChannelSuggestion[]
       name: query,
     };
 
-    const data = await fetchFromApi<any>('search', {
+    const data = await fetchFromApi<YoutubeSearchResponse>('search', {
       part: 'snippet',
       q: query,
       type: 'channel',
@@ -120,13 +127,15 @@ export async function searchChannels(query: string): Promise<ChannelSuggestion[]
     if (!data.items) return [];
 
     // Sammle Channel-IDs für den Batch-Call
-    const channelIds = data.items.map((item: any) => item.snippet.channelId).filter(Boolean);
+    const channelIds = data.items
+      .map((item) => item.snippet?.channelId)
+      .filter((id): id is string => typeof id === 'string' && id.length > 0);
 
     // Hole korrekte Thumbnails über den channels-Endpoint (1 Unit für bis zu 50 Kanäle)
     let thumbnailMap: Record<string, string> = {};
     if (channelIds.length > 0) {
       try {
-        const channelsData = await fetchFromApi<any>('channels', {
+        const channelsData = await fetchFromApi<YoutubeChannelListResponse>('channels', {
           part: 'snippet',
           id: channelIds.join(','),
         }, autocompleteContext);
@@ -144,14 +153,14 @@ export async function searchChannels(query: string): Promise<ChannelSuggestion[]
       }
     }
 
-    const results: ChannelSuggestion[] = data.items.map((item: any) => {
-      const channelId = item.snippet.channelId;
+    const results: ChannelSuggestion[] = data.items.map((item) => {
+      const channelId = item.snippet?.channelId ?? '';
       return {
         id: channelId,
-        title: item.snippet.channelTitle,
+        title: item.snippet?.channelTitle ?? '',
         // Bevorzuge Thumbnail vom channels-Endpoint, Fallback auf Search-Thumbnail
-        thumbnailUrl: thumbnailMap[channelId] || item.snippet.thumbnails?.default?.url || '',
-        handle: item.snippet.customUrl,
+        thumbnailUrl: thumbnailMap[channelId] || item.snippet?.thumbnails?.default?.url || '',
+        handle: item.snippet?.customUrl,
       };
     });
 
@@ -198,18 +207,21 @@ export async function findChannelInfo(channelName: string, context?: Partial<Quo
     }
 
     try {
-      const channelData = await fetchFromApi<any>('channels', params, channelContext);
+      const channelData = await fetchFromApi<YoutubeChannelListResponse>('channels', params, channelContext);
 
       if (channelData.items && channelData.items.length > 0) {
         const item = channelData.items[0];
-        const result: ChannelInfo = {
-          id: item.id,
-          name: item.snippet.title,
-          uploadsPlaylistId: item.contentDetails.relatedPlaylists.uploads,
-        };
+        const uploads = item.contentDetails?.relatedPlaylists?.uploads;
+        if (item.snippet?.title && uploads) {
+          const result: ChannelInfo = {
+            id: item.id,
+            name: item.snippet.title,
+            uploadsPlaylistId: uploads,
+          };
 
-        saveChannelToCache(query.toLowerCase(), result);
-        return result;
+          saveChannelToCache(query.toLowerCase(), result);
+          return result;
+        }
       }
     } catch {
       // Fall through to search
@@ -217,7 +229,7 @@ export async function findChannelInfo(channelName: string, context?: Partial<Quo
   }
 
   // Fallback: Search API
-  const searchData = await fetchFromApi<any>('search', {
+  const searchData = await fetchFromApi<YoutubeSearchResponse>('search', {
     part: 'snippet',
     q: query,
     type: 'channel',
@@ -228,11 +240,15 @@ export async function findChannelInfo(channelName: string, context?: Partial<Quo
     throw new Error(`Kanal "${channelName}" nicht gefunden.`);
   }
 
-  const channelId = searchData.items[0].snippet.channelId;
-  const channelTitle = searchData.items[0].snippet.channelTitle;
+  const firstSnippet = searchData.items[0].snippet;
+  const channelId = firstSnippet?.channelId;
+  const channelTitle = firstSnippet?.channelTitle;
+  if (!channelId || !channelTitle) {
+    throw new Error(`Kanal "${channelName}" nicht gefunden.`);
+  }
 
   // Get channel details
-  const channelDetails = await fetchFromApi<any>('channels', {
+  const channelDetails = await fetchFromApi<YoutubeChannelListResponse>('channels', {
     part: 'contentDetails',
     id: channelId,
   }, channelContext);
@@ -241,10 +257,15 @@ export async function findChannelInfo(channelName: string, context?: Partial<Quo
     throw new Error('Kanaldetails konnten nicht geladen werden.');
   }
 
+  const uploadsPlaylistId = channelDetails.items[0].contentDetails?.relatedPlaylists?.uploads;
+  if (!uploadsPlaylistId) {
+    throw new Error('Kanaldetails konnten nicht geladen werden.');
+  }
+
   const result: ChannelInfo = {
     id: channelId,
     name: channelTitle,
-    uploadsPlaylistId: channelDetails.items[0].contentDetails.relatedPlaylists.uploads,
+    uploadsPlaylistId,
   };
 
   saveChannelToCache(query.toLowerCase(), result);
@@ -269,7 +290,7 @@ export async function getVideosFromChannel(
     ...context,
   };
 
-  let allVideos: any[] = [];
+  let allVideos: YoutubePlaylistItemResource[] = [];
   let nextPageToken = '';
   let shouldContinue = true;
   const MAX_PAGES = 100;
@@ -284,7 +305,7 @@ export async function getVideosFromChannel(
 
     if (nextPageToken) params.pageToken = nextPageToken;
 
-    const playlistData = await fetchFromApi<any>('playlistItems', params, channelContext);
+    const playlistData = await fetchFromApi<YoutubePlaylistItemsResponse>('playlistItems', params, channelContext);
 
     if (!playlistData.items || playlistData.items.length === 0) {
       shouldContinue = false;
@@ -305,7 +326,7 @@ export async function getVideosFromChannel(
     if (validItemsInBatch === 0 && items.length > 0) {
       shouldContinue = false;
     } else {
-      nextPageToken = playlistData.nextPageToken;
+      nextPageToken = playlistData.nextPageToken ?? '';
       if (!nextPageToken) shouldContinue = false;
     }
 
@@ -329,15 +350,15 @@ export async function getVideosFromChannel(
   const totalInTimeFrame = allVideos.length;
 
   // Fetch video stats in batches
-  const batches: any[][] = [];
+  const batches: YoutubePlaylistItemResource[][] = [];
   for (let i = 0; i < allVideos.length; i += 50) {
     batches.push(allVideos.slice(i, i + 50));
   }
 
   const batchPromises = batches.map(async (batch) => {
-    const videoIds = batch.map((item: any) => item.contentDetails.videoId).join(',');
+    const videoIds = batch.map((item) => item.contentDetails.videoId).join(',');
 
-    const statsData = await fetchFromApi<any>('videos', {
+    const statsData = await fetchFromApi<YoutubeVideoListResponse>('videos', {
       part: 'statistics,contentDetails',
       id: videoIds,
     }, { ...channelContext, source: 'video-stats' });
@@ -345,17 +366,22 @@ export async function getVideosFromChannel(
     if (!statsData.items) return [];
 
     return statsData.items
-      .filter((item: any) => {
+      .filter((item) => {
         const seconds = parseISO8601DurationToSeconds(item.contentDetails?.duration);
         // Keep videos whose duration is unknown; only filter confirmed shorts.
         if (seconds === null) return true;
         return seconds >= SHORTS_DURATION_THRESHOLD_SECONDS;
       })
-      .map((item: any) => {
-        const originalItem = batch.find((b: any) => b.contentDetails.videoId === item.id);
+      .map((item): YouTubeVideoItem => {
+        const originalItem = batch.find((b) => b.contentDetails.videoId === item.id);
+        // Snippet comes from the original /playlistItems response (typed
+        // YoutubeVideoSnippet); cast bridges to the consumer type which has
+        // narrower thumbnail optionality. Empty-object fallback preserves
+        // pre-refactor behaviour when an item is missing.
+        const snippet = (originalItem?.snippet ?? {}) as unknown as YouTubeVideoItem['snippet'];
         return {
           id: item.id,
-          snippet: originalItem ? originalItem.snippet : {},
+          snippet,
           statistics: item.statistics,
         };
       });
