@@ -4,13 +4,13 @@ on:
   push:
     branches: [main, master]
     paths-ignore:
-      - '**.md'
-      - 'docs/**'
-      - '.env.example'
-      - '.gitignore'
-      - '.editorconfig'
-      - 'LICENSE*'
-      - '.vscode/**'
+      - "**.md"
+      - "docs/**"
+      - ".env.example"
+      - ".gitignore"
+      - ".editorconfig"
+      - "LICENSE*"
+      - ".vscode/**"
   workflow_dispatch:
 
 concurrency:
@@ -31,14 +31,14 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '22'
-          cache: 'npm'
+          node-version: "22"
+          cache: "npm"
 
       - name: Setup Java
         uses: actions/setup-java@v5
         with:
-          distribution: 'temurin'
-          java-version: '21'
+          distribution: "temurin"
+          java-version: "21"
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v4

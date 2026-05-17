@@ -1,19 +1,19 @@
-import {useCallback, useState} from 'react';
-import type {SearchType, TimeFrame, YouTubeVideoItem} from '@/src/shared/types';
-import {SearchType as ST} from '@/src/shared/types';
-import type {VideoData} from '@/src/features/videos/types';
-import {analyzeVideoStats} from '@/src/features/videos';
+import { useCallback, useState } from "react";
+import type { SearchType, TimeFrame, YouTubeVideoItem } from "@/src/shared/types";
+import { SearchType as ST } from "@/src/shared/types";
+import type { VideoData } from "@/src/features/videos/types";
+import { analyzeVideoStats } from "@/src/features/videos";
 import {
   findChannelInfo,
   getChannelQueryType,
   getVideosFromChannel,
   searchVideosByKeyword,
   YouTubeApiError,
-} from '@/src/features/youtube';
+} from "@/src/features/youtube";
 
 export interface SearchState {
   isLoading: boolean;
-  step: 'idle' | 'fetching_youtube' | 'analyzing_ai' | 'complete';
+  step: "idle" | "fetching_youtube" | "analyzing_ai" | "complete";
   error: string | null;
   data: VideoData[] | null;
   channelName: string;
@@ -22,10 +22,10 @@ export interface SearchState {
 
 const initialSearchState: SearchState = {
   isLoading: false,
-  step: 'idle',
+  step: "idle",
   error: null,
   data: null,
-  channelName: '',
+  channelName: "",
 };
 
 interface UseSearchOptions {
@@ -40,7 +40,7 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
       query: string,
       timeFrame: TimeFrame,
       maxResults: number,
-      searchType: SearchType = ST.CHANNEL
+      searchType: SearchType = ST.CHANNEL,
     ) => {
       if (!apiKey) {
         options?.onApiKeyInvalid?.();
@@ -50,7 +50,7 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
       setSearchState((prev) => ({
         ...prev,
         isLoading: true,
-        step: 'fetching_youtube',
+        step: "fetching_youtube",
         error: null,
         channelName: query,
         channelId: undefined,
@@ -63,14 +63,23 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
         let channelId: string | undefined;
 
         if (searchType === ST.KEYWORD) {
-          const { videos } = await searchVideosByKeyword(query, timeFrame, maxResults, { name: query });
+          const { videos } = await searchVideosByKeyword(query, timeFrame, maxResults, {
+            name: query,
+          });
           apiVideos = videos;
           displayName = query;
           channelId = undefined;
         } else {
           const queryType = getChannelQueryType(query);
-          const { id, name: officialName, uploadsPlaylistId } = await findChannelInfo(query, { name: query });
-          const { videos } = await getVideosFromChannel(uploadsPlaylistId, timeFrame, maxResults, { name: officialName, favoriteType: queryType });
+          const {
+            id,
+            name: officialName,
+            uploadsPlaylistId,
+          } = await findChannelInfo(query, { name: query });
+          const { videos } = await getVideosFromChannel(uploadsPlaylistId, timeFrame, maxResults, {
+            name: officialName,
+            favoriteType: queryType,
+          });
           apiVideos = videos;
           displayName = officialName;
           channelId = id;
@@ -80,12 +89,12 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
           throw new Error(`Keine Videos im Zeitraum "${timeFrame}" gefunden.`);
         }
 
-        setSearchState((prev) => ({ ...prev, step: 'analyzing_ai' }));
+        setSearchState((prev) => ({ ...prev, step: "analyzing_ai" }));
         const analyzedVideos = await analyzeVideoStats(apiVideos, displayName, timeFrame);
 
         setSearchState({
           isLoading: false,
-          step: 'complete',
+          step: "complete",
           error: null,
           data: analyzedVideos,
           channelName: displayName,
@@ -93,7 +102,7 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
         });
       } catch (err: any) {
         if (import.meta.env.DEV) console.error(err);
-        const errorMessage = err?.message || 'Fehler bei der Analyse.';
+        const errorMessage = err?.message || "Fehler bei der Analyse.";
 
         const isApiKeyInvalid =
           err instanceof YouTubeApiError && err.status === 403 && !err.isQuotaError;
@@ -102,35 +111,35 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
           setSearchState((prev) => ({
             ...prev,
             isLoading: false,
-            step: 'idle',
-            error: 'Der API Key scheint ungültig zu sein. Bitte überprüfe ihn.',
+            step: "idle",
+            error: "Der API Key scheint ungültig zu sein. Bitte überprüfe ihn.",
           }));
           options?.onApiKeyInvalid?.();
         } else {
           setSearchState((prev) => ({
             ...prev,
             isLoading: false,
-            step: 'idle',
+            step: "idle",
             error: errorMessage,
           }));
         }
       }
     },
-    [apiKey, options]
+    [apiKey, options],
   );
 
   const setSearchResult = useCallback(
     (data: VideoData[], channelName: string, channelId?: string) => {
       setSearchState({
         isLoading: false,
-        step: 'complete',
+        step: "complete",
         error: null,
         data,
         channelName,
         channelId,
       });
     },
-    []
+    [],
   );
 
   const resetSearch = useCallback(() => {

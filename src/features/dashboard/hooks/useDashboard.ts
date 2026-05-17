@@ -1,9 +1,9 @@
-import {useCallback, useEffect, useLayoutEffect, useState} from 'react';
-import type {FavoriteConfig} from '@/src/features/favorites/types';
-import {favoritesService} from '@/src/features/favorites';
-import type {DashboardSortMode, SortOrder} from '@/src/shared/types';
-import {STORAGE_KEYS} from '@/src/shared/constants';
-import {getLocale} from '@/src/shared/lib/locale';
+import { useCallback, useEffect, useLayoutEffect, useState } from "react";
+import type { FavoriteConfig } from "@/src/features/favorites/types";
+import { favoritesService } from "@/src/features/favorites";
+import type { DashboardSortMode, SortOrder } from "@/src/shared/types";
+import { STORAGE_KEYS } from "@/src/shared/constants";
+import { getLocale } from "@/src/shared/lib/locale";
 
 /**
  * Hook for managing favorites state with event-driven updates
@@ -23,10 +23,13 @@ export function useFavorites() {
   }, []);
 
   // Remove favorite
-  const removeFavorite = useCallback((id: string) => {
-    favoritesService.remove(id);
-    loadFavorites();
-  }, [loadFavorites]);
+  const removeFavorite = useCallback(
+    (id: string) => {
+      favoritesService.remove(id);
+      loadFavorites();
+    },
+    [loadFavorites],
+  );
 
   // Refresh all favorites
   // IMPORTANT: We immediately mark ALL favorites as refreshing to ensure
@@ -50,8 +53,8 @@ export function useFavorites() {
     loadFavorites();
 
     const handler = () => loadFavorites();
-    window.addEventListener('favorites-changed', handler);
-    return () => window.removeEventListener('favorites-changed', handler);
+    window.addEventListener("favorites-changed", handler);
+    return () => window.removeEventListener("favorites-changed", handler);
   }, [loadFavorites]);
 
   // Track refresh start/end events
@@ -77,12 +80,12 @@ export function useFavorites() {
       });
     };
 
-    window.addEventListener('favorite-refresh-start', onStart);
-    window.addEventListener('favorite-refresh-end', onEnd);
+    window.addEventListener("favorite-refresh-start", onStart);
+    window.addEventListener("favorite-refresh-end", onEnd);
 
     return () => {
-      window.removeEventListener('favorite-refresh-start', onStart);
-      window.removeEventListener('favorite-refresh-end', onEnd);
+      window.removeEventListener("favorite-refresh-start", onStart);
+      window.removeEventListener("favorite-refresh-end", onEnd);
     };
   }, []);
 
@@ -101,17 +104,18 @@ export function useFavorites() {
  */
 export function useDashboardSort() {
   const [sortMode, setSortMode] = useState<DashboardSortMode>(() => {
-    if (typeof window === 'undefined') return 'alpha';
+    if (typeof window === "undefined") return "alpha";
     const v = localStorage.getItem(STORAGE_KEYS.DASHBOARD_SORT);
-    return v === 'velocity' ? 'velocity' : 'alpha';
+    return v === "velocity" ? "velocity" : "alpha";
   });
 
   const [sortOrder, setSortOrder] = useState<SortOrder>(() => {
-    if (typeof window === 'undefined') return 'asc';
+    if (typeof window === "undefined") return "asc";
     const saved = localStorage.getItem(STORAGE_KEYS.DASHBOARD_ORDER);
-    if (saved === 'asc' || saved === 'desc') return saved;
-    const mode = localStorage.getItem(STORAGE_KEYS.DASHBOARD_SORT) === 'velocity' ? 'velocity' : 'alpha';
-    return mode === 'velocity' ? 'desc' : 'asc';
+    if (saved === "asc" || saved === "desc") return saved;
+    const mode =
+      localStorage.getItem(STORAGE_KEYS.DASHBOARD_SORT) === "velocity" ? "velocity" : "alpha";
+    return mode === "velocity" ? "desc" : "asc";
   });
 
   const [cacheTick, setCacheTick] = useState(0);
@@ -137,30 +141,33 @@ export function useDashboardSort() {
   // Listen for cache updates to trigger re-sort
   useEffect(() => {
     const handler = () => setCacheTick((t) => t + 1);
-    window.addEventListener('favorites-cache-updated', handler);
-    return () => window.removeEventListener('favorites-cache-updated', handler);
+    window.addEventListener("favorites-cache-updated", handler);
+    return () => window.removeEventListener("favorites-cache-updated", handler);
   }, []);
 
-  const handleSortClick = useCallback((mode: DashboardSortMode) => {
-    if (mode === sortMode) {
-      setSortOrder((o) => (o === 'asc' ? 'desc' : 'asc'));
-    } else {
-      setSortMode(mode);
-      setSortOrder(mode === 'velocity' ? 'desc' : 'asc');
-    }
-  }, [sortMode]);
+  const handleSortClick = useCallback(
+    (mode: DashboardSortMode) => {
+      if (mode === sortMode) {
+        setSortOrder((o) => (o === "asc" ? "desc" : "asc"));
+      } else {
+        setSortMode(mode);
+        setSortOrder(mode === "velocity" ? "desc" : "asc");
+      }
+    },
+    [sortMode],
+  );
 
   // Sort favorites
   const sortFavorites = useCallback(
     (favorites: FavoriteConfig[]): FavoriteConfig[] => {
       const arr = [...favorites];
 
-      if (sortMode === 'alpha') {
+      if (sortMode === "alpha") {
         return arr.sort((a, b) => {
-          const an = (a.label || a.query || '').toString();
-          const bn = (b.label || b.query || '').toString();
-          const cmp = an.localeCompare(bn, getLocale(), { sensitivity: 'base' });
-          return sortOrder === 'asc' ? cmp : -cmp;
+          const an = (a.label || a.query || "").toString();
+          const bn = (b.label || b.query || "").toString();
+          const cmp = an.localeCompare(bn, getLocale(), { sensitivity: "base" });
+          return sortOrder === "asc" ? cmp : -cmp;
         });
       }
 
@@ -188,15 +195,15 @@ export function useDashboardSort() {
         const bv = Number.isFinite(bvMeta) ? bvMeta : bvFallback;
 
         if (av !== bv) {
-          return sortOrder === 'desc' ? bv - av : av - bv;
+          return sortOrder === "desc" ? bv - av : av - bv;
         }
 
-        const an = (a.label || a.query || '').toString();
-        const bn = (b.label || b.query || '').toString();
-        return an.localeCompare(bn, getLocale(), { sensitivity: 'base' });
+        const an = (a.label || a.query || "").toString();
+        const bn = (b.label || b.query || "").toString();
+        return an.localeCompare(bn, getLocale(), { sensitivity: "base" });
       });
     },
-    [sortMode, sortOrder, cacheTick]
+    [sortMode, sortOrder, cacheTick],
   );
 
   return {
@@ -217,8 +224,8 @@ export function useHighlights(_sortedFavorites: FavoriteConfig[]) {
   // Listen for hidden highlights changes
   useEffect(() => {
     const handler = () => setHiddenTick((t) => t + 1);
-    window.addEventListener('hidden-highlights-changed', handler);
-    return () => window.removeEventListener('hidden-highlights-changed', handler);
+    window.addEventListener("hidden-highlights-changed", handler);
+    return () => window.removeEventListener("hidden-highlights-changed", handler);
   }, []);
 
   return { hiddenTick };

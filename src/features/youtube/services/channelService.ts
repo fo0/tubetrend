@@ -1,24 +1,24 @@
-import {safeRead, safeWrite} from '@/src/shared/lib/storage';
-import {AUTO_LIMIT_CHANNEL, CACHE_TTL, STORAGE_KEYS} from '@/src/shared/constants';
+import { safeRead, safeWrite } from "@/src/shared/lib/storage";
+import { AUTO_LIMIT_CHANNEL, CACHE_TTL, STORAGE_KEYS } from "@/src/shared/constants";
 import type {
   ChannelInfo,
   ChannelSuggestion,
   ChannelVideosResult,
   QuotaCallContext,
-  YouTubeVideoItem
-} from '@/src/shared/types';
-import {TimeFrame} from '@/src/shared/types';
-import {getCutoffTime, parseISO8601DurationToSeconds} from '@/src/shared/lib/dateUtils';
+  YouTubeVideoItem,
+} from "@/src/shared/types";
+import { TimeFrame } from "@/src/shared/types";
+import { getCutoffTime, parseISO8601DurationToSeconds } from "@/src/shared/lib/dateUtils";
 import type {
   YoutubeChannelListResponse,
   YoutubePlaylistItemResource,
   YoutubePlaylistItemsResponse,
   YoutubeSearchResponse,
   YoutubeVideoListResponse,
-} from '../types';
+} from "../types";
 
 const SHORTS_DURATION_THRESHOLD_SECONDS = 180;
-import {fetchFromApi, getApiKey} from './youtubeApiClient';
+import { fetchFromApi, getApiKey } from "./youtubeApiClient";
 
 interface AutocompleteCacheEntry {
   results: ChannelSuggestion[];
@@ -71,8 +71,8 @@ function saveAutocompleteToCache(query: string, results: ChannelSuggestion[]): v
  * Determine the query type based on the input format
  * @returns 'handle' if query starts with @, otherwise 'channel'
  */
-export function getChannelQueryType(query: string): 'channel' | 'handle' {
-  return query.trim().startsWith('@') ? 'handle' : 'channel';
+export function getChannelQueryType(query: string): "channel" | "handle" {
+  return query.trim().startsWith("@") ? "handle" : "channel";
 }
 
 /**
@@ -81,14 +81,14 @@ export function getChannelQueryType(query: string): 'channel' | 'handle' {
 export function extractChannelIdentifier(input: string): string {
   const trimmed = input.trim();
 
-  if (trimmed.includes('youtube.com/') || trimmed.includes('youtu.be/')) {
+  if (trimmed.includes("youtube.com/") || trimmed.includes("youtu.be/")) {
     try {
-      const url = new URL(trimmed.startsWith('http') ? trimmed : `https://${trimmed}`);
+      const url = new URL(trimmed.startsWith("http") ? trimmed : `https://${trimmed}`);
       const path = url.pathname;
 
-      if (path.startsWith('/@')) return path.substring(1);
-      if (path.startsWith('/channel/')) return path.split('/')[2];
-      if (path.startsWith('/c/') || path.startsWith('/user/')) return path.split('/')[2];
+      if (path.startsWith("/@")) return path.substring(1);
+      if (path.startsWith("/channel/")) return path.split("/")[2];
+      if (path.startsWith("/c/") || path.startsWith("/user/")) return path.split("/")[2];
     } catch {
       // Fall through
     }
@@ -99,7 +99,7 @@ export function extractChannelIdentifier(input: string): string {
 
 /**
  * Search for channels (autocomplete)
- * 
+ *
  * Hinweis: Die Search API gibt bei type=channel nicht immer korrekte Kanal-Thumbnails zurück.
  * Daher wird nach der Suche ein zusätzlicher channels-API-Call gemacht, um die korrekten
  * Profilbilder zu holen (kostet nur 1 zusätzliche Unit für bis zu 50 Kanäle).
@@ -113,38 +113,48 @@ export async function searchChannels(query: string): Promise<ChannelSuggestion[]
 
   try {
     const autocompleteContext: QuotaCallContext = {
-      source: 'autocomplete',
+      source: "autocomplete",
       name: query,
     };
 
-    const data = await fetchFromApi<YoutubeSearchResponse>('search', {
-      part: 'snippet',
-      q: query,
-      type: 'channel',
-      maxResults: '5',
-    }, autocompleteContext);
+    const data = await fetchFromApi<YoutubeSearchResponse>(
+      "search",
+      {
+        part: "snippet",
+        q: query,
+        type: "channel",
+        maxResults: "5",
+      },
+      autocompleteContext,
+    );
 
     if (!data.items) return [];
 
     // Sammle Channel-IDs für den Batch-Call
     const channelIds = data.items
       .map((item) => item.snippet?.channelId)
-      .filter((id): id is string => typeof id === 'string' && id.length > 0);
+      .filter((id): id is string => typeof id === "string" && id.length > 0);
 
     // Hole korrekte Thumbnails über den channels-Endpoint (1 Unit für bis zu 50 Kanäle)
     let thumbnailMap: Record<string, string> = {};
     if (channelIds.length > 0) {
       try {
-        const channelsData = await fetchFromApi<YoutubeChannelListResponse>('channels', {
-          part: 'snippet',
-          id: channelIds.join(','),
-        }, autocompleteContext);
+        const channelsData = await fetchFromApi<YoutubeChannelListResponse>(
+          "channels",
+          {
+            part: "snippet",
+            id: channelIds.join(","),
+          },
+          autocompleteContext,
+        );
 
         if (channelsData.items) {
           for (const channel of channelsData.items) {
-            const thumbUrl = channel.snippet?.thumbnails?.default?.url ||
-                            channel.snippet?.thumbnails?.medium?.url ||
-                            channel.snippet?.thumbnails?.high?.url || '';
+            const thumbUrl =
+              channel.snippet?.thumbnails?.default?.url ||
+              channel.snippet?.thumbnails?.medium?.url ||
+              channel.snippet?.thumbnails?.high?.url ||
+              "";
             thumbnailMap[channel.id] = thumbUrl;
           }
         }
@@ -154,12 +164,12 @@ export async function searchChannels(query: string): Promise<ChannelSuggestion[]
     }
 
     const results: ChannelSuggestion[] = data.items.map((item) => {
-      const channelId = item.snippet?.channelId ?? '';
+      const channelId = item.snippet?.channelId ?? "";
       return {
         id: channelId,
-        title: item.snippet?.channelTitle ?? '',
+        title: item.snippet?.channelTitle ?? "",
         // Bevorzuge Thumbnail vom channels-Endpoint, Fallback auf Search-Thumbnail
-        thumbnailUrl: thumbnailMap[channelId] || item.snippet?.thumbnails?.default?.url || '',
+        thumbnailUrl: thumbnailMap[channelId] || item.snippet?.thumbnails?.default?.url || "",
         handle: item.snippet?.customUrl,
       };
     });
@@ -174,7 +184,10 @@ export async function searchChannels(query: string): Promise<ChannelSuggestion[]
 /**
  * Find channel information by name, handle, or ID
  */
-export async function findChannelInfo(channelName: string, context?: Partial<QuotaCallContext>): Promise<ChannelInfo> {
+export async function findChannelInfo(
+  channelName: string,
+  context?: Partial<QuotaCallContext>,
+): Promise<ChannelInfo> {
   const query = channelName.trim();
 
   // Check cache first
@@ -184,20 +197,20 @@ export async function findChannelInfo(channelName: string, context?: Partial<Quo
   }
 
   const queryType = getChannelQueryType(query);
-  const isHandle = queryType === 'handle';
+  const isHandle = queryType === "handle";
 
   const channelContext: QuotaCallContext = {
-    source: 'channel-info',
+    source: "channel-info",
     name: query,
     favoriteType: queryType,
     ...context,
   };
-  const isChannelId = query.startsWith('UC') && query.length >= 20;
+  const isChannelId = query.startsWith("UC") && query.length >= 20;
 
   // Try optimized path first (direct lookup)
   if (isHandle || isChannelId) {
     const params: Record<string, string> = {
-      part: 'snippet,contentDetails',
+      part: "snippet,contentDetails",
     };
 
     if (isHandle) {
@@ -207,7 +220,11 @@ export async function findChannelInfo(channelName: string, context?: Partial<Quo
     }
 
     try {
-      const channelData = await fetchFromApi<YoutubeChannelListResponse>('channels', params, channelContext);
+      const channelData = await fetchFromApi<YoutubeChannelListResponse>(
+        "channels",
+        params,
+        channelContext,
+      );
 
       if (channelData.items && channelData.items.length > 0) {
         const item = channelData.items[0];
@@ -229,12 +246,16 @@ export async function findChannelInfo(channelName: string, context?: Partial<Quo
   }
 
   // Fallback: Search API
-  const searchData = await fetchFromApi<YoutubeSearchResponse>('search', {
-    part: 'snippet',
-    q: query,
-    type: 'channel',
-    maxResults: '1',
-  }, channelContext);
+  const searchData = await fetchFromApi<YoutubeSearchResponse>(
+    "search",
+    {
+      part: "snippet",
+      q: query,
+      type: "channel",
+      maxResults: "1",
+    },
+    channelContext,
+  );
 
   if (!searchData.items || searchData.items.length === 0) {
     throw new Error(`Kanal "${channelName}" nicht gefunden.`);
@@ -248,18 +269,22 @@ export async function findChannelInfo(channelName: string, context?: Partial<Quo
   }
 
   // Get channel details
-  const channelDetails = await fetchFromApi<YoutubeChannelListResponse>('channels', {
-    part: 'contentDetails',
-    id: channelId,
-  }, channelContext);
+  const channelDetails = await fetchFromApi<YoutubeChannelListResponse>(
+    "channels",
+    {
+      part: "contentDetails",
+      id: channelId,
+    },
+    channelContext,
+  );
 
   if (!channelDetails.items || channelDetails.items.length === 0) {
-    throw new Error('Kanaldetails konnten nicht geladen werden.');
+    throw new Error("Kanaldetails konnten nicht geladen werden.");
   }
 
   const uploadsPlaylistId = channelDetails.items[0].contentDetails?.relatedPlaylists?.uploads;
   if (!uploadsPlaylistId) {
-    throw new Error('Kanaldetails konnten nicht geladen werden.');
+    throw new Error("Kanaldetails konnten nicht geladen werden.");
   }
 
   const result: ChannelInfo = {
@@ -279,33 +304,37 @@ export async function getVideosFromChannel(
   uploadsPlaylistId: string,
   timeFrame: TimeFrame,
   maxResults: number,
-  context?: Partial<QuotaCallContext>
+  context?: Partial<QuotaCallContext>,
 ): Promise<ChannelVideosResult> {
   const effectiveMax = maxResults === -1 ? AUTO_LIMIT_CHANNEL : maxResults > 0 ? maxResults : 0;
   const cutoffTime = getCutoffTime(timeFrame);
 
   const channelContext: QuotaCallContext = {
-    source: 'channel',
-    favoriteType: 'channel',
+    source: "channel",
+    favoriteType: "channel",
     ...context,
   };
 
   let allVideos: YoutubePlaylistItemResource[] = [];
-  let nextPageToken = '';
+  let nextPageToken = "";
   let shouldContinue = true;
   const MAX_PAGES = 100;
   let pageCount = 0;
 
   while (shouldContinue && pageCount < MAX_PAGES) {
     const params: Record<string, string> = {
-      part: 'snippet,contentDetails',
+      part: "snippet,contentDetails",
       playlistId: uploadsPlaylistId,
-      maxResults: '50',
+      maxResults: "50",
     };
 
     if (nextPageToken) params.pageToken = nextPageToken;
 
-    const playlistData = await fetchFromApi<YoutubePlaylistItemsResponse>('playlistItems', params, channelContext);
+    const playlistData = await fetchFromApi<YoutubePlaylistItemsResponse>(
+      "playlistItems",
+      params,
+      channelContext,
+    );
 
     if (!playlistData.items || playlistData.items.length === 0) {
       shouldContinue = false;
@@ -326,7 +355,7 @@ export async function getVideosFromChannel(
     if (validItemsInBatch === 0 && items.length > 0) {
       shouldContinue = false;
     } else {
-      nextPageToken = playlistData.nextPageToken ?? '';
+      nextPageToken = playlistData.nextPageToken ?? "";
       if (!nextPageToken) shouldContinue = false;
     }
 
@@ -362,12 +391,16 @@ export async function getVideosFromChannel(
   }
 
   const batchPromises = batches.map(async (batch) => {
-    const videoIds = batch.map((item) => item.contentDetails.videoId).join(',');
+    const videoIds = batch.map((item) => item.contentDetails.videoId).join(",");
 
-    const statsData = await fetchFromApi<YoutubeVideoListResponse>('videos', {
-      part: 'statistics,contentDetails',
-      id: videoIds,
-    }, { ...channelContext, source: 'video-stats' });
+    const statsData = await fetchFromApi<YoutubeVideoListResponse>(
+      "videos",
+      {
+        part: "statistics,contentDetails",
+        id: videoIds,
+      },
+      { ...channelContext, source: "video-stats" },
+    );
 
     if (!statsData.items) return [];
 
@@ -384,7 +417,7 @@ export async function getVideosFromChannel(
         // YoutubeVideoSnippet); cast bridges to the consumer type which has
         // narrower thumbnail optionality. Empty-object fallback preserves
         // pre-refactor behaviour when an item is missing.
-        const snippet = (originalItem?.snippet ?? {}) as unknown as YouTubeVideoItem['snippet'];
+        const snippet = (originalItem?.snippet ?? {}) as unknown as YouTubeVideoItem["snippet"];
         return {
           id: item.id,
           snippet,

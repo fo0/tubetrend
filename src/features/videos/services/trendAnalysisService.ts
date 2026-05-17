@@ -1,5 +1,5 @@
-import type {YouTubeVideoItem} from '@/src/shared/types';
-import type {VideoData} from '../types';
+import type { YouTubeVideoItem } from "@/src/shared/types";
+import type { VideoData } from "../types";
 
 /**
  * Pure math-based trend analysis (no AI API calls)
@@ -7,19 +7,17 @@ import type {VideoData} from '../types';
 export async function analyzeVideoStats(
   videos: YouTubeVideoItem[],
   _channelName: string,
-  _timeFrame: string
+  _timeFrame: string,
 ): Promise<VideoData[]> {
   const now = Date.now();
 
   return videos.map((video) => {
     const publishedAt = new Date(video.snippet.publishedAt).getTime();
-    const rawAgeHours = Number.isFinite(publishedAt)
-      ? (now - publishedAt) / (1000 * 60 * 60)
-      : 1;
+    const rawAgeHours = Number.isFinite(publishedAt) ? (now - publishedAt) / (1000 * 60 * 60) : 1;
     const ageInHours = Math.max(1, Number.isFinite(rawAgeHours) ? rawAgeHours : 1);
-    const views = parseInt(video.statistics?.viewCount || '0', 10) || 0;
-    const likes = parseInt(video.statistics?.likeCount || '0', 10) || 0;
-    const comments = parseInt(video.statistics?.commentCount || '0', 10) || 0;
+    const views = parseInt(video.statistics?.viewCount || "0", 10) || 0;
+    const likes = parseInt(video.statistics?.likeCount || "0", 10) || 0;
+    const comments = parseInt(video.statistics?.commentCount || "0", 10) || 0;
 
     // Calculate views per hour (velocity)
     const viewsPerHour = views / ageInHours;
@@ -41,7 +39,7 @@ export async function analyzeVideoStats(
       video.snippet.thumbnails?.high?.url ||
       video.snippet.thumbnails?.medium?.url ||
       video.snippet.thumbnails?.default?.url ||
-      '';
+      "";
 
     return {
       id: video.id,
@@ -62,40 +60,40 @@ function generateReasoning(
   viewsPerHour: number,
   engagementRate: number,
   ageInHours: number,
-  views: number
+  views: number,
 ): string {
   const parts: string[] = [];
 
   if (viewsPerHour > 10000) {
-    parts.push('Extremely high velocity');
+    parts.push("Extremely high velocity");
   } else if (viewsPerHour > 1000) {
-    parts.push('Very high velocity');
+    parts.push("Very high velocity");
   } else if (viewsPerHour > 100) {
-    parts.push('Good velocity');
+    parts.push("Good velocity");
   }
 
   if (engagementRate > 10) {
-    parts.push('exceptional engagement');
+    parts.push("exceptional engagement");
   } else if (engagementRate > 5) {
-    parts.push('high engagement');
+    parts.push("high engagement");
   } else if (engagementRate > 2) {
-    parts.push('good engagement');
+    parts.push("good engagement");
   }
 
   if (ageInHours < 2) {
-    parts.push('very fresh content');
+    parts.push("very fresh content");
   } else if (ageInHours < 6) {
-    parts.push('fresh content');
+    parts.push("fresh content");
   }
 
   if (parts.length === 0) {
     if (views > 100000) {
-      return 'Established performance with steady views';
+      return "Established performance with steady views";
     }
-    return 'Moderate performance';
+    return "Moderate performance";
   }
 
-  return parts.join(', ');
+  return parts.join(", ");
 }
 
 function formatUploadTime(timestamp: number): string {

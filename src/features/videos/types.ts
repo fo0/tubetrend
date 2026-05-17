@@ -17,7 +17,7 @@ export interface VideoData {
 
 export interface SearchState {
   isLoading: boolean;
-  step: 'idle' | 'fetching_youtube' | 'analyzing_ai' | 'complete';
+  step: "idle" | "fetching_youtube" | "analyzing_ai" | "complete";
   error: string | null;
   data: VideoData[] | null;
   channelName: string;

@@ -1,4 +1,4 @@
-import {useEffect, useRef} from 'react';
+import { useEffect, useRef } from "react";
 
 type EventHandler<T extends Event> = (event: T) => void;
 
@@ -8,25 +8,25 @@ type EventHandler<T extends Event> = (event: T) => void;
 export function useEventListener<K extends keyof WindowEventMap>(
   eventName: K,
   handler: EventHandler<WindowEventMap[K]>,
-  element?: Window | null
+  element?: Window | null,
 ): void;
 
 export function useEventListener<K extends keyof HTMLElementEventMap>(
   eventName: K,
   handler: EventHandler<HTMLElementEventMap[K]>,
-  element: HTMLElement | null
+  element: HTMLElement | null,
 ): void;
 
 export function useEventListener<K extends keyof DocumentEventMap>(
   eventName: K,
   handler: EventHandler<DocumentEventMap[K]>,
-  element: Document
+  element: Document,
 ): void;
 
 export function useEventListener(
   eventName: string,
   handler: EventHandler<Event>,
-  element?: Window | HTMLElement | Document | null
+  element?: Window | HTMLElement | Document | null,
 ): void {
   const savedHandler = useRef(handler);
 

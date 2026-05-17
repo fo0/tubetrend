@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="de">
   <head>
     <meta charset="UTF-8" />
@@ -7,16 +7,17 @@
     <title>TubeTrend</title>
     <!-- Apply theme class (dark/light) before React mounts to avoid FOUC -->
     <script>
-      (function() {
+      (function () {
         try {
-          var storageKey = 'tt.theme';
+          var storageKey = "tt.theme";
           var explicit = localStorage.getItem(storageKey);
-          var systemPrefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-          var shouldDark = explicit === 'dark' || (explicit !== 'light' && systemPrefersDark);
+          var systemPrefersDark =
+            window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+          var shouldDark = explicit === "dark" || (explicit !== "light" && systemPrefersDark);
           if (shouldDark) {
-            document.documentElement.classList.add('dark');
+            document.documentElement.classList.add("dark");
           } else {
-            document.documentElement.classList.remove('dark');
+            document.documentElement.classList.remove("dark");
           }
         } catch (e) {
           // ignore

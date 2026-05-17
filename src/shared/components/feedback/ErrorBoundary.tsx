@@ -1,5 +1,5 @@
-import {Component, type ErrorInfo, type ReactNode} from 'react';
-import {AlertCircle, RefreshCw} from 'lucide-react';
+import { Component, type ErrorInfo, type ReactNode } from "react";
+import { AlertCircle, RefreshCw } from "lucide-react";
 
 interface Props {
   children: ReactNode;
@@ -21,7 +21,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     this.props.onError?.(error, errorInfo);
-    console.error('[ErrorBoundary]', error, errorInfo);
+    console.error("[ErrorBoundary]", error, errorInfo);
   }
 
   reset = (): void => {
@@ -31,7 +31,7 @@ export class ErrorBoundary extends Component<Props, State> {
   render(): ReactNode {
     if (this.state.hasError && this.state.error) {
       const { fallback } = this.props;
-      if (typeof fallback === 'function') {
+      if (typeof fallback === "function") {
         return fallback(this.state.error, this.reset);
       }
       if (fallback) {
@@ -61,7 +61,7 @@ function DefaultErrorFallback({ error, onRetry }: DefaultErrorFallbackProps) {
           Something went wrong
         </h3>
         <p className="text-sm text-red-600 dark:text-red-300 mb-4">
-          {error.message || 'An unexpected error occurred'}
+          {error.message || "An unexpected error occurred"}
         </p>
         <button
           onClick={onRetry}

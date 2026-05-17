@@ -1,13 +1,13 @@
-import React, {useState} from 'react';
-import {Check, HelpCircle, Key, ExternalLink, Zap} from 'lucide-react';
-import {useTranslation} from 'react-i18next';
+import React, { useState } from "react";
+import { Check, HelpCircle, Key, ExternalLink, Zap } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface ApiKeyModalProps {
   onSave: (key: string) => void;
 }
 
 export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ onSave }) => {
-  const [inputKey, setInputKey] = useState('');
+  const [inputKey, setInputKey] = useState("");
   const [showHelp, setShowHelp] = useState(false);
   const { t } = useTranslation();
 
@@ -31,13 +31,21 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ onSave }) => {
             <div className="w-16 h-16 bg-red-600/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-500/20">
               <Key className="w-8 h-8 text-red-500" />
             </div>
-            <h2 id="apikey-modal-title" className="text-2xl font-bold text-slate-900 dark:text-white">{t('modal.apiKey.title')}</h2>
-            <p className="text-slate-500 dark:text-slate-400">{t('modal.apiKey.description')}</p>
+            <h2
+              id="apikey-modal-title"
+              className="text-2xl font-bold text-slate-900 dark:text-white"
+            >
+              {t("modal.apiKey.title")}
+            </h2>
+            <p className="text-slate-500 dark:text-slate-400">{t("modal.apiKey.description")}</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="apiKey" className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">
+              <label
+                htmlFor="apiKey"
+                className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2"
+              >
                 YouTube Data API v3 Key
               </label>
               <input
@@ -57,7 +65,7 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ onSave }) => {
               className="w-full py-3 px-4 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 text-white font-bold rounded-xl transition-all shadow-lg shadow-red-900/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Check className="w-5 h-5" />
-              {t('modal.apiKey.save')}
+              {t("modal.apiKey.save")}
             </button>
           </form>
 
@@ -68,7 +76,7 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ onSave }) => {
               className="flex items-center gap-2 text-indigo-500 dark:text-indigo-400 text-sm hover:text-indigo-400 dark:hover:text-indigo-300 transition-colors mx-auto"
             >
               <HelpCircle className="w-4 h-4" />
-              <span>{t('modal.apiKey.helpToggle')}</span>
+              <span>{t("modal.apiKey.helpToggle")}</span>
             </button>
 
             {showHelp && (
@@ -76,13 +84,19 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ onSave }) => {
                 <div className="flex items-start gap-2 pb-3 border-b border-slate-200 dark:border-slate-700">
                   <Zap className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
                   <div>
-                    <p className="font-medium text-slate-700 dark:text-slate-200">{t('modal.apiKey.quotaTitle')}</p>
-                    <p className="text-slate-500 dark:text-slate-400 mt-0.5">{t('modal.apiKey.quotaInfo')}</p>
+                    <p className="font-medium text-slate-700 dark:text-slate-200">
+                      {t("modal.apiKey.quotaTitle")}
+                    </p>
+                    <p className="text-slate-500 dark:text-slate-400 mt-0.5">
+                      {t("modal.apiKey.quotaInfo")}
+                    </p>
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <p className="font-medium text-slate-700 dark:text-slate-200">{t('modal.apiKey.stepsTitle')}</p>
+                  <p className="font-medium text-slate-700 dark:text-slate-200">
+                    {t("modal.apiKey.stepsTitle")}
+                  </p>
                   <ol className="list-decimal list-inside space-y-1.5 text-slate-500 dark:text-slate-400">
                     <li>
                       <a
@@ -91,19 +105,19 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ onSave }) => {
                         rel="noopener noreferrer"
                         className="text-indigo-500 dark:text-indigo-400 underline decoration-indigo-500/30 hover:text-indigo-400 inline-flex items-center gap-1"
                       >
-                        {t('modal.apiKey.step1')}
+                        {t("modal.apiKey.step1")}
                         <ExternalLink className="w-3 h-3" />
                       </a>
                     </li>
-                    <li>{t('modal.apiKey.step2')}</li>
-                    <li>{t('modal.apiKey.step3')}</li>
-                    <li>{t('modal.apiKey.step4')}</li>
-                    <li>{t('modal.apiKey.step5')}</li>
+                    <li>{t("modal.apiKey.step2")}</li>
+                    <li>{t("modal.apiKey.step3")}</li>
+                    <li>{t("modal.apiKey.step4")}</li>
+                    <li>{t("modal.apiKey.step5")}</li>
                   </ol>
                 </div>
 
                 <div className="pt-2 text-slate-400 dark:text-slate-500 text-[10px]">
-                  {t('modal.apiKey.keyFormat')}
+                  {t("modal.apiKey.keyFormat")}
                 </div>
               </div>
             )}

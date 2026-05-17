@@ -1,13 +1,13 @@
-import {API_COSTS, STORAGE_KEYS} from '@/src/shared/constants';
-import type {QuotaCallContext} from '@/src/shared/types';
-import {quotaService} from './quotaService';
+import { API_COSTS, STORAGE_KEYS } from "@/src/shared/constants";
+import type { QuotaCallContext } from "@/src/shared/types";
+import { quotaService } from "./quotaService";
 
 type Endpoint = keyof typeof API_COSTS;
 
 // Single source of truth: localStorage. No module-level mirror to avoid drift
 // when the key is changed in another tab/window or by other code paths.
 export function setApiKey(key: string): void {
-  if (typeof window === 'undefined') return;
+  if (typeof window === "undefined") return;
   if (key) {
     localStorage.setItem(STORAGE_KEYS.API_KEY, key);
   } else {
@@ -18,18 +18,18 @@ export function setApiKey(key: string): void {
 }
 
 export function getApiKey(): string {
-  if (typeof window === 'undefined') return '';
-  return localStorage.getItem(STORAGE_KEYS.API_KEY) || '';
+  if (typeof window === "undefined") return "";
+  return localStorage.getItem(STORAGE_KEYS.API_KEY) || "";
 }
 
 export class YouTubeApiError extends Error {
   constructor(
     message: string,
     public readonly status: number,
-    public readonly isQuotaError: boolean = false
+    public readonly isQuotaError: boolean = false,
   ) {
     super(message);
-    this.name = 'YouTubeApiError';
+    this.name = "YouTubeApiError";
   }
 }
 
@@ -37,15 +37,15 @@ export async function fetchFromApi<T>(
   endpoint: Endpoint,
   params: Record<string, string>,
   context?: QuotaCallContext,
-  signal?: AbortSignal
+  signal?: AbortSignal,
 ): Promise<T> {
   const apiKey = getApiKey();
   if (!apiKey) {
-    throw new YouTubeApiError('YouTube API Key fehlt.', 401);
+    throw new YouTubeApiError("YouTube API Key fehlt.", 401);
   }
 
   const url = new URL(`https://www.googleapis.com/youtube/v3/${endpoint}`);
-  url.searchParams.append('key', apiKey);
+  url.searchParams.append("key", apiKey);
   Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
 
   const cost = API_COSTS[endpoint];
@@ -54,16 +54,16 @@ export async function fetchFromApi<T>(
 
   if (!response.ok) {
     if (data.error) {
-      const msg: string = typeof data.error.message === 'string' ? data.error.message : '';
+      const msg: string = typeof data.error.message === "string" ? data.error.message : "";
       const lower = msg.toLowerCase();
 
-      if (lower.includes('api key not valid')) {
-        throw new YouTubeApiError('Der eingegebene API Key ist ungültig.', 403);
+      if (lower.includes("api key not valid")) {
+        throw new YouTubeApiError("Der eingegebene API Key ist ungültig.", 403);
       }
 
-      if (lower.includes('quota')) {
+      if (lower.includes("quota")) {
         quotaService.markExhausted();
-        throw new YouTubeApiError('YouTube API Quota überschritten.', 403, true);
+        throw new YouTubeApiError("YouTube API Quota überschritten.", 403, true);
       }
 
       // 4xx errors still cost quota

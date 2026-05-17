@@ -6,20 +6,11 @@
   "directories": {
     "output": "release-chromebook"
   },
-  "files": [
-    "dist/**/*",
-    "dist-electron/**/*",
-    "package.json"
-  ],
+  "files": ["dist/**/*", "dist-electron/**/*", "package.json"],
   "linux": {
-    "target": [
-      "deb"
-    ],
+    "target": ["deb"],
     "category": "Utility",
-    "executableArgs": [
-      "--no-sandbox",
-      "--ozone-platform-hint=auto"
-    ]
+    "executableArgs": ["--no-sandbox", "--ozone-platform-hint=auto"]
   },
   "artifactName": "TubeTrend-${version}-Chromebook-${arch}.${ext}"
 }

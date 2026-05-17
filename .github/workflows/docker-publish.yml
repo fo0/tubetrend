@@ -2,15 +2,15 @@ name: Build and Push Docker image to GHCR
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [main, master]
     paths-ignore:
-      - '**.md'
-      - 'docs/**'
-      - '.env.example'
-      - '.gitignore'
-      - '.editorconfig'
-      - 'LICENSE*'
-      - '.vscode/**'
+      - "**.md"
+      - "docs/**"
+      - ".env.example"
+      - ".gitignore"
+      - ".editorconfig"
+      - "LICENSE*"
+      - ".vscode/**"
     # Trigger auch bei Release-Tags (z.B. v20260214-1530)
   workflow_dispatch:
 
@@ -33,8 +33,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '22'
-          cache: 'npm'
+          node-version: "22"
+          cache: "npm"
 
       - name: Install Dependencies
         run: npm ci
@@ -43,7 +43,7 @@ jobs:
       # (Vite Standard-Templates haben 'lint' und 'tsc' meist integriert)
       - name: Run Type Check
         run: npx tsc --noEmit
-      
+
       - name: Run Linter
         # Führt Lint nur aus, wenn das Skript existiert, um Fehler zu vermeiden
         run: if npm run | grep -q "lint"; then npm run lint; fi
@@ -55,7 +55,7 @@ jobs:
     permissions:
       contents: read
       packages: write
-      
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6

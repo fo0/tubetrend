@@ -1,5 +1,5 @@
-import type {FavoriteCacheEntry, FavoriteConfig} from '@/src/features/favorites/types';
-import type {VideoData} from '@/src/features/videos/types';
+import type { FavoriteCacheEntry, FavoriteConfig } from "@/src/features/favorites/types";
+import type { VideoData } from "@/src/features/videos/types";
 
 export interface HighlightItem {
   video: VideoData;
@@ -19,7 +19,7 @@ interface SelectOptions {
 export function selectHighlightVideosFromFavorites(
   favorites: FavoriteConfig[],
   getCache: (id: string) => FavoriteCacheEntry | null,
-  options: SelectOptions = {}
+  options: SelectOptions = {},
 ): HighlightItem[] {
   const perFavorite = options.perFavorite ?? 1;
   const maxTotal = options.maxTotal ?? favorites.length;
@@ -32,9 +32,7 @@ export function selectHighlightVideosFromFavorites(
     const cache = getCache(fav.id);
     if (!cache || !cache.videos || cache.videos.length === 0) continue;
 
-    const sorted = [...cache.videos].sort(
-      (a, b) => b.trendingScore - a.trendingScore
-    );
+    const sorted = [...cache.videos].sort((a, b) => b.trendingScore - a.trendingScore);
 
     const label = fav.label || cache.meta?.channelTitle || fav.query;
 

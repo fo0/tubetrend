@@ -22,6 +22,7 @@ If `gh` is missing or unauthenticated → print install/login instructions, stop
 ## Project CI Workflows
 
 TubeTrend uses these GitHub Actions workflows (per `.github/workflows/`):
+
 - `pr-checks.yml` — typecheck, build, lint, security audit on every PR
 - `docker-publish.yml` — Docker image to ghcr.io on main push
 - `electron-release.yml` — Electron Win/Mac/Linux + Chromebook .deb + Android APK + Chrome Extension on tag
@@ -38,15 +39,16 @@ RUNS=$(gh run list --branch "$BRANCH" --limit 5 --json databaseId,status,conclus
 
 Decision matrix:
 
-| State                                                  | Action                              |
-|--------------------------------------------------------|--------------------------------------|
-| No runs found for branch                               | Phase A — report "no CI runs yet"   |
-| Latest run still `in_progress` / `queued`              | Phase B — show running status       |
-| Latest run `success`                                   | Phase C — green report              |
-| Latest run `failure` / `cancelled` / `timed_out`       | Phase D — fetch logs + propose fix  |
-| Latest run is for `headSha != HEAD_SHA` (stale)        | Phase E — note stale                |
+| State                                            | Action                             |
+| ------------------------------------------------ | ---------------------------------- |
+| No runs found for branch                         | Phase A — report "no CI runs yet"  |
+| Latest run still `in_progress` / `queued`        | Phase B — show running status      |
+| Latest run `success`                             | Phase C — green report             |
+| Latest run `failure` / `cancelled` / `timed_out` | Phase D — fetch logs + propose fix |
+| Latest run is for `headSha != HEAD_SHA` (stale)  | Phase E — note stale               |
 
 Print detected phase before acting:
+
 ```
 Detected: latest CI run failed (run #123, workflow "pr-checks"). Fetching failed-job logs.
 ```
@@ -68,6 +70,7 @@ gh run view <run-id>                  # default (no waiting)
 ```
 
 Report:
+
 ```
 🟡 Run #<id> "<workflow>" in progress — <N>/<M> jobs done.
 URL: <url>
@@ -80,6 +83,7 @@ gh run view <run-id> --json conclusion,createdAt,updatedAt,workflowName
 ```
 
 Report:
+
 ```
 🟢 Run #<id> "<workflow>" passed (<duration>).
 URL: <url>
@@ -108,6 +112,7 @@ URL: <url>
 5. **Verify fix locally** before any push (`npm ci && npm run typecheck && npm run build`).
 
 Report:
+
 ```
 🔴 Run #<id> "<workflow>" failed.
 Failed job: <name>
@@ -126,13 +131,13 @@ Latest CI run was for <stale-sha> (now HEAD is <head-sha>). Push and wait for fr
 
 ## Explicit Sub-Commands
 
-| Command                  | Behavior                                                  |
-|--------------------------|-----------------------------------------------------------|
-| `/ci` (default)          | Auto-route per matrix above                               |
-| `/ci status`             | Force Phase B/C report, no log fetching                   |
-| `/ci logs`               | Force Phase D log fetch even if green                     |
-| `/ci fix`                | Force Phase D fix workflow                                |
-| `/ci rerun`              | Confirm-then-`gh run rerun --failed` for the latest failed run |
+| Command         | Behavior                                                       |
+| --------------- | -------------------------------------------------------------- |
+| `/ci` (default) | Auto-route per matrix above                                    |
+| `/ci status`    | Force Phase B/C report, no log fetching                        |
+| `/ci logs`      | Force Phase D log fetch even if green                          |
+| `/ci fix`       | Force Phase D fix workflow                                     |
+| `/ci rerun`     | Confirm-then-`gh run rerun --failed` for the latest failed run |
 
 ## Hard Rules
 

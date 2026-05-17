@@ -46,13 +46,13 @@ export interface ChannelInfo {
  */
 export interface QuotaCallContext {
   /** Type of request: channel search, keyword search, autocomplete, etc. */
-  source: 'channel' | 'keyword' | 'autocomplete' | 'channel-info' | 'video-stats' | 'unknown';
+  source: "channel" | "keyword" | "autocomplete" | "channel-info" | "video-stats" | "unknown";
   /** Display name: channel name or search term */
   name?: string;
   /** Favorite ID if triggered by a favorite */
   favoriteId?: string;
   /** Type of favorite that triggered this call (for grouping in UI) */
-  favoriteType?: 'channel' | 'handle' | 'keyword';
+  favoriteType?: "channel" | "handle" | "keyword";
 }
 
 export interface QuotaHistoryEntry {

@@ -1,19 +1,19 @@
-import {useMemo, useRef} from 'react';
-import {Activity, Download, EyeOff, RefreshCw, Upload} from 'lucide-react';
-import {FavoriteRow} from '@/src/shared/components/ui/FavoriteRow';
-import {FavoriteAvatar} from '@/src/shared/components/ui/FavoriteAvatar';
-import {HighlightVideoCard} from '@/src/shared/components/ui/HighlightVideoCard';
-import {FloatingScrollButton} from '@/src/shared/components/ui/FloatingScrollButton';
-import {useTranslation} from 'react-i18next';
-import type {FavoriteConfig} from '@/src/features/favorites/types';
-import type {VideoData} from '@/src/features/videos/types';
-import {favoritesService} from '@/src/features/favorites';
+import { useMemo, useRef } from "react";
+import { Activity, Download, EyeOff, RefreshCw, Upload } from "lucide-react";
+import { FavoriteRow } from "@/src/shared/components/ui/FavoriteRow";
+import { FavoriteAvatar } from "@/src/shared/components/ui/FavoriteAvatar";
+import { HighlightVideoCard } from "@/src/shared/components/ui/HighlightVideoCard";
+import { FloatingScrollButton } from "@/src/shared/components/ui/FloatingScrollButton";
+import { useTranslation } from "react-i18next";
+import type { FavoriteConfig } from "@/src/features/favorites/types";
+import type { VideoData } from "@/src/features/videos/types";
+import { favoritesService } from "@/src/features/favorites";
 import {
   hiddenHighlightsService,
-  selectHighlightVideosFromFavorites
-} from '@/src/features/dashboard';
-import {getLocale} from '@/src/shared/lib/locale';
-import type {DashboardSortMode} from '@/src/shared/types';
+  selectHighlightVideosFromFavorites,
+} from "@/src/features/dashboard";
+import { getLocale } from "@/src/shared/lib/locale";
+import type { DashboardSortMode } from "@/src/shared/types";
 
 interface DashboardPageProps {
   favorites: FavoriteConfig[];
@@ -21,7 +21,7 @@ interface DashboardPageProps {
   refreshToken: number;
   refreshingIds: Set<string>;
   dashboardSortMode: DashboardSortMode;
-  dashboardSortOrder: 'asc' | 'desc';
+  dashboardSortOrder: "asc" | "desc";
   cacheTick: number;
   hiddenTick: number;
   onRemoveFavorite: (id: string) => void;
@@ -29,7 +29,7 @@ interface DashboardPageProps {
     favorite: FavoriteConfig,
     cachedVideos: VideoData[] | null,
     channelTitle: string,
-    channelId: string | null
+    channelId: string | null,
   ) => void;
   onRefreshAll: () => void;
   onSortClick: (mode: DashboardSortMode) => void;
@@ -66,7 +66,7 @@ export function DashboardPage({
     const raw = selectHighlightVideosFromFavorites(
       sortedFavorites,
       (id) => favoritesService.getCache(id),
-      { perFavorite: 1, maxTotal: sortedFavorites.length }
+      { perFavorite: 1, maxTotal: sortedFavorites.length },
     );
 
     // Sort by velocity
@@ -76,15 +76,13 @@ export function DashboardPage({
       const aVph = Number.isFinite(av) ? av : -1;
       const bVph = Number.isFinite(bv) ? bv : -1;
       if (aVph !== bVph) return bVph - aVph;
-      const aTs = typeof a.video?.trendingScore === 'number' ? a.video.trendingScore : -1;
-      const bTs = typeof b.video?.trendingScore === 'number' ? b.video.trendingScore : -1;
+      const aTs = typeof a.video?.trendingScore === "number" ? a.video.trendingScore : -1;
+      const bTs = typeof b.video?.trendingScore === "number" ? b.video.trendingScore : -1;
       if (aTs !== bTs) return bTs - aTs;
-      return a.sourceLabel.localeCompare(b.sourceLabel, getLocale(), { sensitivity: 'base' });
+      return a.sourceLabel.localeCompare(b.sourceLabel, getLocale(), { sensitivity: "base" });
     });
 
-    const visible = sorted.filter(
-      (item) => !hiddenHighlightsService.isHidden(item.video.id)
-    );
+    const visible = sorted.filter((item) => !hiddenHighlightsService.isHidden(item.video.id));
     const hiddenCount = sorted.length - visible.length;
 
     return { visible, hiddenCount };
@@ -103,11 +101,11 @@ export function DashboardPage({
         className="hidden"
         onChange={(e) => {
           const f = e.target.files?.[0];
-          e.target.value = '';
+          e.target.value = "";
           if (!f) return;
           onImportFile(f).catch(() => {
             try {
-              window.alert(t('backup.importInvalid'));
+              window.alert(t("backup.importInvalid"));
             } catch {
               // ignore
             }
@@ -116,21 +114,23 @@ export function DashboardPage({
       />
 
       {favorites.length > 0 && (
-        <section className={`mb-6 rounded-2xl border border-indigo-200/70 bg-indigo-50/40 p-4 shadow-sm dark:border-indigo-500/20 dark:bg-indigo-500/10 ${refreshingIds.size > 0 ? 'highlights-loading-border' : ''}`}>
+        <section
+          className={`mb-6 rounded-2xl border border-indigo-200/70 bg-indigo-50/40 p-4 shadow-sm dark:border-indigo-500/20 dark:bg-indigo-500/10 ${refreshingIds.size > 0 ? "highlights-loading-border" : ""}`}
+        >
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-3">
             <div>
               <div className="text-xs font-extrabold uppercase tracking-wide text-indigo-700 dark:text-indigo-300">
-                {t('dashboard.highlights.title')}
+                {t("dashboard.highlights.title")}
               </div>
               <div className="text-sm text-slate-600 dark:text-slate-400">
-                {t('dashboard.highlights.subtitle')}
+                {t("dashboard.highlights.subtitle")}
               </div>
             </div>
 
             <div className="flex items-center justify-end gap-2">
               {highlightVideos.length > 0 && (
                 <div className="text-xs font-medium text-slate-500 dark:text-slate-400 mr-1">
-                  {t('dashboard.highlights.count', { count: highlightVideos.length })}
+                  {t("dashboard.highlights.count", { count: highlightVideos.length })}
                 </div>
               )}
 
@@ -141,9 +141,9 @@ export function DashboardPage({
                   className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-md border transition-colors
                            border-slate-300 text-slate-700 hover:bg-slate-100
                            dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
-                  title={t('actions.importDashboard')}
+                  title={t("actions.importDashboard")}
                 >
-                  <Upload className="w-3 h-3" /> {t('actions.importDashboard')}
+                  <Upload className="w-3 h-3" /> {t("actions.importDashboard")}
                 </button>
                 <button
                   type="button"
@@ -153,9 +153,9 @@ export function DashboardPage({
                            border-slate-300 text-slate-700 hover:bg-slate-100
                            disabled:opacity-50 disabled:cursor-not-allowed
                            dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
-                  title={t('actions.exportDashboard')}
+                  title={t("actions.exportDashboard")}
                 >
-                  <Download className="w-3 h-3" /> {t('actions.exportDashboard')}
+                  <Download className="w-3 h-3" /> {t("actions.exportDashboard")}
                 </button>
                 <button
                   type="button"
@@ -165,9 +165,9 @@ export function DashboardPage({
                            border-slate-300 text-slate-700 hover:bg-slate-100
                            disabled:opacity-50 disabled:cursor-not-allowed
                            dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
-                  title={t('actions.refreshAll')}
+                  title={t("actions.refreshAll")}
                 >
-                  <RefreshCw className="w-3 h-3" /> {t('actions.refreshAll')}
+                  <RefreshCw className="w-3 h-3" /> {t("actions.refreshAll")}
                 </button>
                 {hiddenHighlightsCount > 0 && (
                   <button
@@ -176,9 +176,9 @@ export function DashboardPage({
                     className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-md border transition-colors
                              border-amber-300 text-amber-700 hover:bg-amber-50
                              dark:border-amber-600/50 dark:text-amber-400 dark:hover:bg-amber-900/20"
-                    title={t('dashboard.highlights.showHiddenList')}
+                    title={t("dashboard.highlights.showHiddenList")}
                   >
-                    <EyeOff className="w-3 h-3" /> {t('dashboard.highlights.hiddenButton')}
+                    <EyeOff className="w-3 h-3" /> {t("dashboard.highlights.hiddenButton")}
                   </button>
                 )}
               </div>
@@ -225,7 +225,7 @@ export function DashboardPage({
               ))}
               <div className="col-span-full flex items-center justify-center -mt-[200px] pointer-events-none">
                 <div className="text-center text-slate-500 dark:text-slate-400 text-sm bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm px-4 py-2 rounded-lg">
-                  {t('dashboard.highlights.empty')}
+                  {t("dashboard.highlights.empty")}
                 </div>
               </div>
             </div>
@@ -238,45 +238,45 @@ export function DashboardPage({
         {favorites.length > 0 ? (
           <div className="flex items-center gap-3 text-xs font-medium">
             <span className="text-slate-600 dark:text-slate-400">
-              {t('dashboard.sorting.label')}
+              {t("dashboard.sorting.label")}
             </span>
             <div className="inline-flex items-center rounded-lg border border-slate-300 bg-white p-0.5 dark:border-slate-800 dark:bg-slate-900/60">
               <button
                 type="button"
-                onClick={() => onSortClick('alpha')}
+                onClick={() => onSortClick("alpha")}
                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors ${
-                  dashboardSortMode === 'alpha'
-                    ? 'bg-indigo-600 text-white'
-                    : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-800'
+                  dashboardSortMode === "alpha"
+                    ? "bg-indigo-600 text-white"
+                    : "text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-800"
                 }`}
-                title={t('dashboard.sorting.alphaTitle')}
+                title={t("dashboard.sorting.alphaTitle")}
               >
                 <span>
-                  {dashboardSortMode === 'alpha'
-                    ? dashboardSortOrder === 'asc'
-                      ? 'A–Z'
-                      : 'Z–A'
-                    : 'A–Z'}
+                  {dashboardSortMode === "alpha"
+                    ? dashboardSortOrder === "asc"
+                      ? "A–Z"
+                      : "Z–A"
+                    : "A–Z"}
                 </span>
               </button>
               <button
                 type="button"
-                onClick={() => onSortClick('velocity')}
+                onClick={() => onSortClick("velocity")}
                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors ${
-                  dashboardSortMode === 'velocity'
-                    ? 'bg-indigo-600 text-white'
-                    : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-800'
+                  dashboardSortMode === "velocity"
+                    ? "bg-indigo-600 text-white"
+                    : "text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-800"
                 }`}
-                title={t('dashboard.sorting.velocityTitle')}
+                title={t("dashboard.sorting.velocityTitle")}
               >
                 <Activity className="w-3 h-3" />
                 <span>
-                  {t('dashboard.sorting.activity')}
-                  {dashboardSortMode === 'velocity'
-                    ? dashboardSortOrder === 'desc'
-                      ? ' ↓'
-                      : ' ↑'
-                    : ''}
+                  {t("dashboard.sorting.activity")}
+                  {dashboardSortMode === "velocity"
+                    ? dashboardSortOrder === "desc"
+                      ? " ↓"
+                      : " ↑"
+                    : ""}
                 </span>
               </button>
             </div>
@@ -294,7 +294,7 @@ export function DashboardPage({
                       // Scroll to the favorite section
                       const element = document.getElementById(`favorite-${fav.id}`);
                       if (element) {
-                        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        element.scrollIntoView({ behavior: "smooth", block: "start" });
                       }
                     }}
                   />
@@ -316,9 +316,9 @@ export function DashboardPage({
                 className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-md border transition-colors
                          border-slate-300 text-slate-700 hover:bg-slate-100
                          dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
-                title={t('actions.importDashboard')}
+                title={t("actions.importDashboard")}
               >
-                <Upload className="w-3 h-3" /> {t('actions.importDashboard')}
+                <Upload className="w-3 h-3" /> {t("actions.importDashboard")}
               </button>
             </div>
           </div>
@@ -328,7 +328,7 @@ export function DashboardPage({
       {/* Favorites list */}
       {favorites.length === 0 ? (
         <div className="bg-slate-50 border border-slate-200 text-slate-600 dark:bg-slate-900/50 dark:border-slate-800 rounded-xl p-6 text-center dark:text-slate-400">
-          {t('dashboard.noFavorites')}
+          {t("dashboard.noFavorites")}
         </div>
       ) : (
         <div className="space-y-10">

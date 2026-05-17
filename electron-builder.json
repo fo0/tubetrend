@@ -6,31 +6,20 @@
   "directories": {
     "output": "release"
   },
-  "files": [
-    "dist/**/*",
-    "dist-electron/**/*",
-    "package.json"
-  ],
+  "files": ["dist/**/*", "dist-electron/**/*", "package.json"],
   "win": {
-    "target": [
-      "portable"
-    ],
+    "target": ["portable"],
     "icon": "build/icon.png"
   },
   "portable": {
     "artifactName": "TubeTrend-${version}-Portable.exe"
   },
   "mac": {
-    "target": [
-      "dmg"
-    ],
+    "target": ["dmg"],
     "category": "public.app-category.utilities"
   },
   "linux": {
-    "target": [
-      "AppImage",
-      "deb"
-    ],
+    "target": ["AppImage", "deb"],
     "category": "Utility"
   }
 }

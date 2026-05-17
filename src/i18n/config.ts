@@ -1,11 +1,11 @@
-import i18n from 'i18next';
-import {initReactI18next} from 'react-i18next';
-import LanguageDetector from 'i18next-browser-languagedetector';
+import i18n from "i18next";
+import { initReactI18next } from "react-i18next";
+import LanguageDetector from "i18next-browser-languagedetector";
 
-import en from './locales/en.json';
-import de from './locales/de.json';
+import en from "./locales/en.json";
+import de from "./locales/de.json";
 
-export const LANG_STORAGE_KEY = 'tt.lang.explicit';
+export const LANG_STORAGE_KEY = "tt.lang.explicit";
 
 const resources = {
   en: { common: en },
@@ -17,17 +17,17 @@ i18n
   .use(initReactI18next)
   .init({
     resources,
-    fallbackLng: 'en',
-    supportedLngs: ['en', 'de', 'fr', 'es', 'it', 'pt', 'nl', 'pl', 'tr', 'ru', 'ja', 'zh', 'ko'],
+    fallbackLng: "en",
+    supportedLngs: ["en", "de", "fr", "es", "it", "pt", "nl", "pl", "tr", "ru", "ja", "zh", "ko"],
     nonExplicitSupportedLngs: true,
-    load: 'languageOnly',
-    ns: ['common'],
-    defaultNS: 'common',
+    load: "languageOnly",
+    ns: ["common"],
+    defaultNS: "common",
     detection: {
-      order: ['localStorage', 'navigator', 'htmlTag'],
+      order: ["localStorage", "navigator", "htmlTag"],
       lookupLocalStorage: LANG_STORAGE_KEY,
       caches: [],
-      excludeCacheFor: ['cimode'],
+      excludeCacheFor: ["cimode"],
     },
     interpolation: { escapeValue: false },
   });

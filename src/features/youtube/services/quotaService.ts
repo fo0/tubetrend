@@ -1,8 +1,8 @@
-import {safeRead, safeWrite} from '@/src/shared/lib/storage';
-import {dispatchEvent} from '@/src/shared/lib/eventBus';
-import {getTodayDateString} from '@/src/shared/lib/dateUtils';
-import {API_COSTS, DEFAULT_DAILY_QUOTA, STORAGE_KEYS} from '@/src/shared/constants';
-import type {QuotaCallContext, QuotaData, QuotaHistoryEntry, QuotaInfo} from '@/src/shared/types';
+import { safeRead, safeWrite } from "@/src/shared/lib/storage";
+import { dispatchEvent } from "@/src/shared/lib/eventBus";
+import { getTodayDateString } from "@/src/shared/lib/dateUtils";
+import { API_COSTS, DEFAULT_DAILY_QUOTA, STORAGE_KEYS } from "@/src/shared/constants";
+import type { QuotaCallContext, QuotaData, QuotaHistoryEntry, QuotaInfo } from "@/src/shared/types";
 
 // No fixed limit - history resets daily with quota (in getQuotaData when date changes)
 // Safety limit only to prevent localStorage overflow (very unlikely to hit)
@@ -16,7 +16,7 @@ function getQuotaData(): QuotaData {
     history: [],
   });
 
-  if (typeof window === 'undefined') return emptyData();
+  if (typeof window === "undefined") return emptyData();
 
   const data = safeRead<QuotaData>(STORAGE_KEYS.QUOTA_TRACKING, emptyData());
 
@@ -31,9 +31,9 @@ function getQuotaData(): QuotaData {
 }
 
 function saveQuotaData(data: QuotaData): void {
-  if (typeof window === 'undefined') return;
+  if (typeof window === "undefined") return;
   safeWrite(STORAGE_KEYS.QUOTA_TRACKING, data);
-  dispatchEvent('quota-updated', {
+  dispatchEvent("quota-updated", {
     used: data.used,
     limit: data.detectedLimit ?? DEFAULT_DAILY_QUOTA,
     percentage: data.exhausted
@@ -44,7 +44,7 @@ function saveQuotaData(data: QuotaData): void {
 }
 
 export const quotaService = {
-  track(units: number, endpoint: string = 'unknown', context?: QuotaCallContext): void {
+  track(units: number, endpoint: string = "unknown", context?: QuotaCallContext): void {
     const data = getQuotaData();
     data.used += units;
 
@@ -79,9 +79,7 @@ export const quotaService = {
     return {
       used: data.used,
       limit,
-      percentage: data.exhausted
-        ? 100
-        : Math.min(100, Math.round((data.used / limit) * 100)),
+      percentage: data.exhausted ? 100 : Math.min(100, Math.round((data.used / limit) * 100)),
       exhausted: data.exhausted,
     };
   },
@@ -96,10 +94,10 @@ export const quotaService = {
   },
 
   reset(): void {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
     localStorage.removeItem(STORAGE_KEYS.QUOTA_TRACKING);
     // Dispatch event to update UI with empty data
-    dispatchEvent('quota-updated', {
+    dispatchEvent("quota-updated", {
       used: 0,
       limit: DEFAULT_DAILY_QUOTA,
       percentage: 0,

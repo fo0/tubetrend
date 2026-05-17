@@ -1,5 +1,5 @@
-import type {SearchType, TimeFrame} from '@/src/shared/types';
-import type {VideoData} from '@/src/features/videos/types';
+import type { SearchType, TimeFrame } from "@/src/shared/types";
+import type { VideoData } from "@/src/features/videos/types";
 
 /**
  * Favorite configuration stored in localStorage
@@ -35,13 +35,13 @@ export interface FavoriteCacheMeta {
  */
 export function isFavoriteConfig(value: unknown): value is FavoriteConfig {
   return (
-    typeof value === 'object' &&
+    typeof value === "object" &&
     value !== null &&
-    'id' in value &&
-    'query' in value &&
-    'timeFrame' in value &&
-    'maxResults' in value &&
-    'searchType' in value &&
-    'createdAt' in value
+    "id" in value &&
+    "query" in value &&
+    "timeFrame" in value &&
+    "maxResults" in value &&
+    "searchType" in value &&
+    "createdAt" in value
   );
 }
