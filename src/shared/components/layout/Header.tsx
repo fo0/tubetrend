@@ -1,17 +1,17 @@
-import {Activity, BarChart3, LayoutDashboard, Settings} from 'lucide-react';
-import {ThemeToggle} from '@/src/shared/components/ui/ThemeToggle';
-import {LanguageSwitcher} from '@/src/shared/components/ui/LanguageSwitcher';
-import {ApiQuotaIndicator} from '@/src/shared/components/ui/ApiQuotaIndicator';
-import {useTranslation} from 'react-i18next';
+import { Activity, BarChart3, LayoutDashboard, Settings } from "lucide-react";
+import { ThemeToggle } from "@/src/shared/components/ui/ThemeToggle";
+import { LanguageSwitcher } from "@/src/shared/components/ui/LanguageSwitcher";
+import { ApiQuotaIndicator } from "@/src/shared/components/ui/ApiQuotaIndicator";
+import { useTranslation } from "react-i18next";
 
-export type PageType = 'dashboard' | 'analyser';
+export type PageType = "dashboard" | "analyser";
 
 interface HeaderProps {
   activePage: PageType;
   onPageChange: (page: PageType) => void;
   apiKey: string | null;
   isLoading: boolean;
-  loadingStep?: 'fetching_youtube' | 'analyzing_ai';
+  loadingStep?: "fetching_youtube" | "analyzing_ai";
   onResetApiKey: () => void;
 }
 
@@ -33,18 +33,20 @@ export function Header({
             <BarChart3 className="w-5 h-5 text-white" />
           </div>
           <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-100 to-slate-400 hidden sm:block">
-            {t('appTitle')}
+            {t("appTitle")}
           </h1>
 
-          <nav aria-label={t('nav.main')} className="ml-4 flex items-center gap-2">
+          <nav aria-label={t("nav.main")} className="ml-4 flex items-center gap-2">
             <button
               type="button"
-              onClick={() => onPageChange('dashboard')}
-              aria-current={activePage === 'dashboard' ? 'page' : undefined}
+              onClick={() => onPageChange("dashboard")}
+              aria-current={activePage === "dashboard" ? "page" : undefined}
               className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium border transition-colors
-                ${activePage === 'dashboard'
-                  ? 'bg-slate-100 text-slate-900 border-slate-200 dark:bg-slate-800 dark:text-white dark:border-slate-700'
-                  : 'text-slate-700 border-slate-300 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:border-slate-800 dark:hover:bg-slate-800 dark:hover:text-white'}
+                ${
+                  activePage === "dashboard"
+                    ? "bg-slate-100 text-slate-900 border-slate-200 dark:bg-slate-800 dark:text-white dark:border-slate-700"
+                    : "text-slate-700 border-slate-300 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:border-slate-800 dark:hover:bg-slate-800 dark:hover:text-white"
+                }
               `}
               title="Dashboard"
             >
@@ -53,12 +55,14 @@ export function Header({
             </button>
             <button
               type="button"
-              onClick={() => onPageChange('analyser')}
-              aria-current={activePage === 'analyser' ? 'page' : undefined}
+              onClick={() => onPageChange("analyser")}
+              aria-current={activePage === "analyser" ? "page" : undefined}
               className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium border transition-colors
-                ${activePage === 'analyser'
-                  ? 'bg-slate-100 text-slate-900 border-slate-200 dark:bg-slate-800 dark:text-white dark:border-slate-700'
-                  : 'text-slate-700 border-slate-300 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:border-slate-800 dark:hover:bg-slate-800 dark:hover:text-white'}
+                ${
+                  activePage === "analyser"
+                    ? "bg-slate-100 text-slate-900 border-slate-200 dark:bg-slate-800 dark:text-white dark:border-slate-700"
+                    : "text-slate-700 border-slate-300 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:border-slate-800 dark:hover:bg-slate-800 dark:hover:text-white"
+                }
               `}
               title="Analyser"
             >
@@ -73,9 +77,9 @@ export function Header({
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border bg-indigo-500/10 border-indigo-500/20 text-indigo-400 animate-pulse">
               <Activity className="w-3 h-3 animate-spin" />
               <span>
-                {loadingStep === 'fetching_youtube'
-                  ? 'Lade offizielle Daten...'
-                  : 'Berechne Statistiken...'}
+                {loadingStep === "fetching_youtube"
+                  ? "Lade offizielle Daten..."
+                  : "Berechne Statistiken..."}
               </span>
             </div>
           ) : (
@@ -87,10 +91,10 @@ export function Header({
                   className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors
                              border-slate-300 text-slate-700 hover:bg-slate-100
                              dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800"
-                  title={t('actions.resetApiKey')}
+                  title={t("actions.resetApiKey")}
                 >
                   <Settings className="w-3 h-3" />
-                  <span>{t('actions.resetApiKey')}</span>
+                  <span>{t("actions.resetApiKey")}</span>
                 </button>
               )}
             </>

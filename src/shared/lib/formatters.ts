@@ -2,7 +2,7 @@
  * Formatting utilities
  */
 
-import {getLocale} from './locale';
+import { getLocale } from "./locale";
 
 /**
  * Format a number with locale-aware thousands separators.
@@ -16,9 +16,9 @@ export function formatNumber(value: number, locale: string = getLocale()): strin
 /**
  * Format a number in compact notation (e.g., 1.2K, 3.5M)
  */
-export function formatCompactNumber(value: number, locale = 'en'): string {
+export function formatCompactNumber(value: number, locale = "en"): string {
   return new Intl.NumberFormat(locale, {
-    notation: 'compact',
+    notation: "compact",
     maximumFractionDigits: 1,
   }).format(value);
 }
@@ -27,15 +27,15 @@ export function formatCompactNumber(value: number, locale = 'en'): string {
  * Format bytes to human readable size
  */
 export function formatBytes(bytes: number, decimals = 2): string {
-  if (bytes === 0) return '0 Bytes';
+  if (bytes === 0) return "0 Bytes";
 
   const k = 1024;
   const dm = decimals < 0 ? 0 : decimals;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+  const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
 
   const i = Math.floor(Math.log(bytes) / Math.log(k));
 
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i];
 }
 
 /**

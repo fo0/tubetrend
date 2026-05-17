@@ -21,21 +21,23 @@ Review findings not immediately fixed. **Only work on these upon explicit reques
 
 ## Open
 
-| # | Date | Category | Sev | Location | Finding | Status | Source |
-|---|------|----------|-----|----------|---------|--------|--------|
-| 1 | 2026-02-13 | Performance | P2 | api/users.ts -> getUserList() | N+1 query in user list | Deferred | Feature: User Dashboard |
+| #   | Date       | Category    | Sev | Location                      | Finding                | Status   | Source                  |
+| --- | ---------- | ----------- | --- | ----------------------------- | ---------------------- | -------- | ----------------------- |
+| 1   | 2026-02-13 | Performance | P2  | api/users.ts -> getUserList() | N+1 query in user list | Deferred | Feature: User Dashboard |
 
 ## Done
 
-| # | Date | Done | Category | Location | Finding |
-|---|------|------|----------|----------|---------|
-| 1 | 2026-02-10 | 2026-02-13 | Security | auth.ts -> verifyToken() | Missing rate limit |
+| #   | Date       | Done       | Category | Location                 | Finding            |
+| --- | ---------- | ---------- | -------- | ------------------------ | ------------------ |
+| 1   | 2026-02-10 | 2026-02-13 | Security | auth.ts -> verifyToken() | Missing rate limit |
 ```
 
 ### Location Format
+
 Use `File -> Function/Component` instead of line numbers. Line numbers go stale after every commit.
 
 ### Status Values
+
 - **Deferred** — Recognized as valid, postponed intentionally (reasoning in Finding or Source)
 - **Accepted** — Known limitation, accepted as-is for now
 - **Escalated** — Upgraded from P2 to P1 due to repeated impact

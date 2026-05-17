@@ -4,8 +4,8 @@
  * Run: node scripts/generate-icon.mjs
  * Output: build/icon.png
  */
-import { writeFileSync, mkdirSync } from 'fs';
-import { deflateSync } from 'zlib';
+import { writeFileSync, mkdirSync } from "fs";
+import { deflateSync } from "zlib";
 
 const SIZE = 512;
 
@@ -20,15 +20,18 @@ function blendPixel(bg, fg, alpha) {
 
 // --- Shape helpers ---
 function isInRoundedRect(x, y, size, radius) {
-  const margin = size * 16 / 512; // 16px margin at 512
+  const margin = (size * 16) / 512; // 16px margin at 512
   const inner = size - 2 * margin;
   const lx = x - margin;
   const ly = y - margin;
   if (lx < 0 || ly < 0 || lx >= inner || ly >= inner) return false;
   if (lx < radius && ly < radius) return Math.hypot(lx - radius, ly - radius) <= radius;
-  if (lx > inner - radius && ly < radius) return Math.hypot(lx - (inner - radius), ly - radius) <= radius;
-  if (lx < radius && ly > inner - radius) return Math.hypot(lx - radius, ly - (inner - radius)) <= radius;
-  if (lx > inner - radius && ly > inner - radius) return Math.hypot(lx - (inner - radius), ly - (inner - radius)) <= radius;
+  if (lx > inner - radius && ly < radius)
+    return Math.hypot(lx - (inner - radius), ly - radius) <= radius;
+  if (lx < radius && ly > inner - radius)
+    return Math.hypot(lx - radius, ly - (inner - radius)) <= radius;
+  if (lx > inner - radius && ly > inner - radius)
+    return Math.hypot(lx - (inner - radius), ly - (inner - radius)) <= radius;
   return true;
 }
 
@@ -56,7 +59,7 @@ function crc32(buf) {
 }
 
 function createChunk(type, data) {
-  const typeBytes = Buffer.from(type, 'ascii');
+  const typeBytes = Buffer.from(type, "ascii");
   const length = Buffer.alloc(4);
   length.writeUInt32BE(data.length);
   const crcInput = Buffer.concat([typeBytes, data]);
@@ -83,9 +86,12 @@ const rawData = Buffer.alloc(SIZE * rowSize);
 const cornerRadius = SIZE * 0.188; // ~96px at 512
 
 // Play triangle vertices
-const triAx = 155, triAy = 370;
-const triBx = 155, triBy = 430;
-const triCx = 200, triCy = 400;
+const triAx = 155,
+  triAy = 370;
+const triBx = 155,
+  triBy = 430;
+const triCx = 200,
+  triCy = 400;
 
 function sign(p1x, p1y, p2x, p2y, p3x, p3y) {
   return (p1x - p3x) * (p2y - p3y) - (p2x - p3x) * (p1y - p3y);
@@ -95,14 +101,16 @@ function isInTriangle(px, py) {
   const d1 = sign(px, py, triAx, triAy, triBx, triBy);
   const d2 = sign(px, py, triBx, triBy, triCx, triCy);
   const d3 = sign(px, py, triCx, triCy, triAx, triAy);
-  const hasNeg = (d1 < 0) || (d2 < 0) || (d3 < 0);
-  const hasPos = (d1 > 0) || (d2 > 0) || (d3 > 0);
+  const hasNeg = d1 < 0 || d2 < 0 || d3 < 0;
+  const hasPos = d1 > 0 || d2 > 0 || d3 > 0;
   return !(hasNeg && hasPos);
 }
 
 // Glow dot center & radii
-const glowCx = 430, glowCy = 140;
-const glowOuterR = 16, glowInnerR = 9;
+const glowCx = 430,
+  glowCy = 140;
+const glowOuterR = 16,
+  glowInnerR = 9;
 
 for (let y = 0; y < SIZE; y++) {
   const rowOffset = y * rowSize;
@@ -128,7 +136,14 @@ for (let y = 0; y < SIZE; y++) {
     // --- Trend line ---
     let minDist = Infinity;
     for (let i = 0; i < trendPoints.length - 1; i++) {
-      const d = distToSegment(x, y, trendPoints[i][0], trendPoints[i][1], trendPoints[i + 1][0], trendPoints[i + 1][1]);
+      const d = distToSegment(
+        x,
+        y,
+        trendPoints[i][0],
+        trendPoints[i][1],
+        trendPoints[i + 1][0],
+        trendPoints[i + 1][1],
+      );
       if (d < minDist) minDist = d;
     }
     if (minDist <= LINE_WIDTH + 1) {
@@ -137,7 +152,7 @@ for (let y = 0; y < SIZE; y++) {
       const lineR = Math.round(lerp(56, 34, xt));
       const lineG = Math.round(lerp(189, 211, xt));
       const lineB = Math.round(lerp(248, 238, xt));
-      const lineAlpha = Math.min(1, Math.max(0, (LINE_WIDTH + 1 - minDist)));
+      const lineAlpha = Math.min(1, Math.max(0, LINE_WIDTH + 1 - minDist));
       r = blendPixel(r, lineR, lineAlpha);
       g = blendPixel(g, lineG, lineAlpha);
       b = blendPixel(b, lineB, lineAlpha);
@@ -191,11 +206,11 @@ const iend = Buffer.alloc(0);
 
 const png = Buffer.concat([
   signature,
-  createChunk('IHDR', ihdr),
-  createChunk('IDAT', compressed),
-  createChunk('IEND', iend),
+  createChunk("IHDR", ihdr),
+  createChunk("IDAT", compressed),
+  createChunk("IEND", iend),
 ]);
 
-mkdirSync('build', { recursive: true });
-writeFileSync('build/icon.png', png);
+mkdirSync("build", { recursive: true });
+writeFileSync("build/icon.png", png);
 console.log(`Icon generated: build/icon.png (${png.length} bytes, ${SIZE}x${SIZE})`);

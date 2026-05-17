@@ -1,23 +1,23 @@
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {ApiKeyModal} from '@/src/shared/components/ui/ApiKeyModal';
-import {HiddenHighlightsModal} from '@/src/shared/components/ui/HiddenHighlightsModal';
-import {Header, Footer, type PageType} from '@/src/shared/components/layout';
-import {DashboardPage} from './routes/DashboardPage';
-import {AnalyserPage} from './routes/AnalyserPage';
-import {useTranslation} from 'react-i18next';
-import {setApiKey as setYoutubeApiKey} from '@/src/features/youtube';
-import {dashboardBackupService} from '@/src/features/dashboard';
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { ApiKeyModal } from "@/src/shared/components/ui/ApiKeyModal";
+import { HiddenHighlightsModal } from "@/src/shared/components/ui/HiddenHighlightsModal";
+import { Header, Footer, type PageType } from "@/src/shared/components/layout";
+import { DashboardPage } from "./routes/DashboardPage";
+import { AnalyserPage } from "./routes/AnalyserPage";
+import { useTranslation } from "react-i18next";
+import { setApiKey as setYoutubeApiKey } from "@/src/features/youtube";
+import { dashboardBackupService } from "@/src/features/dashboard";
 import {
   useDashboardSort,
   useFavorites,
-  useHighlights
-} from '@/src/features/dashboard/hooks/useDashboard';
-import {useSearch} from '@/src/features/search/hooks/useSearch';
-import type {FavoriteConfig} from '@/src/features/favorites/types';
-import type {VideoData} from '@/src/features/videos/types';
-import type {SearchType, TimeFrame} from '@/src/shared/types';
-import {STORAGE_KEYS} from '@/src/shared/constants';
-import {dispatchEvent} from '@/src/shared/lib/eventBus';
+  useHighlights,
+} from "@/src/features/dashboard/hooks/useDashboard";
+import { useSearch } from "@/src/features/search/hooks/useSearch";
+import type { FavoriteConfig } from "@/src/features/favorites/types";
+import type { VideoData } from "@/src/features/videos/types";
+import type { SearchType, TimeFrame } from "@/src/shared/types";
+import { STORAGE_KEYS } from "@/src/shared/constants";
+import { dispatchEvent } from "@/src/shared/lib/eventBus";
 
 const App: React.FC = () => {
   const { t } = useTranslation();
@@ -30,7 +30,7 @@ const App: React.FC = () => {
   const [isHiddenHighlightsModalOpen, setIsHiddenHighlightsModalOpen] = useState(false);
 
   // Navigation state
-  const [activePage, setActivePage] = useState<PageType>('dashboard');
+  const [activePage, setActivePage] = useState<PageType>("dashboard");
 
   // External input values for analyzer
   const [externalInputValues, setExternalInputValues] = useState<{
@@ -42,12 +42,13 @@ const App: React.FC = () => {
   }>({});
 
   // Hooks
-  const { favorites, refreshToken, refreshingIds, removeFavorite, refreshAll, loadFavorites } = useFavorites();
+  const { favorites, refreshToken, refreshingIds, removeFavorite, refreshAll, loadFavorites } =
+    useFavorites();
   const { sortMode, sortOrder, cacheTick, handleSortClick, sortFavorites } = useDashboardSort();
   const { hiddenTick } = useHighlights(favorites);
 
   const onApiKeyInvalid = useCallback(() => {
-    setYoutubeApiKey('');
+    setYoutubeApiKey("");
     setApiKey(null);
     setIsApiKeyModalOpen(true);
   }, []);
@@ -67,7 +68,7 @@ const App: React.FC = () => {
 
   // Load favorites when switching to dashboard
   useEffect(() => {
-    if (activePage === 'dashboard') {
+    if (activePage === "dashboard") {
       loadFavorites();
     }
   }, [activePage, loadFavorites]);
@@ -80,8 +81,8 @@ const App: React.FC = () => {
   }, []);
 
   const handleResetKey = useCallback(() => {
-    if (window.confirm(t('confirm.deleteApiKey'))) {
-      setYoutubeApiKey('');
+    if (window.confirm(t("confirm.deleteApiKey"))) {
+      setYoutubeApiKey("");
       setApiKey(null);
       setIsApiKeyModalOpen(true);
     }
@@ -89,9 +90,9 @@ const App: React.FC = () => {
 
   const downloadTextFile = useCallback((filename: string, text: string) => {
     try {
-      const blob = new Blob([text], { type: 'application/json' });
+      const blob = new Blob([text], { type: "application/json" });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
       a.download = filename;
       document.body.appendChild(a);
@@ -105,7 +106,7 @@ const App: React.FC = () => {
 
   const handleDashboardExport = useCallback(() => {
     const d = new Date();
-    const pad = (n: number) => String(n).padStart(2, '0');
+    const pad = (n: number) => String(n).padStart(2, "0");
     const stamp = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}_${pad(d.getHours())}-${pad(d.getMinutes())}-${pad(d.getSeconds())}`;
     const filename = `tubetrend-dashboard-backup_${stamp}.json`;
 
@@ -115,44 +116,50 @@ const App: React.FC = () => {
     });
     const json = dashboardBackupService.stringify(payload);
     downloadTextFile(filename, json);
-    window.alert(t('backup.exportSuccess'));
+    window.alert(t("backup.exportSuccess"));
   }, [sortMode, sortOrder, downloadTextFile, t]);
 
-  const handleDashboardImportFile = useCallback(async (file: File) => {
-    const text = await file.text();
-    const parsed = dashboardBackupService.parse(text);
+  const handleDashboardImportFile = useCallback(
+    async (file: File) => {
+      const text = await file.text();
+      const parsed = dashboardBackupService.parse(text);
 
-    if (!parsed.ok) {
-      window.alert(t('backup.importInvalid'));
-      return;
-    }
+      if (!parsed.ok) {
+        window.alert(t("backup.importInvalid"));
+        return;
+      }
 
-    const count = parsed.payload.data.favorites.length;
-    const ok = window.confirm(t('confirm.importDashboardReplace', { count }));
-    if (!ok) return;
+      const count = parsed.payload.data.favorites.length;
+      const ok = window.confirm(t("confirm.importDashboardReplace", { count }));
+      if (!ok) return;
 
-    try {
-      localStorage.setItem(STORAGE_KEYS.FAVORITES, JSON.stringify(parsed.payload.data.favorites));
-      localStorage.setItem(STORAGE_KEYS.FAVORITES_CACHE, JSON.stringify(parsed.payload.data.favoritesCache));
-    } catch {
-      window.alert(t('backup.importFailedStorage'));
-      return;
-    }
+      try {
+        localStorage.setItem(STORAGE_KEYS.FAVORITES, JSON.stringify(parsed.payload.data.favorites));
+        localStorage.setItem(
+          STORAGE_KEYS.FAVORITES_CACHE,
+          JSON.stringify(parsed.payload.data.favoritesCache),
+        );
+      } catch {
+        window.alert(t("backup.importFailedStorage"));
+        return;
+      }
 
-    loadFavorites();
-    dispatchEvent('favorites-cache-updated', { id: '*' });
+      loadFavorites();
+      dispatchEvent("favorites-cache-updated", { id: "*" });
 
-    window.alert(t('backup.importSuccess', { count }));
-  }, [loadFavorites, t]);
+      window.alert(t("backup.importSuccess", { count }));
+    },
+    [loadFavorites, t],
+  );
 
   const handleAnalyzeFavorite = useCallback(
     (
       favorite: FavoriteConfig,
       cachedVideos: VideoData[] | null,
       channelTitle: string,
-      channelId: string | null
+      channelId: string | null,
     ) => {
-      setActivePage('analyser');
+      setActivePage("analyser");
 
       setExternalInputValues({
         query: favorite.query,
@@ -168,7 +175,7 @@ const App: React.FC = () => {
         handleSearch(favorite.query, favorite.timeFrame, favorite.maxResults, favorite.searchType);
       }
     },
-    [handleSearch, setSearchResult]
+    [handleSearch, setSearchResult],
   );
 
   return (
@@ -184,12 +191,12 @@ const App: React.FC = () => {
         onPageChange={setActivePage}
         apiKey={apiKey}
         isLoading={searchState.isLoading}
-        loadingStep={searchState.step === 'fetching_youtube' ? 'fetching_youtube' : 'analyzing_ai'}
+        loadingStep={searchState.step === "fetching_youtube" ? "fetching_youtube" : "analyzing_ai"}
         onResetApiKey={handleResetKey}
       />
 
       <main className="flex-1 max-w-[101.2rem] mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-        {activePage === 'dashboard' ? (
+        {activePage === "dashboard" ? (
           <DashboardPage
             favorites={favorites}
             sortedFavorites={sortedFavorites}

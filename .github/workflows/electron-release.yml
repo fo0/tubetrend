@@ -2,17 +2,17 @@ name: Build and Release Electron App
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [main, master]
     paths-ignore:
-      - '**.md'
-      - 'docs/**'
-      - '.env.example'
-      - '.gitignore'
-      - '.editorconfig'
-      - 'LICENSE*'
-      - '.vscode/**'
+      - "**.md"
+      - "docs/**"
+      - ".env.example"
+      - ".gitignore"
+      - ".editorconfig"
+      - "LICENSE*"
+      - ".vscode/**"
     tags:
-      - 'v*'
+      - "v*"
   workflow_dispatch:
 
 concurrency:
@@ -65,8 +65,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '22'
-          cache: 'npm'
+          node-version: "22"
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
@@ -77,7 +77,7 @@ jobs:
       - name: Build web app + Electron sources
         run: npm run build
         env:
-          ELECTRON: 'true'
+          ELECTRON: "true"
 
       - name: Generate app icon
         run: npm run electron:icon
@@ -118,8 +118,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '22'
-          cache: 'npm'
+          node-version: "22"
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
@@ -130,7 +130,7 @@ jobs:
       - name: Build web app + Electron sources
         run: npm run build
         env:
-          ELECTRON: 'true'
+          ELECTRON: "true"
 
       - name: Generate app icon
         run: npm run electron:icon
@@ -160,8 +160,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '22'
-          cache: 'npm'
+          node-version: "22"
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
@@ -191,14 +191,14 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '22'
-          cache: 'npm'
+          node-version: "22"
+          cache: "npm"
 
       - name: Setup Java
         uses: actions/setup-java@v5
         with:
-          distribution: 'temurin'
-          java-version: '21'
+          distribution: "temurin"
+          java-version: "21"
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v4

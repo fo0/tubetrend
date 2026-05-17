@@ -5,9 +5,11 @@ A YouTube trend analysis tool built with Vite + React + TypeScript. Analyze vide
 > **🧩 New: Chrome Extension available!** — Use TubeTrend directly in your browser as a local Chrome Extension. [See setup instructions](#option-5-chrome-extension)
 
 ## Dashboard
+
 ![Dashboard](docs/dashboard_image_doc.jpeg)
 
 ## Analyzer
+
 ![Analyser](docs/analyzer_image_doc.jpeg)
 
 ---
@@ -27,11 +29,13 @@ Open http://localhost:8889
 ### Option 2: Docker Compose
 
 **Linux / macOS:**
+
 ```bash
 curl -O https://raw.githubusercontent.com/fo0/tubetrend/main/docker-compose.yml && docker-compose up -d
 ```
 
 **Windows (PowerShell):**
+
 ```powershell
 Invoke-WebRequest -Uri "https://raw.githubusercontent.com/fo0/tubetrend/main/docker-compose.yml" -OutFile "docker-compose.yml"; docker-compose up -d
 ```
@@ -58,6 +62,7 @@ npm run electron:preview
 ```
 
 **Chromebook (ChromeOS / Crostini):** Download the matching `.deb` for your architecture from [Releases](https://github.com/fo0/tubetrend/releases):
+
 - `TubeTrend-*-Chromebook-x64.deb` — Intel/AMD Chromebooks (e.g., ASUS Chromebook CX1, Flip CX5)
 - `TubeTrend-*-Chromebook-arm64.deb` — ARM Chromebooks (e.g., ASUS Chromebook CM14, MediaTek models)
 
@@ -98,6 +103,7 @@ npm run build:extension
 ```
 
 Then load in Chrome:
+
 1. Open `chrome://extensions/`
 2. Enable **Developer mode** (top right)
 3. Click **Load unpacked**

@@ -19,6 +19,7 @@ git rev-parse --abbrev-ref HEAD && git status --porcelain && git log origin/$(gi
 ```
 
 Classify:
+
 - `main` / `master` / `develop` / `trunk` → **main branch mode** (conservative)
 - anything else → **feature branch mode** (standard)
 
@@ -39,6 +40,7 @@ npm run build
 ```
 
 If any fail:
+
 - **Feature branch:** report failure, stop. Do not commit.
 - **Main branch:** hard stop. Never push to main on red.
 

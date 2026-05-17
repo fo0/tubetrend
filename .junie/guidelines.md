@@ -100,13 +100,13 @@ There is no dedicated test configuration file in the repo (no `vitest.config.ts`
 
 #### Suggested setup (Vitest)
 
-1) Add the dependency:
+1. Add the dependency:
 
 ```powershell
 npm install -D vitest
 ```
 
-2) Add a script in `package.json`:
+2. Add a script in `package.json`:
 
 ```json
 {
@@ -116,7 +116,7 @@ npm install -D vitest
 }
 ```
 
-3) Run tests:
+3. Run tests:
 
 ```powershell
 npm test
@@ -133,10 +133,10 @@ Notes specific to this repo:
 Create `src/shared/lib/example.test.ts`:
 
 ```ts
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from "vitest";
 
-describe('example', () => {
-  it('adds numbers', () => {
+describe("example", () => {
+  it("adds numbers", () => {
     expect(1 + 2).toBe(3);
   });
 });

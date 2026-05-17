@@ -1,7 +1,7 @@
-import {safeRead} from '@/src/shared/lib/storage';
-import {STORAGE_KEYS} from '@/src/shared/constants';
-import type {DashboardSortMode, SortOrder} from '@/src/shared/types';
-import type {FavoriteCacheEntry, FavoriteConfig} from '@/src/features/favorites/types';
+import { safeRead } from "@/src/shared/lib/storage";
+import { STORAGE_KEYS } from "@/src/shared/constants";
+import type { DashboardSortMode, SortOrder } from "@/src/shared/types";
+import type { FavoriteCacheEntry, FavoriteConfig } from "@/src/features/favorites/types";
 
 const BACKUP_VERSION = 1;
 
@@ -31,7 +31,7 @@ export const dashboardBackupService = {
     const favorites = safeRead<FavoriteConfig[]>(STORAGE_KEYS.FAVORITES, []);
     const favoritesCache = safeRead<Record<string, FavoriteCacheEntry>>(
       STORAGE_KEYS.FAVORITES_CACHE,
-      {}
+      {},
     );
 
     return {
@@ -57,10 +57,10 @@ export const dashboardBackupService = {
       const parsed = JSON.parse(json);
 
       if (
-        typeof parsed !== 'object' ||
+        typeof parsed !== "object" ||
         parsed === null ||
-        typeof parsed.version !== 'number' ||
-        typeof parsed.data !== 'object'
+        typeof parsed.version !== "number" ||
+        typeof parsed.data !== "object"
       ) {
         return { ok: false, payload: parsed };
       }
@@ -73,7 +73,7 @@ export const dashboardBackupService = {
       // Without this guard, importing a malformed backup writes `"undefined"` to
       // localStorage via JSON.stringify(undefined) and corrupts the cache on next read.
       if (
-        typeof parsed.data.favoritesCache !== 'object' ||
+        typeof parsed.data.favoritesCache !== "object" ||
         parsed.data.favoritesCache === null ||
         Array.isArray(parsed.data.favoritesCache)
       ) {
@@ -90,7 +90,7 @@ export const dashboardBackupService = {
           data: {
             favorites: [],
             favoritesCache: {},
-            dashboard: { sortMode: 'alpha', sortOrder: 'asc' },
+            dashboard: { sortMode: "alpha", sortOrder: "asc" },
           },
         },
       };

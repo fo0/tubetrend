@@ -1,15 +1,18 @@
-import React from 'react';
-import {Clock, Eye, Trash2, X} from 'lucide-react';
-import {useTranslation} from 'react-i18next';
-import {hiddenHighlightsService, type HiddenHighlight} from '@/src/features/dashboard';
-import {getLocale} from '@/src/shared/lib/locale';
+import React from "react";
+import { Clock, Eye, Trash2, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { hiddenHighlightsService, type HiddenHighlight } from "@/src/features/dashboard";
+import { getLocale } from "@/src/shared/lib/locale";
 
 interface HiddenHighlightsModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-export const HiddenHighlightsModal: React.FC<HiddenHighlightsModalProps> = ({ isOpen, onClose }) => {
+export const HiddenHighlightsModal: React.FC<HiddenHighlightsModalProps> = ({
+  isOpen,
+  onClose,
+}) => {
   const { t } = useTranslation();
   const [hiddenItems, setHiddenItems] = React.useState<HiddenHighlight[]>([]);
 
@@ -31,14 +34,14 @@ export const HiddenHighlightsModal: React.FC<HiddenHighlightsModalProps> = ({ is
   };
 
   const formatDate = (timestamp: number): string => {
-    if (!timestamp) return '—';
+    if (!timestamp) return "—";
     const date = new Date(timestamp);
     return date.toLocaleString(getLocale(), {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
@@ -47,11 +50,8 @@ export const HiddenHighlightsModal: React.FC<HiddenHighlightsModalProps> = ({ is
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center">
       {/* Backdrop */}
-      <div 
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-        onClick={onClose}
-      />
-      
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+
       {/* Modal */}
       <div
         role="dialog"
@@ -61,14 +61,17 @@ export const HiddenHighlightsModal: React.FC<HiddenHighlightsModalProps> = ({ is
       >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700">
-          <h2 id="hidden-highlights-modal-title" className="text-lg font-bold text-slate-900 dark:text-white">
-            {t('dashboard.highlights.hiddenModalTitle')}
+          <h2
+            id="hidden-highlights-modal-title"
+            className="text-lg font-bold text-slate-900 dark:text-white"
+          >
+            {t("dashboard.highlights.hiddenModalTitle")}
           </h2>
           <button
             type="button"
             onClick={onClose}
             className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors"
-            aria-label={t('modal.apiKey.cancel')}
+            aria-label={t("modal.apiKey.cancel")}
           >
             <X className="w-5 h-5" />
           </button>
@@ -78,7 +81,7 @@ export const HiddenHighlightsModal: React.FC<HiddenHighlightsModalProps> = ({ is
         <div className="flex-1 overflow-y-auto p-6">
           {hiddenItems.length === 0 ? (
             <div className="text-center text-slate-500 dark:text-slate-400 py-8">
-              {t('dashboard.highlights.noHiddenItems')}
+              {t("dashboard.highlights.noHiddenItems")}
             </div>
           ) : (
             <ul className="space-y-3">
@@ -98,9 +101,13 @@ export const HiddenHighlightsModal: React.FC<HiddenHighlightsModalProps> = ({ is
 
                   {/* Info */}
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-slate-800 dark:text-slate-100 truncate">{item.videoTitle}</p>
+                    <p className="text-sm font-medium text-slate-800 dark:text-slate-100 truncate">
+                      {item.videoTitle}
+                    </p>
                     <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-xs text-slate-500 dark:text-slate-400 truncate">{item.sourceLabel}</span>
+                      <span className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                        {item.sourceLabel}
+                      </span>
                       <span className="text-slate-300 dark:text-slate-600">•</span>
                       <span className="text-xs text-slate-400 dark:text-slate-500 flex items-center gap-1 shrink-0">
                         <Clock className="w-3 h-3" />
@@ -117,13 +124,13 @@ export const HiddenHighlightsModal: React.FC<HiddenHighlightsModalProps> = ({ is
                       className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md border border-indigo-500/30 text-indigo-500 dark:text-indigo-400 hover:bg-indigo-500/10 transition-colors"
                     >
                       <Eye className="w-3 h-3" />
-                      {t('dashboard.highlights.unhide')}
+                      {t("dashboard.highlights.unhide")}
                     </button>
                     <button
                       type="button"
                       onClick={() => handleDelete(item.videoId)}
                       className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md border border-red-500/30 text-red-400 dark:text-red-300 hover:bg-red-500/10 transition-colors"
-                      aria-label={t('modal.apiKey.cancel')}
+                      aria-label={t("modal.apiKey.cancel")}
                     >
                       <Trash2 className="w-3 h-3" />
                     </button>

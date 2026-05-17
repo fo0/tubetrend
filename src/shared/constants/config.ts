@@ -3,20 +3,20 @@
  */
 
 export const STORAGE_KEYS = {
-  API_KEY: 'yt_api_key',
-  CHANNEL_CACHE: 'yt_channel_cache',
+  API_KEY: "yt_api_key",
+  CHANNEL_CACHE: "yt_channel_cache",
   // v2: Cache-Key geändert um alte Einträge mit falschen Thumbnail-URLs zu invalidieren
-  AUTOCOMPLETE_CACHE: 'yt_autocomplete_cache_v2',
-  QUOTA_TRACKING: 'yt_quota_tracking',
-  FAVORITES: 'tt.favorites.v1',
-  FAVORITES_CACHE: 'tt.favorites.cache.v1',
-  DASHBOARD_SORT: 'tt.dashboard.sort.v1',
-  DASHBOARD_ORDER: 'tt.dashboard.sortOrder.v1',
-  SEARCH_TIMEFRAME: 'tt.search.timeframe',
-  SEARCH_MAX_RESULTS: 'tt.search.maxResults',
-  SEARCH_HISTORY: 'tt.search.history',
-  LANGUAGE: 'tt.lang.explicit',
-  HIDDEN_HIGHLIGHTS: 'tt.dashboard.hiddenHighlights.v1',
+  AUTOCOMPLETE_CACHE: "yt_autocomplete_cache_v2",
+  QUOTA_TRACKING: "yt_quota_tracking",
+  FAVORITES: "tt.favorites.v1",
+  FAVORITES_CACHE: "tt.favorites.cache.v1",
+  DASHBOARD_SORT: "tt.dashboard.sort.v1",
+  DASHBOARD_ORDER: "tt.dashboard.sortOrder.v1",
+  SEARCH_TIMEFRAME: "tt.search.timeframe",
+  SEARCH_MAX_RESULTS: "tt.search.maxResults",
+  SEARCH_HISTORY: "tt.search.history",
+  LANGUAGE: "tt.lang.explicit",
+  HIDDEN_HIGHLIGHTS: "tt.dashboard.hiddenHighlights.v1",
 } as const;
 
 export const CACHE_TTL = {
@@ -33,4 +33,4 @@ export const API_COSTS = {
 
 export const DEFAULT_DAILY_QUOTA = 10000;
 
-export const PLACEHOLDER_IMAGE = 'https://picsum.photos/640/360';
+export const PLACEHOLDER_IMAGE = "https://picsum.photos/640/360";

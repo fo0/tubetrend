@@ -1,6 +1,6 @@
-import { app, BrowserWindow, shell } from 'electron';
-import path from 'path';
-import { fileURLToPath } from 'node:url';
+import { app, BrowserWindow, shell } from "electron";
+import path from "path";
+import { fileURLToPath } from "node:url";
 
 // ESM does not provide __dirname — derive it from import.meta.url
 const __filename = fileURLToPath(import.meta.url);
@@ -9,8 +9,8 @@ const __dirname = path.dirname(__filename);
 // Fallback to software rendering when GPU is unavailable
 // (e.g. Chromebook/Crostini, VMs, headless Linux containers)
 app.disableHardwareAcceleration();
-app.commandLine.appendSwitch('disable-gpu');
-app.commandLine.appendSwitch('disable-software-rasterizer');
+app.commandLine.appendSwitch("disable-gpu");
+app.commandLine.appendSwitch("disable-software-rasterizer");
 
 function createWindow(): void {
   const win = new BrowserWindow({
@@ -18,9 +18,9 @@ function createWindow(): void {
     height: 860,
     minWidth: 800,
     minHeight: 600,
-    title: 'TubeTrend',
+    title: "TubeTrend",
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
+      preload: path.join(__dirname, "preload.js"),
       nodeIntegration: false,
       contextIsolation: true,
     },
@@ -29,38 +29,38 @@ function createWindow(): void {
 
   win.setMenuBarVisibility(false);
 
-  win.once('ready-to-show', () => {
+  win.once("ready-to-show", () => {
     win.show();
   });
 
   // Open external links in the system browser
   win.webContents.setWindowOpenHandler(({ url }) => {
-    if (url.startsWith('https://') || url.startsWith('http://')) {
+    if (url.startsWith("https://") || url.startsWith("http://")) {
       shell.openExternal(url);
     }
-    return { action: 'deny' };
+    return { action: "deny" };
   });
 
   // vite-plugin-electron sets VITE_DEV_SERVER_URL in dev mode
   if (process.env.VITE_DEV_SERVER_URL) {
     win.loadURL(process.env.VITE_DEV_SERVER_URL);
   } else {
-    win.loadFile(path.join(__dirname, '../dist/index.html'));
+    win.loadFile(path.join(__dirname, "../dist/index.html"));
   }
 }
 
 app.whenReady().then(() => {
   createWindow();
 
-  app.on('activate', () => {
+  app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) {
       createWindow();
     }
   });
 });
 
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
+app.on("window-all-closed", () => {
+  if (process.platform !== "darwin") {
     app.quit();
   }
 });

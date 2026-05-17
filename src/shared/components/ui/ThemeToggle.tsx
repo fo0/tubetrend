@@ -1,21 +1,21 @@
-import React from 'react';
-import {Monitor, Moon, Sun} from 'lucide-react';
-import {useTheme} from '@/src/providers/ThemeProvider';
+import React from "react";
+import { Monitor, Moon, Sun } from "lucide-react";
+import { useTheme } from "@/src/providers/ThemeProvider";
 
 export const ThemeToggle: React.FC = () => {
   const { theme, resolvedTheme, setTheme } = useTheme();
 
   const nextTheme = () => {
     // cycle: system -> light -> dark -> system
-    const order: Array<'system' | 'light' | 'dark'> = ['system', 'light', 'dark'];
+    const order: Array<"system" | "light" | "dark"> = ["system", "light", "dark"];
     const idx = order.indexOf(theme);
     const next = order[(idx + 1) % order.length];
     setTheme(next);
   };
 
   const title = (() => {
-    if (theme === 'system') return `System (${resolvedTheme})`;
-    return theme === 'dark' ? 'Dunkel' : 'Hell';
+    if (theme === "system") return `System (${resolvedTheme})`;
+    return theme === "dark" ? "Dunkel" : "Hell";
   })();
 
   return (
@@ -28,9 +28,9 @@ export const ThemeToggle: React.FC = () => {
       title={`Theme: ${title} (klicken zum Wechseln)`}
       aria-label={`Theme: ${title}`}
     >
-      {theme === 'system' ? (
+      {theme === "system" ? (
         <Monitor className="w-3 h-3" />
-      ) : resolvedTheme === 'dark' ? (
+      ) : resolvedTheme === "dark" ? (
         <Moon className="w-3 h-3" />
       ) : (
         <Sun className="w-3 h-3" />

@@ -1,4 +1,4 @@
-import {TimeFrame} from '../types';
+import { TimeFrame } from "../types";
 
 /**
  * Date and time utilities
@@ -10,11 +10,11 @@ import {TimeFrame} from '../types';
  * must be anchored to that timezone — not UTC.
  */
 export function getTodayDateString(): string {
-  const parts = new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'America/Los_Angeles',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Los_Angeles",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
   }).format(new Date());
   return parts; // en-CA produces YYYY-MM-DD
 }
@@ -107,8 +107,8 @@ export function parseISO8601DurationToSeconds(duration: string | undefined | nul
   if (!duration) return null;
   const match = duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
   if (!match) return null;
-  const h = parseInt(match[1]?.replace('H', '') || '0', 10);
-  const m = parseInt(match[2]?.replace('M', '') || '0', 10);
-  const s = parseInt(match[3]?.replace('S', '') || '0', 10);
+  const h = parseInt(match[1]?.replace("H", "") || "0", 10);
+  const m = parseInt(match[2]?.replace("M", "") || "0", 10);
+  const s = parseInt(match[3]?.replace("S", "") || "0", 10);
   return h * 3600 + m * 60 + s;
 }

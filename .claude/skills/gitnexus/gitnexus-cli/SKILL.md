@@ -1,6 +1,6 @@
 ---
 name: gitnexus-cli
-description: "Use when the user needs to run GitNexus CLI commands like analyze/index a repo, check status, clean the index, generate a wiki, or list indexed repos. Examples: \"Index this repo\", \"Reanalyze the codebase\", \"Generate a wiki\""
+description: 'Use when the user needs to run GitNexus CLI commands like analyze/index a repo, check status, clean the index, generate a wiki, or list indexed repos. Examples: "Index this repo", "Reanalyze the codebase", "Generate a wiki"'
 ---
 
 # GitNexus CLI Commands
@@ -62,14 +62,14 @@ npx gitnexus wiki
 
 Generates repository documentation from the knowledge graph using an LLM. Requires an API key.
 
-| Flag                | Effect                                    |
-| ------------------- | ----------------------------------------- |
-| `--force`           | Force full regeneration                   |
-| `--model <model>`   | LLM model                                 |
-| `--base-url <url>`  | LLM API base URL                          |
-| `--api-key <key>`   | LLM API key                               |
-| `--concurrency <n>` | Parallel LLM calls (default: 3)           |
-| `--gist`            | Publish wiki as a public GitHub Gist      |
+| Flag                | Effect                               |
+| ------------------- | ------------------------------------ |
+| `--force`           | Force full regeneration              |
+| `--model <model>`   | LLM model                            |
+| `--base-url <url>`  | LLM API base URL                     |
+| `--api-key <key>`   | LLM API key                          |
+| `--concurrency <n>` | Parallel LLM calls (default: 3)      |
+| `--gist`            | Publish wiki as a public GitHub Gist |
 
 ### list — Show all indexed repos
 

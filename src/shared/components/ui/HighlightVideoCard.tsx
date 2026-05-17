@@ -1,8 +1,8 @@
-import React from 'react';
-import type {VideoData} from '@/src/features/videos';
-import {Clock, Eye, EyeOff, Sparkles, Zap} from 'lucide-react';
-import {useTranslation} from 'react-i18next';
-import {formatNumber} from '@/src/shared/lib/formatters';
+import React from "react";
+import type { VideoData } from "@/src/features/videos";
+import { Clock, Eye, EyeOff, Sparkles, Zap } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { formatNumber } from "@/src/shared/lib/formatters";
 
 interface HighlightVideoCardProps {
   video: VideoData;
@@ -13,7 +13,11 @@ interface HighlightVideoCardProps {
   // Wenn true, wird die Karte visuell als "wird aktualisiert" markiert
   isRefreshing?: boolean;
   // Callback zum Ausblenden der Karte (mit optionalen Metadaten für die Liste)
-  onHide?: (sourceId: string, videoId: string, meta: { videoTitle: string; thumbnailUrl: string; sourceLabel: string }) => void;
+  onHide?: (
+    sourceId: string,
+    videoId: string,
+    meta: { videoTitle: string; thumbnailUrl: string; sourceLabel: string },
+  ) => void;
 }
 
 export const HighlightVideoCard: React.FC<HighlightVideoCardProps> = ({
@@ -27,17 +31,23 @@ export const HighlightVideoCard: React.FC<HighlightVideoCardProps> = ({
 }) => {
   const { t } = useTranslation();
   // Frische Videos (jünger als 24h) mit grünem Rand hervorheben
-  const isFresh = typeof video?.publishedTimestamp === 'number' &&
-    (Date.now() - video.publishedTimestamp) < 24 * 60 * 60 * 1000;
+  const isFresh =
+    typeof video?.publishedTimestamp === "number" &&
+    Date.now() - video.publishedTimestamp < 24 * 60 * 60 * 1000;
 
   return (
     <div
-      className={`bg-white border-slate-200 dark:bg-slate-800 rounded-xl overflow-hidden border dark:border-slate-700 shadow-lg hover:shadow-xl hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-300 group flex flex-col h-full relative ${isFresh ? 'fresh-green-border' : ''} ${isRefreshing ? 'opacity-60' : ''}`}
+      className={`bg-white border-slate-200 dark:bg-slate-800 rounded-xl overflow-hidden border dark:border-slate-700 shadow-lg hover:shadow-xl hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-300 group flex flex-col h-full relative ${isFresh ? "fresh-green-border" : ""} ${isRefreshing ? "opacity-60" : ""}`}
       aria-busy={isRefreshing}
     >
       {/* Thumbnail Area */}
       <div className="relative h-40 overflow-hidden bg-slate-100 dark:bg-slate-900">
-        <a href={video.url} target="_blank" rel="noopener noreferrer" className="block w-full h-full cursor-pointer">
+        <a
+          href={video.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block w-full h-full cursor-pointer"
+        >
           <img
             src={video.thumbnailUrl}
             alt={video.title}
@@ -55,8 +65,7 @@ export const HighlightVideoCard: React.FC<HighlightVideoCardProps> = ({
           className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-xs font-bold border border-indigo-200/70 bg-indigo-600/90 text-white backdrop-blur-md flex items-center gap-1 pointer-events-none"
           title={`${sourceLabel} • Top ${sourceRank}`}
         >
-          <Sparkles className="w-3 h-3" />
-          #{highlightRank}
+          <Sparkles className="w-3 h-3" />#{highlightRank}
         </div>
 
         {/* Ausblenden-Button */}
@@ -73,8 +82,8 @@ export const HighlightVideoCard: React.FC<HighlightVideoCardProps> = ({
               });
             }}
             className="absolute top-1.5 right-1.5 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white/70 hover:text-white backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
-            title={t('dashboard.highlights.hide')}
-            aria-label={t('dashboard.highlights.hide')}
+            title={t("dashboard.highlights.hide")}
+            aria-label={t("dashboard.highlights.hide")}
           >
             <EyeOff className="w-4 h-4" />
           </button>
@@ -84,8 +93,12 @@ export const HighlightVideoCard: React.FC<HighlightVideoCardProps> = ({
       {/* Content Area */}
       <div className="p-4 flex flex-col grow">
         <div className="mb-2">
-          <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 truncate" title={`${sourceLabel} • Top ${sourceRank}`}>
-            {sourceLabel} <span className="text-slate-400 dark:text-slate-500">•</span> Top {sourceRank}
+          <div
+            className="text-xs font-semibold text-slate-500 dark:text-slate-400 truncate"
+            title={`${sourceLabel} • Top ${sourceRank}`}
+          >
+            {sourceLabel} <span className="text-slate-400 dark:text-slate-500">•</span> Top{" "}
+            {sourceRank}
           </div>
           <h3 className="text-base font-bold leading-snug line-clamp-2 min-h-[2.75rem]">
             <a
@@ -106,14 +119,16 @@ export const HighlightVideoCard: React.FC<HighlightVideoCardProps> = ({
             <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 text-xs uppercase font-semibold mb-0.5">
               <Eye className="w-3 h-3 text-indigo-500 dark:text-indigo-400" /> Views
             </div>
-            <span className="text-slate-700 dark:text-slate-200 font-mono text-sm">{formatNumber(video.views)}</span>
+            <span className="text-slate-700 dark:text-slate-200 font-mono text-sm">
+              {formatNumber(video.views)}
+            </span>
           </div>
           <div className="flex flex-col justify-center bg-slate-100/50 dark:bg-slate-900/50 p-2 rounded-lg border border-slate-200/50 dark:border-slate-700/50">
             <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 text-xs uppercase font-semibold mb-0.5">
               <Zap className="w-3 h-3 text-yellow-500 dark:text-yellow-400" /> Velocity
             </div>
             <span className="text-slate-700 dark:text-slate-200 font-mono text-sm">
-              {video.viewsPerHour ? `~${formatNumber(video.viewsPerHour)}/h` : 'N/A'}
+              {video.viewsPerHour ? `~${formatNumber(video.viewsPerHour)}/h` : "N/A"}
             </span>
           </div>
         </div>

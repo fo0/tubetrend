@@ -1,5 +1,5 @@
-import {useCallback, useEffect, useRef, useState} from 'react';
-import {ArrowDown, ArrowUp} from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from "react";
+import { ArrowDown, ArrowUp } from "lucide-react";
 
 /**
  * A floating scroll button that appears based on scroll direction.
@@ -9,7 +9,7 @@ import {ArrowDown, ArrowUp} from 'lucide-react';
  * - Positioned center-right of the viewport
  */
 export function FloatingScrollButton() {
-  const [scrollDirection, setScrollDirection] = useState<'up' | 'down'>('down');
+  const [scrollDirection, setScrollDirection] = useState<"up" | "down">("down");
   const [isVisible, setIsVisible] = useState(false);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [isNearButton, setIsNearButton] = useState(false);
@@ -26,8 +26,7 @@ export function FloatingScrollButton() {
 
       // Calculate distance from mouse to button center
       const distance = Math.sqrt(
-          Math.pow(e.clientX - buttonCenterX, 2) +
-          Math.pow(e.clientY - buttonCenterY, 2)
+        Math.pow(e.clientX - buttonCenterX, 2) + Math.pow(e.clientY - buttonCenterY, 2),
       );
 
       // Proximity threshold: button size * 3.5 (30% larger than before)
@@ -37,8 +36,8 @@ export function FloatingScrollButton() {
       setIsNearButton(distance < proximityThreshold);
     };
 
-    window.addEventListener('mousemove', handleMouseMove, {passive: true});
-    return () => window.removeEventListener('mousemove', handleMouseMove);
+    window.addEventListener("mousemove", handleMouseMove, { passive: true });
+    return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
   // Track scroll direction and position
@@ -64,20 +63,20 @@ export function FloatingScrollButton() {
 
           if (isNearTop) {
             // At top: show "go to bottom" button
-            setScrollDirection('down');
+            setScrollDirection("down");
             setIsVisible(true);
           } else if (isNearBottom) {
             // At bottom: show "go to top" button
-            setScrollDirection('up');
+            setScrollDirection("up");
             setIsVisible(true);
           } else {
             // In the middle: show based on last scroll direction
             if (currentScrollY > lastScrollY) {
               // Scrolling down -> show "go to bottom"
-              setScrollDirection('down');
+              setScrollDirection("down");
             } else if (currentScrollY < lastScrollY) {
               // Scrolling up -> show "go to top"
-              setScrollDirection('up');
+              setScrollDirection("up");
             }
             setIsVisible(true);
           }
@@ -92,19 +91,19 @@ export function FloatingScrollButton() {
     // Initial check
     handleScroll();
 
-    window.addEventListener('scroll', handleScroll, {passive: true});
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
   }, [lastScrollY]);
 
   const handleClick = useCallback(() => {
-    if (scrollDirection === 'up') {
+    if (scrollDirection === "up") {
       // Instant scroll to top
-      window.scrollTo({top: 0, behavior: 'instant' as ScrollBehavior});
+      window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
     } else {
       // Instant scroll to bottom
       window.scrollTo({
         top: document.documentElement.scrollHeight,
-        behavior: 'instant' as ScrollBehavior
+        behavior: "instant" as ScrollBehavior,
       });
     }
   }, [scrollDirection]);
@@ -114,11 +113,11 @@ export function FloatingScrollButton() {
   }
 
   return (
-      <button
-          ref={buttonRef}
-          type="button"
-          onClick={handleClick}
-          className={`
+    <button
+      ref={buttonRef}
+      type="button"
+      onClick={handleClick}
+      className={`
         fixed bottom-8 left-1/2 translate-x-[60%]
         z-40
         w-10 h-10
@@ -136,16 +135,16 @@ export function FloatingScrollButton() {
         transition-all duration-500 ease-out
         backdrop-blur-sm
         cursor-pointer
-        ${isNearButton ? 'opacity-60 scale-105' : 'opacity-20'}
+        ${isNearButton ? "opacity-60 scale-105" : "opacity-20"}
       `}
-          title={scrollDirection === 'up' ? 'Scroll to top' : 'Scroll to bottom'}
-          aria-label={scrollDirection === 'up' ? 'Scroll to top' : 'Scroll to bottom'}
-      >
-        {scrollDirection === 'up' ? (
-            <ArrowUp className="w-5 h-5"/>
-        ) : (
-            <ArrowDown className="w-5 h-5"/>
-        )}
-      </button>
+      title={scrollDirection === "up" ? "Scroll to top" : "Scroll to bottom"}
+      aria-label={scrollDirection === "up" ? "Scroll to top" : "Scroll to bottom"}
+    >
+      {scrollDirection === "up" ? (
+        <ArrowUp className="w-5 h-5" />
+      ) : (
+        <ArrowDown className="w-5 h-5" />
+      )}
+    </button>
   );
 }

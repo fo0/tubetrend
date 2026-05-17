@@ -7,12 +7,14 @@ We are committed to providing a friendly, safe, and welcoming environment for al
 ## Our Standards
 
 **Positive behavior includes:**
+
 - Being respectful and inclusive
 - Giving and accepting constructive feedback gracefully
 - Focusing on what is best for the community
 - Showing empathy towards others
 
 **Unacceptable behavior includes:**
+
 - Harassment, trolling, or personal attacks
 - Publishing others' private information without permission
 - Other conduct which could reasonably be considered inappropriate

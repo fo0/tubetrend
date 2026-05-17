@@ -18,16 +18,16 @@ When a session begins, read in this order. Stop early if a file is missing.
 
 ## Workflow Triggers
 
-| User says...                                           | Skill to load                                     |
-|--------------------------------------------------------|---------------------------------------------------|
-| "done" / "fertig" / "finished" / "/done"               | `.claude/skills/done/SKILL.md`                    |
-| "PR" / "create PR" / "/pr"                             | `.claude/skills/pr/SKILL.md`                      |
-| "review" / "/review"                                   | `.claude/skills/review/SKILL.md`                  |
-| "security review" / "/security-review"                 | `.claude/skills/security-review/SKILL.md`         |
-| "rollback" / "revert" / "undo" / "/rollback"           | `.claude/skills/rollback/SKILL.md`                |
-| "CI" / "fix CI" / "check the build" / "/ci"            | `.claude/skills/ci/SKILL.md`                      |
-| "stuck" / "loop" / "going in circles" / "/stuck"       | `.claude/skills/stuck/SKILL.md`                   |
-| Diagram request                                        | `agent_docs/diagram_prompt.md` → `docs/ARCHITECTURE.mmd` |
+| User says...                                     | Skill to load                                            |
+| ------------------------------------------------ | -------------------------------------------------------- |
+| "done" / "fertig" / "finished" / "/done"         | `.claude/skills/done/SKILL.md`                           |
+| "PR" / "create PR" / "/pr"                       | `.claude/skills/pr/SKILL.md`                             |
+| "review" / "/review"                             | `.claude/skills/review/SKILL.md`                         |
+| "security review" / "/security-review"           | `.claude/skills/security-review/SKILL.md`                |
+| "rollback" / "revert" / "undo" / "/rollback"     | `.claude/skills/rollback/SKILL.md`                       |
+| "CI" / "fix CI" / "check the build" / "/ci"      | `.claude/skills/ci/SKILL.md`                             |
+| "stuck" / "loop" / "going in circles" / "/stuck" | `.claude/skills/stuck/SKILL.md`                          |
+| Diagram request                                  | `agent_docs/diagram_prompt.md` → `docs/ARCHITECTURE.mmd` |
 
 > After every implementation, the review process in `agent_docs/review_process.md` is available via the `review` skill — done-skill does NOT auto-run reviews.
 > Unresolved findings go to `BACKLOG.md` per `agent_docs/backlog_process.md`.
@@ -35,16 +35,16 @@ When a session begins, read in this order. Stop early if a file is missing.
 
 ## Output Languages
 
-| Surface                                | Language                          |
-|----------------------------------------|-----------------------------------|
-| Chat / status messages to user         | User's language (default: German) |
-| Code, identifiers, comments            | English                           |
-| Commit messages                        | English (Conventional Commits)    |
-| PR titles + bodies                     | English                           |
-| GitHub issue comments                  | English                           |
-| Generated files (CLAUDE.md, agent_docs/*, MEMORY.md, SCRATCHPAD.md, BACKLOG.md, skills) | English |
-| Console / log output of the app        | English                           |
-| User-facing UI strings                 | i18n keys (`t('key')`) — 13 locales, fallback `en` |
+| Surface                                                                                  | Language                                           |
+| ---------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| Chat / status messages to user                                                           | User's language (default: German)                  |
+| Code, identifiers, comments                                                              | English                                            |
+| Commit messages                                                                          | English (Conventional Commits)                     |
+| PR titles + bodies                                                                       | English                                            |
+| GitHub issue comments                                                                    | English                                            |
+| Generated files (CLAUDE.md, agent_docs/\*, MEMORY.md, SCRATCHPAD.md, BACKLOG.md, skills) | English                                            |
+| Console / log output of the app                                                          | English                                            |
+| User-facing UI strings                                                                   | i18n keys (`t('key')`) — 13 locales, fallback `en` |
 
 ## Performance / Modes
 
@@ -66,17 +66,18 @@ When a session begins, read in this order. Stop early if a file is missing.
 
 After every code change, check and update:
 
-| File | Update when... |
-|------|---------------|
-| `CLAUDE.md` | New components, configs, patterns, technical details |
-| `README.md` | New features, endpoints, env vars for users |
-| `BACKLOG.md` | Unfixed review findings (Accepted/Deferred) |
-| `MEMORY.md` | Project learnings, context, decisions, gotchas |
-| `SCRATCHPAD.md` | Current working context, open questions, short-lived notes |
+| File                    | Update when...                                                         |
+| ----------------------- | ---------------------------------------------------------------------- |
+| `CLAUDE.md`             | New components, configs, patterns, technical details                   |
+| `README.md`             | New features, endpoints, env vars for users                            |
+| `BACKLOG.md`            | Unfixed review findings (Accepted/Deferred)                            |
+| `MEMORY.md`             | Project learnings, context, decisions, gotchas                         |
+| `SCRATCHPAD.md`         | Current working context, open questions, short-lived notes             |
 | `docs/ARCHITECTURE.mmd` | Structural changes (new modules, changed data flow, new external deps) |
-| `.env.example` | New environment variables |
+| `.env.example`          | New environment variables                                              |
 
 ### Size monitoring
+
 If `CLAUDE.md` exceeds ~40,000 characters: extract the largest section into `agent_docs/` and replace with a one-line reference. Do this proactively.
 
 ## Refactoring Notes
@@ -97,6 +98,7 @@ Full details: `agent_docs/refactoring_guidelines.md`
 **TubeTrend** is a YouTube trend analysis tool built with Vite + React 19 + TypeScript. It's a single-page application that analyzes video performance, tracks favorites, and discovers trending content across YouTube channels.
 
 Key capabilities:
+
 - **Dashboard** — Track favorite channels and keywords with cached video data and auto-surfaced highlights
 - **Analyser** — Search and analyze videos with mathematical trend scoring (view velocity + engagement rate)
 - **Multi-language** — 13 languages with browser auto-detection (full translations: en, de)
@@ -107,26 +109,26 @@ Repository: `https://github.com/fo0/tubetrend`
 
 ## Tech Stack
 
-| Component | Technology | Version |
-|-----------|-----------|---------|
-| Runtime | Node.js | 22+ |
-| Language | TypeScript | ~6.0.3 |
-| UI Framework | React | ^19.2.6 |
-| Build Tool | Vite | ^8.0.13 |
-| Vite Plugin | @vitejs/plugin-react | ^6.0.2 |
-| CSS Framework | Tailwind CSS | ^4.2.4 (@tailwindcss/vite plugin) |
-| Font | @fontsource/inter | ^5.2 (locally bundled) |
-| Icons | Lucide React | ^1.16.0 |
-| i18n | i18next + react-i18next | ^26.2 / ^17.0.8 |
-| Language Detection | i18next-browser-languagedetector | ^8.2.1 |
-| Package Manager | npm | (lockfile v3) |
-| Electron Integration | vite-plugin-electron (conditional) | ^0.29.1 |
-| Desktop App | Electron | ^41.6.1 |
-| Desktop Packaging | electron-builder | ^26.8.1 |
-| Android Build | Capacitor | ^8.3.4 |
-| Container | Docker (multi-stage) | Node 22-alpine + Nginx alpine |
-| Chrome Extension | Manifest V3 | Tab-based, manual install via chrome://extensions/ |
-| CI/CD | GitHub Actions | typecheck, build, security audit, electron release, chromebook release, android APK, chrome extension |
+| Component            | Technology                         | Version                                                                                               |
+| -------------------- | ---------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| Runtime              | Node.js                            | 22+                                                                                                   |
+| Language             | TypeScript                         | ~6.0.3                                                                                                |
+| UI Framework         | React                              | ^19.2.6                                                                                               |
+| Build Tool           | Vite                               | ^8.0.13                                                                                               |
+| Vite Plugin          | @vitejs/plugin-react               | ^6.0.2                                                                                                |
+| CSS Framework        | Tailwind CSS                       | ^4.2.4 (@tailwindcss/vite plugin)                                                                     |
+| Font                 | @fontsource/inter                  | ^5.2 (locally bundled)                                                                                |
+| Icons                | Lucide React                       | ^1.16.0                                                                                               |
+| i18n                 | i18next + react-i18next            | ^26.2 / ^17.0.8                                                                                       |
+| Language Detection   | i18next-browser-languagedetector   | ^8.2.1                                                                                                |
+| Package Manager      | npm                                | (lockfile v3)                                                                                         |
+| Electron Integration | vite-plugin-electron (conditional) | ^0.29.1                                                                                               |
+| Desktop App          | Electron                           | ^41.6.1                                                                                               |
+| Desktop Packaging    | electron-builder                   | ^26.8.1                                                                                               |
+| Android Build        | Capacitor                          | ^8.3.4                                                                                                |
+| Container            | Docker (multi-stage)               | Node 22-alpine + Nginx alpine                                                                         |
+| Chrome Extension     | Manifest V3                        | Tab-based, manual install via chrome://extensions/                                                    |
+| CI/CD                | GitHub Actions                     | typecheck, build, security audit, electron release, chromebook release, android APK, chrome extension |
 
 ## Project Structure
 
@@ -273,6 +275,7 @@ Try-catch with fallback values for storage. Custom `YouTubeApiError` class for A
 Significant decisions are recorded as ADRs under `docs/adr/`. Triggers + format: `agent_docs/adr_template.md`. Always grep `docs/adr/` before contradicting an existing decision. To reverse a past decision, add a new ADR with `Status: Supersedes ADR-NNNN` — never edit accepted ADRs.
 
 ### TubeTrend-specific architecture notes
+
 - **No router library** — Simple state-based page switching (`activePage` state in `App.tsx`). Sufficient for a 2-page app.
 - **Tailwind via @tailwindcss/vite** — Tailwind CSS v4 as Vite plugin (not PostCSS). Tree-shaking, offline capability, custom font bundling.
 - **No external state library** — Distributed hooks + event bus. Works well given the app's complexity.
@@ -283,13 +286,13 @@ Significant decisions are recorded as ADRs under `docs/adr/`. Triggers + format:
 
 Configured in both `tsconfig.json` and `vite.config.ts`:
 
-| Alias | Maps to |
-|-------|---------|
-| `@/*` | `./` (project root) |
-| `@features/*` | `./src/features/*` |
-| `@shared/*` | `./src/shared/*` |
+| Alias          | Maps to             |
+| -------------- | ------------------- |
+| `@/*`          | `./` (project root) |
+| `@features/*`  | `./src/features/*`  |
+| `@shared/*`    | `./src/shared/*`    |
 | `@providers/*` | `./src/providers/*` |
-| `@i18n/*` | `./src/i18n/*` |
+| `@i18n/*`      | `./src/i18n/*`      |
 
 ## Git Conventions
 
@@ -309,24 +312,25 @@ Configured in both `tsconfig.json` and `vite.config.ts`:
 
 Vite exposes only `VITE_` prefixed variables to the client. Copy `.env.example` → `.env.local`. Restart dev server after changing env vars.
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `VITE_DEFAULT_SEARCH` | Default search input value on app load | Dev: `TEDx`, Prod: `""` |
-| `VITE_GIT_COMMIT_HASH` | Full git commit hash (Docker build arg) | Auto-detected from git |
-| `VITE_GIT_BRANCH` | Git branch name (Docker build arg) | Auto-detected from git |
+| Variable               | Description                             | Default                 |
+| ---------------------- | --------------------------------------- | ----------------------- |
+| `VITE_DEFAULT_SEARCH`  | Default search input value on app load  | Dev: `TEDx`, Prod: `""` |
+| `VITE_GIT_COMMIT_HASH` | Full git commit hash (Docker build arg) | Auto-detected from git  |
+| `VITE_GIT_BRANCH`      | Git branch name (Docker build arg)      | Auto-detected from git  |
 
 Full list: `.env.example`
 
 ### Secrets Locations
 
-| Secret class            | Where it lives                                      | Never commit |
-|-------------------------|-----------------------------------------------------|--------------|
-| Local dev secrets       | `.env.local` (gitignored), template in `.env.example` | ✅ Never     |
-| CI/CD secrets           | GitHub Actions secrets (`gh secret set`)            | ✅ Never |
-| Production secrets      | User-provided at runtime (YouTube API key via UI modal, stored in `localStorage`) | ✅ Never |
-| Test fixtures           | Synthetic values only — never real credentials       | ✅ Never     |
+| Secret class       | Where it lives                                                                    | Never commit |
+| ------------------ | --------------------------------------------------------------------------------- | ------------ |
+| Local dev secrets  | `.env.local` (gitignored), template in `.env.example`                             | ✅ Never     |
+| CI/CD secrets      | GitHub Actions secrets (`gh secret set`)                                          | ✅ Never     |
+| Production secrets | User-provided at runtime (YouTube API key via UI modal, stored in `localStorage`) | ✅ Never     |
+| Test fixtures      | Synthetic values only — never real credentials                                    | ✅ Never     |
 
 Rules:
+
 - New secret needed → add to `.env.example` with placeholder + comment, request from user.
 - Never `gh secret set` from agent code without explicit user command.
 - Audit step in `security-review` skill scans for committed secrets (gitleaks / trufflehog).
@@ -377,13 +381,14 @@ Workflows: `pr-checks.yml`, `docker-publish.yml`, `electron-release.yml`, `andro
 For complex / parallel / read-heavy work, delegate to a Claude Code subagent rather than running everything in main context.
 
 | `subagent_type`     | Use for                                              |
-|---------------------|------------------------------------------------------|
+| ------------------- | ---------------------------------------------------- |
 | `Explore`           | Read-only search, locate symbols / files             |
 | `Plan`              | Design implementation strategy for non-trivial tasks |
 | `general-purpose`   | Multi-step write+execute, write tests/docs, refactor |
 | `claude-code-guide` | Questions about Claude Code itself (hooks, MCP, SDK) |
 
 Rules:
+
 - Direct tools beat subagents when the target is known (`Read` for known path, `grep` for known symbol).
 - Parallelize independent subagent calls in a single message.
 - Pass full context — subagents have no conversation history.
@@ -393,24 +398,28 @@ Full guide: `agent_docs/review_process.md → Subagent Selection`.
 ## Development Notes
 
 ### TypeScript Configuration Quirks
+
 - `moduleResolution: "bundler"` + `allowImportingTsExtensions: true` (Vite-style)
 - If adding tooling that assumes Node-style resolution (older Jest, ts-node), additional config may be needed
 - `noUnusedLocals` and `noUnusedParameters` enabled — unused variables will cause type errors
 - TypeScript 6 defaults changed `baseUrl` deprecated (removed from tsconfig)
 
 ### i18n Details
+
 - Full translations: `en`, `de`
 - Supported with fallback to `en`: `fr`, `es`, `it`, `pt`, `nl`, `pl`, `tr`, `ru`, `ja`, `zh`, `ko`
 - Detection order: `localStorage` → `navigator` → `htmlTag`
 - Translation namespace: `common` (single namespace)
 
 ### Docker
+
 - Multi-stage: `node:22-alpine` (builder) → `nginx:alpine` (runner)
 - Git info passed as build args (`GIT_COMMIT_HASH`, `GIT_BRANCH`)
 - Published image: `ghcr.io/fo0/tubetrend:latest`
 - Port mapping: container `80` → host `8889`
 
 ### Electron
+
 - **Conditionally integrated via vite-plugin-electron** — only active when `ELECTRON=true` env var is set.
 - **Two build modes** — `npm run build` produces only `dist/` (web). `ELECTRON=true npm run build` additionally compiles `electron/main.ts` and `electron/preload.ts` to `dist-electron/`.
 - **Security defaults** — `nodeIntegration: false`, `contextIsolation: true`. External links via `shell.openExternal`.
@@ -419,6 +428,7 @@ Full guide: `agent_docs/review_process.md → Subagent Selection`.
 - **CI/CD** — `electron-release.yml` builds all platforms + Chromebook + Chrome Extension + Android APK in one pipeline on tag pushes.
 
 ### Capacitor (Android / ChromeOS)
+
 - **Alternative to Electron Chromebook .deb** — Native Android APK that runs on ChromeOS via ARCVM.
 - **Zero changes to `src/` code** — Wraps the same `dist/` web build output.
 - **ChromeOS-optimized AndroidManifest.xml** — Resizable activity, freeform window support.
@@ -426,6 +436,7 @@ Full guide: `agent_docs/review_process.md → Subagent Selection`.
 - **Signing** — Currently unsigned (debug key). Production Play Store distribution requires signing keystore.
 
 ### Chrome Extension
+
 - **Tab-based approach** — Click extension icon → opens TubeTrend in a new Chrome tab.
 - **Zero changes to `src/`** — Wraps the same `dist/` output.
 - **Manifest V3** — Background service worker, no inline scripts (CSP-compliant).
@@ -433,9 +444,11 @@ Full guide: `agent_docs/review_process.md → Subagent Selection`.
 - **Build** — `npm run build:extension` produces `dist-extension/`.
 
 ### Build Info
+
 `vite.config.ts` injects `__BUILD_INFO__` global with `version` (date-based `YYYYMMDD-HHMM`), `commitHash`, `branch`, `buildDate`.
 
 <!-- gitnexus:start -->
+
 # GitNexus — Code Intelligence
 
 GitNexus is the intended code-intelligence MCP for this project. Use the GitNexus MCP tools to understand code, assess impact, and navigate safely. If GitNexus isn't available on the current machine, fall back to standard `Read` / `Grep` / `Bash` tools — workflows must not hard-require GitNexus.
@@ -461,14 +474,14 @@ GitNexus is the intended code-intelligence MCP for this project. Use the GitNexu
 
 ## Skill Files
 
-| Task | Read this skill file |
-|------|---------------------|
-| Understand architecture / "How does X work?" | `.claude/skills/gitnexus/gitnexus-exploring/SKILL.md` |
-| Blast radius / "What breaks if I change X?" | `.claude/skills/gitnexus/gitnexus-impact-analysis/SKILL.md` |
-| Trace bugs / "Why is X failing?" | `.claude/skills/gitnexus/gitnexus-debugging/SKILL.md` |
-| Rename / extract / split / refactor | `.claude/skills/gitnexus/gitnexus-refactoring/SKILL.md` |
-| Tools, resources, schema reference | `.claude/skills/gitnexus/gitnexus-guide/SKILL.md` |
-| Index, status, clean, wiki CLI commands | `.claude/skills/gitnexus/gitnexus-cli/SKILL.md` |
+| Task                                         | Read this skill file                                        |
+| -------------------------------------------- | ----------------------------------------------------------- |
+| Understand architecture / "How does X work?" | `.claude/skills/gitnexus/gitnexus-exploring/SKILL.md`       |
+| Blast radius / "What breaks if I change X?"  | `.claude/skills/gitnexus/gitnexus-impact-analysis/SKILL.md` |
+| Trace bugs / "Why is X failing?"             | `.claude/skills/gitnexus/gitnexus-debugging/SKILL.md`       |
+| Rename / extract / split / refactor          | `.claude/skills/gitnexus/gitnexus-refactoring/SKILL.md`     |
+| Tools, resources, schema reference           | `.claude/skills/gitnexus/gitnexus-guide/SKILL.md`           |
+| Index, status, clean, wiki CLI commands      | `.claude/skills/gitnexus/gitnexus-cli/SKILL.md`             |
 
 <!-- gitnexus:end -->
 

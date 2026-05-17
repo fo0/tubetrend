@@ -5,19 +5,19 @@
  * Einmal ausgeblendete Videos bleiben dauerhaft versteckt.
  */
 
-import {safeRead, safeWrite} from '@/src/shared/lib/storage';
-import {dispatchEvent} from '@/src/shared/lib/eventBus';
-import {STORAGE_KEYS} from '@/src/shared/constants';
+import { safeRead, safeWrite } from "@/src/shared/lib/storage";
+import { dispatchEvent } from "@/src/shared/lib/eventBus";
+import { STORAGE_KEYS } from "@/src/shared/constants";
 
 const HIDDEN_HIGHLIGHTS_KEY = STORAGE_KEYS.HIDDEN_HIGHLIGHTS;
 
 export interface HiddenHighlight {
-  videoId: string;   // Eindeutige Video-ID (primärer Schlüssel)
-  sourceId: string;  // Favorit/Kanal-ID (für Anzeige/Kontext)
-  hiddenAt: number;  // Zeitstempel wann ausgeblendet wurde (für chronologische Sortierung)
-  videoTitle?: string;  // Video-Titel für die Anzeige in der Liste
-  thumbnailUrl?: string;  // Thumbnail-URL für die Anzeige in der Liste
-  sourceLabel?: string;  // Kanal-/Favoritenname für die Anzeige in der Liste
+  videoId: string; // Eindeutige Video-ID (primärer Schlüssel)
+  sourceId: string; // Favorit/Kanal-ID (für Anzeige/Kontext)
+  hiddenAt: number; // Zeitstempel wann ausgeblendet wurde (für chronologische Sortierung)
+  videoTitle?: string; // Video-Titel für die Anzeige in der Liste
+  thumbnailUrl?: string; // Thumbnail-URL für die Anzeige in der Liste
+  sourceLabel?: string; // Kanal-/Favoritenname für die Anzeige in der Liste
 }
 
 // Keep old type names for backwards compatibility
@@ -39,19 +39,21 @@ export const hiddenHighlightsService = {
     return raw
       .filter(
         (item) =>
-          typeof item?.sourceId === 'string' &&
-          typeof item?.videoId === 'string' &&
+          typeof item?.sourceId === "string" &&
+          typeof item?.videoId === "string" &&
           item.sourceId.length > 0 &&
-          item.videoId.length > 0
+          item.videoId.length > 0,
       )
-      .map((item): HiddenHighlight => ({
-        sourceId: item.sourceId,
-        videoId: item.videoId,
-        hiddenAt: typeof item.hiddenAt === 'number' ? item.hiddenAt : 0,
-        videoTitle: typeof item.videoTitle === 'string' ? item.videoTitle : undefined,
-        thumbnailUrl: typeof item.thumbnailUrl === 'string' ? item.thumbnailUrl : undefined,
-        sourceLabel: typeof item.sourceLabel === 'string' ? item.sourceLabel : undefined,
-      }));
+      .map(
+        (item): HiddenHighlight => ({
+          sourceId: item.sourceId,
+          videoId: item.videoId,
+          hiddenAt: typeof item.hiddenAt === "number" ? item.hiddenAt : 0,
+          videoTitle: typeof item.videoTitle === "string" ? item.videoTitle : undefined,
+          thumbnailUrl: typeof item.thumbnailUrl === "string" ? item.thumbnailUrl : undefined,
+          sourceLabel: typeof item.sourceLabel === "string" ? item.sourceLabel : undefined,
+        }),
+      );
   },
 
   /**
@@ -64,11 +66,15 @@ export const hiddenHighlightsService = {
   /**
    * Blendet ein Video dauerhaft aus (über die eindeutige videoId).
    */
-  hide(sourceId: string, videoId: string, meta?: { videoTitle?: string; thumbnailUrl?: string; sourceLabel?: string }): void {
+  hide(
+    sourceId: string,
+    videoId: string,
+    meta?: { videoTitle?: string; thumbnailUrl?: string; sourceLabel?: string },
+  ): void {
     const list = this.list();
     const now = Date.now();
     // Prüfen ob Video bereits ausgeblendet ist (nach videoId)
-    const existingIdx = list.findIndex(h => h.videoId === videoId);
+    const existingIdx = list.findIndex((h) => h.videoId === videoId);
     if (existingIdx >= 0) {
       // Video bereits ausgeblendet - nur Metadaten aktualisieren falls nötig
       list[existingIdx].hiddenAt = now;
@@ -87,16 +93,16 @@ export const hiddenHighlightsService = {
       });
     }
     safeWrite(HIDDEN_HIGHLIGHTS_KEY, list);
-    dispatchEvent('hidden-highlights-changed');
+    dispatchEvent("hidden-highlights-changed");
   },
 
   /**
    * Zeigt ein ausgeblendetes Video wieder an (entfernt es aus der Liste).
    */
   show(videoId: string): void {
-    const list = this.list().filter(h => h.videoId !== videoId);
+    const list = this.list().filter((h) => h.videoId !== videoId);
     safeWrite(HIDDEN_HIGHLIGHTS_KEY, list);
-    dispatchEvent('hidden-highlights-changed');
+    dispatchEvent("hidden-highlights-changed");
   },
 
   /**
@@ -118,21 +124,21 @@ export const hiddenHighlightsService = {
    * Einmal ausgeblendete Videos bleiben dauerhaft versteckt.
    */
   isHidden(videoId: string): boolean {
-    return this.list().some(h => h.videoId === videoId);
+    return this.list().some((h) => h.videoId === videoId);
   },
 
   /**
    * Prüft ob für einen sourceId ein Eintrag existiert (unabhängig von der videoId).
    */
   hasEntry(sourceId: string): boolean {
-    return this.list().some(h => h.sourceId === sourceId);
+    return this.list().some((h) => h.sourceId === sourceId);
   },
 
   /**
    * Gibt die gespeicherte videoId für einen sourceId zurück, oder null wenn nicht vorhanden.
    */
   getHiddenVideoId(sourceId: string): string | null {
-    const entry = this.list().find(h => h.sourceId === sourceId);
+    const entry = this.list().find((h) => h.sourceId === sourceId);
     return entry?.videoId ?? null;
   },
 
@@ -141,7 +147,7 @@ export const hiddenHighlightsService = {
    */
   clearAll(): void {
     safeWrite(HIDDEN_HIGHLIGHTS_KEY, []);
-    dispatchEvent('hidden-highlights-changed');
+    dispatchEvent("hidden-highlights-changed");
   },
 
   /**
@@ -156,7 +162,7 @@ export const hiddenHighlightsService = {
    */
   cleanup(validSourceIds: string[]): void {
     const validSet = new Set(validSourceIds);
-    const list = this.list().filter(h => validSet.has(h.sourceId));
+    const list = this.list().filter((h) => validSet.has(h.sourceId));
     safeWrite(HIDDEN_HIGHLIGHTS_KEY, list);
-  }
+  },
 };

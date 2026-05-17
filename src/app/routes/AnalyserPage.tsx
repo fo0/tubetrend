@@ -1,13 +1,13 @@
-import {useMemo, useState} from 'react';
-import {AlertCircle, Eye, List, Trophy} from 'lucide-react';
-import {Youtube} from '@/src/shared/components/ui/BrandIcons';
-import {InputSection} from '@/src/shared/components/ui/InputSection';
-import {VideoCard} from '@/src/shared/components/ui/VideoCard';
-import {VideoListTable} from '@/src/shared/components/ui/VideoListTable';
-import {EmptyState} from '@/src/shared/components/ui/EmptyState';
-import {useTranslation} from 'react-i18next';
-import type {SearchType, TimeFrame} from '@/src/shared/types';
-import type {SearchState} from '@/src/features/search/hooks/useSearch';
+import { useMemo, useState } from "react";
+import { AlertCircle, Eye, List, Trophy } from "lucide-react";
+import { Youtube } from "@/src/shared/components/ui/BrandIcons";
+import { InputSection } from "@/src/shared/components/ui/InputSection";
+import { VideoCard } from "@/src/shared/components/ui/VideoCard";
+import { VideoListTable } from "@/src/shared/components/ui/VideoListTable";
+import { EmptyState } from "@/src/shared/components/ui/EmptyState";
+import { useTranslation } from "react-i18next";
+import type { SearchType, TimeFrame } from "@/src/shared/types";
+import type { SearchState } from "@/src/features/search/hooks/useSearch";
 
 interface AnalyserPageProps {
   searchState: SearchState;
@@ -18,24 +18,25 @@ interface AnalyserPageProps {
     searchType?: SearchType;
     syncToken?: number;
   };
-  onSearch: (query: string, timeFrame: TimeFrame, maxResults: number, searchType: SearchType) => void;
+  onSearch: (
+    query: string,
+    timeFrame: TimeFrame,
+    maxResults: number,
+    searchType: SearchType,
+  ) => void;
 }
 
-export function AnalyserPage({
-  searchState,
-  externalInputValues,
-  onSearch,
-}: AnalyserPageProps) {
+export function AnalyserPage({ searchState, externalInputValues, onSearch }: AnalyserPageProps) {
   const { t } = useTranslation();
 
-  const [sortMode, setSortMode] = useState<'trend' | 'views'>('trend');
+  const [sortMode, setSortMode] = useState<"trend" | "views">("trend");
   const [topN, setTopN] = useState<3 | 6>(6);
 
   const sortedVideos = useMemo(() => {
     if (!searchState.data) return [];
 
     const arr = [...searchState.data];
-    if (sortMode === 'views') {
+    if (sortMode === "views") {
       return arr.sort((a, b) => {
         if (b.views !== a.views) return b.views - a.views;
         return b.trendingScore - a.trendingScore;
@@ -49,8 +50,8 @@ export function AnalyserPage({
 
   const channelUrl = useMemo(() => {
     if (searchState.channelId) return `https://www.youtube.com/channel/${searchState.channelId}`;
-    const q = (searchState.channelName || '').trim();
-    if (q.startsWith('@')) return `https://www.youtube.com/${q}`;
+    const q = (searchState.channelName || "").trim();
+    if (q.startsWith("@")) return `https://www.youtube.com/${q}`;
     return null;
   }, [searchState.channelId, searchState.channelName]);
 
@@ -81,63 +82,61 @@ export function AnalyserPage({
           <div className="flex flex-col sm:flex-row justify-between items-center bg-slate-100/50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200 dark:border-slate-800 gap-4 backdrop-blur-sm">
             <div className="flex items-center gap-2">
               <h3 className="font-semibold text-slate-700 dark:text-slate-200">
-                {t('results.resultsFor')}{' '}
+                {t("results.resultsFor")}{" "}
                 {channelUrl ? (
                   <a
                     href={channelUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1.5 text-red-500 dark:text-red-400 hover:text-red-400 dark:hover:text-red-300 hover:underline underline-offset-2"
-                    title={t('results.openChannelTitle', { channel: searchState.channelName })}
+                    title={t("results.openChannelTitle", { channel: searchState.channelName })}
                   >
-                    <Youtube className="w-4 h-4" aria-hidden="true" />
-                    @{searchState.channelName}
+                    <Youtube className="w-4 h-4" aria-hidden="true" />@{searchState.channelName}
                   </a>
                 ) : (
                   <span className="inline-flex items-center gap-1.5 text-red-500 dark:text-red-400">
-                    <Youtube className="w-4 h-4" aria-hidden="true" />
-                    @{searchState.channelName}
+                    <Youtube className="w-4 h-4" aria-hidden="true" />@{searchState.channelName}
                   </span>
                 )}
               </h3>
               <span className="bg-slate-200 dark:bg-slate-700 text-xs px-2 py-0.5 rounded-full text-slate-600 dark:text-slate-300 border border-slate-300 dark:border-slate-600">
-                {t('results.videosCount', { count: sortedVideos.length })}
+                {t("results.videosCount", { count: sortedVideos.length })}
               </span>
             </div>
 
             <div className="flex items-center gap-3 text-sm font-medium">
               <span className="text-slate-500 dark:text-slate-400 whitespace-nowrap">
-                {t('results.sortedBy')}{' '}
-                {sortMode === 'trend' ? t('results.sortModes.trend') : t('results.sortModes.views')}
+                {t("results.sortedBy")}{" "}
+                {sortMode === "trend" ? t("results.sortModes.trend") : t("results.sortModes.views")}
               </span>
 
               {/* Sort Toggle */}
               <div className="inline-flex items-center rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-100/60 dark:bg-slate-900/60 p-0.5">
                 <button
                   type="button"
-                  onClick={() => setSortMode('trend')}
+                  onClick={() => setSortMode("trend")}
                   className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors ${
-                    sortMode === 'trend'
-                      ? 'bg-indigo-600 text-white'
-                      : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800'
+                    sortMode === "trend"
+                      ? "bg-indigo-600 text-white"
+                      : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800"
                   }`}
-                  title={t('results.sortTitles.trend')}
+                  title={t("results.sortTitles.trend")}
                 >
                   <Trophy className="w-4 h-4" />
-                  <span>{t('results.sortButtons.trendScore')}</span>
+                  <span>{t("results.sortButtons.trendScore")}</span>
                 </button>
                 <button
                   type="button"
-                  onClick={() => setSortMode('views')}
+                  onClick={() => setSortMode("views")}
                   className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors ${
-                    sortMode === 'views'
-                      ? 'bg-indigo-600 text-white'
-                      : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800'
+                    sortMode === "views"
+                      ? "bg-indigo-600 text-white"
+                      : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800"
                   }`}
-                  title={t('results.sortTitles.views')}
+                  title={t("results.sortTitles.views")}
                 >
                   <Eye className="w-4 h-4" />
-                  <span>{t('results.sortButtons.views')}</span>
+                  <span>{t("results.sortButtons.views")}</span>
                 </button>
               </div>
 
@@ -148,10 +147,10 @@ export function AnalyserPage({
                   onClick={() => setTopN(3)}
                   className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors ${
                     topN === 3
-                      ? 'bg-indigo-600 text-white'
-                      : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800'
+                      ? "bg-indigo-600 text-white"
+                      : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800"
                   }`}
-                  title={t('results.highlightTopN', { n: 3 })}
+                  title={t("results.highlightTopN", { n: 3 })}
                 >
                   <span>Top 3</span>
                 </button>
@@ -160,10 +159,10 @@ export function AnalyserPage({
                   onClick={() => setTopN(6)}
                   className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors ${
                     topN === 6
-                      ? 'bg-indigo-600 text-white'
-                      : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800'
+                      ? "bg-indigo-600 text-white"
+                      : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800"
                   }`}
-                  title={t('results.highlightTopN', { n: 6 })}
+                  title={t("results.highlightTopN", { n: 6 })}
                 >
                   <span>Top 6</span>
                 </button>
@@ -176,7 +175,7 @@ export function AnalyserPage({
             <div className="flex items-center gap-2 mb-4 px-1">
               <Trophy className="w-5 h-5 text-yellow-500" />
               <h3 className="text-lg font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wide">
-                {t('results.topPerformance', { n: topN })}
+                {t("results.topPerformance", { n: topN })}
               </h3>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3">
@@ -192,7 +191,7 @@ export function AnalyserPage({
               <div className="flex items-center gap-2 mb-4 px-1 mt-8">
                 <List className="w-5 h-5 text-slate-500 dark:text-slate-400" />
                 <h3 className="text-lg font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wide">
-                  {t('results.moreVideos')}
+                  {t("results.moreVideos")}
                 </h3>
               </div>
               <VideoListTable videos={otherVideos} startIndex={topN + 1} />

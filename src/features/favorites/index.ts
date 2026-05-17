@@ -3,7 +3,7 @@
  */
 
 // Types
-export * from './types';
+export * from "./types";
 
 // Services
-export { favoritesService } from './services/favoritesService';
+export { favoritesService } from "./services/favoritesService";

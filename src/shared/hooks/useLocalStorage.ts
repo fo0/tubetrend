@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useState} from 'react';
+import { useCallback, useEffect, useState } from "react";
 
 interface UseLocalStorageOptions<T> {
   serialize?: (value: T) => string;
@@ -11,13 +11,13 @@ interface UseLocalStorageOptions<T> {
 export function useLocalStorage<T>(
   key: string,
   initialValue: T,
-  options?: UseLocalStorageOptions<T>
+  options?: UseLocalStorageOptions<T>,
 ): [T, (value: T | ((prev: T) => T)) => void, () => void] {
   const serialize = options?.serialize ?? JSON.stringify;
   const deserialize = options?.deserialize ?? JSON.parse;
 
   const [storedValue, setStoredValue] = useState<T>(() => {
-    if (typeof window === 'undefined') return initialValue;
+    if (typeof window === "undefined") return initialValue;
     try {
       const item = localStorage.getItem(key);
       return item ? deserialize(item) : initialValue;
@@ -38,7 +38,7 @@ export function useLocalStorage<T>(
         return next;
       });
     },
-    [key, serialize]
+    [key, serialize],
   );
 
   const remove = useCallback(() => {
@@ -62,8 +62,8 @@ export function useLocalStorage<T>(
       }
     };
 
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
   }, [key, deserialize]);
 
   return [storedValue, setValue, remove];

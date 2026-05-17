@@ -1,2 +1,2 @@
-export { Header, type PageType } from './Header';
-export { Footer } from './Footer';
+export { Header, type PageType } from "./Header";
+export { Footer } from "./Footer";

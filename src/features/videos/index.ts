@@ -3,7 +3,7 @@
  */
 
 // Types
-export * from './types';
+export * from "./types";
 
 // Services
-export { analyzeVideoStats } from './services/trendAnalysisService';
+export { analyzeVideoStats } from "./services/trendAnalysisService";

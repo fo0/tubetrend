@@ -11,25 +11,25 @@ This file documents:
 
 > Edit this list when adding/removing MCP integrations from the project. The optimizer preserves user edits on re-run.
 
-| MCP                | Purpose in this project                                                | Notes |
-|--------------------|------------------------------------------------------------------------|-------|
-| `gitnexus`         | Code intelligence — symbol graph, impact analysis, safe refactor on the TypeScript/React codebase | Skills in `.claude/skills/gitnexus/`. Optional — workflows must work without it. |
-| `github`           | Issue / PR / repo metadata via API (alternative to `gh` CLI)            | Useful when running in environments without `gh` installed (CI, sandboxes). |
+| MCP        | Purpose in this project                                                                           | Notes                                                                            |
+| ---------- | ------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `gitnexus` | Code intelligence — symbol graph, impact analysis, safe refactor on the TypeScript/React codebase | Skills in `.claude/skills/gitnexus/`. Optional — workflows must work without it. |
+| `github`   | Issue / PR / repo metadata via API (alternative to `gh` CLI)                                      | Useful when running in environments without `gh` installed (CI, sandboxes).      |
 
 ## Common MCPs (reference — not necessarily used here)
 
-| MCP            | Typical use                                                  |
-|----------------|--------------------------------------------------------------|
-| `gitnexus`     | Code intelligence — symbol graph, impact, refactor (manifest-driven feature in this optimizer) |
-| `filesystem`   | Sandboxed file access beyond CWD                            |
-| `github`       | Issue / PR / repo metadata via API (alternative to `gh`)    |
-| `postgres` / `mysql` / `sqlite` | Live DB schema introspection + read queries |
-| `puppeteer` / `playwright` | Headless browser, used for UI automation, scraping, e2e |
-| `fetch`        | HTTP fetch wrapper                                          |
-| `slack`        | Read/post messages — for ops integrations                   |
-| `sentry`       | Error tracking lookup                                       |
-| `notion` / `linear` / `jira` | Work tracking integrations                  |
-| `aws` / `gcp` / `azure` | Cloud resource queries (use carefully — non-zero cost) |
+| MCP                             | Typical use                                                                                    |
+| ------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `gitnexus`                      | Code intelligence — symbol graph, impact, refactor (manifest-driven feature in this optimizer) |
+| `filesystem`                    | Sandboxed file access beyond CWD                                                               |
+| `github`                        | Issue / PR / repo metadata via API (alternative to `gh`)                                       |
+| `postgres` / `mysql` / `sqlite` | Live DB schema introspection + read queries                                                    |
+| `puppeteer` / `playwright`      | Headless browser, used for UI automation, scraping, e2e                                        |
+| `fetch`                         | HTTP fetch wrapper                                                                             |
+| `slack`                         | Read/post messages — for ops integrations                                                      |
+| `sentry`                        | Error tracking lookup                                                                          |
+| `notion` / `linear` / `jira`    | Work tracking integrations                                                                     |
+| `aws` / `gcp` / `azure`         | Cloud resource queries (use carefully — non-zero cost)                                         |
 
 ## Selection Heuristic for the Agent
 

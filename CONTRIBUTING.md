@@ -36,6 +36,7 @@ Thank you for your interest in contributing to TubeTrend! This document provides
 ### Reporting Bugs
 
 Before submitting a bug report:
+
 - Check existing issues to avoid duplicates
 - Use the bug report template when creating a new issue
 - Include steps to reproduce the issue
@@ -83,6 +84,7 @@ src/
 ### Commit Message Format
 
 Use clear, descriptive commit messages:
+
 - `Add feature X` - for new features
 - `Fix bug in Y` - for bug fixes
 - `Update Z` - for improvements to existing features

@@ -1,11 +1,11 @@
-import type {ChannelVideosResult, QuotaCallContext, YouTubeVideoItem} from '@/src/shared/types';
-import {TimeFrame} from '@/src/shared/types';
-import {AUTO_LIMIT_KEYWORD} from '@/src/shared/constants';
-import {getPublishedAfterDate, parseISO8601DurationToSeconds} from '@/src/shared/lib/dateUtils';
-import type {YoutubeSearchResponse, YoutubeVideoListResponse} from '../types';
+import type { ChannelVideosResult, QuotaCallContext, YouTubeVideoItem } from "@/src/shared/types";
+import { TimeFrame } from "@/src/shared/types";
+import { AUTO_LIMIT_KEYWORD } from "@/src/shared/constants";
+import { getPublishedAfterDate, parseISO8601DurationToSeconds } from "@/src/shared/lib/dateUtils";
+import type { YoutubeSearchResponse, YoutubeVideoListResponse } from "../types";
 
 const SHORTS_DURATION_THRESHOLD_SECONDS = 180;
-import {fetchFromApi} from './youtubeApiClient';
+import { fetchFromApi } from "./youtubeApiClient";
 
 /**
  * Search videos by keyword
@@ -14,16 +14,16 @@ export async function searchVideosByKeyword(
   keyword: string,
   timeFrame: TimeFrame,
   maxResults: number,
-  context?: Partial<QuotaCallContext>
+  context?: Partial<QuotaCallContext>,
 ): Promise<ChannelVideosResult> {
   if (!keyword || keyword.trim().length === 0) {
     return { videos: [], totalInTimeFrame: 0 };
   }
 
   const keywordContext: QuotaCallContext = {
-    source: 'keyword',
+    source: "keyword",
     name: keyword.trim(),
-    favoriteType: 'keyword',
+    favoriteType: "keyword",
     ...context,
   };
 
@@ -31,23 +31,23 @@ export async function searchVideosByKeyword(
   const effectiveMax = maxResults === -1 ? AUTO_LIMIT_KEYWORD : maxResults > 0 ? maxResults : 5000;
 
   let allVideoIds: string[] = [];
-  let nextPageToken = '';
+  let nextPageToken = "";
   const MAX_PAGES = Math.ceil(effectiveMax / 50);
   let pageCount = 0;
 
   while (pageCount < MAX_PAGES && allVideoIds.length < effectiveMax) {
     const params: Record<string, string> = {
-      part: 'snippet',
+      part: "snippet",
       q: keyword.trim(),
-      type: 'video',
-      order: 'date',
+      type: "video",
+      order: "date",
       publishedAfter: publishedAfter,
-      maxResults: '50',
+      maxResults: "50",
     };
 
     if (nextPageToken) params.pageToken = nextPageToken;
 
-    const searchData = await fetchFromApi<YoutubeSearchResponse>('search', params, keywordContext);
+    const searchData = await fetchFromApi<YoutubeSearchResponse>("search", params, keywordContext);
 
     if (!searchData.items || searchData.items.length === 0) {
       break;
@@ -59,10 +59,10 @@ export async function searchVideosByKeyword(
     // would later corrupt the comma-joined `id` parameter to /videos.
     const videoIds = searchData.items
       .map((item) => item.id?.videoId)
-      .filter((id): id is string => typeof id === 'string' && id.length > 0);
+      .filter((id): id is string => typeof id === "string" && id.length > 0);
     allVideoIds = [...allVideoIds, ...videoIds];
 
-    nextPageToken = searchData.nextPageToken ?? '';
+    nextPageToken = searchData.nextPageToken ?? "";
     if (!nextPageToken) break;
 
     pageCount++;
@@ -89,12 +89,16 @@ export async function searchVideosByKeyword(
   }
 
   const batchPromises = batches.map(async (batch) => {
-    const videoIds = batch.join(',');
+    const videoIds = batch.join(",");
 
-    const videoData = await fetchFromApi<YoutubeVideoListResponse>('videos', {
-      part: 'snippet,statistics,contentDetails',
-      id: videoIds,
-    }, { ...keywordContext, source: 'video-stats' });
+    const videoData = await fetchFromApi<YoutubeVideoListResponse>(
+      "videos",
+      {
+        part: "snippet,statistics,contentDetails",
+        id: videoIds,
+      },
+      { ...keywordContext, source: "video-stats" },
+    );
 
     if (!videoData.items) return [];
 
@@ -105,14 +109,16 @@ export async function searchVideosByKeyword(
         if (seconds === null) return true;
         return seconds >= SHORTS_DURATION_THRESHOLD_SECONDS;
       })
-      .map((item): YouTubeVideoItem => ({
-        id: item.id,
-        // Cast through `unknown` to bridge the loose API type (all fields
-        // optional) and the stricter consumer type. Required fields are
-        // guaranteed by the `part=snippet,statistics` request.
-        snippet: item.snippet as unknown as YouTubeVideoItem['snippet'],
-        statistics: item.statistics,
-      }));
+      .map(
+        (item): YouTubeVideoItem => ({
+          id: item.id,
+          // Cast through `unknown` to bridge the loose API type (all fields
+          // optional) and the stricter consumer type. Required fields are
+          // guaranteed by the `part=snippet,statistics` request.
+          snippet: item.snippet as unknown as YouTubeVideoItem["snippet"],
+          statistics: item.statistics,
+        }),
+      );
   });
 
   const batchResults = await Promise.all(batchPromises);

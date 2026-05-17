@@ -11,7 +11,7 @@ export interface StorageAdapter {
 
 export const localStorageAdapter: StorageAdapter = {
   get<T>(key: string): T | null {
-    if (typeof window === 'undefined') return null;
+    if (typeof window === "undefined") return null;
     try {
       const item = localStorage.getItem(key);
       return item ? JSON.parse(item) : null;
@@ -21,7 +21,7 @@ export const localStorageAdapter: StorageAdapter = {
   },
 
   set<T>(key: string, value: T): void {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
     try {
       localStorage.setItem(key, JSON.stringify(value));
     } catch {
@@ -30,7 +30,7 @@ export const localStorageAdapter: StorageAdapter = {
   },
 
   remove(key: string): void {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
     try {
       localStorage.removeItem(key);
     } catch {
@@ -39,7 +39,7 @@ export const localStorageAdapter: StorageAdapter = {
   },
 
   clear(): void {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
     try {
       localStorage.clear();
     } catch {
@@ -52,7 +52,7 @@ export const localStorageAdapter: StorageAdapter = {
  * Safe read from localStorage with fallback
  */
 export function safeRead<T>(key: string, fallback: T): T {
-  if (typeof window === 'undefined') return fallback;
+  if (typeof window === "undefined") return fallback;
   try {
     const raw = localStorage.getItem(key);
     if (!raw) return fallback;
@@ -66,7 +66,7 @@ export function safeRead<T>(key: string, fallback: T): T {
  * Safe write to localStorage
  */
 export function safeWrite<T>(key: string, value: T): void {
-  if (typeof window === 'undefined') return;
+  if (typeof window === "undefined") return;
   try {
     localStorage.setItem(key, JSON.stringify(value));
   } catch {
@@ -78,7 +78,7 @@ export function safeWrite<T>(key: string, value: T): void {
  * Safe remove from localStorage
  */
 export function safeRemove(key: string): void {
-  if (typeof window === 'undefined') return;
+  if (typeof window === "undefined") return;
   try {
     localStorage.removeItem(key);
   } catch {

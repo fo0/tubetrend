@@ -3,47 +3,47 @@
  * Run after `vite build`: npm run build:extension
  * Output: dist-extension/ (ready for chrome://extensions/ "Load unpacked")
  */
-import { readFileSync, writeFileSync, mkdirSync, cpSync, rmSync, existsSync } from 'fs';
-import { join } from 'path';
-import { deflateSync } from 'zlib';
+import { readFileSync, writeFileSync, mkdirSync, cpSync, rmSync, existsSync } from "fs";
+import { join } from "path";
+import { deflateSync } from "zlib";
 
-const ROOT = new URL('..', import.meta.url).pathname;
-const DIST = join(ROOT, 'dist');
-const SRC = join(ROOT, 'chrome-extension');
-const OUT = join(ROOT, 'dist-extension');
+const ROOT = new URL("..", import.meta.url).pathname;
+const DIST = join(ROOT, "dist");
+const SRC = join(ROOT, "chrome-extension");
+const OUT = join(ROOT, "dist-extension");
 
 // --- Step 1: Clean and copy dist/ ---
 if (existsSync(OUT)) {
   rmSync(OUT, { recursive: true });
 }
 cpSync(DIST, OUT, { recursive: true });
-console.log('Copied dist/ -> dist-extension/');
+console.log("Copied dist/ -> dist-extension/");
 
 // --- Step 2: Copy extension source files ---
-for (const file of ['manifest.json', 'background.js', 'theme-init.js']) {
+for (const file of ["manifest.json", "background.js", "theme-init.js"]) {
   cpSync(join(SRC, file), join(OUT, file));
 }
-console.log('Copied chrome-extension/ files');
+console.log("Copied chrome-extension/ files");
 
 // --- Step 3: Patch index.html — replace inline FOUC script with external ---
-const indexPath = join(OUT, 'index.html');
-let html = readFileSync(indexPath, 'utf-8');
+const indexPath = join(OUT, "index.html");
+let html = readFileSync(indexPath, "utf-8");
 
 // Match the inline FOUC prevention script block (including the comment above it)
 const inlineScriptPattern = /\s*<!-- Apply theme class.*?-->\s*<script>[\s\S]*?<\/script>/;
 if (inlineScriptPattern.test(html)) {
   html = html.replace(inlineScriptPattern, '\n    <script src="theme-init.js"></script>');
   writeFileSync(indexPath, html);
-  console.log('Patched index.html: inline script -> theme-init.js');
+  console.log("Patched index.html: inline script -> theme-init.js");
 } else {
   // Fallback: try matching just the script block without the comment
   const fallbackPattern = /<script>\s*\(function\(\)\s*\{[\s\S]*?\}\)\(\);\s*<\/script>/;
   if (fallbackPattern.test(html)) {
     html = html.replace(fallbackPattern, '<script src="theme-init.js"></script>');
     writeFileSync(indexPath, html);
-    console.log('Patched index.html: inline script -> theme-init.js (fallback match)');
+    console.log("Patched index.html: inline script -> theme-init.js (fallback match)");
   } else {
-    console.warn('Warning: Could not find inline FOUC script in index.html to patch');
+    console.warn("Warning: Could not find inline FOUC script in index.html to patch");
   }
 }
 
@@ -56,23 +56,27 @@ const REF_TREND = [
   [370, 200],
   [430, 140],
 ];
-const REF_TRI = [[155, 370], [155, 430], [200, 400]];
+const REF_TRI = [
+  [155, 370],
+  [155, 430],
+  [200, 400],
+];
 const REF_GLOW = [430, 140];
 
 // --- Step 4: Generate extension icons ---
 const ICON_SIZES = [16, 48, 128];
-const iconsDir = join(OUT, 'icons');
+const iconsDir = join(OUT, "icons");
 mkdirSync(iconsDir, { recursive: true });
 
 for (const size of ICON_SIZES) {
   const png = generateIcon(size);
   writeFileSync(join(iconsDir, `icon-${size}.png`), png);
 }
-console.log(`Generated icons: ${ICON_SIZES.map(s => `${s}x${s}`).join(', ')}`);
+console.log(`Generated icons: ${ICON_SIZES.map((s) => `${s}x${s}`).join(", ")}`);
 
-console.log('\nChrome Extension built successfully!');
+console.log("\nChrome Extension built successfully!");
 console.log(`Output: dist-extension/`);
-console.log('Load via: chrome://extensions/ -> Developer mode -> Load unpacked');
+console.log("Load via: chrome://extensions/ -> Developer mode -> Load unpacked");
 
 // --- Icon generation (matches scripts/generate-icon.mjs — purple gradient + trend line) ---
 
@@ -126,7 +130,7 @@ function crc32(buf) {
 }
 
 function createChunk(type, data) {
-  const typeBytes = Buffer.from(type, 'ascii');
+  const typeBytes = Buffer.from(type, "ascii");
   const length = Buffer.alloc(4);
   length.writeUInt32BE(data.length);
   const crcInput = Buffer.concat([typeBytes, data]);
@@ -176,7 +180,10 @@ function generateIcon(SIZE) {
         if (d < minDist) minDist = d;
       }
       if (minDist <= lineHalfW + 1) {
-        const xt = Math.max(0, Math.min(1, (x - trend[0][0]) / (trend[trend.length - 1][0] - trend[0][0])));
+        const xt = Math.max(
+          0,
+          Math.min(1, (x - trend[0][0]) / (trend[trend.length - 1][0] - trend[0][0])),
+        );
         const lineR = Math.round(lerp(56, 34, xt));
         const lineG = Math.round(lerp(189, 211, xt));
         const lineB = Math.round(lerp(248, 238, xt));
@@ -206,8 +213,8 @@ function generateIcon(SIZE) {
       const d1 = signTri(x, y, tri[0][0], tri[0][1], tri[1][0], tri[1][1]);
       const d2 = signTri(x, y, tri[1][0], tri[1][1], tri[2][0], tri[2][1]);
       const d3 = signTri(x, y, tri[2][0], tri[2][1], tri[0][0], tri[0][1]);
-      const hasNeg = (d1 < 0) || (d2 < 0) || (d3 < 0);
-      const hasPos = (d1 > 0) || (d2 > 0) || (d3 > 0);
+      const hasNeg = d1 < 0 || d2 < 0 || d3 < 0;
+      const hasPos = d1 > 0 || d2 > 0 || d3 > 0;
       if (!(hasNeg && hasPos)) {
         r = blendPixel(r, 255, 0.85);
         g = blendPixel(g, 255, 0.85);
@@ -236,8 +243,8 @@ function generateIcon(SIZE) {
 
   return Buffer.concat([
     signature,
-    createChunk('IHDR', ihdr),
-    createChunk('IDAT', compressed),
-    createChunk('IEND', iend),
+    createChunk("IHDR", ihdr),
+    createChunk("IDAT", compressed),
+    createChunk("IEND", iend),
   ]);
 }
