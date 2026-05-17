@@ -48,3 +48,23 @@ body, .theme-surface {
 .dark .fresh-green-border {
   box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.60);
 }
+
+/* ── Keyboard focus rings (WCAG 2.4.7) ───────────────────────────────────────
+   Show visible outlines only for keyboard navigation (not mouse clicks).
+   Uses :focus-visible to avoid the ring on mouse/touch interactions.
+   ─────────────────────────────────────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+button:focus-visible,
+[role="button"]:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+  border-radius: 3px;
+}
