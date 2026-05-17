@@ -46,10 +46,11 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({ videos, startInd
                         target="_blank"
                         rel="noopener noreferrer"
                         className="relative w-24 h-14 shrink-0 rounded-md overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 cursor-pointer"
+                        aria-label={video.title}
                       >
                         <img 
                           src={video.thumbnailUrl} 
-                          alt="" 
+                          alt={video.title} 
                           className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
                           loading="lazy"
                         />
@@ -98,6 +99,7 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({ videos, startInd
                       rel="noopener noreferrer"
                       className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white transition-all border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"
                       title="Auf YouTube ansehen"
+                      aria-label={`${video.title} – auf YouTube ansehen`}
                     >
                       <ExternalLink className="w-4 h-4" />
                     </a>

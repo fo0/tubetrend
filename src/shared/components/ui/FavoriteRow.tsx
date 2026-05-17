@@ -268,7 +268,7 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, on
 
         const analyzed = await analyzeVideoStats(apiVideos, displayName, currentTimeFrame);
         const top6 = analyzed.sort((a, b) => b.trendingScore - a.trendingScore).slice(0, 6);
-        // Bestimme den höchsten Velocity‑Wert (Views pro Stunde) über alle analysierten Videos
+        // Bestimme den höchsten Velocity-Wert (Views pro Stunde) über alle analysierten Videos
         const topVelocityVph = analyzed.length > 0 
           ? analyzed.reduce((max, v) => {
               const vph = typeof v.viewsPerHour === 'number' && Number.isFinite(v.viewsPerHour) ? v.viewsPerHour : 0;
@@ -466,6 +466,8 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, on
               ref={tfButtonRef}
               type="button"
               onClick={() => { setShowTfMenu(v => !v); setShowMaxMenu(false); }}
+              aria-expanded={showTfMenu}
+              aria-haspopup="listbox"
               className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-200/70 dark:hover:bg-slate-700/70"
               title={t('favorites.changeTimeFrame')}
             >
@@ -496,6 +498,8 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, on
               ref={maxButtonRef}
               type="button"
               onClick={() => { setShowMaxMenu(v => !v); setShowTfMenu(false); }}
+              aria-expanded={showMaxMenu}
+              aria-haspopup="listbox"
               className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-200/70 dark:hover:bg-slate-700/70"
               title={t('favorites.changeMaxResults')}
             >
@@ -507,6 +511,7 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({ favorite, onRemove, on
                 title={t('favorites.overflowWarning', { total: totalInTimeFrame, shown: currentMax })}
               >
                 <AlertTriangle className="w-4 h-4" aria-hidden="true" />
+                <span className="sr-only">{t('favorites.overflowWarning', { total: totalInTimeFrame, shown: currentMax })}</span>
               </span>
             )}
             {showMaxMenu && (

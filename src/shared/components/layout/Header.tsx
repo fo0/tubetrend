@@ -82,6 +82,7 @@ export function Header({
             <>
               {apiKey && (
                 <button
+                  type="button"
                   onClick={onResetApiKey}
                   className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors
                              border-slate-300 text-slate-700 hover:bg-slate-100
