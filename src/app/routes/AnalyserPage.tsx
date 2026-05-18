@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AlertCircle, Eye, List, Trophy } from "lucide-react";
 import { Youtube } from "@/src/shared/components/ui/BrandIcons";
 import { InputSection } from "@/src/shared/components/ui/InputSection";
@@ -8,6 +8,7 @@ import { EmptyState } from "@/src/shared/components/ui/EmptyState";
 import { useTranslation } from "react-i18next";
 import type { SearchType, TimeFrame } from "@/src/shared/types";
 import type { SearchState } from "@/src/features/search/hooks/useSearch";
+import { STORAGE_KEYS } from "@/src/shared/constants";
 
 interface AnalyserPageProps {
   searchState: SearchState;
@@ -29,8 +30,40 @@ interface AnalyserPageProps {
 export function AnalyserPage({ searchState, externalInputValues, onSearch }: AnalyserPageProps) {
   const { t } = useTranslation();
 
-  const [sortMode, setSortMode] = useState<"trend" | "views">("trend");
-  const [topN, setTopN] = useState<3 | 6>(6);
+  const [sortMode, setSortMode] = useState<"trend" | "views">(() => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEYS.ANALYSER_SORT_MODE);
+      return stored === "views" ? "views" : "trend";
+    } catch {
+      return "trend";
+    }
+  });
+
+  const [topN, setTopN] = useState<3 | 6>(() => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEYS.ANALYSER_TOP_N);
+      return stored === "3" ? 3 : 6;
+    } catch {
+      return 6;
+    }
+  });
+
+  // Persist sortMode and topN changes
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.ANALYSER_SORT_MODE, sortMode);
+    } catch {
+      // ignore storage errors
+    }
+  }, [sortMode]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.ANALYSER_TOP_N, String(topN));
+    } catch {
+      // ignore storage errors
+    }
+  }, [topN]);
 
   const sortedVideos = useMemo(() => {
     if (!searchState.data) return [];

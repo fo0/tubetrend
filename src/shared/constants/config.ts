@@ -17,6 +17,8 @@ export const STORAGE_KEYS = {
   SEARCH_HISTORY: "tt.search.history",
   LANGUAGE: "tt.lang.explicit",
   HIDDEN_HIGHLIGHTS: "tt.dashboard.hiddenHighlights.v1",
+  ANALYSER_SORT_MODE: "tt.analyser.sortMode",
+  ANALYSER_TOP_N: "tt.analyser.topN",
 } as const;
 
 export const CACHE_TTL = {
