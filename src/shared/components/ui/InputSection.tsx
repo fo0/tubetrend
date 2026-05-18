@@ -77,6 +77,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
   const [history, setHistory] = useState<string[]>([]);
   const [showHistory, setShowHistory] = useState(false);
 
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const justSavedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -88,6 +89,21 @@ export const InputSection: React.FC<InputSectionProps> = ({
     return () => {
       if (justSavedTimerRef.current) clearTimeout(justSavedTimerRef.current);
     };
+  }, []);
+
+  // Global hotkey: press "/" to focus search input (when not already in an input/textarea)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== "/") return;
+      const target = e.target as HTMLElement;
+      if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable) {
+        return;
+      }
+      e.preventDefault();
+      searchInputRef.current?.focus();
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
 
   // Load last selected timeframe and max results from localStorage once
@@ -350,6 +366,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
             </div>
 
             <input
+              ref={searchInputRef}
               type="text"
               id="searchInput"
               value={inputValue}
@@ -359,6 +376,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
               placeholder={t("input.searchPlaceholder")}
               disabled={isLoading}
               autoComplete="off"
+              title={t("input.searchPlaceholder") + " (Press / to focus)"}
             />
 
             {/* Loading Indicator or Clear Button */}
