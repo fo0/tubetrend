@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import type { VideoData } from "@/src/features/videos";
-import { Clock, ExternalLink } from "lucide-react";
+import { Check, Clock, Copy, ExternalLink } from "lucide-react";
 import { formatNumber } from "@/src/shared/lib/formatters";
 
 interface VideoListTableProps {
@@ -9,6 +9,15 @@ interface VideoListTableProps {
 }
 
 export const VideoListTable: React.FC<VideoListTableProps> = ({ videos, startIndex }) => {
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const handleCopy = (video: VideoData) => {
+    navigator.clipboard.writeText(video.url).then(() => {
+      setCopiedId(video.id);
+      setTimeout(() => setCopiedId(null), 1500);
+    });
+  };
+
   const getScoreColor = (score: number) => {
     if (score >= 80) return "text-red-400 bg-red-400/10 border-red-400/20";
     if (score >= 50) return "text-amber-400 bg-amber-400/10 border-amber-400/20";
@@ -97,16 +106,31 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({ videos, startInd
                     </span>
                   </td>
                   <td className="p-4 text-center">
-                    <a
-                      href={video.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white transition-all border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"
-                      title="Auf YouTube ansehen"
-                      aria-label={`${video.title} – auf YouTube ansehen`}
-                    >
-                      <ExternalLink className="w-4 h-4" />
-                    </a>
+                    <div className="flex items-center justify-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => handleCopy(video)}
+                        className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white transition-all border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"
+                        title="Copy video URL"
+                        aria-label={`Copy URL for ${video.title}`}
+                      >
+                        {copiedId === video.id ? (
+                          <Check className="w-4 h-4 text-green-500" />
+                        ) : (
+                          <Copy className="w-4 h-4" />
+                        )}
+                      </button>
+                      <a
+                        href={video.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white transition-all border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"
+                        title="Watch on YouTube"
+                        aria-label={`${video.title} – watch on YouTube`}
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                      </a>
+                    </div>
                   </td>
                 </tr>
               );
