@@ -100,9 +100,9 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
           channelName: displayName,
           channelId,
         });
-      } catch (err: any) {
+      } catch (err: unknown) {
         if (import.meta.env.DEV) console.error(err);
-        const errorMessage = err?.message || "Fehler bei der Analyse.";
+        const errorMessage = err instanceof Error ? err.message : "Fehler bei der Analyse.";
 
         const isApiKeyInvalid =
           err instanceof YouTubeApiError && err.status === 403 && !err.isQuotaError;
