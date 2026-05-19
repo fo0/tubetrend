@@ -316,8 +316,11 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
           channelTitle: displayName,
           channelId: fetchedChannelId,
         });
-      } catch (e: any) {
-        if (!cancelled) setError(e?.message || t("errors.favoriteLoad"));
+      } catch (e: unknown) {
+        if (!cancelled) {
+          const message = e instanceof Error ? e.message : "";
+          setError(message || t("errors.favoriteLoad"));
+        }
       } finally {
         if (!cancelled) setLoading(false);
         // Globales Event: Ende des Refresh für diesen Favoriten (nur senden, wenn Start gesendet wurde)
