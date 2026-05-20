@@ -23,6 +23,16 @@ export const HiddenHighlightsModal: React.FC<HiddenHighlightsModalProps> = ({
     }
   }, [isOpen]);
 
+  // Close on Escape (WCAG 2.1.2 — provide keyboard escape from modal)
+  React.useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
+
   const handleUnhide = (videoId: string) => {
     hiddenHighlightsService.show(videoId);
     setHiddenItems(hiddenHighlightsService.listChronological());
@@ -71,9 +81,9 @@ export const HiddenHighlightsModal: React.FC<HiddenHighlightsModalProps> = ({
             type="button"
             onClick={onClose}
             className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors"
-            aria-label={t("modal.apiKey.cancel")}
+            aria-label={t("modal.close")}
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5" aria-hidden="true" />
           </button>
         </div>
 
@@ -130,9 +140,10 @@ export const HiddenHighlightsModal: React.FC<HiddenHighlightsModalProps> = ({
                       type="button"
                       onClick={() => handleDelete(item.videoId)}
                       className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md border border-red-500/30 text-red-400 dark:text-red-300 hover:bg-red-500/10 transition-colors"
-                      aria-label={t("modal.apiKey.cancel")}
+                      aria-label={t("dashboard.highlights.delete")}
+                      title={t("dashboard.highlights.delete")}
                     >
-                      <Trash2 className="w-3 h-3" />
+                      <Trash2 className="w-3 h-3" aria-hidden="true" />
                     </button>
                   </div>
                 </li>

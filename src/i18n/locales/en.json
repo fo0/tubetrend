@@ -162,6 +162,7 @@
     "years_other": "{{count}}y ago"
   },
   "modal": {
+    "close": "Close",
     "apiKey": {
       "title": "YouTube API key",
       "description": "Enter your YouTube Data API key to continue.",
@@ -195,6 +196,17 @@
     "tryAgain": "Try again"
   },
   "loading": "Loading…",
+  "loadingState": {
+    "fetchingYoutube": "Loading official data…",
+    "analyzing": "Calculating statistics…"
+  },
+  "theme": {
+    "label": "Theme",
+    "system": "System",
+    "light": "Light",
+    "dark": "Dark",
+    "clickToCycle": "click to cycle"
+  },
   "empty": {
     "title": "Analyze YouTube channels",
     "desc": "Search a channel and get trend insights for different time frames."

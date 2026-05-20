@@ -74,12 +74,16 @@ export function Header({
 
         <div className="flex items-center gap-4">
           {isLoading ? (
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border bg-indigo-500/10 border-indigo-500/20 text-indigo-400 animate-pulse">
-              <Activity className="w-3 h-3 animate-spin" />
+            <div
+              className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border bg-indigo-500/10 border-indigo-500/20 text-indigo-400 animate-pulse"
+              role="status"
+              aria-live="polite"
+            >
+              <Activity className="w-3 h-3 animate-spin" aria-hidden="true" />
               <span>
                 {loadingStep === "fetching_youtube"
-                  ? "Lade offizielle Daten..."
-                  : "Berechne Statistiken..."}
+                  ? t("loadingState.fetchingYoutube")
+                  : t("loadingState.analyzing")}
               </span>
             </div>
           ) : (
