@@ -162,6 +162,7 @@
     "years_other": "vor {{count}} J."
   },
   "modal": {
+    "close": "Schließen",
     "apiKey": {
       "title": "YouTube API-Schlüssel",
       "description": "Gib deinen YouTube Data API-Schlüssel ein, um fortzufahren.",
@@ -195,6 +196,17 @@
     "tryAgain": "Erneut versuchen"
   },
   "loading": "Lädt…",
+  "loadingState": {
+    "fetchingYoutube": "Lade offizielle Daten…",
+    "analyzing": "Berechne Statistiken…"
+  },
+  "theme": {
+    "label": "Theme",
+    "system": "System",
+    "light": "Hell",
+    "dark": "Dunkel",
+    "clickToCycle": "klicken zum Wechseln"
+  },
   "empty": {
     "title": "YouTube-Kanäle analysieren",
     "desc": "Suche einen Kanal und erhalte Trend-Einblicke für verschiedene Zeiträume."
