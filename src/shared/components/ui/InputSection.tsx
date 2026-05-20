@@ -377,6 +377,13 @@ export const InputSection: React.FC<InputSectionProps> = ({
               disabled={isLoading}
               autoComplete="off"
               title={t("input.searchPlaceholder") + " (Press / to focus)"}
+              role="combobox"
+              aria-autocomplete="list"
+              aria-expanded={
+                (showSuggestions && suggestions.length > 0) || (showHistory && history.length > 0)
+              }
+              aria-controls="search-listbox"
+              aria-haspopup="listbox"
             />
 
             {/* Loading Indicator or Clear Button */}
@@ -400,9 +407,9 @@ export const InputSection: React.FC<InputSectionProps> = ({
             {/* Suggestions Dropdown */}
             {showSuggestions && suggestions.length > 0 && (
               <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl overflow-hidden z-50 animate-fade-in">
-                <ul>
+                <ul id="search-listbox" role="listbox">
                   {suggestions.map((sug) => (
-                    <li key={sug.id}>
+                    <li key={sug.id} role="option" aria-selected="false">
                       <button
                         type="button"
                         onClick={() => selectSuggestion(sug)}
@@ -433,9 +440,9 @@ export const InputSection: React.FC<InputSectionProps> = ({
             {/* History Dropdown (shown only on focus when input is empty) */}
             {showHistory && history.length > 0 && (
               <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl overflow-hidden z-50 animate-fade-in">
-                <ul>
+                <ul id="search-listbox" role="listbox">
                   {history.map((item, idx) => (
-                    <li key={`${item}-${idx}`}>
+                    <li key={`${item}-${idx}`} role="option" aria-selected="false">
                       <button
                         type="button"
                         onClick={() => selectHistoryItem(item)}
