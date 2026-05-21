@@ -35,7 +35,11 @@
     "keyword": "Keyword"
   },
   "history": {
-    "recent": "Recently searched"
+    "recent": "Recently searched",
+    "remove": "Remove from history",
+    "removeAria": "Remove \"{{item}}\" from search history",
+    "clearAll": "Clear all",
+    "clearAllConfirm": "Clear all entries from search history?"
   },
   "timeFrames": {
     "lastHour": "Last hour",
@@ -142,7 +146,19 @@
     },
     "highlightTopN": "Highlight top {{n}}",
     "topPerformance": "Top {{n}} performance",
-    "moreVideos": "More videos"
+    "moreVideos": "More videos",
+    "table": {
+      "rank": "#",
+      "video": "Video",
+      "upload": "Upload",
+      "views": "Views",
+      "velocity": "Velocity",
+      "score": "Score",
+      "copyUrl": "Copy video URL",
+      "copyUrlAria": "Copy URL for {{title}}",
+      "watchOnYoutube": "Watch on YouTube",
+      "watchOnYoutubeAria": "{{title}} – watch on YouTube"
+    }
   },
   "timeAgo": {
     "justNow": "just now",
@@ -233,7 +249,15 @@
     "sourceUnknown": "Other",
     "timeJustNow": "just now",
     "timeMinutesAgo": "{{count}} min ago",
-    "timeHoursAgo": "{{count}} hrs ago"
+    "timeHoursAgo": "{{count}} hrs ago",
+    "window15m": "15 min",
+    "window30m": "30 min",
+    "window90m": "90 min",
+    "window1h": "1 hr",
+    "window3h": "3 hrs",
+    "window6h": "6 hrs",
+    "window12h": "12 hrs",
+    "window24h": "24 hrs"
   },
   "footer": {
     "buildInfo": "Build info",

@@ -2,7 +2,17 @@ import React, { useEffect, useRef, useState } from "react";
 import type { ChannelSuggestion } from "@/src/shared/types";
 import { coerceTimeFrame, SearchType, TimeFrame } from "@/src/shared/types";
 import { MAX_RESULTS_OPTIONS, STORAGE_KEYS, TIME_FRAMES } from "@/src/shared/constants";
-import { Hash, History, Link2, ListFilter, Loader2, Search, Star, X } from "lucide-react";
+import {
+  Hash,
+  History,
+  Link2,
+  ListFilter,
+  Loader2,
+  Search,
+  Star,
+  Trash2,
+  X,
+} from "lucide-react";
 import { Youtube } from "@/src/shared/components/ui/BrandIcons";
 import { extractChannelIdentifier, searchChannels } from "@/src/features/youtube";
 import { favoritesService } from "@/src/features/favorites";
@@ -317,6 +327,35 @@ export const InputSection: React.FC<InputSectionProps> = ({
     // Do not trigger search automatically; user can submit
   };
 
+  const removeHistoryItem = (val: string) => {
+    setHistory((prev) => {
+      const updated = prev.filter((x) => x !== val);
+      persistHistory(updated);
+      if (updated.length === 0) setShowHistory(false);
+      return updated;
+    });
+  };
+
+  const clearAllHistory = () => {
+    if (!window.confirm(t("history.clearAllConfirm"))) return;
+    setHistory([]);
+    persistHistory([]);
+    setShowHistory(false);
+  };
+
+  // Escape closes any open dropdown (suggestions or history)
+  useEffect(() => {
+    if (!showSuggestions && !showHistory) return;
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setShowSuggestions(false);
+        setShowHistory(false);
+      }
+    };
+    document.addEventListener("keydown", handleEsc);
+    return () => document.removeEventListener("keydown", handleEsc);
+  }, [showSuggestions, showHistory]);
+
   // Synchronisiere Favoriten-Status, wenn Eingabe/Zeitfenster/MaxErgebnisse/SearchType sich ändern
   useEffect(() => {
     const strippedInput = stripSearchPrefix(inputValue || "");
@@ -442,14 +481,19 @@ export const InputSection: React.FC<InputSectionProps> = ({
               <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl overflow-hidden z-50 animate-fade-in">
                 <ul id="search-listbox" role="listbox">
                   {history.map((item, idx) => (
-                    <li key={`${item}-${idx}`} role="option" aria-selected="false">
+                    <li
+                      key={`${item}-${idx}`}
+                      role="option"
+                      aria-selected="false"
+                      className="group/item flex items-stretch hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                    >
                       <button
                         type="button"
                         onClick={() => selectHistoryItem(item)}
-                        className="w-full text-left px-4 py-3 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex items-center gap-3 group/item"
+                        className="flex-1 min-w-0 text-left px-4 py-3 flex items-center gap-3"
                       >
                         <div className="w-8 h-8 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-950 shrink-0 border border-slate-200 dark:border-slate-700 flex items-center justify-center">
-                          <History className="w-4 h-4 text-slate-500" />
+                          <History className="w-4 h-4 text-slate-500" aria-hidden="true" />
                         </div>
                         <div className="min-w-0">
                           <p className="text-slate-700 dark:text-slate-200 font-medium truncate group-hover/item:text-indigo-500 dark:group-hover/item:text-indigo-400 transition-colors">
@@ -458,9 +502,32 @@ export const InputSection: React.FC<InputSectionProps> = ({
                           <p className="text-xs text-slate-500 truncate">{t("history.recent")}</p>
                         </div>
                       </button>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeHistoryItem(item);
+                        }}
+                        className="px-3 flex items-center text-slate-400 hover:text-red-500 dark:hover:text-red-400 opacity-0 group-hover/item:opacity-100 focus:opacity-100 transition-opacity"
+                        title={t("history.remove")}
+                        aria-label={t("history.removeAria", { item })}
+                      >
+                        <X className="w-4 h-4" aria-hidden="true" />
+                      </button>
                     </li>
                   ))}
                 </ul>
+                <div className="border-t border-slate-200 dark:border-slate-700 px-3 py-2 bg-slate-50 dark:bg-slate-900/80 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={clearAllHistory}
+                    className="inline-flex items-center gap-1.5 text-xs px-2 py-1 rounded-md text-slate-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                    title={t("history.clearAll")}
+                  >
+                    <Trash2 className="w-3 h-3" aria-hidden="true" />
+                    <span>{t("history.clearAll")}</span>
+                  </button>
+                </div>
               </div>
             )}
           </div>
