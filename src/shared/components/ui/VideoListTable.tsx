@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import type { VideoData } from "@/src/features/videos";
 import { Check, Clock, Copy, ExternalLink } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { formatNumber } from "@/src/shared/lib/formatters";
 
 interface VideoListTableProps {
@@ -9,6 +10,7 @@ interface VideoListTableProps {
 }
 
 export const VideoListTable: React.FC<VideoListTableProps> = ({ videos, startIndex }) => {
+  const { t } = useTranslation();
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const handleCopy = (video: VideoData) => {
@@ -30,13 +32,27 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({ videos, startInd
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-slate-100/80 dark:bg-slate-900/80 border-b border-slate-200 dark:border-slate-800 text-xs uppercase tracking-wider text-slate-500 font-semibold">
-              <th className="p-4 w-16 text-center">#</th>
-              <th className="p-4">Video</th>
-              <th className="p-4 hidden sm:table-cell">Upload</th>
-              <th className="p-4 text-right">Views</th>
-              <th className="p-4 text-right hidden md:table-cell">Velocity</th>
-              <th className="p-4 text-center">Score</th>
-              <th className="p-4 w-16 text-center"></th>
+              <th scope="col" className="p-4 w-16 text-center">
+                {t("results.table.rank")}
+              </th>
+              <th scope="col" className="p-4">
+                {t("results.table.video")}
+              </th>
+              <th scope="col" className="p-4 hidden sm:table-cell">
+                {t("results.table.upload")}
+              </th>
+              <th scope="col" className="p-4 text-right">
+                {t("results.table.views")}
+              </th>
+              <th scope="col" className="p-4 text-right hidden md:table-cell">
+                {t("results.table.velocity")}
+              </th>
+              <th scope="col" className="p-4 text-center">
+                {t("results.table.score")}
+              </th>
+              <th scope="col" className="p-4 w-16 text-center">
+                <span className="sr-only">{t("results.table.copyUrl")}</span>
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-200/50 dark:divide-slate-800/50 text-sm">
@@ -75,7 +91,8 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({ videos, startInd
                           {video.title}
                         </a>
                         <div className="text-xs text-slate-500 mt-1 sm:hidden">
-                          {video.uploadTime} • {formatNumber(video.views)} Views
+                          {video.uploadTime} • {formatNumber(video.views)}{" "}
+                          {t("results.table.views")}
                         </div>
                       </div>
                     </div>
@@ -111,13 +128,13 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({ videos, startInd
                         type="button"
                         onClick={() => handleCopy(video)}
                         className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white transition-all border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"
-                        title="Copy video URL"
-                        aria-label={`Copy URL for ${video.title}`}
+                        title={t("results.table.copyUrl")}
+                        aria-label={t("results.table.copyUrlAria", { title: video.title })}
                       >
                         {copiedId === video.id ? (
-                          <Check className="w-4 h-4 text-green-500" />
+                          <Check className="w-4 h-4 text-green-500" aria-hidden="true" />
                         ) : (
-                          <Copy className="w-4 h-4" />
+                          <Copy className="w-4 h-4" aria-hidden="true" />
                         )}
                       </button>
                       <a
@@ -125,10 +142,10 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({ videos, startInd
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white transition-all border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"
-                        title="Watch on YouTube"
-                        aria-label={`${video.title} – watch on YouTube`}
+                        title={t("results.table.watchOnYoutube")}
+                        aria-label={t("results.table.watchOnYoutubeAria", { title: video.title })}
                       >
-                        <ExternalLink className="w-4 h-4" />
+                        <ExternalLink className="w-4 h-4" aria-hidden="true" />
                       </a>
                     </div>
                   </td>

@@ -5,11 +5,17 @@ import type { QuotaHistoryEntry } from "@/src/shared/types";
 import { useTranslation } from "react-i18next";
 import { formatNumber } from "@/src/shared/lib/formatters";
 
-// Determine optimal time window based on actual data
+// Determine optimal time window based on actual data.
+// Returns i18n key + half-window key so labels are translated at render time.
 const getOptimalTimeWindow = (
   history: QuotaHistoryEntry[],
-): { windowMs: number; label: string } => {
-  if (history.length === 0) return { windowMs: 24 * 60 * 60 * 1000, label: "24h" };
+): { windowMs: number; labelKey: string; halfLabelKey: string } => {
+  const fullDay = {
+    windowMs: 24 * 60 * 60 * 1000,
+    labelKey: "quota.window24h",
+    halfLabelKey: "quota.window12h",
+  };
+  if (history.length === 0) return fullDay;
 
   const now = Date.now();
   const oldestEntry = Math.min(...history.map((h) => h.timestamp));
@@ -17,23 +23,37 @@ const getOptimalTimeWindow = (
 
   // Choose time window based on data span with some buffer
   if (dataSpan < 30 * 60 * 1000) {
-    // Less than 30 min -> show last 30 minutes
-    return { windowMs: 30 * 60 * 1000, label: "30 Min." };
+    return {
+      windowMs: 30 * 60 * 1000,
+      labelKey: "quota.window30m",
+      halfLabelKey: "quota.window15m",
+    };
   } else if (dataSpan < 60 * 60 * 1000) {
-    // Less than 1 hour -> show last hour
-    return { windowMs: 60 * 60 * 1000, label: "1 Std." };
+    return {
+      windowMs: 60 * 60 * 1000,
+      labelKey: "quota.window1h",
+      halfLabelKey: "quota.window30m",
+    };
   } else if (dataSpan < 3 * 60 * 60 * 1000) {
-    // Less than 3 hours -> show last 3 hours
-    return { windowMs: 3 * 60 * 60 * 1000, label: "3 Std." };
+    return {
+      windowMs: 3 * 60 * 60 * 1000,
+      labelKey: "quota.window3h",
+      halfLabelKey: "quota.window90m",
+    };
   } else if (dataSpan < 6 * 60 * 60 * 1000) {
-    // Less than 6 hours -> show last 6 hours
-    return { windowMs: 6 * 60 * 60 * 1000, label: "6 Std." };
+    return {
+      windowMs: 6 * 60 * 60 * 1000,
+      labelKey: "quota.window6h",
+      halfLabelKey: "quota.window3h",
+    };
   } else if (dataSpan < 12 * 60 * 60 * 1000) {
-    // Less than 12 hours -> show last 12 hours
-    return { windowMs: 12 * 60 * 60 * 1000, label: "12 Std." };
+    return {
+      windowMs: 12 * 60 * 60 * 1000,
+      labelKey: "quota.window12h",
+      halfLabelKey: "quota.window6h",
+    };
   }
-  // Default: 24 hours
-  return { windowMs: 24 * 60 * 60 * 1000, label: "24 Std." };
+  return fullDay;
 };
 
 // Group history entries by time buckets for the timeline
@@ -401,7 +421,7 @@ export const ApiQuotaIndicator: React.FC = () => {
           {/* Timeline line chart - pure line chart showing usage over time */}
           <div className="px-3 py-3 border-b border-slate-700/50">
             <div className="text-[10px] text-slate-500 mb-2">
-              {t("quota.lastTimeWindow", { time: timeWindow.label })}
+              {t("quota.lastTimeWindow", { time: t(timeWindow.labelKey) })}
             </div>
             <div className="relative h-16">
               <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
@@ -507,10 +527,8 @@ export const ApiQuotaIndicator: React.FC = () => {
             </div>
             {/* Time labels - dynamic based on time window */}
             <div className="flex justify-between mt-1 text-[9px] text-slate-600">
-              <span>-{timeWindow.label}</span>
-              <span>
-                -{timeWindow.label.replace(/(\d+)/, (m) => String(Math.round(parseInt(m) / 2)))}
-              </span>
+              <span>-{t(timeWindow.labelKey)}</span>
+              <span>-{t(timeWindow.halfLabelKey)}</span>
               <span>{t("quota.now")}</span>
             </div>
           </div>
