@@ -120,7 +120,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
           setMaxResults(n);
         }
       }
-    } catch (e) {
+    } catch {
       // ignore storage errors
     }
   }, []);
@@ -153,7 +153,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
     try {
       localStorage.setItem(STORAGE_KEYS.SEARCH_TIMEFRAME, timeFrame);
       localStorage.setItem(STORAGE_KEYS.SEARCH_MAX_RESULTS, String(maxResults));
-    } catch (e) {
+    } catch {
       // ignore storage errors
     }
   }, [timeFrame, maxResults]);
@@ -166,7 +166,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed)) setHistory(parsed.filter((x) => typeof x === "string"));
       }
-    } catch (e) {
+    } catch {
       // ignore
     }
   }, []);
@@ -186,7 +186,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
   const persistHistory = (next: string[]) => {
     try {
       localStorage.setItem(STORAGE_KEYS.SEARCH_HISTORY, JSON.stringify(next));
-    } catch (e) {
+    } catch {
       // ignore
     }
   };
