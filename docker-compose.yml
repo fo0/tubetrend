@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   web:
     # Build a production image (multi-stage) and serve via Nginx
