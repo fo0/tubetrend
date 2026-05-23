@@ -2,7 +2,7 @@ import React from "react";
 import type { VideoData } from "@/src/features/videos";
 import { Clock, Eye, EyeOff, Sparkles, Zap } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { formatNumber } from "@/src/shared/lib/formatters";
+import { formatNumber, formatTimeAgo } from "@/src/shared/lib/formatters";
 
 interface HighlightVideoCardProps {
   video: VideoData;
@@ -58,7 +58,7 @@ export const HighlightVideoCard: React.FC<HighlightVideoCardProps> = ({
 
         <div className="absolute bottom-3 left-3 bg-black/70 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded flex items-center gap-1 pointer-events-none">
           <Clock className="w-3 h-3 text-slate-300" />
-          {video.uploadTime}
+          {formatTimeAgo(video.publishedTimestamp, t)}
         </div>
 
         <div

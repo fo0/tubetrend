@@ -47,7 +47,6 @@ export async function analyzeVideoStats(
       url: `https://www.youtube.com/watch?v=${video.id}`,
       thumbnailUrl,
       views,
-      uploadTime: formatUploadTime(publishedAt),
       publishedTimestamp: publishedAt,
       trendingScore: Math.max(0, Math.min(100, trendingScore)),
       reasoning,
@@ -96,28 +95,3 @@ function generateReasoning(
   return parts.join(", ");
 }
 
-function formatUploadTime(timestamp: number): string {
-  const now = Date.now();
-  const diffMs = now - timestamp;
-  const diffHours = diffMs / (1000 * 60 * 60);
-  const diffDays = diffHours / 24;
-
-  if (diffHours < 1) {
-    const mins = Math.round(diffMs / (1000 * 60));
-    return `${mins} min ago`;
-  }
-  if (diffHours < 24) {
-    const hours = Math.round(diffHours);
-    return `${hours}h ago`;
-  }
-  if (diffDays < 7) {
-    const days = Math.round(diffDays);
-    return `${days}d ago`;
-  }
-  if (diffDays < 30) {
-    const weeks = Math.round(diffDays / 7);
-    return `${weeks}w ago`;
-  }
-  const months = Math.round(diffDays / 30);
-  return `${months}mo ago`;
-}

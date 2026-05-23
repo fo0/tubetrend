@@ -1,7 +1,7 @@
 import React from "react";
 import type { VideoData } from "@/src/features/videos";
 import { Clock, Eye, TrendingUp, Zap } from "lucide-react";
-import { formatNumber } from "@/src/shared/lib/formatters";
+import { formatNumber, formatTimeAgo } from "@/src/shared/lib/formatters";
 import { useTranslation } from "react-i18next";
 
 interface VideoCardProps {
@@ -39,7 +39,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video }) => {
         </a>
         <div className="absolute bottom-3 left-3 bg-black/70 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded flex items-center gap-1 pointer-events-none">
           <Clock className="w-3 h-3 text-slate-300" />
-          {video.uploadTime}
+          {formatTimeAgo(video.publishedTimestamp, t)}
         </div>
         <div
           className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-bold border backdrop-blur-md flex items-center gap-1 pointer-events-none ${getScoreColor(video.trendingScore)}`}
