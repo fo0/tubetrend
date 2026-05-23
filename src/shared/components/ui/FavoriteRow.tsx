@@ -25,6 +25,7 @@ import {
 import { Youtube } from "@/src/shared/components/ui/BrandIcons";
 import { MAX_RESULTS_OPTIONS, STORAGE_KEYS, TIME_FRAMES } from "@/src/shared/constants";
 import { useTranslation } from "react-i18next";
+import { eventBus } from "@/src/shared/lib/eventBus";
 
 interface FavoriteRowProps {
   favorite: FavoriteConfig;
@@ -156,12 +157,11 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
     return () => clearInterval(interval);
   }, [lastFetchedAt, loading]);
 
-  // Reagiere auf externe Cache-Updates (z.B. wenn ein anderer Prozess den Cache aktualisiert)
+  // Reagiere auf externe Cache-Updates via typed event bus
+  // (z.B. wenn ein anderer Prozess den Cache aktualisiert)
   useEffect(() => {
-    const handler = (ev: Event) => {
+    return eventBus.on("favorites-cache-updated", ({ id: updatedId }) => {
       try {
-        const e = ev as CustomEvent;
-        const updatedId = e?.detail?.id as string | undefined;
         // Reagiere nur auf Updates für diesen Favoriten oder auf globale Updates ('*')
         if (updatedId && updatedId !== "*" && updatedId !== currentFavId) return;
 
@@ -176,16 +176,7 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
       } catch {
         // stiller Fallback
       }
-    };
-
-    if (typeof window !== "undefined") {
-      window.addEventListener("favorites-cache-updated", handler as EventListener);
-    }
-    return () => {
-      if (typeof window !== "undefined") {
-        window.removeEventListener("favorites-cache-updated", handler as EventListener);
-      }
-    };
+    });
   }, [currentFavId]);
 
   useEffect(() => {

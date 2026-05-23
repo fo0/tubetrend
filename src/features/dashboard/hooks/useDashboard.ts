@@ -4,6 +4,7 @@ import { favoritesService } from "@/src/features/favorites";
 import type { DashboardSortMode, SortOrder } from "@/src/shared/types";
 import { STORAGE_KEYS } from "@/src/shared/constants";
 import { getLocale } from "@/src/shared/lib/locale";
+import { eventBus } from "@/src/shared/lib/eventBus";
 
 /**
  * Hook for managing favorites state with event-driven updates
@@ -48,44 +49,34 @@ export function useFavorites() {
     setRefreshToken((v) => v + 1);
   }, [favorites]);
 
-  // Listen for favorites-changed events
+  // Listen for favorites-changed events via typed event bus
   useEffect(() => {
     loadFavorites();
-
-    const handler = () => loadFavorites();
-    window.addEventListener("favorites-changed", handler);
-    return () => window.removeEventListener("favorites-changed", handler);
+    return eventBus.on("favorites-changed", () => loadFavorites());
   }, [loadFavorites]);
 
-  // Track refresh start/end events
+  // Track refresh start/end events via typed event bus
   // IMPORTANT: useLayoutEffect ensures listeners are attached synchronously
   // before any regular useEffect runs (like FavoriteRow's fetch effect).
   // This fixes the issue where events were dispatched before listeners were ready.
   useLayoutEffect(() => {
-    const onStart = (ev: Event) => {
-      const e = ev as CustomEvent;
-      const id = e?.detail?.id as string | undefined;
+    const offStart = eventBus.on("favorite-refresh-start", ({ id }) => {
       if (!id) return;
       setRefreshingIds((prev) => new Set(prev).add(id));
-    };
+    });
 
-    const onEnd = (ev: Event) => {
-      const e = ev as CustomEvent;
-      const id = e?.detail?.id as string | undefined;
+    const offEnd = eventBus.on("favorite-refresh-end", ({ id }) => {
       if (!id) return;
       setRefreshingIds((prev) => {
         const next = new Set(prev);
         next.delete(id);
         return next;
       });
-    };
-
-    window.addEventListener("favorite-refresh-start", onStart);
-    window.addEventListener("favorite-refresh-end", onEnd);
+    });
 
     return () => {
-      window.removeEventListener("favorite-refresh-start", onStart);
-      window.removeEventListener("favorite-refresh-end", onEnd);
+      offStart();
+      offEnd();
     };
   }, []);
 
@@ -138,11 +129,9 @@ export function useDashboardSort() {
     }
   }, [sortOrder]);
 
-  // Listen for cache updates to trigger re-sort
+  // Listen for cache updates to trigger re-sort via typed event bus
   useEffect(() => {
-    const handler = () => setCacheTick((t) => t + 1);
-    window.addEventListener("favorites-cache-updated", handler);
-    return () => window.removeEventListener("favorites-cache-updated", handler);
+    return eventBus.on("favorites-cache-updated", () => setCacheTick((t) => t + 1));
   }, []);
 
   const handleSortClick = useCallback(
@@ -221,11 +210,9 @@ export function useDashboardSort() {
 export function useHighlights(_sortedFavorites: FavoriteConfig[]) {
   const [hiddenTick, setHiddenTick] = useState(0);
 
-  // Listen for hidden highlights changes
+  // Listen for hidden highlights changes via typed event bus
   useEffect(() => {
-    const handler = () => setHiddenTick((t) => t + 1);
-    window.addEventListener("hidden-highlights-changed", handler);
-    return () => window.removeEventListener("hidden-highlights-changed", handler);
+    return eventBus.on("hidden-highlights-changed", () => setHiddenTick((t) => t + 1));
   }, []);
 
   return { hiddenTick };

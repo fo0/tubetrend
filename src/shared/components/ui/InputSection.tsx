@@ -2,17 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import type { ChannelSuggestion } from "@/src/shared/types";
 import { coerceTimeFrame, SearchType, TimeFrame } from "@/src/shared/types";
 import { MAX_RESULTS_OPTIONS, STORAGE_KEYS, TIME_FRAMES } from "@/src/shared/constants";
-import {
-  Hash,
-  History,
-  Link2,
-  ListFilter,
-  Loader2,
-  Search,
-  Star,
-  Trash2,
-  X,
-} from "lucide-react";
+import { Hash, History, Link2, ListFilter, Loader2, Search, Star, Trash2, X } from "lucide-react";
 import { Youtube } from "@/src/shared/components/ui/BrandIcons";
 import { extractChannelIdentifier, searchChannels } from "@/src/features/youtube";
 import { favoritesService } from "@/src/features/favorites";
