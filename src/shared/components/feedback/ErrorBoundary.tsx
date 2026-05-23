@@ -1,5 +1,6 @@
 import { Component, type ErrorInfo, type ReactNode } from "react";
 import { AlertCircle, RefreshCw } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface Props {
   children: ReactNode;
@@ -49,6 +50,7 @@ interface DefaultErrorFallbackProps {
 }
 
 function DefaultErrorFallback({ error, onRetry }: DefaultErrorFallbackProps) {
+  const { t } = useTranslation();
   return (
     <div className="min-h-[200px] flex items-center justify-center p-8">
       <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-6 max-w-md text-center">
@@ -58,17 +60,17 @@ function DefaultErrorFallback({ error, onRetry }: DefaultErrorFallbackProps) {
           </div>
         </div>
         <h3 className="text-lg font-semibold text-red-800 dark:text-red-200 mb-2">
-          Something went wrong
+          {t("errors.somethingWentWrong")}
         </h3>
         <p className="text-sm text-red-600 dark:text-red-300 mb-4">
-          {error.message || "An unexpected error occurred"}
+          {error.message || t("errors.somethingWentWrong")}
         </p>
         <button
           onClick={onRetry}
           className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
         >
           <RefreshCw className="w-4 h-4" />
-          Try again
+          {t("errors.tryAgain")}
         </button>
       </div>
     </div>
