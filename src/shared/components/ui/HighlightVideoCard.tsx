@@ -117,7 +117,7 @@ export const HighlightVideoCard: React.FC<HighlightVideoCardProps> = ({
         <div className="grid grid-cols-2 gap-2 mb-3">
           <div className="flex flex-col justify-center bg-slate-100/50 dark:bg-slate-900/50 p-2 rounded-lg border border-slate-200/50 dark:border-slate-700/50">
             <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 text-xs uppercase font-semibold mb-0.5">
-              <Eye className="w-3 h-3 text-indigo-500 dark:text-indigo-400" /> Views
+              <Eye className="w-3 h-3 text-indigo-500 dark:text-indigo-400" /> {t("results.table.views")}
             </div>
             <span className="text-slate-700 dark:text-slate-200 font-mono text-sm">
               {formatNumber(video.views)}
@@ -125,7 +125,7 @@ export const HighlightVideoCard: React.FC<HighlightVideoCardProps> = ({
           </div>
           <div className="flex flex-col justify-center bg-slate-100/50 dark:bg-slate-900/50 p-2 rounded-lg border border-slate-200/50 dark:border-slate-700/50">
             <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 text-xs uppercase font-semibold mb-0.5">
-              <Zap className="w-3 h-3 text-yellow-500 dark:text-yellow-400" /> Velocity
+              <Zap className="w-3 h-3 text-yellow-500 dark:text-yellow-400" /> {t("results.table.velocity")}
             </div>
             <span className="text-slate-700 dark:text-slate-200 font-mono text-sm">
               {video.viewsPerHour ? `~${formatNumber(video.viewsPerHour)}/h` : "N/A"}
