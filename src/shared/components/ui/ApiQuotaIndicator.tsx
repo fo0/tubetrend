@@ -4,6 +4,7 @@ import { quotaService } from "@/src/features/youtube";
 import type { QuotaHistoryEntry } from "@/src/shared/types";
 import { useTranslation } from "react-i18next";
 import { formatNumber } from "@/src/shared/lib/formatters";
+import { eventBus } from "@/src/shared/lib/eventBus";
 
 // Determine optimal time window based on actual data.
 // Returns i18n key + half-window key so labels are translated at render time.
@@ -213,13 +214,14 @@ export const ApiQuotaIndicator: React.FC = () => {
       setHistory(quotaService.getHistory());
     };
 
-    window.addEventListener("quota-updated", handleQuotaUpdate);
+    // Typed event bus for in-app quota updates
+    const offQuota = eventBus.on("quota-updated", handleQuotaUpdate);
 
-    // Also check on storage changes (for multi-tab sync)
+    // Native storage event for cross-tab sync (not in EventMap, so raw listener)
     window.addEventListener("storage", handleQuotaUpdate);
 
     return () => {
-      window.removeEventListener("quota-updated", handleQuotaUpdate);
+      offQuota();
       window.removeEventListener("storage", handleQuotaUpdate);
     };
   }, []);

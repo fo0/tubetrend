@@ -34,20 +34,21 @@ export const hiddenHighlightsService = {
    * Alte Einträge ohne hiddenAt bekommen einen Default-Zeitstempel.
    */
   list(): HiddenHighlight[] {
-    const raw = safeRead<any[]>(HIDDEN_HIGHLIGHTS_KEY, []);
+    const raw = safeRead<unknown[]>(HIDDEN_HIGHLIGHTS_KEY, []);
     // Validierung: nur gültige Einträge behalten und alte Einträge migrieren
     return raw
+      .map((entry) => entry as Record<string, unknown> | null | undefined)
       .filter(
-        (item) =>
+        (item): item is Record<string, unknown> =>
           typeof item?.sourceId === "string" &&
           typeof item?.videoId === "string" &&
-          item.sourceId.length > 0 &&
-          item.videoId.length > 0,
+          (item.sourceId as string).length > 0 &&
+          (item.videoId as string).length > 0,
       )
       .map(
         (item): HiddenHighlight => ({
-          sourceId: item.sourceId,
-          videoId: item.videoId,
+          sourceId: item.sourceId as string,
+          videoId: item.videoId as string,
           hiddenAt: typeof item.hiddenAt === "number" ? item.hiddenAt : 0,
           videoTitle: typeof item.videoTitle === "string" ? item.videoTitle : undefined,
           thumbnailUrl: typeof item.thumbnailUrl === "string" ? item.thumbnailUrl : undefined,

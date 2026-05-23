@@ -25,7 +25,7 @@ import {
 import { Youtube } from "@/src/shared/components/ui/BrandIcons";
 import { MAX_RESULTS_OPTIONS, STORAGE_KEYS, TIME_FRAMES } from "@/src/shared/constants";
 import { useTranslation } from "react-i18next";
-import { eventBus } from "@/src/shared/lib/eventBus";
+import { dispatchEvent, eventBus } from "@/src/shared/lib/eventBus";
 import { formatTimeAgo } from "@/src/shared/lib/formatters";
 
 interface FavoriteRowProps {
@@ -201,12 +201,8 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
       // WICHTIG: Muss VOR dem Stagger-Delay gesendet werden, damit alle Icons
       // sofort die Lade-Animation zeigen beim "Alle aktualisieren"
       try {
-        if (typeof window !== "undefined" && typeof window.dispatchEvent === "function") {
-          window.dispatchEvent(
-            new CustomEvent("favorite-refresh-start", { detail: { id: currentFavId } }),
-          );
-          dispatchedStartRef.current = true;
-        }
+        dispatchEvent("favorite-refresh-start", { id: currentFavId });
+        dispatchedStartRef.current = true;
       } catch {
         // ignore
       }
@@ -297,14 +293,8 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
         if (!cancelled) setLoading(false);
         // Globales Event: Ende des Refresh für diesen Favoriten (nur senden, wenn Start gesendet wurde)
         try {
-          if (
-            dispatchedStartRef.current &&
-            typeof window !== "undefined" &&
-            typeof window.dispatchEvent === "function"
-          ) {
-            window.dispatchEvent(
-              new CustomEvent("favorite-refresh-end", { detail: { id: currentFavId } }),
-            );
+          if (dispatchedStartRef.current) {
+            dispatchEvent("favorite-refresh-end", { id: currentFavId });
             dispatchedStartRef.current = false;
           }
         } catch {
@@ -326,11 +316,7 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
       // Cleanup: Wenn Start-Event gesendet wurde aber noch kein End-Event, sende es jetzt
       if (dispatchedStartRef.current) {
         try {
-          if (typeof window !== "undefined" && typeof window.dispatchEvent === "function") {
-            window.dispatchEvent(
-              new CustomEvent("favorite-refresh-end", { detail: { id: currentFavId } }),
-            );
-          }
+          dispatchEvent("favorite-refresh-end", { id: currentFavId });
         } catch {
           // ignore
         }

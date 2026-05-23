@@ -16,12 +16,13 @@ const makeId = (
 
 export const favoritesService = {
   list(): FavoriteConfig[] {
-    const raw = safeRead<any[]>(STORAGE_KEYS.FAVORITES, []);
+    const raw = safeRead<unknown[]>(STORAGE_KEYS.FAVORITES, []);
 
     let migrated = false;
     const byId = new Map<string, FavoriteConfig>();
 
-    for (const item of raw) {
+    for (const entry of raw) {
+      const item = entry as Record<string, unknown> | null | undefined;
       const query = typeof item?.query === "string" ? item.query.trim() : "";
       if (!query) {
         migrated = true;
