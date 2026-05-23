@@ -84,10 +84,11 @@ export const InputSection: React.FC<InputSectionProps> = ({
   const [justSaved, setJustSaved] = useState<boolean>(false);
   const [isFavorite, setIsFavorite] = useState<boolean>(false);
 
-  // Clear save-feedback timer on unmount
+  // Clear timers on unmount to avoid state updates on unmounted component
   useEffect(() => {
     return () => {
       if (justSavedTimerRef.current) clearTimeout(justSavedTimerRef.current);
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
     };
   }, []);
 
@@ -292,7 +293,9 @@ export const InputSection: React.FC<InputSectionProps> = ({
     try {
       const exists = favoritesService.exists(query, timeFrame, maxResults, searchType);
       setIsFavorite(exists);
-    } catch {}
+    } catch {
+      // ignore storage errors (consistent with other localStorage call sites)
+    }
   };
 
   const handleFocus = () => {

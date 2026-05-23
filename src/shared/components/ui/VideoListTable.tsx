@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import type { VideoData } from "@/src/features/videos";
 import { Check, Clock, Copy, ExternalLink } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -12,11 +12,20 @@ interface VideoListTableProps {
 export const VideoListTable: React.FC<VideoListTableProps> = ({ videos, startIndex }) => {
   const { t } = useTranslation();
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const resetCopiedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Clear pending copy-feedback timer on unmount to avoid setState after unmount
+  useEffect(() => {
+    return () => {
+      if (resetCopiedTimerRef.current) clearTimeout(resetCopiedTimerRef.current);
+    };
+  }, []);
 
   const handleCopy = (video: VideoData) => {
     navigator.clipboard.writeText(video.url).then(() => {
       setCopiedId(video.id);
-      setTimeout(() => setCopiedId(null), 1500);
+      if (resetCopiedTimerRef.current) clearTimeout(resetCopiedTimerRef.current);
+      resetCopiedTimerRef.current = setTimeout(() => setCopiedId(null), 1500);
     });
   };
 
