@@ -4,7 +4,7 @@ This repository is a Vite + React + TypeScript single-page app (`"type": "module
 
 Key entrypoints:
 
-- `index.html` — Vite HTML entry with Tailwind CDN and theme initialization
+- `index.html` — Vite HTML entry with inline FOUC-prevention theme script (Tailwind v4 ships through the `@tailwindcss/vite` plugin, not a CDN)
 - `src/main.tsx` — React bootstrap (renders App with providers)
 - `src/app/App.tsx` — main UI/state (search, dashboard, favorites)
 
