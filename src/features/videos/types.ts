@@ -8,7 +8,6 @@ export interface VideoData {
   url: string;
   thumbnailUrl: string;
   views: number;
-  uploadTime: string;
   publishedTimestamp: number;
   trendingScore: number;
   reasoning: string;

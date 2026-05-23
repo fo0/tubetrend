@@ -26,6 +26,7 @@ import { Youtube } from "@/src/shared/components/ui/BrandIcons";
 import { MAX_RESULTS_OPTIONS, STORAGE_KEYS, TIME_FRAMES } from "@/src/shared/constants";
 import { useTranslation } from "react-i18next";
 import { eventBus } from "@/src/shared/lib/eventBus";
+import { formatTimeAgo } from "@/src/shared/lib/formatters";
 
 interface FavoriteRowProps {
   favorite: FavoriteConfig;
@@ -122,26 +123,6 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
     return totalInTimeFrame > currentMax;
   }, [totalInTimeFrame, currentMax]);
 
-  const formatTimeAgo = (ts: number): string => {
-    const diffMs = Date.now() - ts;
-    if (diffMs < 0) return t("timeAgo.justNow");
-    const sec = Math.floor(diffMs / 1000);
-    if (sec < 10) return t("timeAgo.justNow");
-    if (sec < 60) return t("timeAgo.seconds", { count: sec });
-    const min = Math.floor(sec / 60);
-    if (min < 60) return t("timeAgo.minutes", { count: min });
-    const hrs = Math.floor(min / 60);
-    if (hrs < 24) return t("timeAgo.hours", { count: hrs });
-    const days = Math.floor(hrs / 24);
-    if (days < 7) return t("timeAgo.days", { count: days });
-    const weeks = Math.floor(days / 7);
-    if (weeks < 5) return t("timeAgo.weeks", { count: weeks });
-    const months = Math.floor(days / 30);
-    if (months < 12) return t("timeAgo.months", { count: months });
-    const years = Math.floor(days / 365);
-    return t("timeAgo.years", { count: years });
-  };
-
   // Live-Update für "vor X Min." Badge (aktualisiert alle 10 Sekunden)
   useEffect(() => {
     if (!lastFetchedAt || loading) {
@@ -149,10 +130,10 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
       return;
     }
     // Initiale Berechnung
-    setLiveTimeAgo(formatTimeAgo(lastFetchedAt));
+    setLiveTimeAgo(formatTimeAgo(lastFetchedAt, t));
     // Intervall für Live-Updates
     const interval = setInterval(() => {
-      setLiveTimeAgo(formatTimeAgo(lastFetchedAt));
+      setLiveTimeAgo(formatTimeAgo(lastFetchedAt, t));
     }, 10000); // alle 10 Sekunden aktualisieren
     return () => clearInterval(interval);
   }, [lastFetchedAt, loading]);

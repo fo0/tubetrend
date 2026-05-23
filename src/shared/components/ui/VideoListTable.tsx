@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import type { VideoData } from "@/src/features/videos";
 import { Check, Clock, Copy, ExternalLink } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { formatNumber } from "@/src/shared/lib/formatters";
+import { formatNumber, formatTimeAgo } from "@/src/shared/lib/formatters";
 
 interface VideoListTableProps {
   videos: VideoData[];
@@ -91,7 +91,7 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({ videos, startInd
                           {video.title}
                         </a>
                         <div className="text-xs text-slate-500 mt-1 sm:hidden">
-                          {video.uploadTime} • {formatNumber(video.views)}{" "}
+                          {formatTimeAgo(video.publishedTimestamp, t)} • {formatNumber(video.views)}{" "}
                           {t("results.table.views")}
                         </div>
                       </div>
@@ -100,7 +100,7 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({ videos, startInd
                   <td className="p-4 text-slate-500 dark:text-slate-400 whitespace-nowrap hidden sm:table-cell">
                     <div className="flex items-center gap-1.5">
                       <Clock className="w-3.5 h-3.5 text-slate-400 dark:text-slate-600" />
-                      {video.uploadTime}
+                      {formatTimeAgo(video.publishedTimestamp, t)}
                     </div>
                   </td>
                   <td className="p-4 text-right font-mono text-slate-600 dark:text-slate-300">

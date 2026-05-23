@@ -41,7 +41,7 @@ export async function fetchFromApi<T>(
 ): Promise<T> {
   const apiKey = getApiKey();
   if (!apiKey) {
-    throw new YouTubeApiError("YouTube API Key fehlt.", 401);
+    throw new YouTubeApiError("YouTube API key missing.", 401);
   }
 
   const url = new URL(`https://www.googleapis.com/youtube/v3/${endpoint}`);
@@ -58,12 +58,12 @@ export async function fetchFromApi<T>(
       const lower = msg.toLowerCase();
 
       if (lower.includes("api key not valid")) {
-        throw new YouTubeApiError("Der eingegebene API Key ist ungültig.", 403);
+        throw new YouTubeApiError("The provided API key is invalid.", 403);
       }
 
       if (lower.includes("quota")) {
         quotaService.markExhausted();
-        throw new YouTubeApiError("YouTube API Quota überschritten.", 403, true);
+        throw new YouTubeApiError("YouTube API quota exceeded.", 403, true);
       }
 
       // 4xx errors still cost quota
@@ -72,7 +72,7 @@ export async function fetchFromApi<T>(
       }
 
       throw new YouTubeApiError(
-        msg ? `YouTube API Fehler: ${msg}` : `YouTube API Fehler (${response.status})`,
+        msg ? `YouTube API error: ${msg}` : `YouTube API error (${response.status})`,
         response.status,
       );
     }
@@ -81,7 +81,7 @@ export async function fetchFromApi<T>(
       quotaService.track(cost, endpoint, context);
     }
 
-    throw new YouTubeApiError(`HTTP Fehler: ${response.status}`, response.status);
+    throw new YouTubeApiError(`HTTP error: ${response.status}`, response.status);
   }
 
   // Track successful request
