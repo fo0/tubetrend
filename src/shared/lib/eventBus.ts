@@ -19,20 +19,24 @@ type EventPayload<K extends EventKey> = EventMap[K];
 type EventCallback<K extends EventKey> =
   EventPayload<K> extends undefined ? () => void : (payload: EventPayload<K>) => void;
 
+// Internal listener signature: payload can be undefined for void events.
+// Stored uniformly so listeners for different keys share one Set type.
+type AnyEventCallback = (payload?: unknown) => void;
+
 class EventBus {
-  private listeners = new Map<EventKey, Set<EventCallback<any>>>();
+  private listeners = new Map<EventKey, Set<AnyEventCallback>>();
 
   on<K extends EventKey>(event: K, callback: EventCallback<K>): () => void {
     if (!this.listeners.has(event)) {
       this.listeners.set(event, new Set());
     }
-    this.listeners.get(event)!.add(callback);
+    this.listeners.get(event)!.add(callback as AnyEventCallback);
 
     return () => this.off(event, callback);
   }
 
   off<K extends EventKey>(event: K, callback: EventCallback<K>): void {
-    this.listeners.get(event)?.delete(callback);
+    this.listeners.get(event)?.delete(callback as AnyEventCallback);
   }
 
   emit<K extends EventKey>(
