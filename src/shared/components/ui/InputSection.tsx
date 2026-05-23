@@ -293,7 +293,9 @@ export const InputSection: React.FC<InputSectionProps> = ({
     try {
       const exists = favoritesService.exists(query, timeFrame, maxResults, searchType);
       setIsFavorite(exists);
-    } catch {}
+    } catch {
+      // ignore storage errors (consistent with other localStorage call sites)
+    }
   };
 
   const handleFocus = () => {
