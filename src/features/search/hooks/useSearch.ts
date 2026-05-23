@@ -86,7 +86,7 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
         }
 
         if (apiVideos.length === 0) {
-          throw new Error(`Keine Videos im Zeitraum "${timeFrame}" gefunden.`);
+          throw new Error(`No videos found in time frame "${timeFrame}".`);
         }
 
         setSearchState((prev) => ({ ...prev, step: "analyzing_ai" }));
@@ -102,7 +102,7 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
         });
       } catch (err: unknown) {
         if (import.meta.env.DEV) console.error(err);
-        const errorMessage = err instanceof Error ? err.message : "Fehler bei der Analyse.";
+        const errorMessage = err instanceof Error ? err.message : "Analysis failed.";
 
         const isApiKeyInvalid =
           err instanceof YouTubeApiError && err.status === 403 && !err.isQuotaError;
@@ -112,7 +112,7 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
             ...prev,
             isLoading: false,
             step: "idle",
-            error: "Der API Key scheint ungültig zu sein. Bitte überprüfe ihn.",
+            error: "The API key appears to be invalid. Please check it.",
           }));
           options?.onApiKeyInvalid?.();
         } else {

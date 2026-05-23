@@ -100,9 +100,10 @@ export function extractChannelIdentifier(input: string): string {
 /**
  * Search for channels (autocomplete)
  *
- * Hinweis: Die Search API gibt bei type=channel nicht immer korrekte Kanal-Thumbnails zurück.
- * Daher wird nach der Suche ein zusätzlicher channels-API-Call gemacht, um die korrekten
- * Profilbilder zu holen (kostet nur 1 zusätzliche Unit für bis zu 50 Kanäle).
+ * Note: The Search API does not always return correct channel thumbnails when
+ * type=channel. We therefore make an additional channels API call after the
+ * search to fetch the correct avatars (costs only 1 additional unit for up to
+ * 50 channels).
  */
 export async function searchChannels(query: string): Promise<ChannelSuggestion[]> {
   if (!query || query.length < 2) return [];
@@ -130,12 +131,12 @@ export async function searchChannels(query: string): Promise<ChannelSuggestion[]
 
     if (!data.items) return [];
 
-    // Sammle Channel-IDs für den Batch-Call
+    // Collect channel IDs for the batch call
     const channelIds = data.items
       .map((item) => item.snippet?.channelId)
       .filter((id): id is string => typeof id === "string" && id.length > 0);
 
-    // Hole korrekte Thumbnails über den channels-Endpoint (1 Unit für bis zu 50 Kanäle)
+    // Fetch correct thumbnails via the channels endpoint (1 unit per up to 50 channels)
     let thumbnailMap: Record<string, string> = {};
     if (channelIds.length > 0) {
       try {
@@ -159,7 +160,7 @@ export async function searchChannels(query: string): Promise<ChannelSuggestion[]
           }
         }
       } catch {
-        // Bei Fehler: Fallback auf Search-Thumbnails (besser als nichts)
+        // On error: fall back to Search thumbnails (better than nothing)
       }
     }
 
@@ -168,7 +169,7 @@ export async function searchChannels(query: string): Promise<ChannelSuggestion[]
       return {
         id: channelId,
         title: item.snippet?.channelTitle ?? "",
-        // Bevorzuge Thumbnail vom channels-Endpoint, Fallback auf Search-Thumbnail
+        // Prefer thumbnail from channels endpoint, fall back to Search thumbnail
         thumbnailUrl: thumbnailMap[channelId] || item.snippet?.thumbnails?.default?.url || "",
         handle: item.snippet?.customUrl,
       };
@@ -258,14 +259,14 @@ export async function findChannelInfo(
   );
 
   if (!searchData.items || searchData.items.length === 0) {
-    throw new Error(`Kanal "${channelName}" nicht gefunden.`);
+    throw new Error(`Channel "${channelName}" not found.`);
   }
 
   const firstSnippet = searchData.items[0].snippet;
   const channelId = firstSnippet?.channelId;
   const channelTitle = firstSnippet?.channelTitle;
   if (!channelId || !channelTitle) {
-    throw new Error(`Kanal "${channelName}" nicht gefunden.`);
+    throw new Error(`Channel "${channelName}" not found.`);
   }
 
   // Get channel details
@@ -279,12 +280,12 @@ export async function findChannelInfo(
   );
 
   if (!channelDetails.items || channelDetails.items.length === 0) {
-    throw new Error("Kanaldetails konnten nicht geladen werden.");
+    throw new Error("Channel details could not be loaded.");
   }
 
   const uploadsPlaylistId = channelDetails.items[0].contentDetails?.relatedPlaylists?.uploads;
   if (!uploadsPlaylistId) {
-    throw new Error("Kanaldetails konnten nicht geladen werden.");
+    throw new Error("Channel details could not be loaded.");
   }
 
   const result: ChannelInfo = {
