@@ -4,10 +4,9 @@ Review findings not immediately fixed. **Only work on these upon explicit reques
 
 ## Open
 
-| #   | Date | Category | Sev | Location | Finding | Status | Source |
-| --- | ---- | -------- | --- | -------- | ------- | ------ | ------ |
-
-_No open items._
+| #   | Date       | Category | Sev      | Location                                    | Finding                                                                                                                                                                                                                                                                                         | Status   | Source                                  |
+| --- | ---------- | -------- | -------- | ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | --------------------------------------- |
+| 13  | 2026-05-24 | Security | Moderate | `node_modules/brace-expansion` (transitive) | `npm audit` reports two moderate advisories on `brace-expansion` 4.0.0-5.0.5 (GHSA-f886-m6hf-6m8v zero-step DoS, GHSA-jxxr-4gwj-5jf2 numeric-range DoS). CI gate is `--audit-level=high` so it does not fail the build. Wait for dependabot or run `npm audit fix` once a dep bump is approved. | Deferred | quality & housekeeping sweep 2026-05-24 |
 
 ## Done
 

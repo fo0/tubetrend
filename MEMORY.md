@@ -6,7 +6,7 @@ Session-spanning project knowledge. **Read at session start, update during work.
 
 ## Gotchas & Pitfalls
 
-- **Tailwind v4 migration (2026-02)** — Tailwind CSS was migrated from v3 (PostCSS plugin + tailwind.config.js) to v4 (@tailwindcss/vite plugin). The old tailwind.config.js was deleted. postcss.config.js remains but is empty. Dark mode now uses `@custom-variant dark` in CSS instead of `darkMode: 'class'` in config. (2026-04-03)
+- **Tailwind v4 migration (2026-02)** — Tailwind CSS was migrated from v3 (PostCSS plugin + tailwind.config.js) to v4 (@tailwindcss/vite plugin). Both `tailwind.config.js` and the empty `postcss.config.js` were deleted (postcss devDependency removed in PR #142). Dark mode now uses `@custom-variant dark` in CSS instead of `darkMode: 'class'` in config. (updated 2026-05-24)
 
 - **Lucide React 1.x breaking change** — Lucide React migrated from 0.x to 1.x. Some brand icons (YouTube, GitHub) were removed in v0.577+ and replaced with custom SVG components. Check for removed icons when updating. (2026-04-03)
 
