@@ -60,6 +60,24 @@ const App: React.FC = () => {
   // Sorted favorites
   const sortedFavorites = useMemo(() => sortFavorites(favorites), [favorites, sortFavorites]);
 
+  // Global hotkey: press "r" on dashboard to refresh all favorites
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== "r" && e.key !== "R") return;
+      // Skip when focus is inside an input, textarea, or contentEditable element
+      const target = e.target as HTMLElement;
+      if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable) {
+        return;
+      }
+      if (activePage !== "dashboard") return;
+      if (favorites.length === 0) return;
+      e.preventDefault();
+      refreshAll();
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [activePage, favorites.length, refreshAll]);
+
   // Initial API key check
   useEffect(() => {
     if (!apiKey) {
