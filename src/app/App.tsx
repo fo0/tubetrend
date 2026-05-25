@@ -7,6 +7,7 @@ import { AnalyserPage } from "./routes/AnalyserPage";
 import { useTranslation } from "react-i18next";
 import { setApiKey as setYoutubeApiKey } from "@/src/features/youtube";
 import { dashboardBackupService } from "@/src/features/dashboard";
+import { favoritesService } from "@/src/features/favorites";
 import {
   useDashboardSort,
   useFavorites,
@@ -152,6 +153,13 @@ const App: React.FC = () => {
     [loadFavorites, t],
   );
 
+  const handleClearAllFavorites = useCallback(() => {
+    const count = favorites.length;
+    if (!window.confirm(t("favorites.clearAllConfirm", { count }))) return;
+    favoritesService.clearAll();
+    loadFavorites();
+  }, [favorites.length, loadFavorites, t]);
+
   const handleAnalyzeFavorite = useCallback(
     (
       favorite: FavoriteConfig,
@@ -213,6 +221,7 @@ const App: React.FC = () => {
             onExport={handleDashboardExport}
             onImportFile={handleDashboardImportFile}
             onOpenHiddenModal={() => setIsHiddenHighlightsModalOpen(true)}
+            onClearAllFavorites={handleClearAllFavorites}
           />
         ) : (
           <AnalyserPage

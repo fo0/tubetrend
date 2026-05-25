@@ -97,7 +97,9 @@
     },
     "refresh": "Refresh channel",
     "remove": "Remove favorite",
-    "analyze": "Open in Analyzer (uses cached data)"
+    "analyze": "Open in Analyzer (uses cached data)",
+    "clearAll": "Clear all favorites",
+    "clearAllConfirm": "Remove all {{count}} favorites? This cannot be undone."
   },
   "dashboard": {
     "noFavorites": "No favorites yet. Create a favorite from the analyzer.",
