@@ -7,6 +7,7 @@ import { AnalyserPage } from "./routes/AnalyserPage";
 import { useTranslation } from "react-i18next";
 import { setApiKey as setYoutubeApiKey } from "@/src/features/youtube";
 import { dashboardBackupService } from "@/src/features/dashboard";
+import { favoritesService } from "@/src/features/favorites";
 import {
   useDashboardSort,
   useFavorites,
@@ -58,6 +59,24 @@ const App: React.FC = () => {
 
   // Sorted favorites
   const sortedFavorites = useMemo(() => sortFavorites(favorites), [favorites, sortFavorites]);
+
+  // Global hotkey: press "r" on dashboard to refresh all favorites
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== "r" && e.key !== "R") return;
+      // Skip when focus is inside an input, textarea, or contentEditable element
+      const target = e.target as HTMLElement;
+      if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable) {
+        return;
+      }
+      if (activePage !== "dashboard") return;
+      if (favorites.length === 0) return;
+      e.preventDefault();
+      refreshAll();
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [activePage, favorites.length, refreshAll]);
 
   // Initial API key check
   useEffect(() => {
@@ -152,6 +171,13 @@ const App: React.FC = () => {
     [loadFavorites, t],
   );
 
+  const handleClearAllFavorites = useCallback(() => {
+    const count = favorites.length;
+    if (!window.confirm(t("favorites.clearAllConfirm", { count }))) return;
+    favoritesService.clearAll();
+    loadFavorites();
+  }, [favorites.length, loadFavorites, t]);
+
   const handleAnalyzeFavorite = useCallback(
     (
       favorite: FavoriteConfig,
@@ -213,6 +239,7 @@ const App: React.FC = () => {
             onExport={handleDashboardExport}
             onImportFile={handleDashboardImportFile}
             onOpenHiddenModal={() => setIsHiddenHighlightsModalOpen(true)}
+            onClearAllFavorites={handleClearAllFavorites}
           />
         ) : (
           <AnalyserPage

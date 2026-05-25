@@ -1,5 +1,5 @@
 import { useMemo, useRef } from "react";
-import { Activity, Download, EyeOff, RefreshCw, Upload } from "lucide-react";
+import { Activity, Download, EyeOff, RefreshCw, Trash2, Upload } from "lucide-react";
 import { FavoriteRow } from "@/src/shared/components/ui/FavoriteRow";
 import { FavoriteAvatar } from "@/src/shared/components/ui/FavoriteAvatar";
 import { HighlightVideoCard } from "@/src/shared/components/ui/HighlightVideoCard";
@@ -36,6 +36,7 @@ interface DashboardPageProps {
   onExport: () => void;
   onImportFile: (file: File) => Promise<void>;
   onOpenHiddenModal: () => void;
+  onClearAllFavorites: () => void;
 }
 
 export function DashboardPage({
@@ -54,6 +55,7 @@ export function DashboardPage({
   onExport,
   onImportFile,
   onOpenHiddenModal,
+  onClearAllFavorites,
 }: DashboardPageProps) {
   const { t } = useTranslation();
   const importRef = useRef<HTMLInputElement | null>(null);
@@ -169,6 +171,18 @@ export function DashboardPage({
                 >
                   <RefreshCw className="w-3 h-3" /> {t("actions.refreshAll")}
                 </button>
+                {favorites.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={onClearAllFavorites}
+                    className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-md border transition-colors
+                             border-red-300/60 text-red-600 hover:bg-red-50
+                             dark:border-red-700/40 dark:text-red-400 dark:hover:bg-red-900/20"
+                    title={t("favorites.clearAll")}
+                  >
+                    <Trash2 className="w-3 h-3" /> {t("favorites.clearAll")}
+                  </button>
+                )}
                 {hiddenHighlightsCount > 0 && (
                   <button
                     type="button"
