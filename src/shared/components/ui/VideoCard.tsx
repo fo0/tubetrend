@@ -23,11 +23,16 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video }) => {
   const handleCopy = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    navigator.clipboard.writeText(video.url).then(() => {
-      setCopied(true);
-      if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
-      resetTimerRef.current = setTimeout(() => setCopied(false), 1500);
-    });
+    navigator.clipboard.writeText(video.url).then(
+      () => {
+        setCopied(true);
+        if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
+        resetTimerRef.current = setTimeout(() => setCopied(false), 1500);
+      },
+      () => {
+        // Clipboard API unavailable (HTTP context, iframe restriction, etc.)
+      },
+    );
   };
 
   // Determine color based on score
