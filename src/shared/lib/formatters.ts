@@ -17,7 +17,7 @@ export function formatNumber(value: number, locale: string = getLocale()): strin
 /**
  * Format a number in compact notation (e.g., 1.2K, 3.5M)
  */
-export function formatCompactNumber(value: number, locale = "en"): string {
+export function formatCompactNumber(value: number, locale: string = getLocale()): string {
   return new Intl.NumberFormat(locale, {
     notation: "compact",
     maximumFractionDigits: 1,
