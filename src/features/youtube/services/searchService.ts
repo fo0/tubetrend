@@ -1,10 +1,9 @@
 import type { ChannelVideosResult, QuotaCallContext, YouTubeVideoItem } from "@/src/shared/types";
 import { TimeFrame } from "@/src/shared/types";
-import { AUTO_LIMIT_KEYWORD } from "@/src/shared/constants";
+import { AUTO_LIMIT_KEYWORD, SHORTS_DURATION_THRESHOLD_SECONDS } from "@/src/shared/constants";
 import { getPublishedAfterDate, parseISO8601DurationToSeconds } from "@/src/shared/lib/dateUtils";
 import type { YoutubeSearchResponse, YoutubeVideoListResponse } from "../types";
 
-const SHORTS_DURATION_THRESHOLD_SECONDS = 180;
 import { fetchFromApi } from "./youtubeApiClient";
 
 /**
