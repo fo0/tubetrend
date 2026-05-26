@@ -1,5 +1,10 @@
 import { safeRead, safeWrite } from "@/src/shared/lib/storage";
-import { AUTO_LIMIT_CHANNEL, CACHE_TTL, STORAGE_KEYS } from "@/src/shared/constants";
+import {
+  AUTO_LIMIT_CHANNEL,
+  CACHE_TTL,
+  SHORTS_DURATION_THRESHOLD_SECONDS,
+  STORAGE_KEYS,
+} from "@/src/shared/constants";
 import type {
   ChannelInfo,
   ChannelSuggestion,
@@ -17,7 +22,6 @@ import type {
   YoutubeVideoListResponse,
 } from "../types";
 
-const SHORTS_DURATION_THRESHOLD_SECONDS = 180;
 import { fetchFromApi, getApiKey } from "./youtubeApiClient";
 
 interface AutocompleteCacheEntry {

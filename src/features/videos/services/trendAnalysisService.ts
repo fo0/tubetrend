@@ -4,11 +4,11 @@ import type { VideoData } from "../types";
 /**
  * Pure math-based trend analysis (no AI API calls)
  */
-export async function analyzeVideoStats(
+export function analyzeVideoStats(
   videos: YouTubeVideoItem[],
   _channelName: string,
   _timeFrame: string,
-): Promise<VideoData[]> {
+): VideoData[] {
   const now = Date.now();
 
   return videos.map((video) => {

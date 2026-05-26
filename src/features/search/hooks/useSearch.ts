@@ -90,7 +90,7 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
         }
 
         setSearchState((prev) => ({ ...prev, step: "analyzing_ai" }));
-        const analyzedVideos = await analyzeVideoStats(apiVideos, displayName, timeFrame);
+        const analyzedVideos = analyzeVideoStats(apiVideos, displayName, timeFrame);
 
         setSearchState({
           isLoading: false,

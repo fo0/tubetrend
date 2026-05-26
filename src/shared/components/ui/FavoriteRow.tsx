@@ -264,7 +264,7 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
         }
         if (!cancelled) setTotalInTimeFrame(totalInTimeFrame);
 
-        const analyzed = await analyzeVideoStats(apiVideos, displayName, currentTimeFrame);
+        const analyzed = analyzeVideoStats(apiVideos, displayName, currentTimeFrame);
         const top6 = analyzed.sort((a, b) => b.trendingScore - a.trendingScore).slice(0, 6);
         // Bestimme den höchsten Velocity-Wert (Views pro Stunde) über alle analysierten Videos
         const topVelocityVph =

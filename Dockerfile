@@ -28,6 +28,10 @@ RUN npm run build
 # 2) Run stage: serve static files with Nginx
 FROM nginx:alpine AS runner
 
+# Remove default Nginx config and use project-specific one
+RUN rm /etc/nginx/conf.d/default.conf
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
 # Copy built assets from the builder
 COPY --from=builder /app/dist /usr/share/nginx/html
 
