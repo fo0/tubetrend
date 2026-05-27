@@ -16,7 +16,9 @@
     "exportDashboard": "Exportieren"
   },
   "nav": {
-    "main": "Hauptnavigation"
+    "main": "Hauptnavigation",
+    "dashboard": "Dashboard",
+    "analyser": "Analyser"
   },
   "emptyState": {
     "title": "Keine Ergebnisse",
@@ -260,6 +262,10 @@
     "window6h": "6 Std.",
     "window12h": "12 Std.",
     "window24h": "24 Std."
+  },
+  "scroll": {
+    "toTop": "Nach oben scrollen",
+    "toBottom": "Nach unten scrollen"
   },
   "footer": {
     "buildInfo": "Build-Info",

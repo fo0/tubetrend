@@ -90,3 +90,19 @@ textarea:focus-visible {
   outline-offset: 2px;
   border-radius: 3px;
 }
+
+/* ── Reduced-motion preference (WCAG 2.3.3) ────────────────────────────────
+   Disable non-essential animations/transitions for users who prefer reduced
+   motion (e.g. vestibular disorders). Essential opacity transitions are kept
+   but made instant.
+   ─────────────────────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

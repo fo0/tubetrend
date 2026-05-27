@@ -32,4 +32,17 @@ i18n
     interpolation: { escapeValue: false },
   });
 
+// Sync <html lang> attribute with the active language so screen readers
+// announce content in the correct language (WCAG 3.1.1).
+function syncHtmlLang(lng: string) {
+  const short = (lng || "en").split("-")[0].toLowerCase();
+  document.documentElement.lang = short;
+}
+
+// Set immediately after init
+syncHtmlLang(i18n.language);
+
+// Update on every language change
+i18n.on("languageChanged", syncHtmlLang);
+
 export default i18n;
