@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowDown, ArrowUp } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 /**
  * A floating scroll button that appears based on scroll direction.
@@ -9,6 +10,7 @@ import { ArrowDown, ArrowUp } from "lucide-react";
  * - Positioned center-right of the viewport
  */
 export function FloatingScrollButton() {
+  const { t } = useTranslation();
   const [scrollDirection, setScrollDirection] = useState<"up" | "down">("down");
   const [isVisible, setIsVisible] = useState(false);
   const [lastScrollY, setLastScrollY] = useState(0);
@@ -137,8 +139,8 @@ export function FloatingScrollButton() {
         cursor-pointer
         ${isNearButton ? "opacity-60 scale-105" : "opacity-20"}
       `}
-      title={scrollDirection === "up" ? "Scroll to top" : "Scroll to bottom"}
-      aria-label={scrollDirection === "up" ? "Scroll to top" : "Scroll to bottom"}
+      title={scrollDirection === "up" ? t("scroll.toTop") : t("scroll.toBottom")}
+      aria-label={scrollDirection === "up" ? t("scroll.toTop") : t("scroll.toBottom")}
     >
       {scrollDirection === "up" ? (
         <ArrowUp className="w-5 h-5" />

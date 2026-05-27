@@ -48,10 +48,10 @@ export function Header({
                     : "text-slate-700 border-slate-300 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:border-slate-800 dark:hover:bg-slate-800 dark:hover:text-white"
                 }
               `}
-              title="Dashboard"
+              title={t("nav.dashboard")}
             >
               <LayoutDashboard className="w-4 h-4" />
-              <span>Dashboard</span>
+              <span>{t("nav.dashboard")}</span>
             </button>
             <button
               type="button"
@@ -64,10 +64,10 @@ export function Header({
                     : "text-slate-700 border-slate-300 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:border-slate-800 dark:hover:bg-slate-800 dark:hover:text-white"
                 }
               `}
-              title="Analyser"
+              title={t("nav.analyser")}
             >
               <BarChart3 className="w-4 h-4" />
-              <span>Analyser</span>
+              <span>{t("nav.analyser")}</span>
             </button>
           </nav>
         </div>
