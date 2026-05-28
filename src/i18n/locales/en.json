@@ -264,6 +264,11 @@
     "window12h": "12 hrs",
     "window24h": "24 hrs"
   },
+  "keyboard": {
+    "label": "Keyboard shortcuts",
+    "focusSearch": "Focus search",
+    "refreshAll": "Refresh all favorites"
+  },
   "scroll": {
     "toTop": "Scroll to top",
     "toBottom": "Scroll to bottom"

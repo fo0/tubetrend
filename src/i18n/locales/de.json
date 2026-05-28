@@ -264,6 +264,11 @@
     "window12h": "12 Std.",
     "window24h": "24 Std."
   },
+  "keyboard": {
+    "label": "Tastaturkuerzel",
+    "focusSearch": "Suche fokussieren",
+    "refreshAll": "Alle Favoriten aktualisieren"
+  },
   "scroll": {
     "toTop": "Nach oben scrollen",
     "toBottom": "Nach unten scrollen"
