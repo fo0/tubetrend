@@ -82,7 +82,7 @@ If `CLAUDE.md` exceeds ~40,000 characters: extract the largest section into `age
 
 ## Refactoring Notes
 
-- **`FavoriteRow.tsx` (~636 lines)** — God component. Split into sub-components + `useFavoriteRowData()` hook.
+- **`FavoriteRow.tsx` (~670 lines)** — God component. Split into sub-components + `useFavoriteRowData()` hook.
 - **Duplicate event listeners** — Raw `window.addEventListener` instead of `useEventBus()` hook.
 - **German strings in API client** — `youtubeApiClient.ts` has hardcoded German error messages.
 - **Magic numbers in trend analysis** — `trendAnalysisService.ts` hardcoded thresholds and weights.

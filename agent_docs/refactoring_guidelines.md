@@ -22,7 +22,7 @@ Refactoring does NOT happen automatically. Only when:
 
 ## Known Refactoring Targets
 
-- **`FavoriteRow.tsx` (~636 lines)** — God component handling data fetching, caching, UI menus, state management, and event handling. Should be split into sub-components (`FavoriteRowHeader`, `FavoriteRowMenus`, `FavoriteRowVideos`) and a custom `useFavoriteRowData()` hook.
+- **`FavoriteRow.tsx` (~670 lines)** — God component handling data fetching, caching, UI menus, state management, and event handling. Should be split into sub-components (`FavoriteRowHeader`, `FavoriteRowMenus`, `FavoriteRowVideos`) and a custom `useFavoriteRowData()` hook.
 - **Duplicate event listener patterns** — Multiple components use raw `window.addEventListener('favorites-changed', ...)` instead of the type-safe `useEventBus()` hook from `eventBus.ts`. Should be migrated consistently.
 - **Hard-coded German strings in API client** — `youtubeApiClient.ts` contains German error messages instead of i18n translation keys. Should use `t()` or throw error codes that the UI translates.
 - **Magic numbers in trend analysis** — `trendAnalysisService.ts` uses hardcoded thresholds (e.g., `viewsPerHour > 10000`, `engagementRate > 10`, `ageInHours < 2`) and scoring weights (`0.7`, `0.3`). Should be extracted to named constants.
