@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import type { VideoData } from "@/src/features/videos";
-import { Check, Clock, Copy, Eye, TrendingUp, Zap } from "lucide-react";
+import { Check, Clock, Copy, Eye, Heart, TrendingUp, Zap } from "lucide-react";
 import { formatNumber, formatTimeAgo } from "@/src/shared/lib/formatters";
 import { useTranslation } from "react-i18next";
 
@@ -89,7 +89,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video }) => {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 gap-2 mb-3">
+        <div className="grid grid-cols-3 gap-2 mb-3">
           <div className="flex flex-col justify-center bg-slate-100/50 dark:bg-slate-900/50 p-2 rounded-lg border border-slate-200/50 dark:border-slate-700/50">
             <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 text-xs uppercase font-semibold mb-0.5">
               <Eye className="w-3 h-3 text-indigo-500 dark:text-indigo-400" />{" "}
@@ -106,6 +106,15 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video }) => {
             </div>
             <span className="text-slate-700 dark:text-slate-200 font-mono text-sm">
               {video.viewsPerHour ? `~${formatNumber(video.viewsPerHour)}/h` : "N/A"}
+            </span>
+          </div>
+          <div className="flex flex-col justify-center bg-slate-100/50 dark:bg-slate-900/50 p-2 rounded-lg border border-slate-200/50 dark:border-slate-700/50">
+            <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 text-xs uppercase font-semibold mb-0.5">
+              <Heart className="w-3 h-3 text-pink-500 dark:text-pink-400" />{" "}
+              {t("results.table.engagement")}
+            </div>
+            <span className="text-slate-700 dark:text-slate-200 font-mono text-sm">
+              {video.engagementRate != null ? `${video.engagementRate}%` : "N/A"}
             </span>
           </div>
         </div>

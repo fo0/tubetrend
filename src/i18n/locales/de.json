@@ -158,6 +158,7 @@
       "views": "Aufrufe",
       "velocity": "Velocity",
       "score": "Score",
+      "engagement": "Engage",
       "copyUrl": "Video-URL kopieren",
       "copyUrlAria": "URL kopieren für {{title}}",
       "watchOnYoutube": "Auf YouTube ansehen",
@@ -262,6 +263,11 @@
     "window6h": "6 Std.",
     "window12h": "12 Std.",
     "window24h": "24 Std."
+  },
+  "keyboard": {
+    "label": "Tastaturkuerzel",
+    "focusSearch": "Suche fokussieren",
+    "refreshAll": "Alle Favoriten aktualisieren"
   },
   "scroll": {
     "toTop": "Nach oben scrollen",

@@ -12,6 +12,8 @@ export interface VideoData {
   trendingScore: number;
   reasoning: string;
   viewsPerHour?: number;
+  /** Engagement rate as percentage: (likes + comments) / views * 100 */
+  engagementRate?: number;
 }
 
 export interface SearchState {
