@@ -53,6 +53,7 @@ export function analyzeVideoStats(
       trendingScore: Math.max(0, Math.min(100, trendingScore)),
       reasoning,
       viewsPerHour: Math.round(viewsPerHour * 10) / 10,
+      engagementRate: Math.round(engagementRate * 100) / 100,
     };
   });
 }

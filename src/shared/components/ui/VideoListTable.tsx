@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import type { VideoData } from "@/src/features/videos";
-import { Check, Clock, Copy, ExternalLink } from "lucide-react";
+import { Check, Clock, Copy, ExternalLink, Heart } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { formatNumber, formatTimeAgo } from "@/src/shared/lib/formatters";
 
@@ -55,6 +55,9 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({ videos, startInd
               </th>
               <th scope="col" className="p-4 text-right hidden md:table-cell">
                 {t("results.table.velocity")}
+              </th>
+              <th scope="col" className="p-4 text-right hidden lg:table-cell">
+                {t("results.table.engagement")}
               </th>
               <th scope="col" className="p-4 text-center">
                 {t("results.table.score")}
@@ -119,6 +122,16 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({ videos, startInd
                     {video.viewsPerHour ? (
                       <span className="flex items-center justify-end gap-1 text-yellow-600/80 dark:text-yellow-500/80">
                         {formatNumber(video.viewsPerHour)}/h
+                      </span>
+                    ) : (
+                      "-"
+                    )}
+                  </td>
+                  <td className="p-4 text-right font-mono text-slate-500 dark:text-slate-400 hidden lg:table-cell">
+                    {video.engagementRate != null ? (
+                      <span className="flex items-center justify-end gap-1 text-pink-600/80 dark:text-pink-500/80">
+                        <Heart className="w-3 h-3" />
+                        {video.engagementRate}%
                       </span>
                     ) : (
                       "-"
