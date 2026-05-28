@@ -22,11 +22,16 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({ videos, startInd
   }, []);
 
   const handleCopy = (video: VideoData) => {
-    navigator.clipboard.writeText(video.url).then(() => {
-      setCopiedId(video.id);
-      if (resetCopiedTimerRef.current) clearTimeout(resetCopiedTimerRef.current);
-      resetCopiedTimerRef.current = setTimeout(() => setCopiedId(null), 1500);
-    });
+    navigator.clipboard.writeText(video.url).then(
+      () => {
+        setCopiedId(video.id);
+        if (resetCopiedTimerRef.current) clearTimeout(resetCopiedTimerRef.current);
+        resetCopiedTimerRef.current = setTimeout(() => setCopiedId(null), 1500);
+      },
+      () => {
+        // Clipboard API unavailable (HTTP context, iframe restriction, etc.)
+      },
+    );
   };
 
   const getScoreColor = (score: number) => {
