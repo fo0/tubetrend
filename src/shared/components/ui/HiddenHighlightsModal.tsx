@@ -16,7 +16,7 @@ export const HiddenHighlightsModal: React.FC<HiddenHighlightsModalProps> = ({
   const { t } = useTranslation();
   const [hiddenItems, setHiddenItems] = React.useState<HiddenHighlight[]>([]);
 
-  // Lade die Liste beim Öffnen des Modals
+  // Load the list when the modal opens
   React.useEffect(() => {
     if (isOpen) {
       setHiddenItems(hiddenHighlightsService.listChronological());
@@ -39,7 +39,8 @@ export const HiddenHighlightsModal: React.FC<HiddenHighlightsModalProps> = ({
   };
 
   const handleDelete = (videoId: string) => {
-    hiddenHighlightsService.show(videoId); // Entfernt den Eintrag aus der Liste
+    // show() removes the entry from the hidden list (un-hiding it)
+    hiddenHighlightsService.show(videoId);
     setHiddenItems(hiddenHighlightsService.listChronological());
   };
 
