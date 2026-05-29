@@ -23,6 +23,10 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video }) => {
   const handleCopy = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    // navigator.clipboard is undefined in insecure contexts (HTTP, some iframes).
+    // Accessing .writeText on it throws synchronously, which the promise
+    // rejection handler below would not catch — so guard the property first.
+    if (!navigator.clipboard) return;
     navigator.clipboard.writeText(video.url).then(
       () => {
         setCopied(true);
