@@ -22,6 +22,10 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({ videos, startInd
   }, []);
 
   const handleCopy = (video: VideoData) => {
+    // navigator.clipboard is undefined in insecure contexts (HTTP, some iframes).
+    // Accessing .writeText on it throws synchronously, which the promise
+    // rejection handler below would not catch — so guard the property first.
+    if (!navigator.clipboard) return;
     navigator.clipboard.writeText(video.url).then(
       () => {
         setCopiedId(video.id);
