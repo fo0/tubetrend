@@ -52,6 +52,15 @@
     "react-dom": "^19.2.6",
     "react-i18next": "^17.0.8"
   },
+  "overrides": {
+    "electron-builder": {
+      "app-builder-lib": {
+        "minimatch": {
+          "brace-expansion": "^5.0.6"
+        }
+      }
+    }
+  },
   "devDependencies": {
     "@capacitor/cli": "^8.3.4",
     "@tailwindcss/vite": "^4.3.0",
