@@ -13,7 +13,10 @@ export function FloatingScrollButton() {
   const { t } = useTranslation();
   const [scrollDirection, setScrollDirection] = useState<"up" | "down">("down");
   const [isVisible, setIsVisible] = useState(false);
-  const [lastScrollY, setLastScrollY] = useState(0);
+  // Use a ref instead of state so the scroll handler can read the latest value
+  // without being listed in the useEffect dep array (which caused the listener
+  // to be removed and re-added on every scroll event).
+  const lastScrollYRef = useRef(0);
   const [isNearButton, setIsNearButton] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
@@ -73,17 +76,17 @@ export function FloatingScrollButton() {
             setIsVisible(true);
           } else {
             // In the middle: show based on last scroll direction
-            if (currentScrollY > lastScrollY) {
+            if (currentScrollY > lastScrollYRef.current) {
               // Scrolling down -> show "go to bottom"
               setScrollDirection("down");
-            } else if (currentScrollY < lastScrollY) {
+            } else if (currentScrollY < lastScrollYRef.current) {
               // Scrolling up -> show "go to top"
               setScrollDirection("up");
             }
             setIsVisible(true);
           }
 
-          setLastScrollY(currentScrollY);
+          lastScrollYRef.current = currentScrollY;
           ticking = false;
         });
         ticking = true;
@@ -95,7 +98,7 @@ export function FloatingScrollButton() {
 
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [lastScrollY]);
+  }, []);
 
   const handleClick = useCallback(() => {
     if (scrollDirection === "up") {

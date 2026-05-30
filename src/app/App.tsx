@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useEventListener } from "@/src/shared/hooks";
 import { ApiKeyModal } from "@/src/shared/components/ui/ApiKeyModal";
 import { HiddenHighlightsModal } from "@/src/shared/components/ui/HiddenHighlightsModal";
 import { Header, Footer, type PageType } from "@/src/shared/components/layout";
@@ -19,6 +20,7 @@ import type { VideoData } from "@/src/features/videos/types";
 import type { SearchType, TimeFrame } from "@/src/shared/types";
 import { STORAGE_KEYS } from "@/src/shared/constants";
 import { dispatchEvent } from "@/src/shared/lib/eventBus";
+import { safeWrite } from "@/src/shared/lib/storage";
 
 const App: React.FC = () => {
   const { t } = useTranslation();
@@ -61,8 +63,8 @@ const App: React.FC = () => {
   const sortedFavorites = useMemo(() => sortFavorites(favorites), [favorites, sortFavorites]);
 
   // Global hotkey: press "r" on dashboard to refresh all favorites
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
       if (e.key !== "r" && e.key !== "R") return;
       // Skip when focus is inside an input, textarea, or contentEditable element
       const target = e.target as HTMLElement;
@@ -73,10 +75,10 @@ const App: React.FC = () => {
       if (favorites.length === 0) return;
       e.preventDefault();
       refreshAll();
-    };
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [activePage, favorites.length, refreshAll]);
+    },
+    [activePage, favorites.length, refreshAll],
+  );
+  useEventListener("keydown", handleKeyDown, document);
 
   // Initial API key check
   useEffect(() => {
@@ -153,11 +155,8 @@ const App: React.FC = () => {
       if (!ok) return;
 
       try {
-        localStorage.setItem(STORAGE_KEYS.FAVORITES, JSON.stringify(parsed.payload.data.favorites));
-        localStorage.setItem(
-          STORAGE_KEYS.FAVORITES_CACHE,
-          JSON.stringify(parsed.payload.data.favoritesCache),
-        );
+        safeWrite(STORAGE_KEYS.FAVORITES, parsed.payload.data.favorites);
+        safeWrite(STORAGE_KEYS.FAVORITES_CACHE, parsed.payload.data.favoritesCache);
       } catch {
         window.alert(t("backup.importFailedStorage"));
         return;

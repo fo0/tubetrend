@@ -1,4 +1,4 @@
-import { safeRead, safeWrite } from "@/src/shared/lib/storage";
+import { safeRead, safeRemove, safeWrite } from "@/src/shared/lib/storage";
 import { dispatchEvent } from "@/src/shared/lib/eventBus";
 import { getTodayDateString } from "@/src/shared/lib/dateUtils";
 import { API_COSTS, DEFAULT_DAILY_QUOTA, STORAGE_KEYS } from "@/src/shared/constants";
@@ -94,8 +94,7 @@ export const quotaService = {
   },
 
   reset(): void {
-    if (typeof window === "undefined") return;
-    localStorage.removeItem(STORAGE_KEYS.QUOTA_TRACKING);
+    safeRemove(STORAGE_KEYS.QUOTA_TRACKING);
     // Dispatch event to update UI with empty data
     dispatchEvent("quota-updated", {
       used: 0,

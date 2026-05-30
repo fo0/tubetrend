@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 interface UseLocalStorageOptions<T> {
   serialize?: (value: T) => string;
@@ -15,6 +15,10 @@ export function useLocalStorage<T>(
 ): [T, (value: T | ((prev: T) => T)) => void, () => void] {
   const serialize = options?.serialize ?? JSON.stringify;
   const deserialize = options?.deserialize ?? JSON.parse;
+
+  // Stable ref for initialValue to avoid re-creating the remove callback when
+  // the caller passes a new object/array reference on each render.
+  const initialValueRef = useRef(initialValue);
 
   const [storedValue, setStoredValue] = useState<T>(() => {
     if (typeof window === "undefined") return initialValue;
@@ -44,11 +48,11 @@ export function useLocalStorage<T>(
   const remove = useCallback(() => {
     try {
       localStorage.removeItem(key);
-      setStoredValue(initialValue);
+      setStoredValue(initialValueRef.current);
     } catch {
       // Ignore
     }
-  }, [key, initialValue]);
+  }, [key]);
 
   // Listen for storage changes from other tabs
   useEffect(() => {
