@@ -19,6 +19,7 @@ import type { VideoData } from "@/src/features/videos/types";
 import type { SearchType, TimeFrame } from "@/src/shared/types";
 import { STORAGE_KEYS } from "@/src/shared/constants";
 import { dispatchEvent } from "@/src/shared/lib/eventBus";
+import { safeWrite } from "@/src/shared/lib/storage";
 
 const App: React.FC = () => {
   const { t } = useTranslation();
@@ -153,11 +154,8 @@ const App: React.FC = () => {
       if (!ok) return;
 
       try {
-        localStorage.setItem(STORAGE_KEYS.FAVORITES, JSON.stringify(parsed.payload.data.favorites));
-        localStorage.setItem(
-          STORAGE_KEYS.FAVORITES_CACHE,
-          JSON.stringify(parsed.payload.data.favoritesCache),
-        );
+        safeWrite(STORAGE_KEYS.FAVORITES, parsed.payload.data.favorites);
+        safeWrite(STORAGE_KEYS.FAVORITES_CACHE, parsed.payload.data.favoritesCache);
       } catch {
         window.alert(t("backup.importFailedStorage"));
         return;
