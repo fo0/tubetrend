@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 interface UseLocalStorageOptions<T> {
   serialize?: (value: T) => string;
@@ -13,8 +13,12 @@ export function useLocalStorage<T>(
   initialValue: T,
   options?: UseLocalStorageOptions<T>,
 ): [T, (value: T | ((prev: T) => T)) => void, () => void] {
-  const serialize = options?.serialize ?? JSON.stringify;
-  const deserialize = options?.deserialize ?? JSON.parse;
+  // Stabilize serialize/deserialize with refs so callers that pass inline
+  // functions don't cause useCallback/useEffect deps to fire on every render.
+  const serializeRef = useRef(options?.serialize ?? (JSON.stringify as (v: T) => string));
+  const deserializeRef = useRef(options?.deserialize ?? (JSON.parse as (s: string) => T));
+  const serialize = serializeRef.current;
+  const deserialize = deserializeRef.current;
 
   const [storedValue, setStoredValue] = useState<T>(() => {
     if (typeof window === "undefined") return initialValue;
