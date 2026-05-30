@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useEventListener } from "@/src/shared/hooks";
 import { ApiKeyModal } from "@/src/shared/components/ui/ApiKeyModal";
 import { HiddenHighlightsModal } from "@/src/shared/components/ui/HiddenHighlightsModal";
 import { Header, Footer, type PageType } from "@/src/shared/components/layout";
@@ -62,8 +63,8 @@ const App: React.FC = () => {
   const sortedFavorites = useMemo(() => sortFavorites(favorites), [favorites, sortFavorites]);
 
   // Global hotkey: press "r" on dashboard to refresh all favorites
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
       if (e.key !== "r" && e.key !== "R") return;
       // Skip when focus is inside an input, textarea, or contentEditable element
       const target = e.target as HTMLElement;
@@ -74,10 +75,10 @@ const App: React.FC = () => {
       if (favorites.length === 0) return;
       e.preventDefault();
       refreshAll();
-    };
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [activePage, favorites.length, refreshAll]);
+    },
+    [activePage, favorites.length, refreshAll],
+  );
+  useEventListener("keydown", handleKeyDown, document);
 
   // Initial API key check
   useEffect(() => {
