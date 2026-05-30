@@ -38,12 +38,6 @@ export const HiddenHighlightsModal: React.FC<HiddenHighlightsModalProps> = ({
     setHiddenItems(hiddenHighlightsService.listChronological());
   };
 
-  const handleDelete = (videoId: string) => {
-    // show() removes the entry from the hidden list (un-hiding it)
-    hiddenHighlightsService.show(videoId);
-    setHiddenItems(hiddenHighlightsService.listChronological());
-  };
-
   const formatDate = (timestamp: number): string => {
     if (!timestamp) return "—";
     const date = new Date(timestamp);
@@ -139,7 +133,7 @@ export const HiddenHighlightsModal: React.FC<HiddenHighlightsModalProps> = ({
                     </button>
                     <button
                       type="button"
-                      onClick={() => handleDelete(item.videoId)}
+                      onClick={() => handleUnhide(item.videoId)}
                       className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md border border-red-500/30 text-red-400 dark:text-red-300 hover:bg-red-500/10 transition-colors"
                       aria-label={t("dashboard.highlights.delete")}
                       title={t("dashboard.highlights.delete")}
