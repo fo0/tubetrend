@@ -69,7 +69,6 @@ export const FavoriteAvatar: React.FC<FavoriteAvatarProps> = ({
   size = "md",
 }) => {
   const cache = favoritesService.getCache(favorite.id);
-  const channelId = cache?.meta?.channelId;
   const channelTitle = cache?.meta?.channelTitle || favorite.query;
 
   const isKeyword = favorite.searchType === SearchType.KEYWORD;
@@ -77,14 +76,9 @@ export const FavoriteAvatar: React.FC<FavoriteAvatarProps> = ({
   const initials = useMemo(() => getInitials(channelTitle), [channelTitle]);
   const bgColor = useMemo(() => getAvatarColor(favorite.query), [favorite.query]);
 
-  // YouTube channel avatar URL (if we have channelId)
-  // Note: This requires a separate API call to get the actual thumbnail
-  // For now, we use initials as fallback
-  const avatarUrl = useMemo(() => {
-    // YouTube doesn't provide direct avatar URLs via channel ID alone
-    // We would need to fetch channel details - for now use initials
-    return null;
-  }, [channelId]);
+  // Avatar URL placeholder: direct YouTube avatar URLs require an additional
+  // API call (not yet implemented). Initials are used as fallback for now.
+  const avatarUrl = null;
 
   const sizeClasses = size === "sm" ? "w-7 h-7 text-xs" : "w-9 h-9 text-sm";
 
