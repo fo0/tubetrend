@@ -1,9 +1,8 @@
-import React from "react";
 import { Monitor, Moon, Sun } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@/src/providers/ThemeProvider";
 
-export const ThemeToggle: React.FC = () => {
+export function ThemeToggle() {
   const { theme, resolvedTheme, setTheme } = useTheme();
   const { t } = useTranslation();
 

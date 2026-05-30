@@ -6,7 +6,6 @@ import { useTranslation } from "react-i18next";
 
 interface VideoCardProps {
   video: VideoData;
-  rank: number;
 }
 
 export const VideoCard: React.FC<VideoCardProps> = ({ video }) => {

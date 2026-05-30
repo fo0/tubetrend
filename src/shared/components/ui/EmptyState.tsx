@@ -1,8 +1,7 @@
-import React from "react";
 import { Youtube } from "@/src/shared/components/ui/BrandIcons";
 import { useTranslation } from "react-i18next";
 
-export const EmptyState: React.FC = () => {
+export function EmptyState() {
   const { t } = useTranslation();
   return (
     <div className="flex flex-col items-center justify-center py-20 text-center px-4">

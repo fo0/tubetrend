@@ -212,8 +212,8 @@ export function AnalyserPage({ searchState, externalInputValues, onSearch }: Ana
               </h3>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3">
-              {topVideos.map((video, index) => (
-                <VideoCard key={video.id} video={video} rank={index + 1} />
+              {topVideos.map((video) => (
+                <VideoCard key={video.id} video={video} />
               ))}
             </div>
           </div>
