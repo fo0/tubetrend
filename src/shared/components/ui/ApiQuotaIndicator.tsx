@@ -5,6 +5,7 @@ import type { QuotaHistoryEntry } from "@/src/shared/types";
 import { useTranslation } from "react-i18next";
 import { formatNumber } from "@/src/shared/lib/formatters";
 import { eventBus } from "@/src/shared/lib/eventBus";
+import { STORAGE_KEYS } from "@/src/shared/constants";
 
 // Determine optimal time window based on actual data.
 // Returns i18n key + half-window key so labels are translated at render time.
@@ -217,12 +218,16 @@ export const ApiQuotaIndicator: React.FC = () => {
     // Typed event bus for in-app quota updates
     const offQuota = eventBus.on("quota-updated", handleQuotaUpdate);
 
-    // Native storage event for cross-tab sync (not in EventMap, so raw listener)
-    window.addEventListener("storage", handleQuotaUpdate);
+    // Native storage event for cross-tab quota sync — filter to the quota key only
+    // so unrelated localStorage writes do not trigger unnecessary re-renders.
+    const handleStorageEvent = (e: StorageEvent) => {
+      if (e.key === STORAGE_KEYS.QUOTA_TRACKING) handleQuotaUpdate();
+    };
+    window.addEventListener("storage", handleStorageEvent);
 
     return () => {
       offQuota();
-      window.removeEventListener("storage", handleQuotaUpdate);
+      window.removeEventListener("storage", handleStorageEvent);
     };
   }, []);
 
