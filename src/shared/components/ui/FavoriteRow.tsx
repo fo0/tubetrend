@@ -136,7 +136,7 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
       setLiveTimeAgo(formatTimeAgo(lastFetchedAt, t));
     }, 10000); // alle 10 Sekunden aktualisieren
     return () => clearInterval(interval);
-  }, [lastFetchedAt, loading]);
+  }, [lastFetchedAt, loading, t]);
 
   // Reagiere auf externe Cache-Updates via typed event bus
   // (z.B. wenn ein anderer Prozess den Cache aktualisiert)
