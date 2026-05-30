@@ -19,6 +19,7 @@ export const STORAGE_KEYS = {
   HIDDEN_HIGHLIGHTS: "tt.dashboard.hiddenHighlights.v1",
   ANALYSER_SORT_MODE: "tt.analyser.sortMode",
   ANALYSER_TOP_N: "tt.analyser.topN",
+  THEME: "tt.theme",
 } as const;
 
 export const CACHE_TTL = {
