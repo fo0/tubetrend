@@ -473,9 +473,9 @@ export const InputSection: React.FC<InputSectionProps> = ({
             {showHistory && history.length > 0 && (
               <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl overflow-hidden z-50 animate-fade-in">
                 <ul id="search-listbox" role="listbox">
-                  {history.map((item, idx) => (
+                  {history.map((item) => (
                     <li
-                      key={`${item}-${idx}`}
+                      key={item}
                       role="option"
                       aria-selected="false"
                       className="group/item flex items-stretch hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
