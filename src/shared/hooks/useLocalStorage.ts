@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
+import { useEventListener } from "./useEventListener";
 
 interface UseLocalStorageOptions<T> {
   serialize?: (value: T) => string;
@@ -55,20 +56,15 @@ export function useLocalStorage<T>(
   }, [key]);
 
   // Listen for storage changes from other tabs
-  useEffect(() => {
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === key && e.newValue !== null) {
-        try {
-          setStoredValue(deserialize(e.newValue));
-        } catch {
-          // Ignore parse errors
-        }
+  useEventListener("storage", (e: StorageEvent) => {
+    if (e.key === key && e.newValue !== null) {
+      try {
+        setStoredValue(deserialize(e.newValue));
+      } catch {
+        // Ignore parse errors
       }
-    };
-
-    window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
-  }, [key, deserialize]);
+    }
+  });
 
   return [storedValue, setValue, remove];
 }
