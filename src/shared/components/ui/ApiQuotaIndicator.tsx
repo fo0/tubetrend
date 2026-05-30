@@ -92,6 +92,8 @@ const groupHistoryByTimeBuckets = (
 
 // Group recent calls by context (favoriteType + name, or source for non-favorite calls)
 interface GroupedCall {
+  /** Stable unique key for React lists */
+  id: string;
   /** Display type: favoriteType if available, otherwise source */
   displayType: "channel" | "handle" | "keyword" | "autocomplete" | "unknown";
   name: string;
@@ -132,6 +134,7 @@ const groupCallsByContext = (history: QuotaHistoryEntry[]): GroupedCall[] => {
 
     if (!grouped.has(key)) {
       grouped.set(key, {
+        id: key,
         displayType,
         name,
         totalUnits: 0,
@@ -542,9 +545,9 @@ export const ApiQuotaIndicator: React.FC = () => {
               <div className="text-xs text-slate-500 italic py-2">{t("quota.noCalls")}</div>
             ) : (
               <div className="space-y-1.5">
-                {groupedCalls.map((group, index) => (
+                {groupedCalls.map((group) => (
                   <div
-                    key={index}
+                    key={group.id}
                     className="flex items-start justify-between text-[11px] py-1 px-2 rounded bg-slate-800/50 hover:bg-slate-800 transition-colors"
                   >
                     <div className="flex items-start gap-2 min-w-0 flex-1">
