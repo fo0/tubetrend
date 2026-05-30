@@ -18,10 +18,9 @@ export interface DashboardBackupPayload {
   };
 }
 
-export interface ParseResult {
-  ok: boolean;
-  payload: DashboardBackupPayload;
-}
+export type ParseResult =
+  | { ok: true; payload: DashboardBackupPayload }
+  | { ok: false; payload?: never };
 
 export const dashboardBackupService = {
   createBackup(options: {
@@ -62,11 +61,11 @@ export const dashboardBackupService = {
         typeof parsed.version !== "number" ||
         typeof parsed.data !== "object"
       ) {
-        return { ok: false, payload: parsed };
+        return { ok: false };
       }
 
       if (!Array.isArray(parsed.data.favorites)) {
-        return { ok: false, payload: parsed };
+        return { ok: false };
       }
 
       // favoritesCache must be a plain object (Record<string, FavoriteCacheEntry>).
@@ -77,23 +76,12 @@ export const dashboardBackupService = {
         parsed.data.favoritesCache === null ||
         Array.isArray(parsed.data.favoritesCache)
       ) {
-        return { ok: false, payload: parsed };
+        return { ok: false };
       }
 
       return { ok: true, payload: parsed as DashboardBackupPayload };
     } catch {
-      return {
-        ok: false,
-        payload: {
-          version: 0,
-          createdAt: 0,
-          data: {
-            favorites: [],
-            favoritesCache: {},
-            dashboard: { sortMode: "alpha", sortOrder: "asc" },
-          },
-        },
-      };
+      return { ok: false };
     }
   },
 };
