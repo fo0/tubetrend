@@ -1,4 +1,4 @@
-import React from "react";
+import { useEffect, useState } from "react";
 import { Clock, Eye, Trash2, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { hiddenHighlightsService, type HiddenHighlight } from "@/src/features/dashboard";
@@ -9,22 +9,19 @@ interface HiddenHighlightsModalProps {
   onClose: () => void;
 }
 
-export const HiddenHighlightsModal: React.FC<HiddenHighlightsModalProps> = ({
-  isOpen,
-  onClose,
-}) => {
+export function HiddenHighlightsModal({ isOpen, onClose }: HiddenHighlightsModalProps) {
   const { t } = useTranslation();
-  const [hiddenItems, setHiddenItems] = React.useState<HiddenHighlight[]>([]);
+  const [hiddenItems, setHiddenItems] = useState<HiddenHighlight[]>([]);
 
   // Load the list when the modal opens
-  React.useEffect(() => {
+  useEffect(() => {
     if (isOpen) {
       setHiddenItems(hiddenHighlightsService.listChronological());
     }
   }, [isOpen]);
 
   // Close on Escape (WCAG 2.1.2 — provide keyboard escape from modal)
-  React.useEffect(() => {
+  useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
