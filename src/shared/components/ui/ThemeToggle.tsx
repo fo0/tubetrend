@@ -39,4 +39,4 @@ export function ThemeToggle() {
       <span className="hidden sm:inline">{title}</span>
     </button>
   );
-};
+}
