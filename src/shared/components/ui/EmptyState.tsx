@@ -14,4 +14,4 @@ export function EmptyState() {
       <p className="text-slate-500 dark:text-slate-400 max-w-md">{t("emptyState.description")}</p>
     </div>
   );
-};
+}

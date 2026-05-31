@@ -69,6 +69,17 @@ Before submitting a bug report:
   - camelCase for functions and variables
   - kebab-case for file names (except components)
 
+### Formatting
+
+This project uses [Prettier](https://prettier.io/) for automatic code formatting. Before submitting a PR, run:
+
+```bash
+npm run format        # Auto-format all files
+npm run format:check  # Verify formatting (read-only, matches CI)
+```
+
+Formatting is enforced in CI via `npm run format:check`. PRs with formatting drift will fail the check.
+
 ### Project Structure
 
 ```

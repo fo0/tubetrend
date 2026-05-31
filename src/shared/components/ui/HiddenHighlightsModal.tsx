@@ -152,4 +152,4 @@ export function HiddenHighlightsModal({ isOpen, onClose }: HiddenHighlightsModal
       </div>
     </div>
   );
-};
+}

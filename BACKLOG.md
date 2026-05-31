@@ -4,8 +4,8 @@ Review findings not immediately fixed. **Only work on these upon explicit reques
 
 ## Open
 
-| #   | Date       | Category | Sev      | Location                                    | Finding                                                                                                                                                                                                                                                                                         | Status   | Source                                  |
-| --- | ---------- | -------- | -------- | ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | --------------------------------------- |
+| #   | Date | Category | Sev | Location | Finding | Status | Source |
+| --- | ---- | -------- | --- | -------- | ------- | ------ | ------ |
 
 ## Done
 
@@ -22,7 +22,7 @@ Review findings not immediately fixed. **Only work on these upon explicit reques
 | 7   | 2026-02-15 | 2026-05-23 | Standards   | package.json -> devDependencies                                                                                                                    | Aligned `@types/node` from `^25.8.0` to `^22.19.0` to match Node 22 runtime (Docker, CI). Typecheck + build verified.                                            |
 | 9   | 2026-04-25 | 2026-05-23 | i18n        | `src/shared/components/ui/ApiQuotaIndicator.tsx` -> `getOptimalTimeWindow`                                                                         | Already resolved in prior PR: `getOptimalTimeWindow` returns i18n keys (`quota.window30m` etc.) and `en.json` ships all 8 window labels. Closed as done.         |
 | 11  | 2026-04-25 | 2026-05-23 | Code Smells | `FavoriteRow.tsx`, `useDashboard.ts` -> raw `window.addEventListener`                                                                              | Routed all 6 raw `window.addEventListener` sites for typed bus events through `eventBus.on()`. Restores compile-time type safety, removes SSR-guard boilerplate. |
-| 13  | 2026-05-24 | 2026-05-30 | Security    | `node_modules/brace-expansion` (transitive)                                                                                                        | brace-expansion override auf ^5.0.6, Advisory-Range verlassen (GHSA-f886-m6hf-6m8v, GHSA-jxxr-4gwj-5jf2). Nested override via electron-builder chain.           |
+| 13  | 2026-05-24 | 2026-05-30 | Security    | `node_modules/brace-expansion` (transitive)                                                                                                        | brace-expansion override auf ^5.0.6, Advisory-Range verlassen (GHSA-f886-m6hf-6m8v, GHSA-jxxr-4gwj-5jf2). Nested override via electron-builder chain.            |
 
 ## Obsolete / Accepted Tradeoffs
 
