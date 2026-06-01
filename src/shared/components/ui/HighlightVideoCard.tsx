@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import type { VideoData } from "@/src/features/videos";
-import { Clock, Eye, EyeOff, Sparkles, Zap } from "lucide-react";
+import { Check, Clock, Copy, Eye, EyeOff, Sparkles, Zap } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { formatNumber, formatTimeAgo } from "@/src/shared/lib/formatters";
 
@@ -30,6 +30,31 @@ export const HighlightVideoCard: React.FC<HighlightVideoCardProps> = ({
   onHide,
 }) => {
   const { t } = useTranslation();
+  const [copied, setCopied] = useState(false);
+  const resetCopiedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (resetCopiedTimerRef.current) clearTimeout(resetCopiedTimerRef.current);
+    };
+  }, []);
+
+  const handleCopy = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!navigator.clipboard) return;
+    navigator.clipboard.writeText(video.url).then(
+      () => {
+        setCopied(true);
+        if (resetCopiedTimerRef.current) clearTimeout(resetCopiedTimerRef.current);
+        resetCopiedTimerRef.current = setTimeout(() => setCopied(false), 1500);
+      },
+      () => {
+        // Clipboard API unavailable
+      },
+    );
+  };
+
   // Frische Videos (jünger als 24h) mit grünem Rand hervorheben
   const isFresh =
     typeof video?.publishedTimestamp === "number" &&
@@ -133,6 +158,23 @@ export const HighlightVideoCard: React.FC<HighlightVideoCardProps> = ({
               {video.viewsPerHour ? `~${formatNumber(video.viewsPerHour)}/h` : "N/A"}
             </span>
           </div>
+        </div>
+
+        {/* Copy URL action */}
+        <div className="mt-auto pt-2 flex items-center justify-end">
+          <button
+            type="button"
+            onClick={handleCopy}
+            className="inline-flex items-center justify-center w-7 h-7 rounded-md bg-slate-100 dark:bg-slate-900/60 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white transition-all border border-slate-200 dark:border-slate-700"
+            title={t("results.table.copyUrl")}
+            aria-label={t("results.table.copyUrlAria", { title: video.title })}
+          >
+            {copied ? (
+              <Check className="w-3.5 h-3.5 text-green-500" aria-hidden="true" />
+            ) : (
+              <Copy className="w-3.5 h-3.5" aria-hidden="true" />
+            )}
+          </button>
         </div>
       </div>
       {isRefreshing && (
