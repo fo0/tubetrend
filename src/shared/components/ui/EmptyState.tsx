@@ -1,17 +1,38 @@
+import { AlertCircle } from "lucide-react";
 import { Youtube } from "@/src/shared/components/ui/BrandIcons";
 import { useTranslation } from "react-i18next";
 
-export function EmptyState() {
+interface EmptyStateProps {
+  /** "welcome" = initial state before any search; "no-results" = search returned nothing */
+  variant?: "welcome" | "no-results";
+}
+
+export function EmptyState({ variant = "welcome" }: EmptyStateProps) {
   const { t } = useTranslation();
+
+  if (variant === "no-results") {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center px-4">
+        <div className="w-24 h-24 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-6 shadow-xl border border-slate-200 dark:border-slate-700">
+          <AlertCircle className="w-12 h-12 text-slate-400 dark:text-slate-500" />
+        </div>
+        <h2 className="text-2xl font-bold text-slate-700 dark:text-slate-200 mb-2">
+          {t("emptyState.title")}
+        </h2>
+        <p className="text-slate-500 dark:text-slate-400 max-w-md">{t("emptyState.description")}</p>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col items-center justify-center py-20 text-center px-4">
       <div className="w-24 h-24 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-6 shadow-xl border border-slate-200 dark:border-slate-700 animate-pulse">
         <Youtube className="w-12 h-12 text-red-500" />
       </div>
       <h2 className="text-2xl font-bold text-slate-700 dark:text-slate-200 mb-2">
-        {t("emptyState.title")}
+        {t("empty.title")}
       </h2>
-      <p className="text-slate-500 dark:text-slate-400 max-w-md">{t("emptyState.description")}</p>
+      <p className="text-slate-500 dark:text-slate-400 max-w-md">{t("empty.desc")}</p>
     </div>
   );
 }
