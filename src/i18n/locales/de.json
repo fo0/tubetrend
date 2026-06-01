@@ -105,6 +105,7 @@
   },
   "dashboard": {
     "noFavorites": "Noch keine Favoriten. Lege im Analyser eine Suche als Favorit an.",
+    "openAnalyser": "Analyser öffnen",
     "highlights": {
       "title": "Highlights",
       "subtitle": "Top-Videos aus allen Favoriten (klickbar)",

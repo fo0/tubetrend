@@ -105,6 +105,7 @@
   },
   "dashboard": {
     "noFavorites": "No favorites yet. Create a favorite from the analyzer.",
+    "openAnalyser": "Open Analyser",
     "highlights": {
       "title": "Highlights",
       "subtitle": "Top videos across all favorites (click to open)",

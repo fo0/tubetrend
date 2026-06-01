@@ -239,6 +239,7 @@ const App: React.FC = () => {
             onImportFile={handleDashboardImportFile}
             onOpenHiddenModal={() => setIsHiddenHighlightsModalOpen(true)}
             onClearAllFavorites={handleClearAllFavorites}
+            onOpenAnalyser={() => setActivePage("analyser")}
           />
         ) : (
           <AnalyserPage

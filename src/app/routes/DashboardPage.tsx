@@ -1,5 +1,5 @@
 import { useMemo, useRef } from "react";
-import { Activity, Download, EyeOff, RefreshCw, Trash2, Upload } from "lucide-react";
+import { Activity, BarChart3, Download, EyeOff, RefreshCw, Trash2, Upload } from "lucide-react";
 import { FavoriteRow } from "@/src/shared/components/ui/FavoriteRow";
 import { FavoriteAvatar } from "@/src/shared/components/ui/FavoriteAvatar";
 import { HighlightVideoCard } from "@/src/shared/components/ui/HighlightVideoCard";
@@ -37,6 +37,7 @@ interface DashboardPageProps {
   onImportFile: (file: File) => Promise<void>;
   onOpenHiddenModal: () => void;
   onClearAllFavorites: () => void;
+  onOpenAnalyser: () => void;
 }
 
 export function DashboardPage({
@@ -56,6 +57,7 @@ export function DashboardPage({
   onImportFile,
   onOpenHiddenModal,
   onClearAllFavorites,
+  onOpenAnalyser,
 }: DashboardPageProps) {
   const { t } = useTranslation();
   const importRef = useRef<HTMLInputElement | null>(null);
@@ -341,8 +343,16 @@ export function DashboardPage({
 
       {/* Favorites list */}
       {favorites.length === 0 ? (
-        <div className="bg-slate-50 border border-slate-200 text-slate-600 dark:bg-slate-900/50 dark:border-slate-800 rounded-xl p-6 text-center dark:text-slate-400">
-          {t("dashboard.noFavorites")}
+        <div className="bg-slate-50 border border-slate-200 dark:bg-slate-900/50 dark:border-slate-800 rounded-xl p-8 text-center flex flex-col items-center gap-4">
+          <p className="text-slate-600 dark:text-slate-400">{t("dashboard.noFavorites")}</p>
+          <button
+            type="button"
+            onClick={onOpenAnalyser}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium transition-colors shadow-sm shadow-indigo-900/20"
+          >
+            <BarChart3 className="w-4 h-4" />
+            {t("dashboard.openAnalyser")}
+          </button>
         </div>
       ) : (
         <div className="space-y-10">
