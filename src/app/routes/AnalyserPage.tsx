@@ -234,7 +234,11 @@ export function AnalyserPage({ searchState, externalInputValues, onSearch }: Ana
       )}
 
       {/* Empty State */}
-      {!searchState.data && !searchState.isLoading && <EmptyState />}
+      {!searchState.data && !searchState.isLoading && (
+        <EmptyState
+          variant={searchState.step === "idle" && !searchState.error ? "welcome" : "no-results"}
+        />
+      )}
     </>
   );
 }
