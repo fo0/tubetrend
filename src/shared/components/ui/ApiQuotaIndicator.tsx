@@ -403,8 +403,10 @@ export const ApiQuotaIndicator: React.FC = () => {
             <button
               onClick={() => setIsOpen(false)}
               className="text-slate-400 hover:text-slate-200 transition-colors"
+              aria-label={t("modal.close")}
+              type="button"
             >
-              <X className="w-4 h-4" />
+              <X className="w-4 h-4" aria-hidden="true" />
             </button>
           </div>
 
