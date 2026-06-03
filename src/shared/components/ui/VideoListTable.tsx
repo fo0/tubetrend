@@ -92,11 +92,11 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({ videos, startInd
                         target="_blank"
                         rel="noopener noreferrer"
                         className="relative w-24 h-14 shrink-0 rounded-md overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 cursor-pointer"
-                        aria-label={video.title}
+                        aria-label={t("results.table.watchOnYoutubeAria", { title: video.title })}
                       >
                         <img
                           src={video.thumbnailUrl}
-                          alt={video.title}
+                          alt=""
                           className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
                           loading="lazy"
                         />

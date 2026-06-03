@@ -97,7 +97,7 @@ export const LanguageSwitcher: React.FC = () => {
       </label>
       <div className="relative">
         <select
-          aria-label="Language"
+          aria-label={t("language.label")}
           className="px-3 py-1.5 rounded-md border text-xs font-medium \
                      border-slate-300 text-slate-700 bg-white dark:bg-slate-900 \
                      dark:border-slate-700 dark:text-slate-300"

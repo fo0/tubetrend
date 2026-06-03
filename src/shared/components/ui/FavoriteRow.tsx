@@ -483,6 +483,7 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
               }}
               aria-expanded={showTfMenu}
               aria-haspopup="listbox"
+              aria-label={t("favorites.changeTimeFrame")}
               className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-200/70 dark:hover:bg-slate-700/70"
               title={t("favorites.changeTimeFrame")}
             >
@@ -518,6 +519,7 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
               }}
               aria-expanded={showMaxMenu}
               aria-haspopup="listbox"
+              aria-label={t("favorites.changeMaxResults")}
               className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-200/70 dark:hover:bg-slate-700/70"
               title={t("favorites.changeMaxResults")}
             >
