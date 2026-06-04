@@ -233,6 +233,42 @@ export function AnalyserPage({ searchState, externalInputValues, onSearch }: Ana
         </div>
       )}
 
+      {/* Loading skeleton: shown while fetching when there are no prior results yet */}
+      {searchState.isLoading && !searchState.data && (
+        <div
+          className="space-y-8 animate-pulse"
+          role="status"
+          aria-label={t(
+            searchState.step === "analyzing_ai"
+              ? "loadingState.analyzing"
+              : "loadingState.fetchingYoutube",
+          )}
+        >
+          {/* Skeleton control bar */}
+          <div className="h-14 rounded-xl bg-slate-200 dark:bg-slate-800" />
+          {/* Skeleton card grid (topN=6 placeholder cards) */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div
+                key={i}
+                className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 flex flex-col"
+              >
+                <div className="h-40 bg-slate-200 dark:bg-slate-700" />
+                <div className="p-4 space-y-2 flex-1">
+                  <div className="h-3 w-3/4 rounded bg-slate-200 dark:bg-slate-700" />
+                  <div className="h-3 w-1/2 rounded bg-slate-200 dark:bg-slate-700" />
+                  <div className="grid grid-cols-3 gap-2 mt-3">
+                    {[0, 1, 2].map((j) => (
+                      <div key={j} className="h-12 rounded-lg bg-slate-100 dark:bg-slate-700" />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Empty State */}
       {!searchState.data && !searchState.isLoading && (
         <EmptyState
