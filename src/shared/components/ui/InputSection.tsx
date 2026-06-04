@@ -414,7 +414,13 @@ export const InputSection: React.FC<InputSectionProps> = ({
               aria-expanded={
                 (showSuggestions && suggestions.length > 0) || (showHistory && history.length > 0)
               }
-              aria-controls="search-listbox"
+              aria-controls={
+                showSuggestions && suggestions.length > 0
+                  ? "search-suggestions-listbox"
+                  : showHistory && history.length > 0
+                    ? "search-history-listbox"
+                    : undefined
+              }
               aria-haspopup="listbox"
             />
 
@@ -439,7 +445,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
             {/* Suggestions Dropdown */}
             {showSuggestions && suggestions.length > 0 && (
               <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl overflow-hidden z-50 animate-fade-in">
-                <ul id="search-listbox" role="listbox">
+                <ul id="search-suggestions-listbox" role="listbox">
                   {suggestions.map((sug) => (
                     <li key={sug.id} role="option" aria-selected="false">
                       <button
@@ -472,7 +478,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
             {/* History Dropdown (shown only on focus when input is empty) */}
             {showHistory && history.length > 0 && (
               <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl overflow-hidden z-50 animate-fade-in">
-                <ul id="search-listbox" role="listbox">
+                <ul id="search-history-listbox" role="listbox">
                   {history.map((item, idx) => (
                     <li
                       key={`${item}-${idx}`}
