@@ -57,8 +57,14 @@ export function HiddenHighlightsModal({ isOpen, onClose }: HiddenHighlightsModal
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center">
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      {/* Backdrop — keyboard users can close with Escape (handled above); the button role and label expose it to AT as well */}
+      <button
+        type="button"
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm cursor-default"
+        onClick={onClose}
+        aria-label={t("modal.close")}
+        tabIndex={-1}
+      />
 
       {/* Modal */}
       <div

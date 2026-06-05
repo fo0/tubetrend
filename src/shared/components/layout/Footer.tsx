@@ -32,8 +32,10 @@ export function Footer() {
             onClick={() => setShowDetails(!showDetails)}
             className="flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
             title={t("footer.toggleDetails")}
+            aria-label={t("footer.toggleDetails")}
+            aria-expanded={showDetails}
           >
-            <Info className="w-3.5 h-3.5" />
+            <Info className="w-3.5 h-3.5" aria-hidden="true" />
             <span className="hidden sm:inline">{t("footer.buildInfo")}</span>
           </button>
         </div>
@@ -63,8 +65,9 @@ export function Footer() {
             rel="noopener noreferrer"
             className="flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
             title="GitHub"
+            aria-label="GitHub"
           >
-            <Github className="w-3.5 h-3.5" />
+            <Github className="w-3.5 h-3.5" aria-hidden="true" />
           </a>
         </div>
       </div>

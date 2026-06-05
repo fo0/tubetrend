@@ -620,8 +620,9 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
                 : "border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
             }`}
             title={t("favorites.refresh")}
+            aria-label={t("favorites.refresh")}
           >
-            <RefreshCw className={`w-3 h-3 ${loading ? "animate-spin" : ""}`} />{" "}
+            <RefreshCw className={`w-3 h-3 ${loading ? "animate-spin" : ""}`} aria-hidden="true" />{" "}
             {t("actions.refresh")}
           </button>
 
@@ -631,8 +632,9 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
               onClick={() => onRemove?.(currentFavId)}
               className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-md border border-red-500/30 text-red-400 dark:text-red-300 hover:bg-red-500/10 transition-colors"
               title={t("favorites.remove")}
+              aria-label={t("favorites.remove")}
             >
-              <Trash2 className="w-3 h-3" /> {t("actions.remove")}
+              <Trash2 className="w-3 h-3" aria-hidden="true" /> {t("actions.remove")}
             </button>
           )}
         </div>
