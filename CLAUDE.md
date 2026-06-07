@@ -114,11 +114,11 @@ Repository: `https://github.com/fo0/tubetrend`
 | Runtime              | Node.js                            | 22+                                                                                                   |
 | Language             | TypeScript                         | ~6.0.3                                                                                                |
 | UI Framework         | React                              | ^19.2.6                                                                                               |
-| Build Tool           | Vite                               | ^8.0.13                                                                                               |
+| Build Tool           | Vite                               | ^8.0.14                                                                                               |
 | Vite Plugin          | @vitejs/plugin-react               | ^6.0.2                                                                                                |
 | CSS Framework        | Tailwind CSS                       | ^4.2.4 (@tailwindcss/vite plugin)                                                                     |
 | Font                 | @fontsource/inter                  | ^5.2 (locally bundled)                                                                                |
-| Icons                | Lucide React                       | ^1.16.0                                                                                               |
+| Icons                | Lucide React                       | ^1.17.0                                                                                               |
 | i18n                 | i18next + react-i18next            | ^26.2 / ^17.0.8                                                                                       |
 | Language Detection   | i18next-browser-languagedetector   | ^8.2.1                                                                                                |
 | Package Manager      | npm                                | (lockfile v3)                                                                                         |
