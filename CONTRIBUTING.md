@@ -106,7 +106,7 @@ Use clear, descriptive commit messages:
 
 ### localStorage Keys
 
-The app uses localStorage for persistence. When debugging, you may need to clear these keys (see CLAUDE.md for the full list).
+The app uses localStorage for persistence. When debugging, you may need to clear these keys. The full list is defined in `src/shared/constants/config.ts` (`STORAGE_KEYS`).
 
 ### i18n
 
