@@ -163,8 +163,13 @@
       "copyUrl": "Copy video URL",
       "copyUrlAria": "Copy URL for {{title}}",
       "watchOnYoutube": "Watch on YouTube",
-      "watchOnYoutubeAria": "{{title}} – watch on YouTube"
-    }
+      "watchOnYoutubeAria": "{{title}} – watch on YouTube",
+      "copyTitle": "Copy video title",
+      "copyTitleAria": "Copy title for {{title}}"
+    },
+    "copyAll": "Copy all",
+    "copyAllUrls": "Copy all video URLs",
+    "exportCsv": "Export results as CSV"
   },
   "timeAgo": {
     "justNow": "just now",

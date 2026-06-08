@@ -163,8 +163,13 @@
       "copyUrl": "Video-URL kopieren",
       "copyUrlAria": "URL kopieren für {{title}}",
       "watchOnYoutube": "Auf YouTube ansehen",
-      "watchOnYoutubeAria": "{{title}} – auf YouTube ansehen"
-    }
+      "watchOnYoutubeAria": "{{title}} – auf YouTube ansehen",
+      "copyTitle": "Videotitel kopieren",
+      "copyTitleAria": "Titel für {{title}} kopieren"
+    },
+    "copyAll": "Alle kopieren",
+    "copyAllUrls": "Alle Video-URLs kopieren",
+    "exportCsv": "Ergebnisse als CSV exportieren"
   },
   "timeAgo": {
     "justNow": "gerade eben",
