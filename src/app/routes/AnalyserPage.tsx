@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { AlertCircle, Eye, List, Trophy } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { AlertCircle, Check, Copy, Download, Eye, List, Trophy } from "lucide-react";
 import { Youtube } from "@/src/shared/components/ui/BrandIcons";
 import { InputSection } from "@/src/shared/components/ui/InputSection";
 import { VideoCard } from "@/src/shared/components/ui/VideoCard";
@@ -8,6 +8,7 @@ import { EmptyState } from "@/src/shared/components/ui/EmptyState";
 import { useTranslation } from "react-i18next";
 import type { SearchType, TimeFrame } from "@/src/shared/types";
 import type { SearchState } from "@/src/features/search/hooks/useSearch";
+import { buildResultsCsv, buildResultsCsvFilename } from "@/src/features/videos";
 import { STORAGE_KEYS } from "@/src/shared/constants";
 
 interface AnalyserPageProps {
@@ -88,6 +89,52 @@ export function AnalyserPage({ searchState, externalInputValues, onSearch }: Ana
     return null;
   }, [searchState.channelId, searchState.channelName]);
 
+  // Comfort: export current (sorted) results as CSV + copy all URLs at once.
+  const [copiedAll, setCopiedAll] = useState(false);
+  const copiedAllTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (copiedAllTimerRef.current) clearTimeout(copiedAllTimerRef.current);
+    };
+  }, []);
+
+  const handleExportCsv = () => {
+    if (sortedVideos.length === 0) return;
+    try {
+      const csv = buildResultsCsv(sortedVideos);
+      const filename = buildResultsCsvFilename(searchState.channelName);
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 0);
+    } catch {
+      // ignore download errors (e.g. blocked environments)
+    }
+  };
+
+  const handleCopyAllUrls = () => {
+    if (sortedVideos.length === 0) return;
+    // navigator.clipboard is undefined in insecure contexts (HTTP, some iframes).
+    if (!navigator.clipboard) return;
+    const urls = sortedVideos.map((v) => v.url).join("\n");
+    navigator.clipboard.writeText(urls).then(
+      () => {
+        setCopiedAll(true);
+        if (copiedAllTimerRef.current) clearTimeout(copiedAllTimerRef.current);
+        copiedAllTimerRef.current = setTimeout(() => setCopiedAll(false), 1500);
+      },
+      () => {
+        // Clipboard API unavailable
+      },
+    );
+  };
+
   return (
     <>
       <InputSection
@@ -138,6 +185,34 @@ export function AnalyserPage({ searchState, externalInputValues, onSearch }: Ana
             </div>
 
             <div className="flex items-center gap-3 text-sm font-medium">
+              {/* Export & Share actions */}
+              <div className="inline-flex items-center rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-100/60 dark:bg-slate-900/60 p-0.5">
+                <button
+                  type="button"
+                  onClick={handleCopyAllUrls}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
+                  title={t("results.copyAllUrls")}
+                  aria-label={t("results.copyAllUrls")}
+                >
+                  {copiedAll ? (
+                    <Check className="w-4 h-4 text-green-500" aria-hidden="true" />
+                  ) : (
+                    <Copy className="w-4 h-4" aria-hidden="true" />
+                  )}
+                  <span className="hidden lg:inline">{t("results.copyAll")}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleExportCsv}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
+                  title={t("results.exportCsv")}
+                  aria-label={t("results.exportCsv")}
+                >
+                  <Download className="w-4 h-4" aria-hidden="true" />
+                  <span className="hidden lg:inline">CSV</span>
+                </button>
+              </div>
+
               <span className="text-slate-500 dark:text-slate-400 whitespace-nowrap">
                 {t("results.sortedBy")}{" "}
                 {sortMode === "trend" ? t("results.sortModes.trend") : t("results.sortModes.views")}
