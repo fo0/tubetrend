@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import type { VideoData } from "@/src/features/videos";
-import { Check, Clock, Copy, Eye, Heart, TrendingUp, Zap } from "lucide-react";
+import { Check, Clock, Copy, Eye, Heart, TrendingUp, Type, Zap } from "lucide-react";
 import { formatNumber, formatTimeAgo } from "@/src/shared/lib/formatters";
 import { useTranslation } from "react-i18next";
 
@@ -11,11 +11,14 @@ interface VideoCardProps {
 export const VideoCard: React.FC<VideoCardProps> = ({ video }) => {
   const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
+  const [titleCopied, setTitleCopied] = useState(false);
   const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const resetTitleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     return () => {
       if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
+      if (resetTitleTimerRef.current) clearTimeout(resetTitleTimerRef.current);
     };
   }, []);
 
@@ -34,6 +37,22 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video }) => {
       },
       () => {
         // Clipboard API unavailable (HTTP context, iframe restriction, etc.)
+      },
+    );
+  };
+
+  const handleCopyTitle = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!navigator.clipboard) return;
+    navigator.clipboard.writeText(video.title).then(
+      () => {
+        setTitleCopied(true);
+        if (resetTitleTimerRef.current) clearTimeout(resetTitleTimerRef.current);
+        resetTitleTimerRef.current = setTimeout(() => setTitleCopied(false), 1500);
+      },
+      () => {
+        // Clipboard API unavailable
       },
     );
   };
@@ -124,6 +143,19 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video }) => {
 
         {/* Actions */}
         <div className="mt-auto pt-2 flex items-center justify-end gap-1">
+          <button
+            type="button"
+            onClick={handleCopyTitle}
+            className="inline-flex items-center justify-center w-7 h-7 rounded-md bg-slate-100 dark:bg-slate-900/60 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white transition-all border border-slate-200 dark:border-slate-700"
+            title={t("results.table.copyTitle")}
+            aria-label={t("results.table.copyTitleAria", { title: video.title })}
+          >
+            {titleCopied ? (
+              <Check className="w-3.5 h-3.5 text-green-500" aria-hidden="true" />
+            ) : (
+              <Type className="w-3.5 h-3.5" aria-hidden="true" />
+            )}
+          </button>
           <button
             type="button"
             onClick={handleCopy}
