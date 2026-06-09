@@ -141,7 +141,7 @@ export async function searchChannels(query: string): Promise<ChannelSuggestion[]
       .filter((id): id is string => typeof id === "string" && id.length > 0);
 
     // Fetch correct thumbnails via the channels endpoint (1 unit per up to 50 channels)
-    let thumbnailMap: Record<string, string> = {};
+    const thumbnailMap: Record<string, string> = {};
     if (channelIds.length > 0) {
       try {
         const channelsData = await fetchFromApi<YoutubeChannelListResponse>(
