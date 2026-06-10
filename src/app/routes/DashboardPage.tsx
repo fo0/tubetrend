@@ -260,6 +260,7 @@ export function DashboardPage({
               <button
                 type="button"
                 onClick={() => onSortClick("alpha")}
+                aria-pressed={dashboardSortMode === "alpha"}
                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors ${
                   dashboardSortMode === "alpha"
                     ? "bg-indigo-600 text-white"
@@ -278,6 +279,7 @@ export function DashboardPage({
               <button
                 type="button"
                 onClick={() => onSortClick("velocity")}
+                aria-pressed={dashboardSortMode === "velocity"}
                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors ${
                   dashboardSortMode === "velocity"
                     ? "bg-indigo-600 text-white"
@@ -285,7 +287,7 @@ export function DashboardPage({
                 }`}
                 title={t("dashboard.sorting.velocityTitle")}
               >
-                <Activity className="w-3 h-3" />
+                <Activity className="w-3 h-3" aria-hidden="true" />
                 <span>
                   {t("dashboard.sorting.activity")}
                   {dashboardSortMode === "velocity"

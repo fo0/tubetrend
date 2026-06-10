@@ -223,6 +223,7 @@ export function AnalyserPage({ searchState, externalInputValues, onSearch }: Ana
                 <button
                   type="button"
                   onClick={() => setSortMode("trend")}
+                  aria-pressed={sortMode === "trend"}
                   className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors ${
                     sortMode === "trend"
                       ? "bg-indigo-600 text-white"
@@ -230,12 +231,13 @@ export function AnalyserPage({ searchState, externalInputValues, onSearch }: Ana
                   }`}
                   title={t("results.sortTitles.trend")}
                 >
-                  <Trophy className="w-4 h-4" />
+                  <Trophy className="w-4 h-4" aria-hidden="true" />
                   <span>{t("results.sortButtons.trendScore")}</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setSortMode("views")}
+                  aria-pressed={sortMode === "views"}
                   className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors ${
                     sortMode === "views"
                       ? "bg-indigo-600 text-white"
@@ -243,7 +245,7 @@ export function AnalyserPage({ searchState, externalInputValues, onSearch }: Ana
                   }`}
                   title={t("results.sortTitles.views")}
                 >
-                  <Eye className="w-4 h-4" />
+                  <Eye className="w-4 h-4" aria-hidden="true" />
                   <span>{t("results.sortButtons.views")}</span>
                 </button>
               </div>
@@ -253,6 +255,7 @@ export function AnalyserPage({ searchState, externalInputValues, onSearch }: Ana
                 <button
                   type="button"
                   onClick={() => setTopN(3)}
+                  aria-pressed={topN === 3}
                   className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors ${
                     topN === 3
                       ? "bg-indigo-600 text-white"
@@ -265,6 +268,7 @@ export function AnalyserPage({ searchState, externalInputValues, onSearch }: Ana
                 <button
                   type="button"
                   onClick={() => setTopN(6)}
+                  aria-pressed={topN === 6}
                   className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors ${
                     topN === 6
                       ? "bg-indigo-600 text-white"

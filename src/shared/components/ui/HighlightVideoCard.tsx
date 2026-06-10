@@ -82,7 +82,7 @@ export const HighlightVideoCard: React.FC<HighlightVideoCardProps> = ({
         </a>
 
         <div className="absolute bottom-3 left-3 bg-black/70 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded flex items-center gap-1 pointer-events-none">
-          <Clock className="w-3 h-3 text-slate-300" />
+          <Clock className="w-3 h-3 text-slate-300" aria-hidden="true" />
           {formatTimeAgo(video.publishedTimestamp, t)}
         </div>
 
@@ -90,7 +90,7 @@ export const HighlightVideoCard: React.FC<HighlightVideoCardProps> = ({
           className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-xs font-bold border border-indigo-200/70 bg-indigo-600/90 text-white backdrop-blur-md flex items-center gap-1 pointer-events-none"
           title={`${sourceLabel} • Top ${sourceRank}`}
         >
-          <Sparkles className="w-3 h-3" />#{highlightRank}
+          <Sparkles className="w-3 h-3" aria-hidden="true" />#{highlightRank}
         </div>
 
         {/* Ausblenden-Button */}
@@ -110,7 +110,7 @@ export const HighlightVideoCard: React.FC<HighlightVideoCardProps> = ({
             title={t("dashboard.highlights.hide")}
             aria-label={t("dashboard.highlights.hide")}
           >
-            <EyeOff className="w-4 h-4" />
+            <EyeOff className="w-4 h-4" aria-hidden="true" />
           </button>
         )}
       </div>
@@ -142,7 +142,7 @@ export const HighlightVideoCard: React.FC<HighlightVideoCardProps> = ({
         <div className="grid grid-cols-2 gap-2 mb-3">
           <div className="flex flex-col justify-center bg-slate-100/50 dark:bg-slate-900/50 p-2 rounded-lg border border-slate-200/50 dark:border-slate-700/50">
             <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 text-xs uppercase font-semibold mb-0.5">
-              <Eye className="w-3 h-3 text-indigo-500 dark:text-indigo-400" />{" "}
+              <Eye className="w-3 h-3 text-indigo-500 dark:text-indigo-400" aria-hidden="true" />{" "}
               {t("results.table.views")}
             </div>
             <span className="text-slate-700 dark:text-slate-200 font-mono text-sm">
@@ -151,7 +151,7 @@ export const HighlightVideoCard: React.FC<HighlightVideoCardProps> = ({
           </div>
           <div className="flex flex-col justify-center bg-slate-100/50 dark:bg-slate-900/50 p-2 rounded-lg border border-slate-200/50 dark:border-slate-700/50">
             <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 text-xs uppercase font-semibold mb-0.5">
-              <Zap className="w-3 h-3 text-yellow-500 dark:text-yellow-400" />{" "}
+              <Zap className="w-3 h-3 text-yellow-500 dark:text-yellow-400" aria-hidden="true" />{" "}
               {t("results.table.velocity")}
             </div>
             <span className="text-slate-700 dark:text-slate-200 font-mono text-sm">
