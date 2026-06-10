@@ -556,7 +556,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
                 ))}
               </select>
               <div className="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-500">
-                <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
+                <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20" aria-hidden="true">
                   <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
                 </svg>
               </div>
@@ -569,7 +569,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
               htmlFor="maxResults"
               className="block text-xs font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-1"
             >
-              <ListFilter className="w-3 h-3" /> {t("labels.maxResults")}
+              <ListFilter className="w-3 h-3" aria-hidden="true" /> {t("labels.maxResults")}
             </label>
             <div className="relative">
               <select
@@ -586,7 +586,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
                 ))}
               </select>
               <div className="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-500">
-                <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
+                <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20" aria-hidden="true">
                   <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
                 </svg>
               </div>
