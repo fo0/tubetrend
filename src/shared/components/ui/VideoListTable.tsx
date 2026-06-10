@@ -141,7 +141,7 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({ videos, startInd
                   <td className="p-4 text-right font-mono text-slate-500 dark:text-slate-400 hidden lg:table-cell">
                     {video.engagementRate != null ? (
                       <span className="flex items-center justify-end gap-1 text-pink-600/80 dark:text-pink-500/80">
-                        <Heart className="w-3 h-3" />
+                        <Heart className="w-3 h-3" aria-hidden="true" />
                         {video.engagementRate}%
                       </span>
                     ) : (
