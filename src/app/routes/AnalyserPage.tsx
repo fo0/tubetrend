@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AlertCircle, Check, Copy, Download, Eye, List, Trophy } from "lucide-react";
+import { AlertCircle, Check, Copy, Download, Eye, List, Loader2, Trophy } from "lucide-react";
 import { Youtube } from "@/src/shared/components/ui/BrandIcons";
 import { InputSection } from "@/src/shared/components/ui/InputSection";
 import { VideoCard } from "@/src/shared/components/ui/VideoCard";
@@ -182,6 +182,16 @@ export function AnalyserPage({ searchState, externalInputValues, onSearch }: Ana
               <span className="bg-slate-200 dark:bg-slate-700 text-xs px-2 py-0.5 rounded-full text-slate-600 dark:text-slate-300 border border-slate-300 dark:border-slate-600">
                 {t("results.videosCount", { count: sortedVideos.length })}
               </span>
+              {searchState.isLoading && (
+                <span
+                  className="inline-flex items-center gap-1 text-xs text-indigo-500 dark:text-indigo-400"
+                  role="status"
+                  aria-label={t("loading")}
+                >
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />
+                  {t("loading")}
+                </span>
+              )}
             </div>
 
             <div className="flex items-center gap-3 text-sm font-medium">

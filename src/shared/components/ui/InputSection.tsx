@@ -599,12 +599,13 @@ export const InputSection: React.FC<InputSectionProps> = ({
           <button
             type="submit"
             disabled={isLoading || !inputValue.trim()}
+            aria-busy={isLoading}
             className="flex-1 xl:flex-none py-4 px-8 font-bold rounded-xl shadow-lg transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] active:scale-[0.98] bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-indigo-500/25 shrink-0"
           >
             {isLoading ? (
               <>
                 <Loader2 className="animate-spin w-5 h-5" />
-                <span>...</span>
+                <span>{t("loading")}</span>
               </>
             ) : (
               <>
