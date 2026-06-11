@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import type { VideoData } from "@/src/features/videos";
-import { Check, Clock, Copy, ExternalLink, Heart } from "lucide-react";
+import { Check, Clock, Copy, ExternalLink, Heart, Type } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { formatNumber, formatTimeAgo } from "@/src/shared/lib/formatters";
 
@@ -12,12 +12,15 @@ interface VideoListTableProps {
 export const VideoListTable: React.FC<VideoListTableProps> = ({ videos, startIndex }) => {
   const { t } = useTranslation();
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [copiedTitleId, setCopiedTitleId] = useState<string | null>(null);
   const resetCopiedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const resetCopiedTitleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Clear pending copy-feedback timer on unmount to avoid setState after unmount
+  // Clear pending copy-feedback timers on unmount to avoid setState after unmount
   useEffect(() => {
     return () => {
       if (resetCopiedTimerRef.current) clearTimeout(resetCopiedTimerRef.current);
+      if (resetCopiedTitleTimerRef.current) clearTimeout(resetCopiedTitleTimerRef.current);
     };
   }, []);
 
@@ -31,6 +34,20 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({ videos, startInd
         setCopiedId(video.id);
         if (resetCopiedTimerRef.current) clearTimeout(resetCopiedTimerRef.current);
         resetCopiedTimerRef.current = setTimeout(() => setCopiedId(null), 1500);
+      },
+      () => {
+        // Clipboard API unavailable (HTTP context, iframe restriction, etc.)
+      },
+    );
+  };
+
+  const handleCopyTitle = (video: VideoData) => {
+    if (!navigator.clipboard) return;
+    navigator.clipboard.writeText(video.title).then(
+      () => {
+        setCopiedTitleId(video.id);
+        if (resetCopiedTitleTimerRef.current) clearTimeout(resetCopiedTitleTimerRef.current);
+        resetCopiedTitleTimerRef.current = setTimeout(() => setCopiedTitleId(null), 1500);
       },
       () => {
         // Clipboard API unavailable (HTTP context, iframe restriction, etc.)
@@ -157,6 +174,19 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({ videos, startInd
                   </td>
                   <td className="p-4 text-center">
                     <div className="flex items-center justify-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => handleCopyTitle(video)}
+                        className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white transition-all border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"
+                        title={t("results.table.copyTitle")}
+                        aria-label={t("results.table.copyTitleAria", { title: video.title })}
+                      >
+                        {copiedTitleId === video.id ? (
+                          <Check className="w-4 h-4 text-green-500" aria-hidden="true" />
+                        ) : (
+                          <Type className="w-4 h-4" aria-hidden="true" />
+                        )}
+                      </button>
                       <button
                         type="button"
                         onClick={() => handleCopy(video)}
