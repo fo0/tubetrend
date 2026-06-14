@@ -64,4 +64,4 @@ All storage access goes through the type-safe `StorageAdapter` in `src/shared/li
 | `tt.search.history`    | Search input history                 | `InputSection.tsx`  |
 | `tt.lang.explicit`     | Explicit language selection          | `i18n/config.ts`    |
 | `tt.theme`             | Theme preference (light/dark/system) | `ThemeProvider.tsx` |
-| `tt.quota.tracking`    | API quota usage tracking & history   | `quotaService.ts`   |
+| `yt_quota_tracking`    | API quota usage tracking & history   | `quotaService.ts`   |
