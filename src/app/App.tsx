@@ -20,7 +20,7 @@ import type { VideoData } from "@/src/features/videos/types";
 import type { SearchType, TimeFrame } from "@/src/shared/types";
 import { STORAGE_KEYS } from "@/src/shared/constants";
 import { dispatchEvent } from "@/src/shared/lib/eventBus";
-import { safeWrite } from "@/src/shared/lib/storage";
+import { safeRead, safeWrite } from "@/src/shared/lib/storage";
 
 const App: React.FC = () => {
   const { t } = useTranslation();
@@ -32,8 +32,15 @@ const App: React.FC = () => {
   const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
   const [isHiddenHighlightsModalOpen, setIsHiddenHighlightsModalOpen] = useState(false);
 
-  // Navigation state
-  const [activePage, setActivePage] = useState<PageType>("dashboard");
+  // Navigation state — persist the last active page so a reload restores it.
+  const [activePage, setActivePage] = useState<PageType>(() => {
+    const stored = safeRead<PageType>(STORAGE_KEYS.ACTIVE_PAGE, "dashboard");
+    return stored === "analyser" ? "analyser" : "dashboard";
+  });
+
+  useEffect(() => {
+    safeWrite(STORAGE_KEYS.ACTIVE_PAGE, activePage);
+  }, [activePage]);
 
   // External input values for analyzer
   const [externalInputValues, setExternalInputValues] = useState<{
