@@ -244,6 +244,7 @@
     "exhausted": "Quota exhausted! Resets at midnight PT.",
     "historyTitle": "API Usage",
     "units": "Units",
+    "copySummary": "Copy quota summary",
     "calls": "Calls",
     "last24Hours": "Last 24 hours",
     "lastTimeWindow": "Last {{time}}",
@@ -273,6 +274,8 @@
   "keyboard": {
     "label": "Keyboard shortcuts",
     "focusSearch": "Focus search",
+    "openDashboard": "Open Dashboard",
+    "openAnalyser": "Open Analyser",
     "refreshAll": "Refresh all favorites"
   },
   "scroll": {

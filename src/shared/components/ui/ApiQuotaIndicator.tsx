@@ -1,5 +1,16 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Activity, AlertTriangle, AtSign, Hash, Search, User, X, Zap } from "lucide-react";
+import {
+  Activity,
+  AlertTriangle,
+  AtSign,
+  Check,
+  Copy,
+  Hash,
+  Search,
+  User,
+  X,
+  Zap,
+} from "lucide-react";
 import { quotaService } from "@/src/features/youtube";
 import type { QuotaHistoryEntry } from "@/src/shared/types";
 import { useTranslation } from "react-i18next";
@@ -202,7 +213,35 @@ export const ApiQuotaIndicator: React.FC = () => {
   const [quota, setQuota] = useState(quotaService.getInfo());
   const [history, setHistory] = useState<QuotaHistoryEntry[]>([]);
   const [isOpen, setIsOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Clear the copy-feedback timer on unmount to avoid setState after unmount
+  useEffect(() => {
+    return () => {
+      if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+    };
+  }, []);
+
+  // Copy a plain-text quota summary (used / limit / percentage) to the clipboard.
+  const handleCopyQuota = () => {
+    // navigator.clipboard is undefined in insecure contexts (HTTP, some iframes).
+    if (!navigator.clipboard) return;
+    const summary = `${t("quota.label")}: ${formatNumber(quota.used)} / ${formatNumber(
+      quota.limit,
+    )} ${t("quota.units")} (${quota.percentage}%)`;
+    navigator.clipboard.writeText(summary).then(
+      () => {
+        setCopied(true);
+        if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+        copyTimerRef.current = setTimeout(() => setCopied(false), 1500);
+      },
+      () => {
+        // Clipboard API unavailable (HTTP context, iframe restriction, etc.)
+      },
+    );
+  };
 
   useEffect(() => {
     // Initial load
@@ -412,11 +451,26 @@ export const ApiQuotaIndicator: React.FC = () => {
 
           {/* Quota summary */}
           <div className="px-3 py-2 border-b border-slate-700/50">
-            <div className="flex items-center justify-between text-xs">
+            <div className="flex items-center justify-between gap-2 text-xs">
               <span className="text-slate-400">{t("quota.label")}</span>
-              <span className={colors.text}>
-                {formatNumber(quota.used)} / {formatNumber(quota.limit)} {t("quota.units")}
-              </span>
+              <div className="flex items-center gap-1.5">
+                <span className={colors.text}>
+                  {formatNumber(quota.used)} / {formatNumber(quota.limit)} {t("quota.units")}
+                </span>
+                <button
+                  type="button"
+                  onClick={handleCopyQuota}
+                  className="inline-flex items-center justify-center w-6 h-6 rounded-md bg-slate-800/60 hover:bg-slate-700 text-slate-400 hover:text-slate-200 transition-colors border border-slate-700"
+                  title={t("quota.copySummary")}
+                  aria-label={t("quota.copySummary")}
+                >
+                  {copied ? (
+                    <Check className="w-3.5 h-3.5 text-green-500" aria-hidden="true" />
+                  ) : (
+                    <Copy className="w-3.5 h-3.5" aria-hidden="true" />
+                  )}
+                </button>
+              </div>
             </div>
             {/* Full-width progress bar */}
             <div className="mt-2 h-1.5 bg-slate-700 rounded-full overflow-hidden">

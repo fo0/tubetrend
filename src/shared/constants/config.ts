@@ -19,6 +19,7 @@ export const STORAGE_KEYS = {
   HIDDEN_HIGHLIGHTS: "tt.dashboard.hiddenHighlights.v1",
   ANALYSER_SORT_MODE: "tt.analyser.sortMode",
   ANALYSER_TOP_N: "tt.analyser.topN",
+  ACTIVE_PAGE: "tt.activePage",
   THEME: "tt.theme",
 } as const;
 

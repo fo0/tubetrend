@@ -20,7 +20,7 @@ import type { VideoData } from "@/src/features/videos/types";
 import type { SearchType, TimeFrame } from "@/src/shared/types";
 import { STORAGE_KEYS } from "@/src/shared/constants";
 import { dispatchEvent } from "@/src/shared/lib/eventBus";
-import { safeWrite } from "@/src/shared/lib/storage";
+import { safeRead, safeWrite } from "@/src/shared/lib/storage";
 
 const App: React.FC = () => {
   const { t } = useTranslation();
@@ -32,8 +32,15 @@ const App: React.FC = () => {
   const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
   const [isHiddenHighlightsModalOpen, setIsHiddenHighlightsModalOpen] = useState(false);
 
-  // Navigation state
-  const [activePage, setActivePage] = useState<PageType>("dashboard");
+  // Navigation state — persist the last active page so a reload restores it.
+  const [activePage, setActivePage] = useState<PageType>(() => {
+    const stored = safeRead<PageType>(STORAGE_KEYS.ACTIVE_PAGE, "dashboard");
+    return stored === "analyser" ? "analyser" : "dashboard";
+  });
+
+  useEffect(() => {
+    safeWrite(STORAGE_KEYS.ACTIVE_PAGE, activePage);
+  }, [activePage]);
 
   // External input values for analyzer
   const [externalInputValues, setExternalInputValues] = useState<{
@@ -62,19 +69,37 @@ const App: React.FC = () => {
   // Sorted favorites
   const sortedFavorites = useMemo(() => sortFavorites(favorites), [favorites, sortFavorites]);
 
-  // Global hotkey: press "r" on dashboard to refresh all favorites
+  // Global hotkeys:
+  // - "d" / "a" switch between Dashboard and Analyser
+  // - "r" on the dashboard refreshes all favorites
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      if (e.key !== "r" && e.key !== "R") return;
-      // Skip when focus is inside an input, textarea, or contentEditable element
+      // Skip when focus is inside an input, textarea, or contentEditable element,
+      // or when a modifier key is held (avoid hijacking browser/OS shortcuts).
       const target = e.target as HTMLElement;
       if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable) {
         return;
       }
-      if (activePage !== "dashboard") return;
-      if (favorites.length === 0) return;
-      e.preventDefault();
-      refreshAll();
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+      const key = e.key.toLowerCase();
+
+      if (key === "d") {
+        e.preventDefault();
+        setActivePage("dashboard");
+        return;
+      }
+      if (key === "a") {
+        e.preventDefault();
+        setActivePage("analyser");
+        return;
+      }
+      if (key === "r") {
+        if (activePage !== "dashboard") return;
+        if (favorites.length === 0) return;
+        e.preventDefault();
+        refreshAll();
+      }
     },
     [activePage, favorites.length, refreshAll],
   );
