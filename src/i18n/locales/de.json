@@ -244,6 +244,7 @@
     "exhausted": "Kontingent erschöpft! Reset um Mitternacht PT.",
     "historyTitle": "API-Nutzung",
     "units": "Einheiten",
+    "copySummary": "Kontingent-Übersicht kopieren",
     "calls": "Aufrufe",
     "last24Hours": "Letzte 24 Stunden",
     "lastTimeWindow": "Letzte {{time}}",
