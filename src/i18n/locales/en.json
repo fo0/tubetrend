@@ -274,6 +274,8 @@
   "keyboard": {
     "label": "Keyboard shortcuts",
     "focusSearch": "Focus search",
+    "openDashboard": "Open Dashboard",
+    "openAnalyser": "Open Analyser",
     "refreshAll": "Refresh all favorites"
   },
   "scroll": {

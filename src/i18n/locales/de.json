@@ -274,6 +274,8 @@
   "keyboard": {
     "label": "Tastaturkuerzel",
     "focusSearch": "Suche fokussieren",
+    "openDashboard": "Dashboard öffnen",
+    "openAnalyser": "Analyser öffnen",
     "refreshAll": "Alle Favoriten aktualisieren"
   },
   "scroll": {
