@@ -23,9 +23,7 @@ export function ThemeToggle() {
     <button
       type="button"
       onClick={nextTheme}
-      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md border text-xs font-medium transition-colors \
-                 border-slate-300 text-slate-700 hover:bg-slate-100 \
-                 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md border text-xs font-medium transition-colors border-slate-300 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
       title={`${t("theme.label")}: ${title} (${t("theme.clickToCycle")})`}
       aria-label={`${t("theme.label")}: ${title}`}
     >
