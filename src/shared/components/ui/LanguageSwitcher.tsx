@@ -98,9 +98,7 @@ export const LanguageSwitcher: React.FC = () => {
       <div className="relative">
         <select
           aria-label={t("language.label")}
-          className="px-3 py-1.5 rounded-md border text-xs font-medium \
-                     border-slate-300 text-slate-700 bg-white dark:bg-slate-900 \
-                     dark:border-slate-700 dark:text-slate-300"
+          className="px-3 py-1.5 rounded-md border text-xs font-medium border-slate-300 text-slate-700 bg-white dark:bg-slate-900 dark:border-slate-700 dark:text-slate-300"
           value={mode === "system" ? "system" : explicitLng}
           onChange={(e) => {
             const val = e.target.value as "system" | ExplicitLang;
