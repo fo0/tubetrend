@@ -648,8 +648,11 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
       )}
 
       {error && (
-        <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex items-center gap-3 text-red-500 dark:text-red-200">
-          <AlertCircle className="w-5 h-5" />
+        <div
+          role="alert"
+          className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex items-center gap-3 text-red-500 dark:text-red-200"
+        >
+          <AlertCircle className="w-5 h-5" aria-hidden="true" />
           <span>{error}</span>
         </div>
       )}
