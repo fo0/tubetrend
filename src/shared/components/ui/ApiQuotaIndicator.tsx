@@ -400,9 +400,13 @@ export const ApiQuotaIndicator: React.FC = () => {
     <div className="relative" ref={dropdownRef}>
       {/* Clickable indicator */}
       <button
+        type="button"
         onClick={() => setIsOpen(!isOpen)}
         className="group flex items-center gap-1.5 px-2 py-1 rounded hover:bg-slate-700/50 transition-colors cursor-pointer"
         aria-label={t("quota.historyTitle")}
+        aria-expanded={isOpen}
+        aria-haspopup="dialog"
+        aria-controls="quota-history-panel"
       >
         {/* Icon - warning when exhausted, otherwise battery */}
         {quota.exhausted ? (
@@ -432,7 +436,10 @@ export const ApiQuotaIndicator: React.FC = () => {
 
       {/* Dropdown popup with history */}
       {isOpen && (
-        <div className="absolute top-full right-0 mt-2 w-80 bg-slate-900 border border-slate-700 rounded-lg shadow-xl z-50">
+        <div
+          id="quota-history-panel"
+          className="absolute top-full right-0 mt-2 w-80 bg-slate-900 border border-slate-700 rounded-lg shadow-xl z-50"
+        >
           {/* Header */}
           <div className="flex items-center justify-between px-3 py-2 border-b border-slate-700/50 bg-slate-800/50">
             <div className="flex items-center gap-2">
