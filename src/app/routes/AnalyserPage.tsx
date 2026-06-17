@@ -149,8 +149,11 @@ export function AnalyserPage({ searchState, externalInputValues, onSearch }: Ana
 
       {/* Error Message */}
       {searchState.error && (
-        <div className="mb-8 bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex items-center gap-3 text-red-500 dark:text-red-200 animate-fade-in shadow-lg shadow-red-900/10">
-          <AlertCircle className="w-5 h-5 shrink-0" />
+        <div
+          role="alert"
+          className="mb-8 bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex items-center gap-3 text-red-500 dark:text-red-200 animate-fade-in shadow-lg shadow-red-900/10"
+        >
+          <AlertCircle className="w-5 h-5 shrink-0" aria-hidden="true" />
           <p>{searchState.error}</p>
         </div>
       )}
