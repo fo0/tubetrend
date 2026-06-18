@@ -196,6 +196,8 @@
       "description": "Enter your YouTube Data API key to continue.",
       "save": "Save",
       "cancel": "Cancel",
+      "showKey": "Show API key",
+      "hideKey": "Hide API key",
       "helpToggle": "How do I get an API key?",
       "quotaTitle": "Free quota",
       "quotaInfo": "Each API key includes 10,000 free units per day. A search costs ~100 units, video details only 1 unit. That's enough for about 100 searches daily.",
