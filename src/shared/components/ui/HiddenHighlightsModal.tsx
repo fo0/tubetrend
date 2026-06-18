@@ -1,8 +1,11 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Clock, Eye, Trash2, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { hiddenHighlightsService, type HiddenHighlight } from "@/src/features/dashboard";
 import { getLocale } from "@/src/shared/lib/locale";
+
+const FOCUSABLE_SELECTOR =
+  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 interface HiddenHighlightsModalProps {
   isOpen: boolean;
@@ -12,6 +15,7 @@ interface HiddenHighlightsModalProps {
 export function HiddenHighlightsModal({ isOpen, onClose }: HiddenHighlightsModalProps) {
   const { t } = useTranslation();
   const [hiddenItems, setHiddenItems] = useState<HiddenHighlight[]>([]);
+  const dialogRef = useRef<HTMLDivElement>(null);
 
   // Load the list when the modal opens
   useEffect(() => {
@@ -29,6 +33,34 @@ export function HiddenHighlightsModal({ isOpen, onClose }: HiddenHighlightsModal
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
+
+  // Focus trap: keep Tab focus inside the dialog while it is open (WCAG 2.4.3),
+  // mirroring ApiKeyModal. Without this, Tab can move focus to the page behind.
+  const handleTabKey = useCallback((e: KeyboardEvent) => {
+    if (e.key !== "Tab" || !dialogRef.current) return;
+
+    const focusable = dialogRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
+    if (focusable.length === 0) return;
+
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    document.addEventListener("keydown", handleTabKey);
+    // Move focus into the dialog on open so the trap has a starting point.
+    dialogRef.current?.querySelector<HTMLElement>(FOCUSABLE_SELECTOR)?.focus();
+    return () => document.removeEventListener("keydown", handleTabKey);
+  }, [isOpen, handleTabKey]);
 
   const handleUnhide = (videoId: string) => {
     hiddenHighlightsService.show(videoId);
@@ -68,6 +100,7 @@ export function HiddenHighlightsModal({ isOpen, onClose }: HiddenHighlightsModal
 
       {/* Modal */}
       <div
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="hidden-highlights-modal-title"

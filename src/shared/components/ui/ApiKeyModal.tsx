@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Check, HelpCircle, Key, ExternalLink, Zap } from "lucide-react";
+import { Check, Eye, EyeOff, HelpCircle, Key, ExternalLink, Zap } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 const FOCUSABLE_SELECTOR =
@@ -12,6 +12,8 @@ interface ApiKeyModalProps {
 export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ onSave }) => {
   const [inputKey, setInputKey] = useState("");
   const [showHelp, setShowHelp] = useState(false);
+  // The key is masked by default (privacy / shoulder-surfing); a toggle reveals it.
+  const [showKey, setShowKey] = useState(false);
   const { t } = useTranslation();
   const dialogRef = useRef<HTMLDivElement>(null);
 
@@ -77,15 +79,32 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ onSave }) => {
               >
                 YouTube Data API v3 Key
               </label>
-              <input
-                type="text"
-                id="apiKey"
-                value={inputKey}
-                onChange={(e) => setInputKey(e.target.value)}
-                placeholder="AIzaSy..."
-                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 outline-none transition-all font-mono text-sm"
-                autoFocus
-              />
+              <div className="relative">
+                <input
+                  type={showKey ? "text" : "password"}
+                  id="apiKey"
+                  value={inputKey}
+                  onChange={(e) => setInputKey(e.target.value)}
+                  placeholder="AIzaSy..."
+                  className="w-full pl-4 pr-11 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 outline-none transition-all font-mono text-sm"
+                  autoFocus
+                  autoComplete="off"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowKey((v) => !v)}
+                  aria-label={showKey ? t("modal.apiKey.hideKey") : t("modal.apiKey.showKey")}
+                  aria-pressed={showKey}
+                  title={showKey ? t("modal.apiKey.hideKey") : t("modal.apiKey.showKey")}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+                >
+                  {showKey ? (
+                    <EyeOff className="w-4 h-4" aria-hidden="true" />
+                  ) : (
+                    <Eye className="w-4 h-4" aria-hidden="true" />
+                  )}
+                </button>
+              </div>
             </div>
 
             <button
