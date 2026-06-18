@@ -1,9 +1,11 @@
 ---
 name: gitnexus-refactoring
-description: 'Use when the user wants to rename, extract, split, move, or restructure code safely. Examples: "Rename this function", "Extract this into a module", "Refactor this class", "Move this to a separate file"'
+description: "Use when planning a rename, extraction, split, move, or restructure — to map references and blast radius before editing. Examples: \"What references this function?\", \"Plan a safe rename\", \"What does extracting this affect?\""
 ---
 
-# Refactoring with GitNexus
+# Refactoring with GitNexus (read-only analysis)
+
+> **GitNexus is read-only.** Use it to *plan and verify* refactors — map references, blast radius, and affected flows. It must **never** edit files: there is no `gitnexus_rename` step here. You perform all edits yourself with normal tools, then use `gitnexus_detect_changes` to verify scope. See the Read-Only Analysis Policy in CLAUDE.md / AGENTS.md.
 
 ## When to Use
 
@@ -22,18 +24,19 @@ description: 'Use when the user wants to rename, extract, split, move, or restru
 4. Plan update order: interfaces → implementations → callers → tests
 ```
 
-> If "Index is stale" → run `npx gitnexus analyze --skip-agents-md` in terminal (always pass `--skip-agents-md` so CLAUDE.md/AGENTS.md stay optimizer-managed).
+> If the index is reported stale, rebuilding is **not routine** — run `npx gitnexus analyze --skip-agents-md` only if the task needs a fresh index, then `git status` + `git checkout --` any tracked file it touched (read-only policy).
 
 ## Checklists
 
 ### Rename Symbol
 
 ```
-- [ ] gitnexus_rename({symbol_name: "oldName", new_name: "newName", dry_run: true}) — preview all edits
-- [ ] Review graph edits (high confidence) and ast_search edits (review carefully)
-- [ ] If satisfied: gitnexus_rename({..., dry_run: false}) — apply edits
+- [ ] gitnexus_context({name: "oldName"}) — list every incoming/outgoing reference
+- [ ] gitnexus_impact({target: "oldName", direction: "upstream"}) — find all callers/importers
+- [ ] gitnexus_query({query: "oldName"}) — catch string/dynamic references the graph may miss
+- [ ] Edit every reference yourself (normal Edit tool): interfaces → implementations → callers → tests
 - [ ] gitnexus_detect_changes() — verify only expected files changed
-- [ ] Run typecheck + build for affected processes
+- [ ] Run tests for affected processes
 ```
 
 ### Extract Module
@@ -44,37 +47,38 @@ description: 'Use when the user wants to rename, extract, split, move, or restru
 - [ ] Define new module interface
 - [ ] Extract code, update imports
 - [ ] gitnexus_detect_changes() — verify affected scope
-- [ ] Run typecheck + build
+- [ ] Run tests for affected processes
 ```
 
-### Split Function/Component
+### Split Function/Service
 
 ```
 - [ ] gitnexus_context({name: target}) — understand all callees
 - [ ] Group callees by responsibility
 - [ ] gitnexus_impact({target, direction: "upstream"}) — map callers to update
-- [ ] Create new functions/components
+- [ ] Create new functions/services
 - [ ] Update callers
 - [ ] gitnexus_detect_changes() — verify affected scope
-- [ ] Run typecheck + build
+- [ ] Run tests for affected processes
 ```
 
 ## Tools
 
-**gitnexus_rename** — automated multi-file rename:
+**gitnexus_context** — enumerate every reference before you edit (read-only):
 
 ```
-gitnexus_rename({symbol_name: "FavoriteRow", new_name: "FavoriteCard", dry_run: true})
-→ 12 edits across 8 files
-→ 10 graph edits (high confidence), 2 ast_search edits (review)
+gitnexus_context({name: "validateUser"})
+→ Incoming: loginHandler, apiMiddleware, testUtils
+→ Outgoing: checkToken, getUserById
+→ Processes: LoginFlow (step 2/5), TokenRefresh (step 1/3)
 ```
 
 **gitnexus_impact** — map all dependents first:
 
 ```
-gitnexus_impact({target: "FavoriteRow", direction: "upstream"})
-→ d=1: DashboardPage, useDashboard
-→ Affected Processes: DashboardLoadFlow, FavoritesRefreshFlow
+gitnexus_impact({target: "validateUser", direction: "upstream"})
+→ d=1: loginHandler, apiMiddleware, testUtils
+→ Affected Processes: LoginFlow, TokenRefresh
 ```
 
 **gitnexus_detect_changes** — verify your changes after refactoring:
@@ -82,34 +86,35 @@ gitnexus_impact({target: "FavoriteRow", direction: "upstream"})
 ```
 gitnexus_detect_changes({scope: "all"})
 → Changed: 8 files, 12 symbols
-→ Affected processes: DashboardLoadFlow
+→ Affected processes: LoginFlow, TokenRefresh
 → Risk: MEDIUM
+```
+
+**gitnexus_cypher** — custom reference queries:
+
+```cypher
+MATCH (caller)-[:CodeRelation {type: 'CALLS'}]->(f:Function {name: "validateUser"})
+RETURN caller.name, caller.filePath ORDER BY caller.filePath
 ```
 
 ## Risk Rules
 
 | Risk Factor         | Mitigation                                |
 | ------------------- | ----------------------------------------- |
-| Many callers (>5)   | Use gitnexus_rename for automated updates |
-| Cross-area refs     | Use detect_changes after to verify scope  |
-| String/dynamic refs | gitnexus_query to find them               |
-| External/public API | Version and deprecate properly            |
+| Many callers (>5)   | gitnexus_impact to enumerate every caller, then edit each yourself |
+| Cross-area refs     | gitnexus_detect_changes after to verify scope                      |
+| String/dynamic refs | gitnexus_query to find them                                        |
+| External/public API | Version and deprecate properly                                     |
 
-## Example: Rename `FavoriteRow` to `FavoriteCard`
+## Example: Rename `validateUser` to `authenticateUser` (read-only plan + manual edits)
 
 ```
-1. gitnexus_rename({symbol_name: "FavoriteRow", new_name: "FavoriteCard", dry_run: true})
-   → 12 edits: 10 graph (safe), 2 ast_search (review)
-   → Files: FavoriteRow.tsx, DashboardPage.tsx, useDashboard.ts, ...
-
-2. Review ast_search edits (translation keys, JSDoc)
-
-3. gitnexus_rename({symbol_name: "FavoriteRow", new_name: "FavoriteCard", dry_run: false})
-   → Applied 12 edits across 8 files
-
+1. gitnexus_context({name: "validateUser"}) + gitnexus_impact({target: "validateUser", direction: "upstream"})
+   → References in: validator.ts, login.ts, middleware.ts, auth tests
+2. gitnexus_query({query: "validateUser"})
+   → Also a dynamic reference in config.json — the graph alone would miss it
+3. Edit each reference yourself (Edit tool): definition → callers → tests → config.json
 4. gitnexus_detect_changes({scope: "all"})
-   → Affected: DashboardLoadFlow
-   → Risk: MEDIUM — verify typecheck + build pass
+   → Affected: LoginFlow, TokenRefresh
+   → Risk: MEDIUM — run tests for these flows
 ```
-
-<!-- Generated by claude-code-optimizer v1.10.0 -->

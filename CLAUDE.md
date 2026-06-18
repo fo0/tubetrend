@@ -450,44 +450,76 @@ Full guide: `agent_docs/review_process.md → Subagent Selection`.
 
 `vite.config.ts` injects `__BUILD_INFO__` global with `version` (date-based `YYYYMMDD-HHMM`), `commitHash`, `branch`, `buildDate`.
 
+<!-- The GitNexus policy below is intentionally OUTSIDE the gitnexus:start/end markers so `gitnexus analyze` cannot overwrite it. Do not move it inside the markers. -->
+
+## GitNexus — Read-Only Analysis Policy (non-negotiable)
+
+GitNexus is an **analysis/read-only** tool. It must never write to the repository.
+
+- **Allowed:** read-only MCP tools only — `gitnexus_query`, `gitnexus_impact`,
+  `gitnexus_context`, `gitnexus_detect_changes`, and `status`/`list`. Use these to
+  understand code, assess blast radius, and navigate. They never modify files.
+- **Forbidden:** creating, scaffolding, regenerating, or editing ANY file as a side
+  effect of GitNexus — in particular `.claude/skills/**` (including GitNexus's own
+  `gitnexus/*` skill files), `CLAUDE.md`, `AGENTS.md`, `docs/wiki/**`, or anything else.
+- **`gitnexus analyze` / `index`:** only run when the index is genuinely missing or
+  stale AND it is required for the current task. When you do, pass `--skip-agents-md`
+  and treat it as index-only: it must NOT touch tracked files. If it modifies
+  `.claude/skills/**`, `CLAUDE.md`, `AGENTS.md`, or any other tracked file, **revert
+  those changes immediately** (`git checkout -- <paths>`). The index itself
+  (`.gitnexus/`) stays gitignored and uncommitted.
+- **Never** include GitNexus-generated skill/doc edits in a commit or PR. They are out
+  of scope for every task unless I explicitly ask for them.
+- **Pre-commit guard:** before any commit, run `git status` and verify no unexpected
+  `.claude/**`, `CLAUDE.md`, `AGENTS.md`, or agent-doc changes are staged. If there
+  are and they weren't the point of the task, revert them and proceed.
+
 <!-- gitnexus:start -->
 
 # GitNexus — Code Intelligence
 
-GitNexus is the intended code-intelligence MCP for this project. Use the GitNexus MCP tools to understand code, assess impact, and navigate safely. If GitNexus isn't available on the current machine, fall back to standard `Read` / `Grep` / `Bash` tools — workflows must not hard-require GitNexus.
+This project is indexed by GitNexus as **tubetrend** (stats: unknown — run `npx gitnexus status` to populate). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
-> If any GitNexus tool warns the index is stale, run `npx gitnexus analyze --skip-agents-md` in terminal first.
-> **Always pass `--skip-agents-md` to `analyze`** — CLAUDE.md/AGENTS.md are optimizer-managed; without the flag GitNexus rewrites their context sections (incl. the stats in this block). Only `analyze` writes those files; `status`/`index`/`clean`/`list` never do.
-> If `gitnexus_query` returns empty for a known symbol, the local index may not be in the global registry — run `npx gitnexus index .` once to register it.
-> Stats: run `npx gitnexus status` to populate.
+> **Read-only.** Every tool below only *reads* the index — none modify files. The Read-Only Analysis Policy above governs this block.
+> Rebuilding the index is **not routine**: only run `npx gitnexus analyze --skip-agents-md` when the task genuinely needs a fresh index, treat it as index-only, then `git status` and `git checkout --` any tracked file it touched. (`status`/`index`/`list` never write tracked files; `analyze` can, which is why the flag + revert are mandatory.)
+> If `gitnexus_query` returns empty for a known symbol, the local index may not be in the global registry — `npx gitnexus index .` registers it (writes only `~/.gitnexus`, no tracked files).
 
-## Always Do (when GitNexus is available)
+## Always Do
 
-- **Run impact analysis before editing any symbol.** Before modifying a function, class, or method, run `gitnexus_impact({target: "symbolName", direction: "upstream"})` and report the blast radius to the user.
-- **Run `gitnexus_detect_changes()` before committing** to verify your changes only affect expected symbols.
-- **Warn the user** if impact analysis returns HIGH or CRITICAL risk before proceeding with edits.
-- When exploring unfamiliar code, use `gitnexus_query({query: "concept"})` instead of grepping.
-- When you need full context on a specific symbol, use `gitnexus_context({name: "symbolName"})`.
+- **MUST run impact analysis before editing any symbol.** Before modifying a function, class, or method, run `gitnexus_impact({target: "symbolName", direction: "upstream"})` and report the blast radius (direct callers, affected processes, risk level) to the user.
+- **MUST run `gitnexus_detect_changes()` before committing** to verify your changes only affect expected symbols and execution flows.
+- **MUST warn the user** if impact analysis returns HIGH or CRITICAL risk before proceeding with edits.
+- When exploring unfamiliar code, use `gitnexus_query({query: "concept"})` to find execution flows instead of grepping. It returns process-grouped results ranked by relevance.
+- When you need full context on a specific symbol — callers, callees, which execution flows it participates in — use `gitnexus_context({name: "symbolName"})`.
 
-## Never Do (when GitNexus is available)
+## Never Do
 
 - NEVER edit a function, class, or method without first running `gitnexus_impact` on it.
 - NEVER ignore HIGH or CRITICAL risk warnings from impact analysis.
-- NEVER rename symbols with find-and-replace — use `gitnexus_rename` which understands the call graph.
+- NEVER use GitNexus to write or modify files — no `gitnexus_rename`, no `wiki`, no skill/doc generation. GitNexus is read-only. To rename, use `gitnexus_impact` / `gitnexus_context` to enumerate every reference, then edit them yourself with normal tools.
 - NEVER commit changes without running `gitnexus_detect_changes()` to check affected scope.
-- NEVER run `npx gitnexus analyze` without `--skip-agents-md` — GitNexus must not rewrite optimizer-managed CLAUDE.md/AGENTS.md.
+- NEVER run `npx gitnexus analyze` without `--skip-agents-md`, and NEVER commit any file a GitNexus command touched — `git checkout --` them. GitNexus must never rewrite `.claude/**`, `CLAUDE.md`, `AGENTS.md`, or `docs/wiki/**`.
+
+## Resources
+
+| Resource | Use for |
+|----------|---------|
+| `gitnexus://repo/tubetrend/context` | Codebase overview, check index freshness |
+| `gitnexus://repo/tubetrend/clusters` | All functional areas |
+| `gitnexus://repo/tubetrend/processes` | All execution flows |
+| `gitnexus://repo/tubetrend/process/{name}` | Step-by-step execution trace |
 
 ## Skill Files
 
-| Task                                         | Read this skill file                                        |
-| -------------------------------------------- | ----------------------------------------------------------- |
-| Understand architecture / "How does X work?" | `.claude/skills/gitnexus/gitnexus-exploring/SKILL.md`       |
-| Blast radius / "What breaks if I change X?"  | `.claude/skills/gitnexus/gitnexus-impact-analysis/SKILL.md` |
-| Trace bugs / "Why is X failing?"             | `.claude/skills/gitnexus/gitnexus-debugging/SKILL.md`       |
-| Rename / extract / split / refactor          | `.claude/skills/gitnexus/gitnexus-refactoring/SKILL.md`     |
-| Tools, resources, schema reference           | `.claude/skills/gitnexus/gitnexus-guide/SKILL.md`           |
-| Index, status, clean, wiki CLI commands      | `.claude/skills/gitnexus/gitnexus-cli/SKILL.md`             |
+| Task | Read this skill file |
+|------|---------------------|
+| Understand architecture / "How does X work?" | `.claude/skills/gitnexus/gitnexus-exploring/SKILL.md` |
+| Blast radius / "What breaks if I change X?" | `.claude/skills/gitnexus/gitnexus-impact-analysis/SKILL.md` |
+| Trace bugs / "Why is X failing?" | `.claude/skills/gitnexus/gitnexus-debugging/SKILL.md` |
+| Plan a refactor — read-only impact / reference mapping (you do the edits) | `.claude/skills/gitnexus/gitnexus-refactoring/SKILL.md` |
+| Tools, resources, schema reference | `.claude/skills/gitnexus/gitnexus-guide/SKILL.md` |
+| Index status / list / register (read-only CLI) | `.claude/skills/gitnexus/gitnexus-cli/SKILL.md` |
 
 <!-- gitnexus:end -->
 
-<!-- Generated by claude-code-optimizer v1.11.0 -->
+<!-- Generated by claude-code-optimizer v1.12.0 -->

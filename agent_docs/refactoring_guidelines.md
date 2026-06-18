@@ -29,3 +29,14 @@ Refactoring does NOT happen automatically. Only when:
 - **Module-level API key state** — `youtubeApiClient.ts` stores the API key both in a module-level variable and localStorage, risking sync issues. Could be simplified to read from storage directly.
 - **No test coverage** — No test setup exists. Critical services (`favoritesService`, `trendAnalysisService`, `quotaService`, `eventBus`) would benefit from unit tests.
 - **Complex `useEffect` chains in FavoriteRow** — Multiple interdependent `useEffect` hooks with complex dependency arrays and refs for synchronization. Should be extracted into a custom hook.
+
+## GitNexus-Assisted Refactoring (read-only analysis)
+
+When GitNexus is available, use it to *plan and verify* refactors — **read-only**. GitNexus never edits files; you make the edits with normal tools. (See the Read-Only Analysis Policy in CLAUDE.md.)
+
+1. **Before refactoring:** `gitnexus_impact` to map the blast radius
+2. **For renames:** `gitnexus_impact` + `gitnexus_context` to enumerate every reference, then edit them yourself — never `gitnexus_rename` (it writes files)
+3. **After refactoring:** `gitnexus_detect_changes` to verify only expected files changed
+4. **For extraction:** `gitnexus_context` to understand all incoming/outgoing references
+
+See `.claude/skills/gitnexus/gitnexus-refactoring/SKILL.md` for detailed read-only workflows.

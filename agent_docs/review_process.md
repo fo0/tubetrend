@@ -92,10 +92,11 @@ External boundaries (YouTube API, localStorage, event bus) → always mock or us
 - Review is based on changed files (diff).
 - Only changed and directly affected files are read.
 
-### GitNexus-enhanced review (if available)
+### GitNexus-enhanced review (if available — read-only)
 
 - Use `gitnexus_impact` on changed functions to identify affected downstream code beyond the diff.
 - Use `gitnexus_detect_changes` after fixes to verify change scope matches expectations.
+- GitNexus is read-only here: never let it edit files or regenerate skills/docs (see the Read-Only Analysis Policy in CLAUDE.md).
 
 ### Full-read review (when needed)
 
