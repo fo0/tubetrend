@@ -159,6 +159,7 @@
       "views": "Aufrufe",
       "velocity": "Velocity",
       "score": "Score",
+      "scoreTooltip": "Trend-Score (0–100): Aufruf-Geschwindigkeit (70%) + Engagement (30%)",
       "engagement": "Engage",
       "copyUrl": "Video-URL kopieren",
       "copyUrlAria": "URL kopieren für {{title}}",

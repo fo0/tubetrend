@@ -86,7 +86,9 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({ videos, startInd
                 {t("results.table.engagement")}
               </th>
               <th scope="col" className="p-4 text-center">
-                {t("results.table.score")}
+                <span className="cursor-help" title={t("results.table.scoreTooltip")}>
+                  {t("results.table.score")}
+                </span>
               </th>
               <th scope="col" className="p-4 w-16 text-center">
                 <span className="sr-only">{t("results.table.copyUrl")}</span>

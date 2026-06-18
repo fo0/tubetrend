@@ -87,9 +87,12 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video }) => {
           {formatTimeAgo(video.publishedTimestamp, t)}
         </div>
         <div
-          className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-bold border backdrop-blur-md flex items-center gap-1 pointer-events-none ${getScoreColor(video.trendingScore)}`}
+          className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-bold border backdrop-blur-md flex items-center gap-1 cursor-help ${getScoreColor(video.trendingScore)}`}
+          tabIndex={0}
+          title={t("results.table.scoreTooltip")}
+          aria-label={`${t("results.table.score")}: ${video.trendingScore} — ${t("results.table.scoreTooltip")}`}
         >
-          <TrendingUp className="w-3 h-3" />
+          <TrendingUp className="w-3 h-3" aria-hidden="true" />
           {t("results.table.score")}: {video.trendingScore}
         </div>
       </div>

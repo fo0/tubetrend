@@ -159,6 +159,7 @@
       "views": "Views",
       "velocity": "Velocity",
       "score": "Score",
+      "scoreTooltip": "Trend score (0–100): view velocity (70%) + engagement (30%)",
       "engagement": "Engage",
       "copyUrl": "Copy video URL",
       "copyUrlAria": "Copy URL for {{title}}",
