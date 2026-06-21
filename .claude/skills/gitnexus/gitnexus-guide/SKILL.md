@@ -1,6 +1,6 @@
 ---
 name: gitnexus-guide
-description: 'Use when the user asks about GitNexus itself — available tools, how to query the knowledge graph, MCP resources, graph schema, or workflow reference. Examples: "What GitNexus tools are available?", "How do I use GitNexus?"'
+description: "Use when the user asks about GitNexus itself — available tools, how to query the knowledge graph, MCP resources, graph schema, or workflow reference. Examples: \"What GitNexus tools are available?\", \"How do I use GitNexus?\""
 ---
 
 # GitNexus Guide
@@ -15,14 +15,14 @@ For any task involving code understanding, debugging, impact analysis, or refact
 2. **Match your task to a skill below** and **read that skill file**
 3. **Follow the skill's workflow and checklist**
 
-> **GitNexus is read-only** — every tool and resource here only _reads_ the index; none write tracked files (no `rename`, no `wiki`, no skill/doc regeneration). See the Read-Only Analysis Policy in CLAUDE.md / AGENTS.md.
+> **GitNexus is read-only** — every tool and resource here only *reads* the index; none write tracked files (no `rename`, no `wiki`, no skill/doc regeneration). See the Read-Only Analysis Policy in CLAUDE.md / AGENTS.md.
 > If step 1 warns the index is stale, rebuilding is **not routine** — only run `npx gitnexus analyze --skip-agents-md` when the task genuinely needs it, then `git status` and `git checkout --` any tracked file it touched (see `gitnexus-cli`).
 > If `gitnexus_query` returns empty for a known repo, `npx gitnexus index .` registers it in the global registry (writes only `~/.gitnexus`, no tracked files).
 
 ## Skills
 
-| Task                                         | Skill to read                |
-| -------------------------------------------- | ---------------------------- |
+| Task                                         | Skill to read       |
+| -------------------------------------------- | ------------------- |
 | Understand architecture / "How does X work?" | `gitnexus-exploring`         |
 | Blast radius / "What breaks if I change X?"  | `gitnexus-impact-analysis`   |
 | Trace bugs / "Why is X failing?"             | `gitnexus-debugging`         |

@@ -1,11 +1,11 @@
 ---
 name: gitnexus-refactoring
-description: 'Use when planning a rename, extraction, split, move, or restructure — to map references and blast radius before editing. Examples: "What references this function?", "Plan a safe rename", "What does extracting this affect?"'
+description: "Use when planning a rename, extraction, split, move, or restructure — to map references and blast radius before editing. Examples: \"What references this function?\", \"Plan a safe rename\", \"What does extracting this affect?\""
 ---
 
 # Refactoring with GitNexus (read-only analysis)
 
-> **GitNexus is read-only.** Use it to _plan and verify_ refactors — map references, blast radius, and affected flows. It must **never** edit files: there is no `gitnexus_rename` step here. You perform all edits yourself with normal tools, then use `gitnexus_detect_changes` to verify scope. See the Read-Only Analysis Policy in CLAUDE.md / AGENTS.md.
+> **GitNexus is read-only.** Use it to *plan and verify* refactors — map references, blast radius, and affected flows. It must **never** edit files: there is no `gitnexus_rename` step here. You perform all edits yourself with normal tools, then use `gitnexus_detect_changes` to verify scope. See the Read-Only Analysis Policy in CLAUDE.md / AGENTS.md.
 
 ## When to Use
 
@@ -99,8 +99,8 @@ RETURN caller.name, caller.filePath ORDER BY caller.filePath
 
 ## Risk Rules
 
-| Risk Factor         | Mitigation                                                         |
-| ------------------- | ------------------------------------------------------------------ |
+| Risk Factor         | Mitigation                                |
+| ------------------- | ----------------------------------------- |
 | Many callers (>5)   | gitnexus_impact to enumerate every caller, then edit each yourself |
 | Cross-area refs     | gitnexus_detect_changes after to verify scope                      |
 | String/dynamic refs | gitnexus_query to find them                                        |
