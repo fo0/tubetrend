@@ -1,0 +1,25 @@
+name: Cleanup old GHCR images
+
+# Untagged GHCR image versions pile up on every push to main (each rebuild
+# leaves the previous layers dangling). This prunes them weekly. Tagged images
+# (latest, version tags) are never touched.
+on:
+  schedule:
+    - cron: "0 4 * * 0" # weekly, Sunday 04:00 UTC
+  workflow_dispatch:
+
+permissions:
+  packages: write
+
+jobs:
+  cleanup:
+    name: Delete untagged GHCR image versions
+    runs-on: ubuntu-latest
+    steps:
+      - name: Prune untagged versions (keep latest 10)
+        uses: actions/delete-package-versions@v5
+        with:
+          package-name: tubetrend
+          package-type: container
+          min-versions-to-keep: 10
+          delete-only-untagged-versions: true
