@@ -1,13 +1,13 @@
 ---
 name: gitnexus-cli
-description: "Use for read-only GitNexus index maintenance: check index status, list indexed repos, register or (re)build the index. Examples: \"Is the GitNexus index current?\", \"List indexed repos\", \"Register this repo\""
+description: 'Use for read-only GitNexus index maintenance: check index status, list indexed repos, register or (re)build the index. Examples: "Is the GitNexus index current?", "List indexed repos", "Register this repo"'
 ---
 
 # GitNexus CLI Commands
 
 All commands work via `npx` — no global install required.
 
-> **Read-only / analysis only.** GitNexus must never write tracked files. These commands manage the **index** (`.gitnexus/`, gitignored) and the global registry (`~/.gitnexus/`) only. `analyze` is the one command that *can* touch `CLAUDE.md` / `AGENTS.md` — always pass `--skip-agents-md`, run it only when genuinely needed, and revert any tracked file it changes. Wiki/doc generation is **not used** under this policy. See the Read-Only Analysis Policy in CLAUDE.md / AGENTS.md.
+> **Read-only / analysis only.** GitNexus must never write tracked files. These commands manage the **index** (`.gitnexus/`, gitignored) and the global registry (`~/.gitnexus/`) only. `analyze` is the one command that _can_ touch `CLAUDE.md` / `AGENTS.md` — always pass `--skip-agents-md`, run it only when genuinely needed, and revert any tracked file it changes. Wiki/doc generation is **not used** under this policy. See the Read-Only Analysis Policy in CLAUDE.md / AGENTS.md.
 
 ## Commands
 
@@ -19,12 +19,12 @@ npx gitnexus analyze --skip-agents-md
 
 Run from the project root. This parses all source files, builds the knowledge graph, and writes it to `.gitnexus/` (gitignored). **Always pass `--skip-agents-md`** — without it, `analyze` ALSO rewrites the optimizer-managed CLAUDE.md / AGENTS.md context sections. Run `analyze` **only** when the index is genuinely missing/stale AND the current task needs it; it is not a routine step.
 
-| Flag                | Effect                                                           |
-| ------------------- | ---------------------------------------------------------------- |
+| Flag                | Effect                                                                 |
+| ------------------- | ---------------------------------------------------------------------- |
 | `--skip-agents-md`  | Preserve AGENTS.md/CLAUDE.md sections — **mandatory on every analyze** |
-| `--force`           | Force full re-index even if up to date                           |
-| `--embeddings`      | Enable embedding generation for semantic search (off by default) |
-| `--drop-embeddings` | Drop existing embeddings on rebuild (default: preserve them)     |
+| `--force`           | Force full re-index even if up to date                                 |
+| `--embeddings`      | Enable embedding generation for semantic search (off by default)       |
+| `--drop-embeddings` | Drop existing embeddings on rebuild (default: preserve them)           |
 
 > **Mandatory revert guard:** even with `--skip-agents-md`, after any `analyze` run `git status` and `git checkout -- <paths>` for any tracked file it touched (`.claude/**`, `CLAUDE.md`, `AGENTS.md`, `docs/wiki/**`). Only `analyze` writes tracked files — `status`, `index`, and `list` never do. The index itself (`.gitnexus/`) stays gitignored and uncommitted — never in a commit or PR.
 
