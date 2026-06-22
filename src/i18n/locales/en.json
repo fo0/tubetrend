@@ -279,7 +279,8 @@
     "focusSearch": "Focus search",
     "openDashboard": "Open Dashboard",
     "openAnalyser": "Open Analyser",
-    "refreshAll": "Refresh all favorites"
+    "refreshAll": "Refresh all favorites",
+    "toggleHint": "Show shortcuts"
   },
   "scroll": {
     "toTop": "Scroll to top",

@@ -72,6 +72,7 @@ const App: React.FC = () => {
   // Global hotkeys:
   // - "d" / "a" switch between Dashboard and Analyser
   // - "r" on the dashboard refreshes all favorites
+  // - "?" toggles the keyboard-shortcuts help popover
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       // Skip when focus is inside an input, textarea, or contentEditable element,
@@ -80,6 +81,15 @@ const App: React.FC = () => {
       if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable) {
         return;
       }
+
+      // "?" opens/closes the shortcuts hint. It is the only shortcut that needs
+      // Shift (Shift + "/" on most layouts), so handle it before the modifier guard.
+      if (e.key === "?") {
+        e.preventDefault();
+        dispatchEvent("toggle-shortcuts-hint");
+        return;
+      }
+
       if (e.ctrlKey || e.metaKey || e.altKey) return;
 
       const key = e.key.toLowerCase();

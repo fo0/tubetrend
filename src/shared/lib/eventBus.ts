@@ -12,6 +12,7 @@ export interface EventMap {
   "hidden-highlights-changed": undefined;
   "favorite-refresh-start": { id: string };
   "favorite-refresh-end": { id: string };
+  "toggle-shortcuts-hint": undefined;
 }
 
 type EventKey = keyof EventMap;

@@ -279,7 +279,8 @@
     "focusSearch": "Suche fokussieren",
     "openDashboard": "Dashboard öffnen",
     "openAnalyser": "Analyser öffnen",
-    "refreshAll": "Alle Favoriten aktualisieren"
+    "refreshAll": "Alle Favoriten aktualisieren",
+    "toggleHint": "Kuerzel anzeigen"
   },
   "scroll": {
     "toTop": "Nach oben scrollen",
