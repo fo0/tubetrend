@@ -239,7 +239,10 @@
   },
   "empty": {
     "title": "YouTube-Kanäle analysieren",
-    "desc": "Suche einen Kanal und erhalte Trend-Einblicke für verschiedene Zeiträume."
+    "desc": "Suche einen Kanal und erhalte Trend-Einblicke für verschiedene Zeiträume.",
+    "tryExamples": "Beispiel ausprobieren",
+    "exampleTitle": "{{example}} suchen",
+    "exampleKeyword": "lofi"
   },
   "quota": {
     "label": "API-Kontingent",

@@ -17,7 +17,7 @@ import {
 import { useSearch } from "@/src/features/search/hooks/useSearch";
 import type { FavoriteConfig } from "@/src/features/favorites/types";
 import type { VideoData } from "@/src/features/videos/types";
-import type { SearchType, TimeFrame } from "@/src/shared/types";
+import { type SearchType, TimeFrame } from "@/src/shared/types";
 import { STORAGE_KEYS } from "@/src/shared/constants";
 import { dispatchEvent } from "@/src/shared/lib/eventBus";
 import { safeRead, safeWrite } from "@/src/shared/lib/storage";
@@ -238,6 +238,18 @@ const App: React.FC = () => {
     [handleSearch, setSearchResult],
   );
 
+  // Quick-start example from the welcome empty state: pre-fill the search box
+  // (via the external-sync channel) with sensible defaults and run the search.
+  const handlePickExample = useCallback(
+    (query: string, searchType: SearchType) => {
+      const timeFrame = TimeFrame.LAST_MONTH;
+      const maxResults = -1;
+      setExternalInputValues({ query, timeFrame, maxResults, searchType, syncToken: Date.now() });
+      handleSearch(query, timeFrame, maxResults, searchType);
+    },
+    [handleSearch],
+  );
+
   return (
     <div className="min-h-screen flex flex-col bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100 font-sans selection:bg-indigo-500/30">
       {isApiKeyModalOpen && <ApiKeyModal onSave={handleSaveKey} />}
@@ -281,6 +293,7 @@ const App: React.FC = () => {
             searchState={searchState}
             externalInputValues={externalInputValues}
             onSearch={handleSearch}
+            onPickExample={handlePickExample}
           />
         )}
       </main>

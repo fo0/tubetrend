@@ -4,9 +4,9 @@ import { Youtube } from "@/src/shared/components/ui/BrandIcons";
 import { InputSection } from "@/src/shared/components/ui/InputSection";
 import { VideoCard } from "@/src/shared/components/ui/VideoCard";
 import { VideoListTable } from "@/src/shared/components/ui/VideoListTable";
-import { EmptyState } from "@/src/shared/components/ui/EmptyState";
+import { EmptyState, type EmptyStateExample } from "@/src/shared/components/ui/EmptyState";
 import { useTranslation } from "react-i18next";
-import type { SearchType, TimeFrame } from "@/src/shared/types";
+import { SearchType, type TimeFrame } from "@/src/shared/types";
 import type { SearchState } from "@/src/features/search/hooks/useSearch";
 import { buildResultsCsv, buildResultsCsvFilename } from "@/src/features/videos";
 import { STORAGE_KEYS } from "@/src/shared/constants";
@@ -26,10 +26,32 @@ interface AnalyserPageProps {
     maxResults: number,
     searchType: SearchType,
   ) => void;
+  /** Run a quick-start example from the welcome empty state (pre-fills the search box + searches). */
+  onPickExample?: (query: string, searchType: SearchType) => void;
 }
 
-export function AnalyserPage({ searchState, externalInputValues, onSearch }: AnalyserPageProps) {
+export function AnalyserPage({
+  searchState,
+  externalInputValues,
+  onSearch,
+  onPickExample,
+}: AnalyserPageProps) {
   const { t } = useTranslation();
+
+  // Quick-start examples for the welcome empty state. Labels are how the user
+  // would type them; queries are the bare identifiers passed to the search.
+  const welcomeExamples = useMemo<EmptyStateExample[]>(
+    () => [
+      { label: "@MrBeast", query: "@MrBeast", searchType: SearchType.CHANNEL },
+      { label: "@mkbhd", query: "@mkbhd", searchType: SearchType.CHANNEL },
+      {
+        label: `#${t("empty.exampleKeyword")}`,
+        query: t("empty.exampleKeyword"),
+        searchType: SearchType.KEYWORD,
+      },
+    ],
+    [t],
+  );
 
   const [sortMode, setSortMode] = useState<"trend" | "views">(() => {
     try {
@@ -365,6 +387,8 @@ export function AnalyserPage({ searchState, externalInputValues, onSearch }: Ana
       {!searchState.data && !searchState.isLoading && (
         <EmptyState
           variant={searchState.step === "idle" && !searchState.error ? "welcome" : "no-results"}
+          examples={welcomeExamples}
+          onPickExample={onPickExample}
         />
       )}
     </>

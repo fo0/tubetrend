@@ -239,7 +239,10 @@
   },
   "empty": {
     "title": "Analyze YouTube channels",
-    "desc": "Search a channel and get trend insights for different time frames."
+    "desc": "Search a channel and get trend insights for different time frames.",
+    "tryExamples": "Try an example",
+    "exampleTitle": "Search {{example}}",
+    "exampleKeyword": "lofi"
   },
   "quota": {
     "label": "API Quota",
