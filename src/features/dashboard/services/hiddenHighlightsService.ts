@@ -1,8 +1,8 @@
 /**
- * Service für das Ausblenden von Highlight-Karten im Dashboard.
+ * Service for hiding highlight cards on the dashboard.
  *
- * Videos werden über ihre eindeutige videoId ausgeblendet.
- * Einmal ausgeblendete Videos bleiben dauerhaft versteckt.
+ * Videos are hidden by their unique videoId.
+ * Once hidden, a video stays hidden permanently.
  */
 
 import { safeRead, safeWrite } from "@/src/shared/lib/storage";
@@ -12,12 +12,12 @@ import { STORAGE_KEYS } from "@/src/shared/constants";
 const HIDDEN_HIGHLIGHTS_KEY = STORAGE_KEYS.HIDDEN_HIGHLIGHTS;
 
 export interface HiddenHighlight {
-  videoId: string; // Eindeutige Video-ID (primärer Schlüssel)
-  sourceId: string; // Favorit/Kanal-ID (für Anzeige/Kontext)
-  hiddenAt: number; // Zeitstempel wann ausgeblendet wurde (für chronologische Sortierung)
-  videoTitle?: string; // Video-Titel für die Anzeige in der Liste
-  thumbnailUrl?: string; // Thumbnail-URL für die Anzeige in der Liste
-  sourceLabel?: string; // Kanal-/Favoritenname für die Anzeige in der Liste
+  videoId: string; // Unique video ID (primary key)
+  sourceId: string; // Favorite/channel ID (for display/context)
+  hiddenAt: number; // Timestamp when the video was hidden (for chronological sorting)
+  videoTitle?: string; // Video title for display in the list
+  thumbnailUrl?: string; // Thumbnail URL for display in the list
+  sourceLabel?: string; // Channel/favorite name for display in the list
 }
 
 // Keep old type names for backwards compatibility
@@ -30,12 +30,12 @@ export interface HiddenHighlightMeta {
 
 export const hiddenHighlightsService = {
   /**
-   * Gibt alle ausgeblendeten Highlights zurück.
-   * Alte Einträge ohne hiddenAt bekommen einen Default-Zeitstempel.
+   * Returns all hidden highlights.
+   * Legacy entries without hiddenAt get a default timestamp.
    */
   list(): HiddenHighlight[] {
     const raw = safeRead<unknown[]>(HIDDEN_HIGHLIGHTS_KEY, []);
-    // Validierung: nur gültige Einträge behalten und alte Einträge migrieren
+    // Validation: keep only valid entries and migrate legacy entries
     return raw
       .map((entry) => entry as Record<string, unknown> | null | undefined)
       .filter(
@@ -58,14 +58,14 @@ export const hiddenHighlightsService = {
   },
 
   /**
-   * Gibt alle ausgeblendeten Highlights chronologisch sortiert zurück (neueste zuerst).
+   * Returns all hidden highlights sorted chronologically (newest first).
    */
   listChronological(): HiddenHighlight[] {
     return this.list().sort((a, b) => b.hiddenAt - a.hiddenAt);
   },
 
   /**
-   * Blendet ein Video dauerhaft aus (über die eindeutige videoId).
+   * Hides a video permanently (by its unique videoId).
    */
   hide(
     sourceId: string,
@@ -74,16 +74,16 @@ export const hiddenHighlightsService = {
   ): void {
     const list = this.list();
     const now = Date.now();
-    // Prüfen ob Video bereits ausgeblendet ist (nach videoId)
+    // Check whether the video is already hidden (by videoId)
     const existingIdx = list.findIndex((h) => h.videoId === videoId);
     if (existingIdx >= 0) {
-      // Video bereits ausgeblendet - nur Metadaten aktualisieren falls nötig
+      // Video already hidden - only update metadata if needed
       list[existingIdx].hiddenAt = now;
       if (meta?.videoTitle) list[existingIdx].videoTitle = meta.videoTitle;
       if (meta?.thumbnailUrl) list[existingIdx].thumbnailUrl = meta.thumbnailUrl;
       if (meta?.sourceLabel) list[existingIdx].sourceLabel = meta.sourceLabel;
     } else {
-      // Neues Video ausblenden
+      // Hide a new video
       list.push({
         videoId,
         sourceId,
@@ -98,7 +98,7 @@ export const hiddenHighlightsService = {
   },
 
   /**
-   * Zeigt ein ausgeblendetes Video wieder an (entfernt es aus der Liste).
+   * Shows a hidden video again (removes it from the list).
    */
   show(videoId: string): void {
     const list = this.list().filter((h) => h.videoId !== videoId);
@@ -121,22 +121,22 @@ export const hiddenHighlightsService = {
   },
 
   /**
-   * Prüft ob ein Video ausgeblendet ist (über die eindeutige videoId).
-   * Einmal ausgeblendete Videos bleiben dauerhaft versteckt.
+   * Checks whether a video is hidden (by its unique videoId).
+   * Once hidden, a video stays hidden permanently.
    */
   isHidden(videoId: string): boolean {
     return this.list().some((h) => h.videoId === videoId);
   },
 
   /**
-   * Prüft ob für einen sourceId ein Eintrag existiert (unabhängig von der videoId).
+   * Checks whether an entry exists for a sourceId (independent of the videoId).
    */
   hasEntry(sourceId: string): boolean {
     return this.list().some((h) => h.sourceId === sourceId);
   },
 
   /**
-   * Gibt die gespeicherte videoId für einen sourceId zurück, oder null wenn nicht vorhanden.
+   * Returns the stored videoId for a sourceId, or null if none exists.
    */
   getHiddenVideoId(sourceId: string): string | null {
     const entry = this.list().find((h) => h.sourceId === sourceId);
@@ -144,7 +144,7 @@ export const hiddenHighlightsService = {
   },
 
   /**
-   * Entfernt alle ausgeblendeten Highlights.
+   * Removes all hidden highlights.
    */
   clearAll(): void {
     safeWrite(HIDDEN_HIGHLIGHTS_KEY, []);
@@ -159,7 +159,7 @@ export const hiddenHighlightsService = {
   },
 
   /**
-   * Bereinigt veraltete Einträge für sourceIds, die nicht mehr in den Favoriten existieren.
+   * Cleans up stale entries for sourceIds that no longer exist in favorites.
    */
   cleanup(validSourceIds: string[]): void {
     const validSet = new Set(validSourceIds);
