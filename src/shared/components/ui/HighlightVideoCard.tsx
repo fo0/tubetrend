@@ -10,9 +10,9 @@ interface HighlightVideoCardProps {
   sourceLabel: string;
   sourceRank: number;
   sourceId: string;
-  // Wenn true, wird die Karte visuell als "wird aktualisiert" markiert
+  // When true, the card is visually marked as "refreshing"
   isRefreshing?: boolean;
-  // Callback zum Ausblenden der Karte (mit optionalen Metadaten für die Liste)
+  // Callback to hide the card (with optional metadata for the list)
   onHide?: (
     sourceId: string,
     videoId: string,
@@ -55,7 +55,7 @@ export const HighlightVideoCard: React.FC<HighlightVideoCardProps> = ({
     );
   };
 
-  // Frische Videos (jünger als 24h) mit grünem Rand hervorheben
+  // Highlight fresh videos (younger than 24h) with a green border
   const isFresh =
     typeof video?.publishedTimestamp === "number" &&
     Date.now() - video.publishedTimestamp < 24 * 60 * 60 * 1000;
@@ -93,7 +93,7 @@ export const HighlightVideoCard: React.FC<HighlightVideoCardProps> = ({
           <Sparkles className="w-3 h-3" aria-hidden="true" />#{highlightRank}
         </div>
 
-        {/* Ausblenden-Button */}
+        {/* Hide button */}
         {onHide && (
           <button
             type="button"
