@@ -104,6 +104,29 @@ export function AnalyserPage({
   const topVideos = sortedVideos.slice(0, topN);
   const otherVideos = sortedVideos.slice(topN);
 
+  // Screen-reader announcement for async result changes (the visual count badge
+  // alone is silent to assistive tech). Polite so it never interrupts typing.
+  const resultsAnnouncement = useMemo(() => {
+    if (searchState.isLoading) return t("results.announceLoading");
+    if (searchState.error) return "";
+    if (searchState.data) {
+      return sortedVideos.length > 0
+        ? t("results.announceResults", {
+            count: sortedVideos.length,
+            channel: searchState.channelName || "",
+          })
+        : t("results.announceNoResults");
+    }
+    return "";
+  }, [
+    searchState.isLoading,
+    searchState.error,
+    searchState.data,
+    searchState.channelName,
+    sortedVideos.length,
+    t,
+  ]);
+
   const channelUrl = useMemo(() => {
     if (searchState.channelId) return `https://www.youtube.com/channel/${searchState.channelId}`;
     const q = (searchState.channelName || "").trim();
@@ -189,6 +212,11 @@ export function AnalyserPage({
         externalSearchType={externalInputValues.searchType}
         externalSyncToken={externalInputValues.syncToken}
       />
+
+      {/* Screen-reader-only live region: announces loading / result count / no-results. */}
+      <p className="sr-only" role="status" aria-live="polite">
+        {resultsAnnouncement}
+      </p>
 
       {/* Error Message */}
       {searchState.error && (
