@@ -24,6 +24,33 @@ interface EmptyStateProps {
 export function EmptyState({ variant = "welcome", examples, onPickExample }: EmptyStateProps) {
   const { t } = useTranslation();
 
+  const showExamples = !!onPickExample && !!examples && examples.length > 0;
+
+  // Shared quick-start chips so a dead-end ("no results") search still offers an
+  // instant recovery path, not just a static message.
+  const exampleChips =
+    showExamples && examples && onPickExample ? (
+      <div className="flex flex-wrap items-center justify-center gap-2">
+        {examples.map((ex) => (
+          <button
+            key={`${ex.searchType}:${ex.query}`}
+            type="button"
+            onClick={() => onPickExample(ex.query, ex.searchType)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium border transition-colors
+                       border-slate-300 text-slate-700 hover:bg-slate-100 hover:text-slate-900 hover:border-slate-400
+                       dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white dark:hover:border-slate-600"
+            title={t("empty.exampleTitle", { example: ex.label })}
+          >
+            <Search
+              className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400"
+              aria-hidden="true"
+            />
+            {ex.label}
+          </button>
+        ))}
+      </div>
+    ) : null;
+
   if (variant === "no-results") {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center px-4">
@@ -34,11 +61,18 @@ export function EmptyState({ variant = "welcome", examples, onPickExample }: Emp
           {t("emptyState.title")}
         </h2>
         <p className="text-slate-500 dark:text-slate-400 max-w-md">{t("emptyState.description")}</p>
+
+        {exampleChips && (
+          <div className="mt-8 flex flex-col items-center gap-3">
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+              {t("emptyState.tryExamples")}
+            </p>
+            {exampleChips}
+          </div>
+        )}
       </div>
     );
   }
-
-  const showExamples = !!onPickExample && !!examples && examples.length > 0;
 
   return (
     <div className="flex flex-col items-center justify-center py-20 text-center px-4">
@@ -50,30 +84,12 @@ export function EmptyState({ variant = "welcome", examples, onPickExample }: Emp
       </h2>
       <p className="text-slate-500 dark:text-slate-400 max-w-md">{t("empty.desc")}</p>
 
-      {showExamples && (
+      {exampleChips && (
         <div className="mt-8 flex flex-col items-center gap-3">
           <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
             {t("empty.tryExamples")}
           </p>
-          <div className="flex flex-wrap items-center justify-center gap-2">
-            {examples.map((ex) => (
-              <button
-                key={`${ex.searchType}:${ex.query}`}
-                type="button"
-                onClick={() => onPickExample(ex.query, ex.searchType)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium border transition-colors
-                           border-slate-300 text-slate-700 hover:bg-slate-100 hover:text-slate-900 hover:border-slate-400
-                           dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white dark:hover:border-slate-600"
-                title={t("empty.exampleTitle", { example: ex.label })}
-              >
-                <Search
-                  className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400"
-                  aria-hidden="true"
-                />
-                {ex.label}
-              </button>
-            ))}
-          </div>
+          {exampleChips}
         </div>
       )}
     </div>

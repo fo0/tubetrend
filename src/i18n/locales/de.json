@@ -22,7 +22,8 @@
   },
   "emptyState": {
     "title": "Keine Ergebnisse",
-    "description": "Versuche andere Suchbegriffe oder Filter."
+    "description": "Versuche andere Suchbegriffe oder Filter.",
+    "tryExamples": "Oder probiere eines davon:"
   },
   "labels": {
     "search": "Suche",
@@ -170,7 +171,13 @@
     },
     "copyAll": "Alle kopieren",
     "copyAllUrls": "Alle Video-URLs kopieren",
-    "exportCsv": "Ergebnisse als CSV exportieren"
+    "copyAllFailed": "Zwischenablage nicht verfügbar",
+    "exportCsv": "Ergebnisse als CSV exportieren",
+    "exportFailed": "Export fehlgeschlagen",
+    "announceLoading": "Ergebnisse werden geladen…",
+    "announceResults_one": "{{count}} Video für {{channel}} gefunden.",
+    "announceResults_other": "{{count}} Videos für {{channel}} gefunden.",
+    "announceNoResults": "Keine Ergebnisse gefunden."
   },
   "timeAgo": {
     "justNow": "gerade eben",
