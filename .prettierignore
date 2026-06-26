@@ -18,3 +18,6 @@ android/app/build/
 android/.gradle/
 android/build/
 .gitnexus/
+
+# Tool-managed (GitNexus skill files) — keep out of Prettier
+.claude/

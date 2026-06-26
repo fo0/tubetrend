@@ -22,7 +22,8 @@
   },
   "emptyState": {
     "title": "No results",
-    "description": "Try different search terms or filters."
+    "description": "Try different search terms or filters.",
+    "tryExamples": "Or try one of these:"
   },
   "labels": {
     "search": "Search",
@@ -170,7 +171,13 @@
     },
     "copyAll": "Copy all",
     "copyAllUrls": "Copy all video URLs",
-    "exportCsv": "Export results as CSV"
+    "copyAllFailed": "Clipboard unavailable",
+    "exportCsv": "Export results as CSV",
+    "exportFailed": "Export failed",
+    "announceLoading": "Loading results…",
+    "announceResults_one": "{{count}} video found for {{channel}}.",
+    "announceResults_other": "{{count}} videos found for {{channel}}.",
+    "announceNoResults": "No results found."
   },
   "timeAgo": {
     "justNow": "just now",
@@ -239,7 +246,10 @@
   },
   "empty": {
     "title": "Analyze YouTube channels",
-    "desc": "Search a channel and get trend insights for different time frames."
+    "desc": "Search a channel and get trend insights for different time frames.",
+    "tryExamples": "Try an example",
+    "exampleTitle": "Search {{example}}",
+    "exampleKeyword": "lofi"
   },
   "quota": {
     "label": "API Quota",
@@ -279,7 +289,8 @@
     "focusSearch": "Focus search",
     "openDashboard": "Open Dashboard",
     "openAnalyser": "Open Analyser",
-    "refreshAll": "Refresh all favorites"
+    "refreshAll": "Refresh all favorites",
+    "toggleHint": "Show shortcuts"
   },
   "scroll": {
     "toTop": "Scroll to top",
