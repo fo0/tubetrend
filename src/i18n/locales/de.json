@@ -22,7 +22,8 @@
   },
   "emptyState": {
     "title": "Keine Ergebnisse",
-    "description": "Versuche andere Suchbegriffe oder Filter."
+    "description": "Versuche andere Suchbegriffe oder Filter.",
+    "tryExamples": "Oder probiere eines davon:"
   },
   "labels": {
     "search": "Suche",
@@ -170,7 +171,13 @@
     },
     "copyAll": "Alle kopieren",
     "copyAllUrls": "Alle Video-URLs kopieren",
-    "exportCsv": "Ergebnisse als CSV exportieren"
+    "copyAllFailed": "Zwischenablage nicht verfügbar",
+    "exportCsv": "Ergebnisse als CSV exportieren",
+    "exportFailed": "Export fehlgeschlagen",
+    "announceLoading": "Ergebnisse werden geladen…",
+    "announceResults_one": "{{count}} Video für {{channel}} gefunden.",
+    "announceResults_other": "{{count}} Videos für {{channel}} gefunden.",
+    "announceNoResults": "Keine Ergebnisse gefunden."
   },
   "timeAgo": {
     "justNow": "gerade eben",
@@ -239,7 +246,10 @@
   },
   "empty": {
     "title": "YouTube-Kanäle analysieren",
-    "desc": "Suche einen Kanal und erhalte Trend-Einblicke für verschiedene Zeiträume."
+    "desc": "Suche einen Kanal und erhalte Trend-Einblicke für verschiedene Zeiträume.",
+    "tryExamples": "Beispiel ausprobieren",
+    "exampleTitle": "{{example}} suchen",
+    "exampleKeyword": "lofi"
   },
   "quota": {
     "label": "API-Kontingent",
@@ -279,7 +289,8 @@
     "focusSearch": "Suche fokussieren",
     "openDashboard": "Dashboard öffnen",
     "openAnalyser": "Analyser öffnen",
-    "refreshAll": "Alle Favoriten aktualisieren"
+    "refreshAll": "Alle Favoriten aktualisieren",
+    "toggleHint": "Kuerzel anzeigen"
   },
   "scroll": {
     "toTop": "Nach oben scrollen",
