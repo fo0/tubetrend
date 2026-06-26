@@ -4,9 +4,9 @@ import { Youtube } from "@/src/shared/components/ui/BrandIcons";
 import { InputSection } from "@/src/shared/components/ui/InputSection";
 import { VideoCard } from "@/src/shared/components/ui/VideoCard";
 import { VideoListTable } from "@/src/shared/components/ui/VideoListTable";
-import { EmptyState } from "@/src/shared/components/ui/EmptyState";
+import { EmptyState, type EmptyStateExample } from "@/src/shared/components/ui/EmptyState";
 import { useTranslation } from "react-i18next";
-import type { SearchType, TimeFrame } from "@/src/shared/types";
+import { SearchType, type TimeFrame } from "@/src/shared/types";
 import type { SearchState } from "@/src/features/search/hooks/useSearch";
 import { buildResultsCsv, buildResultsCsvFilename } from "@/src/features/videos";
 import { STORAGE_KEYS } from "@/src/shared/constants";
@@ -26,10 +26,32 @@ interface AnalyserPageProps {
     maxResults: number,
     searchType: SearchType,
   ) => void;
+  /** Run a quick-start example from the welcome empty state (pre-fills the search box + searches). */
+  onPickExample?: (query: string, searchType: SearchType) => void;
 }
 
-export function AnalyserPage({ searchState, externalInputValues, onSearch }: AnalyserPageProps) {
+export function AnalyserPage({
+  searchState,
+  externalInputValues,
+  onSearch,
+  onPickExample,
+}: AnalyserPageProps) {
   const { t } = useTranslation();
+
+  // Quick-start examples for the welcome empty state. Labels are how the user
+  // would type them; queries are the bare identifiers passed to the search.
+  const welcomeExamples = useMemo<EmptyStateExample[]>(
+    () => [
+      { label: "@MrBeast", query: "@MrBeast", searchType: SearchType.CHANNEL },
+      { label: "@mkbhd", query: "@mkbhd", searchType: SearchType.CHANNEL },
+      {
+        label: `#${t("empty.exampleKeyword")}`,
+        query: t("empty.exampleKeyword"),
+        searchType: SearchType.KEYWORD,
+      },
+    ],
+    [t],
+  );
 
   const [sortMode, setSortMode] = useState<"trend" | "views">(() => {
     try {
@@ -82,6 +104,29 @@ export function AnalyserPage({ searchState, externalInputValues, onSearch }: Ana
   const topVideos = sortedVideos.slice(0, topN);
   const otherVideos = sortedVideos.slice(topN);
 
+  // Screen-reader announcement for async result changes (the visual count badge
+  // alone is silent to assistive tech). Polite so it never interrupts typing.
+  const resultsAnnouncement = useMemo(() => {
+    if (searchState.isLoading) return t("results.announceLoading");
+    if (searchState.error) return "";
+    if (searchState.data) {
+      return sortedVideos.length > 0
+        ? t("results.announceResults", {
+            count: sortedVideos.length,
+            channel: searchState.channelName || "",
+          })
+        : t("results.announceNoResults");
+    }
+    return "";
+  }, [
+    searchState.isLoading,
+    searchState.error,
+    searchState.data,
+    searchState.channelName,
+    sortedVideos.length,
+    t,
+  ]);
+
   const channelUrl = useMemo(() => {
     if (searchState.channelId) return `https://www.youtube.com/channel/${searchState.channelId}`;
     const q = (searchState.channelName || "").trim();
@@ -90,14 +135,28 @@ export function AnalyserPage({ searchState, externalInputValues, onSearch }: Ana
   }, [searchState.channelId, searchState.channelName]);
 
   // Comfort: export current (sorted) results as CSV + copy all URLs at once.
+  // Both actions surface a short inline state so a failure (blocked clipboard /
+  // download) is no longer a silent no-op.
   const [copiedAll, setCopiedAll] = useState(false);
+  const [copyAllFailed, setCopyAllFailed] = useState(false);
+  const [exportFailed, setExportFailed] = useState(false);
   const copiedAllTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const copyFailedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const exportFailedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     return () => {
       if (copiedAllTimerRef.current) clearTimeout(copiedAllTimerRef.current);
+      if (copyFailedTimerRef.current) clearTimeout(copyFailedTimerRef.current);
+      if (exportFailedTimerRef.current) clearTimeout(exportFailedTimerRef.current);
     };
   }, []);
+
+  const flashCopyFailed = () => {
+    setCopyAllFailed(true);
+    if (copyFailedTimerRef.current) clearTimeout(copyFailedTimerRef.current);
+    copyFailedTimerRef.current = setTimeout(() => setCopyAllFailed(false), 2500);
+  };
 
   const handleExportCsv = () => {
     if (sortedVideos.length === 0) return;
@@ -114,14 +173,20 @@ export function AnalyserPage({ searchState, externalInputValues, onSearch }: Ana
       a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 0);
     } catch {
-      // ignore download errors (e.g. blocked environments)
+      // Surface download errors (e.g. blocked environments) instead of failing silently.
+      setExportFailed(true);
+      if (exportFailedTimerRef.current) clearTimeout(exportFailedTimerRef.current);
+      exportFailedTimerRef.current = setTimeout(() => setExportFailed(false), 2500);
     }
   };
 
   const handleCopyAllUrls = () => {
     if (sortedVideos.length === 0) return;
     // navigator.clipboard is undefined in insecure contexts (HTTP, some iframes).
-    if (!navigator.clipboard) return;
+    if (!navigator.clipboard) {
+      flashCopyFailed();
+      return;
+    }
     const urls = sortedVideos.map((v) => v.url).join("\n");
     navigator.clipboard.writeText(urls).then(
       () => {
@@ -130,7 +195,8 @@ export function AnalyserPage({ searchState, externalInputValues, onSearch }: Ana
         copiedAllTimerRef.current = setTimeout(() => setCopiedAll(false), 1500);
       },
       () => {
-        // Clipboard API unavailable
+        // Clipboard write rejected (permissions / focus) — show feedback.
+        flashCopyFailed();
       },
     );
   };
@@ -146,6 +212,11 @@ export function AnalyserPage({ searchState, externalInputValues, onSearch }: Ana
         externalSearchType={externalInputValues.searchType}
         externalSyncToken={externalInputValues.syncToken}
       />
+
+      {/* Screen-reader-only live region: announces loading / result count / no-results. */}
+      <p className="sr-only" role="status" aria-live="polite">
+        {resultsAnnouncement}
+      </p>
 
       {/* Error Message */}
       {searchState.error && (
@@ -203,26 +274,44 @@ export function AnalyserPage({ searchState, externalInputValues, onSearch }: Ana
                 <button
                   type="button"
                   onClick={handleCopyAllUrls}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
-                  title={t("results.copyAllUrls")}
-                  aria-label={t("results.copyAllUrls")}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors ${
+                    copyAllFailed
+                      ? "text-red-500 dark:text-red-400"
+                      : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800"
+                  }`}
+                  title={copyAllFailed ? t("results.copyAllFailed") : t("results.copyAllUrls")}
+                  aria-label={copyAllFailed ? t("results.copyAllFailed") : t("results.copyAllUrls")}
                 >
-                  {copiedAll ? (
+                  {copyAllFailed ? (
+                    <AlertCircle className="w-4 h-4" aria-hidden="true" />
+                  ) : copiedAll ? (
                     <Check className="w-4 h-4 text-green-500" aria-hidden="true" />
                   ) : (
                     <Copy className="w-4 h-4" aria-hidden="true" />
                   )}
-                  <span className="hidden lg:inline">{t("results.copyAll")}</span>
+                  <span className="hidden lg:inline">
+                    {copyAllFailed ? t("results.copyAllFailed") : t("results.copyAll")}
+                  </span>
                 </button>
                 <button
                   type="button"
                   onClick={handleExportCsv}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
-                  title={t("results.exportCsv")}
-                  aria-label={t("results.exportCsv")}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors ${
+                    exportFailed
+                      ? "text-red-500 dark:text-red-400"
+                      : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800"
+                  }`}
+                  title={exportFailed ? t("results.exportFailed") : t("results.exportCsv")}
+                  aria-label={exportFailed ? t("results.exportFailed") : t("results.exportCsv")}
                 >
-                  <Download className="w-4 h-4" aria-hidden="true" />
-                  <span className="hidden lg:inline">CSV</span>
+                  {exportFailed ? (
+                    <AlertCircle className="w-4 h-4" aria-hidden="true" />
+                  ) : (
+                    <Download className="w-4 h-4" aria-hidden="true" />
+                  )}
+                  <span className="hidden lg:inline">
+                    {exportFailed ? t("results.exportFailed") : "CSV"}
+                  </span>
                 </button>
               </div>
 
@@ -365,6 +454,8 @@ export function AnalyserPage({ searchState, externalInputValues, onSearch }: Ana
       {!searchState.data && !searchState.isLoading && (
         <EmptyState
           variant={searchState.step === "idle" && !searchState.error ? "welcome" : "no-results"}
+          examples={welcomeExamples}
+          onPickExample={onPickExample}
         />
       )}
     </>

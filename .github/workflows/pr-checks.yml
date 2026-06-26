@@ -19,9 +19,11 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # TypeScript type checking
-  typecheck:
-    name: TypeScript Check
+  # Format, typecheck, lint and build in a single job so dependencies are
+  # installed once per run instead of once per check (previously 4 jobs each
+  # ran their own `npm ci`).
+  checks:
+    name: Typecheck / Lint / Build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -42,22 +44,14 @@ jobs:
       - name: Run TypeScript type check
         run: npx tsc --noEmit
 
-  # Production build test
-  build:
-    name: Build Check
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: "22"
-          cache: "npm"
-
-      - name: Install dependencies
-        run: npm ci
+      - name: Run linter (if available)
+        run: |
+          if npm run 2>/dev/null | grep -q "^\s*lint"; then
+            echo "Running npm run lint..."
+            npm run lint
+          else
+            echo "No lint script found in package.json - skipping"
+          fi
 
       - name: Build project
         run: npm run build
@@ -71,33 +65,7 @@ jobs:
           echo "Build successful - dist/ contains:"
           ls -la dist/
 
-  # Linting (if configured)
-  lint:
-    name: Lint Check
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: "22"
-          cache: "npm"
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run linter (if available)
-        run: |
-          if npm run 2>/dev/null | grep -q "^\s*lint"; then
-            echo "Running npm run lint..."
-            npm run lint
-          else
-            echo "No lint script found in package.json - skipping"
-          fi
-
-  # Dependency security audit
+  # Dependency security audit (no install needed — runs off the lockfile)
   security:
     name: Security Audit
     runs-on: ubuntu-latest

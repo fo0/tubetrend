@@ -1,8 +1,9 @@
 import { Activity, BarChart3, Keyboard, LayoutDashboard, Settings } from "lucide-react";
-import { useRef, useState, useEffect } from "react";
+import { useCallback, useRef, useState, useEffect } from "react";
 import { ThemeToggle } from "@/src/shared/components/ui/ThemeToggle";
 import { LanguageSwitcher } from "@/src/shared/components/ui/LanguageSwitcher";
 import { ApiQuotaIndicator } from "@/src/shared/components/ui/ApiQuotaIndicator";
+import { useEventBus } from "@/src/shared/lib/eventBus";
 import { useTranslation } from "react-i18next";
 
 export type PageType = "dashboard" | "analyser";
@@ -123,6 +124,10 @@ function KeyboardShortcutsHint({ activePage }: { activePage: PageType }) {
   const [isOpen, setIsOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
+  // Allow the global "?" hotkey (dispatched from App) to toggle this popover.
+  const handleToggle = useCallback(() => setIsOpen((prev) => !prev), []);
+  useEventBus("toggle-shortcuts-hint", handleToggle);
+
   useEffect(() => {
     if (!isOpen) return;
     const handleClickOutside = (e: MouseEvent) => {
@@ -197,6 +202,12 @@ function KeyboardShortcutsHint({ activePage }: { activePage: PageType }) {
                 </kbd>
               </div>
             )}
+            <div className="flex items-center justify-between">
+              <span className="text-slate-500 dark:text-slate-400">{t("keyboard.toggleHint")}</span>
+              <kbd className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono text-slate-600 dark:text-slate-300">
+                ?
+              </kbd>
+            </div>
           </div>
         </div>
       )}
