@@ -336,18 +336,31 @@ export const InputSection: React.FC<InputSectionProps> = ({
     setShowHistory(false);
   };
 
-  // Escape closes any open dropdown (suggestions or history)
+  // Escape behaviour (only while the search input itself is focused, so we never
+  // hijack Escape from modals or other widgets):
+  //   1. If a dropdown (suggestions / history) is open, close it.
+  //   2. Otherwise, if the input has text, clear it.
   useEffect(() => {
-    if (!showSuggestions && !showHistory) return;
     const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
+      if (e.key !== "Escape") return;
+      if (document.activeElement !== searchInputRef.current) return;
+
+      if (showSuggestions || showHistory) {
+        setShowSuggestions(false);
+        setShowHistory(false);
+        return;
+      }
+      if (inputValue) {
+        // Mirror clearInput(): reset the query and any pending dropdowns.
+        setInputValue("");
+        setSuggestions([]);
         setShowSuggestions(false);
         setShowHistory(false);
       }
     };
     document.addEventListener("keydown", handleEsc);
     return () => document.removeEventListener("keydown", handleEsc);
-  }, [showSuggestions, showHistory]);
+  }, [showSuggestions, showHistory, inputValue]);
 
   // Synchronisiere Favoriten-Status, wenn Eingabe/Zeitfenster/MaxErgebnisse/SearchType sich ändern
   useEffect(() => {

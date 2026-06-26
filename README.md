@@ -121,10 +121,24 @@ Or download the pre-built ZIP from [Actions artifacts](https://github.com/fo0/tu
 git clone https://github.com/fo0/tubetrend.git
 cd tubetrend
 npm install
+cp .env.example .env.local   # optional — edit VITE_DEFAULT_SEARCH if desired
 npm run dev
 ```
 
 Open http://localhost:3000
+
+**Available scripts:**
+
+| Command               | Description                          |
+| --------------------- | ------------------------------------ |
+| `npm run dev`         | Vite dev server (hot reload)         |
+| `npm run build`       | Production build to `dist/`          |
+| `npm run preview`     | Build + local preview                |
+| `npm run typecheck`   | TypeScript type check (no emit)      |
+| `npm run format`      | Auto-format with Prettier            |
+| `npm run format:check`| Verify formatting (CI-equivalent)    |
+
+> **Tests:** No test framework is configured yet. A Vitest setup is planned — see `agent_docs/refactoring_guidelines.md`.
 
 ---
 

@@ -36,8 +36,8 @@ export enum SortOption {
 }
 
 /**
- * Legacy-Mapping: ältere Versionen haben deutsche String-Werte im Storage gespeichert.
- * Damit bestehende Nutzer nichts verlieren, mappen wir alte Werte auf die neuen Codes.
+ * Legacy mapping: older versions stored German string values in storage.
+ * To avoid breaking existing users, we map those old values onto the new codes.
  */
 export const LEGACY_TIMEFRAME_MAP: Record<string, TimeFrame> = {
   "Letzte Stunde": TimeFrame.LAST_HOUR,
