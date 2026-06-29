@@ -137,6 +137,8 @@
     "resultsFor": "Results for",
     "videosCount_one": "{{count}} video",
     "videosCount_other": "{{count}} videos",
+    "totalViews": "{{count}} total views",
+    "totalViewsTitle": "Total views across all {{count}} results in this time frame",
     "sortedBy": "Sorted by",
     "sortModes": {
       "trend": "Trend score (velocity)",
