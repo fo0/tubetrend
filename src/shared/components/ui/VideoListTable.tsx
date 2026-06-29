@@ -63,6 +63,15 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({ videos, startInd
 
   return (
     <div className="bg-white/50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden backdrop-blur-sm shadow-xl">
+      {/* Polite live region: announce copy success to assistive tech (the green
+          checkmark alone is silent to screen readers). */}
+      <span className="sr-only" role="status" aria-live="polite">
+        {copiedId
+          ? t("results.table.urlCopied")
+          : copiedTitleId
+            ? t("results.table.titleCopied")
+            : ""}
+      </span>
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse" aria-label={t("results.moreVideos")}>
           <thead>

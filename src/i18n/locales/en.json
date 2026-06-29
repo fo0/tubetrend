@@ -169,7 +169,9 @@
       "watchOnYoutube": "Watch on YouTube",
       "watchOnYoutubeAria": "{{title}} – watch on YouTube",
       "copyTitle": "Copy video title",
-      "copyTitleAria": "Copy title for {{title}}"
+      "copyTitleAria": "Copy title for {{title}}",
+      "urlCopied": "Video URL copied",
+      "titleCopied": "Video title copied"
     },
     "copyAll": "Copy all",
     "copyAllUrls": "Copy all video URLs",
