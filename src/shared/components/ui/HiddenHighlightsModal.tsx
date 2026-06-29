@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Clock, Eye, Trash2, X } from "lucide-react";
+import { Clock, ExternalLink, Eye, Trash2, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { hiddenHighlightsService, type HiddenHighlight } from "@/src/features/dashboard";
 import { getLocale } from "@/src/shared/lib/locale";
@@ -165,6 +165,18 @@ export function HiddenHighlightsModal({ isOpen, onClose }: HiddenHighlightsModal
 
                   {/* Actions */}
                   <div className="flex items-center gap-2 shrink-0">
+                    <a
+                      href={`https://www.youtube.com/watch?v=${item.videoId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md border border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                      title={t("results.table.watchOnYoutube")}
+                      aria-label={t("results.table.watchOnYoutubeAria", {
+                        title: item.videoTitle ?? "",
+                      })}
+                    >
+                      <ExternalLink className="w-3 h-3" aria-hidden="true" />
+                    </a>
                     <button
                       type="button"
                       onClick={() => handleUnhide(item.videoId)}
