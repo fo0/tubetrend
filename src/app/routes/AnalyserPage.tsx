@@ -9,6 +9,7 @@ import { useTranslation } from "react-i18next";
 import { SearchType, type TimeFrame } from "@/src/shared/types";
 import type { SearchState } from "@/src/features/search/hooks/useSearch";
 import { buildResultsCsv, buildResultsCsvFilename } from "@/src/features/videos";
+import { formatCompactNumber, formatNumber } from "@/src/shared/lib/formatters";
 import { STORAGE_KEYS } from "@/src/shared/constants";
 
 interface AnalyserPageProps {
@@ -103,6 +104,13 @@ export function AnalyserPage({
 
   const topVideos = sortedVideos.slice(0, topN);
   const otherVideos = sortedVideos.slice(topN);
+
+  // Comfort: at-a-glance aggregate of all result views in the current time frame.
+  // Compact label (e.g. "1.2M") with the exact figure in the tooltip.
+  const totalViews = useMemo(
+    () => sortedVideos.reduce((sum, v) => sum + (v.views || 0), 0),
+    [sortedVideos],
+  );
 
   // Screen-reader announcement for async result changes (the visual count badge
   // alone is silent to assistive tech). Polite so it never interrupts typing.
@@ -256,6 +264,16 @@ export function AnalyserPage({
               <span className="bg-slate-200 dark:bg-slate-700 text-xs px-2 py-0.5 rounded-full text-slate-600 dark:text-slate-300 border border-slate-300 dark:border-slate-600">
                 {t("results.videosCount", { count: sortedVideos.length })}
               </span>
+              {totalViews > 0 && (
+                <span
+                  className="bg-indigo-500/10 text-xs px-2 py-0.5 rounded-full text-indigo-600 dark:text-indigo-300 border border-indigo-500/20 whitespace-nowrap cursor-help"
+                  title={t("results.totalViewsTitle", {
+                    count: formatNumber(totalViews),
+                  })}
+                >
+                  {t("results.totalViews", { count: formatCompactNumber(totalViews) })}
+                </span>
+              )}
               {searchState.isLoading && (
                 <span
                   className="inline-flex items-center gap-1 text-xs text-indigo-500 dark:text-indigo-400"

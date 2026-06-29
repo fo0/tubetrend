@@ -67,6 +67,11 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video }) => {
 
   return (
     <div className="bg-white border-slate-200 dark:bg-slate-800 rounded-xl overflow-hidden border dark:border-slate-700 shadow-lg hover:shadow-xl hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-300 group flex flex-col h-full relative">
+      {/* Polite live region: announce copy success to assistive tech (the green
+          checkmark alone is silent to screen readers). */}
+      <span className="sr-only" role="status" aria-live="polite">
+        {copied ? t("results.table.urlCopied") : titleCopied ? t("results.table.titleCopied") : ""}
+      </span>
       {/* Thumbnail Area */}
       <div className="relative h-40 overflow-hidden bg-slate-100 dark:bg-slate-900">
         <a

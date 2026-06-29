@@ -137,6 +137,8 @@
     "resultsFor": "Results for",
     "videosCount_one": "{{count}} video",
     "videosCount_other": "{{count}} videos",
+    "totalViews": "{{count}} total views",
+    "totalViewsTitle": "Total views across all {{count}} results in this time frame",
     "sortedBy": "Sorted by",
     "sortModes": {
       "trend": "Trend score (velocity)",
@@ -167,7 +169,9 @@
       "watchOnYoutube": "Watch on YouTube",
       "watchOnYoutubeAria": "{{title}} – watch on YouTube",
       "copyTitle": "Copy video title",
-      "copyTitleAria": "Copy title for {{title}}"
+      "copyTitleAria": "Copy title for {{title}}",
+      "urlCopied": "Video URL copied",
+      "titleCopied": "Video title copied"
     },
     "copyAll": "Copy all",
     "copyAllUrls": "Copy all video URLs",
