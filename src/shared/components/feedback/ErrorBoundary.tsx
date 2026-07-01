@@ -66,6 +66,7 @@ function DefaultErrorFallback({ error, onRetry }: DefaultErrorFallbackProps) {
           {error.message || t("errors.somethingWentWrong")}
         </p>
         <button
+          type="button"
           onClick={onRetry}
           className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
         >
