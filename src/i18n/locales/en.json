@@ -74,7 +74,8 @@
   "input": {
     "searchPlaceholder": "Channel name, @handle or #searchtext",
     "channelPlaceholder": "Enter channel name or @handle",
-    "keywordPlaceholder": "Enter search keyword (e.g. \"React tutorial\")"
+    "keywordPlaceholder": "Enter search keyword (e.g. \"React tutorial\")",
+    "searchHint": "{{placeholder}} (Press / to focus)"
   },
   "maxResults": {
     "all": "All",
