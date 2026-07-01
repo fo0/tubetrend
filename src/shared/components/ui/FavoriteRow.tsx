@@ -499,6 +499,7 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
                   {TIME_FRAMES.map((opt) => (
                     <button
                       key={opt.value}
+                      type="button"
                       onClick={() => handleChangeTimeFrame(opt.value)}
                       className={`w-full text-left px-3 py-2 rounded-md text-sm ${opt.value === currentTimeFrame ? "bg-indigo-600 text-white" : "text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"}`}
                     >
@@ -549,6 +550,7 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
                   {MAX_RESULTS_OPTIONS.map((opt) => (
                     <button
                       key={opt.value}
+                      type="button"
                       onClick={() => handleChangeMax(opt.value)}
                       className={`w-full text-left px-3 py-2 rounded-md text-sm ${opt.value === currentMax ? "bg-indigo-600 text-white" : "text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"}`}
                     >
