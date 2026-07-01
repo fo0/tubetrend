@@ -119,6 +119,7 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ onSave }) => {
 
           <div className="pt-4 border-t border-slate-200 dark:border-slate-800">
             <button
+              type="button"
               onClick={() => setShowHelp(!showHelp)}
               aria-expanded={showHelp}
               className="flex items-center gap-2 text-indigo-500 dark:text-indigo-400 text-sm hover:text-indigo-400 dark:hover:text-indigo-300 transition-colors mx-auto"
