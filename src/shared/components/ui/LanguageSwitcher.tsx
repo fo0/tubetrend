@@ -92,11 +92,15 @@ export const LanguageSwitcher: React.FC = () => {
 
   return (
     <div className="inline-flex items-center gap-2">
-      <label className="text-xs text-slate-600 dark:text-slate-400 hidden sm:inline">
+      <label
+        htmlFor="language-select"
+        className="text-xs text-slate-600 dark:text-slate-400 hidden sm:inline"
+      >
         {t("language.label")}
       </label>
       <div className="relative">
         <select
+          id="language-select"
           aria-label={t("language.label")}
           className="px-3 py-1.5 rounded-md border text-xs font-medium border-slate-300 text-slate-700 bg-white dark:bg-slate-900 dark:border-slate-700 dark:text-slate-300"
           value={mode === "system" ? "system" : explicitLng}
