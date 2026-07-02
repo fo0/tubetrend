@@ -164,14 +164,22 @@ export function DashboardPage({
                 <button
                   type="button"
                   onClick={onRefreshAll}
-                  disabled={favorites.length === 0}
+                  disabled={favorites.length === 0 || refreshingIds.size > 0}
+                  aria-busy={refreshingIds.size > 0}
                   className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-md border transition-colors
                            border-slate-300 text-slate-700 hover:bg-slate-100
                            disabled:opacity-50 disabled:cursor-not-allowed
                            dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
-                  title={t("actions.refreshAll")}
+                  title={
+                    refreshingIds.size > 0
+                      ? t("favorites.status.refreshing")
+                      : t("actions.refreshAll")
+                  }
                 >
-                  <RefreshCw className="w-3 h-3" /> {t("actions.refreshAll")}
+                  <RefreshCw
+                    className={`w-3 h-3 ${refreshingIds.size > 0 ? "animate-spin" : ""}`}
+                  />{" "}
+                  {t("actions.refreshAll")}
                 </button>
                 {favorites.length > 0 && (
                   <button
