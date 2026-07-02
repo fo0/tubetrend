@@ -287,6 +287,18 @@ export const ApiQuotaIndicator: React.FC = () => {
     };
   }, [isOpen]);
 
+  // Close on Escape — consistency with the app's other dropdowns/modals
+  // (search history, shortcuts hint, hidden-highlights modal), which the quota
+  // panel previously lacked (it only closed on an outside click).
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setIsOpen(false);
+    };
+    document.addEventListener("keydown", handleEsc);
+    return () => document.removeEventListener("keydown", handleEsc);
+  }, [isOpen]);
+
   // Determine optimal time window for chart
   const timeWindow = useMemo(() => getOptimalTimeWindow(history), [history]);
 
@@ -407,6 +419,11 @@ export const ApiQuotaIndicator: React.FC = () => {
         aria-expanded={isOpen}
         aria-haspopup="dialog"
         aria-controls="quota-history-panel"
+        title={t("quota.tooltip", {
+          used: formatNumber(quota.used),
+          limit: formatNumber(quota.limit),
+          percentage: quota.percentage,
+        })}
       >
         {/* Icon - warning when exhausted, otherwise battery */}
         {quota.exhausted ? (
