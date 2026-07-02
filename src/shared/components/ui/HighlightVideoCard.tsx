@@ -65,6 +65,12 @@ export const HighlightVideoCard: React.FC<HighlightVideoCardProps> = ({
       className={`bg-white border-slate-200 dark:bg-slate-800 rounded-xl overflow-hidden border dark:border-slate-700 shadow-lg hover:shadow-xl hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-300 group flex flex-col h-full relative ${isFresh ? "fresh-green-border" : ""} ${isRefreshing ? "opacity-60" : ""}`}
       aria-busy={isRefreshing}
     >
+      {/* Polite live region: announce copy success to assistive tech (the green
+          checkmark alone is silent to screen readers). Mirrors VideoCard. */}
+      <span className="sr-only" role="status" aria-live="polite">
+        {copied ? t("results.table.urlCopied") : ""}
+      </span>
+
       {/* Thumbnail Area */}
       <div className="relative h-40 overflow-hidden bg-slate-100 dark:bg-slate-900">
         <a
