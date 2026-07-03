@@ -55,6 +55,12 @@ npm run electron:dist
 
 The packaged app will be in the `release/` directory — portable, no Docker needed.
 
+For local development with hot reload:
+
+```bash
+npm run electron:dev
+```
+
 For a quick preview without packaging:
 
 ```bash
