@@ -20,14 +20,29 @@ const CSV_COLUMNS = [
 ] as const;
 
 /**
+ * Neutralize spreadsheet formula injection ("CSV injection"): a field whose
+ * first character is a formula trigger (=, +, -, @, tab, or CR) is prefixed
+ * with a single quote so Excel / LibreOffice / Google Sheets treat it as
+ * literal text instead of evaluating it. Video titles and labels are
+ * attacker-controllable via the YouTube Data API, so this runs on every field.
+ * See OWASP "CSV Injection". Behavior-equivalent for normal values (only the
+ * rare value starting with a trigger char is affected).
+ */
+function neutralizeFormula(value: string): string {
+  return /^[=+\-@\t\r]/.test(value) ? `'${value}` : value;
+}
+
+/**
  * Escape a single CSV field per RFC 4180: wrap in double quotes when the value
- * contains a comma, quote, or newline, and double any embedded quotes.
+ * contains a comma, quote, or newline, and double any embedded quotes. Leading
+ * formula triggers are neutralized first to prevent CSV/formula injection.
  */
 function escapeCsvField(value: string): string {
-  if (/[",\r\n]/.test(value)) {
-    return `"${value.replace(/"/g, '""')}"`;
+  const safe = neutralizeFormula(value);
+  if (/[",\r\n]/.test(safe)) {
+    return `"${safe.replace(/"/g, '""')}"`;
   }
-  return value;
+  return safe;
 }
 
 /**
