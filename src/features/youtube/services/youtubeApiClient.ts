@@ -50,10 +50,13 @@ export async function fetchFromApi<T>(
 
   const cost = API_COSTS[endpoint];
   const response = await fetch(url.toString(), { signal });
-  const data = await response.json();
+  // The YouTube API always answers with JSON; guard against non-JSON bodies
+  // (proxy/HTML error pages, empty responses) so a parse failure surfaces as a
+  // typed YouTubeApiError instead of a cryptic SyntaxError leaking to the UI.
+  const data = await response.json().catch(() => null);
 
   if (!response.ok) {
-    if (data.error) {
+    if (data?.error) {
       const msg: string = typeof data.error.message === "string" ? data.error.message : "";
       const lower = msg.toLowerCase();
 
@@ -82,6 +85,10 @@ export async function fetchFromApi<T>(
     }
 
     throw new YouTubeApiError(`HTTP error: ${response.status}`, response.status);
+  }
+
+  if (data === null) {
+    throw new YouTubeApiError("Invalid response from YouTube API.", response.status);
   }
 
   // Track successful request
