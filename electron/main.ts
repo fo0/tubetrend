@@ -41,6 +41,20 @@ function createWindow(): void {
     return { action: "deny" };
   });
 
+  // Block in-window navigation away from the app (Electron security checklist:
+  // "disable or limit navigation"). Only the Vite dev server (HMR reloads) and
+  // the packaged file:// bundle are legitimate destinations; anything else
+  // (e.g. a link or file dragged onto the window) opens externally instead.
+  win.webContents.on("will-navigate", (event, url) => {
+    const devServerUrl = process.env.VITE_DEV_SERVER_URL;
+    const isDevServer = !!devServerUrl && url.startsWith(devServerUrl);
+    if (isDevServer || url.startsWith("file://")) return;
+    event.preventDefault();
+    if (url.startsWith("https://") || url.startsWith("http://")) {
+      shell.openExternal(url);
+    }
+  });
+
   // vite-plugin-electron sets VITE_DEV_SERVER_URL in dev mode
   if (process.env.VITE_DEV_SERVER_URL) {
     win.loadURL(process.env.VITE_DEV_SERVER_URL);
