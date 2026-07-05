@@ -80,9 +80,20 @@ export const InputSection: React.FC<InputSectionProps> = ({
   const searchInputRef = useRef<HTMLInputElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Generation counter for suggestion lookups: bumped whenever the input
+  // changes or is cleared so pending timers / in-flight responses for an
+  // outdated value can neither reopen the dropdown nor overwrite fresh results.
+  const suggestionRequestRef = useRef(0);
   const justSavedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [justSaved, setJustSaved] = useState<boolean>(false);
   const [isFavorite, setIsFavorite] = useState<boolean>(false);
+
+  // Invalidate any pending/in-flight suggestion lookup (timer + response guard)
+  const cancelSuggestionLookup = () => {
+    suggestionRequestRef.current += 1;
+    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+    setIsSearchingSuggestions(false);
+  };
 
   // Clear timers on unmount to avoid state updates on unmounted component
   useEffect(() => {
@@ -130,6 +141,8 @@ export const InputSection: React.FC<InputSectionProps> = ({
   // externalSyncToken als Dependency sorgt dafür, dass auch bei gleichem Favoriten die Werte aktualisiert werden
   useEffect(() => {
     if (externalQuery !== undefined && externalSyncToken !== undefined) {
+      // The synced value replaces whatever was typed — drop pending lookups.
+      cancelSuggestionLookup();
       // Bei Keyword-Suche: Präfix # hinzufügen, falls nicht vorhanden
       const prefix =
         externalSearchType === SearchType.KEYWORD && !externalQuery.startsWith("#") ? "#" : "";
@@ -209,6 +222,9 @@ export const InputSection: React.FC<InputSectionProps> = ({
     // Hide history once user starts typing
     if (val.length > 0) setShowHistory(false);
 
+    // The input changed — a lookup scheduled for the previous value is stale.
+    cancelSuggestionLookup();
+
     // Autocomplete nur bei Kanal-Suche (basierend auf neuem Wert)
     const newSearchType = detectSearchType(val);
     if (newSearchType !== SearchType.CHANNEL) {
@@ -231,23 +247,26 @@ export const InputSection: React.FC<InputSectionProps> = ({
     }
 
     // Debounce API call
-    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
-
+    const requestId = suggestionRequestRef.current;
     setIsSearchingSuggestions(true);
     debounceTimerRef.current = setTimeout(async () => {
       try {
         const results = await searchChannels(val);
+        if (requestId !== suggestionRequestRef.current) return; // stale response
         setSuggestions(results);
         setShowSuggestions(true);
       } catch (err) {
         if (import.meta.env.DEV) console.error(err);
       } finally {
-        setIsSearchingSuggestions(false);
+        if (requestId === suggestionRequestRef.current) {
+          setIsSearchingSuggestions(false);
+        }
       }
     }, 500); // 500ms delay
   };
 
   const selectSuggestion = (suggestion: ChannelSuggestion) => {
+    cancelSuggestionLookup();
     setInputValue(suggestion.title); // Use title for display
     setSuggestions([]);
     setShowSuggestions(false);
@@ -255,6 +274,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
   };
 
   const clearInput = () => {
+    cancelSuggestionLookup();
     setInputValue("");
     setSuggestions([]);
     setShowSuggestions(false);
@@ -351,11 +371,9 @@ export const InputSection: React.FC<InputSectionProps> = ({
         return;
       }
       if (inputValue) {
-        // Mirror clearInput(): reset the query and any pending dropdowns.
-        setInputValue("");
-        setSuggestions([]);
-        setShowSuggestions(false);
-        setShowHistory(false);
+        // Mirror clearInput(): reset the query, any pending dropdowns, and
+        // cancel a pending suggestion lookup for the cleared value.
+        clearInput();
       }
     };
     document.addEventListener("keydown", handleEsc);

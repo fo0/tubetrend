@@ -19,9 +19,14 @@ function getSystemTheme(): ResolvedTheme {
 
 function getStoredTheme(): Theme {
   if (typeof window === "undefined") return "system";
-  const stored = localStorage.getItem(STORAGE_KEYS.THEME);
-  if (stored === "light" || stored === "dark" || stored === "system") {
-    return stored;
+  try {
+    const stored = localStorage.getItem(STORAGE_KEYS.THEME);
+    if (stored === "light" || stored === "dark" || stored === "system") {
+      return stored;
+    }
+  } catch {
+    // Storage blocked (privacy mode) — fall back to system preference,
+    // matching the guarded FOUC script in index.html.
   }
   return "system";
 }
@@ -36,7 +41,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
     if (typeof window !== "undefined") {
-      localStorage.setItem(STORAGE_KEYS.THEME, newTheme);
+      try {
+        localStorage.setItem(STORAGE_KEYS.THEME, newTheme);
+      } catch {
+        // Ignore storage errors — the in-memory theme still applies
+      }
     }
   };
 

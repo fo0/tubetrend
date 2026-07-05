@@ -7,6 +7,7 @@ import { favoritesService } from "@/src/features/favorites";
 import { analyzeVideoStats } from "@/src/features/videos";
 import {
   findChannelInfo,
+  getApiKey,
   getChannelQueryType,
   getVideosFromChannel,
   searchVideosByKeyword,
@@ -23,7 +24,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { Youtube } from "@/src/shared/components/ui/BrandIcons";
-import { MAX_RESULTS_OPTIONS, STORAGE_KEYS, TIME_FRAMES } from "@/src/shared/constants";
+import { MAX_RESULTS_OPTIONS, TIME_FRAMES } from "@/src/shared/constants";
 import { useTranslation } from "react-i18next";
 import { dispatchEvent, eventBus } from "@/src/shared/lib/eventBus";
 import { formatTimeAgo } from "@/src/shared/lib/formatters";
@@ -350,7 +351,8 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
 
     let cancelled = false;
     // Ohne API-Key kein Versuch, die Metadaten zu laden
-    const hasKey = typeof window !== "undefined" && !!localStorage.getItem(STORAGE_KEYS.API_KEY);
+    // (canonical accessor — window guard + storage error handling built in)
+    const hasKey = !!getApiKey();
     if (!hasKey) return;
 
     // Kurze Verzögerung um dem Haupt-useEffect Zeit zu geben, Cache-Daten zu laden

@@ -6,20 +6,30 @@ type Endpoint = keyof typeof API_COSTS;
 
 // Single source of truth: localStorage. No module-level mirror to avoid drift
 // when the key is changed in another tab/window or by other code paths.
+// Storage access is guarded (try/catch) like the shared storage helpers so a
+// blocked localStorage (privacy mode / blocked site data) degrades gracefully.
 export function setApiKey(key: string): void {
   if (typeof window === "undefined") return;
-  if (key) {
-    localStorage.setItem(STORAGE_KEYS.API_KEY, key);
-  } else {
-    localStorage.removeItem(STORAGE_KEYS.API_KEY);
-    // Reset quota statistics when API key is deleted
-    quotaService.reset();
+  try {
+    if (key) {
+      localStorage.setItem(STORAGE_KEYS.API_KEY, key);
+    } else {
+      localStorage.removeItem(STORAGE_KEYS.API_KEY);
+      // Reset quota statistics when API key is deleted
+      quotaService.reset();
+    }
+  } catch {
+    // Ignore storage errors
   }
 }
 
 export function getApiKey(): string {
   if (typeof window === "undefined") return "";
-  return localStorage.getItem(STORAGE_KEYS.API_KEY) || "";
+  try {
+    return localStorage.getItem(STORAGE_KEYS.API_KEY) || "";
+  } catch {
+    return "";
+  }
 }
 
 export class YouTubeApiError extends Error {
@@ -50,10 +60,13 @@ export async function fetchFromApi<T>(
 
   const cost = API_COSTS[endpoint];
   const response = await fetch(url.toString(), { signal });
-  const data = await response.json();
+  // The YouTube API always answers with JSON; guard against non-JSON bodies
+  // (proxy/HTML error pages, empty responses) so a parse failure surfaces as a
+  // typed YouTubeApiError instead of a cryptic SyntaxError leaking to the UI.
+  const data = await response.json().catch(() => null);
 
   if (!response.ok) {
-    if (data.error) {
+    if (data?.error) {
       const msg: string = typeof data.error.message === "string" ? data.error.message : "";
       const lower = msg.toLowerCase();
 
@@ -82,6 +95,10 @@ export async function fetchFromApi<T>(
     }
 
     throw new YouTubeApiError(`HTTP error: ${response.status}`, response.status);
+  }
+
+  if (data === null) {
+    throw new YouTubeApiError("Invalid response from YouTube API.", response.status);
   }
 
   // Track successful request
