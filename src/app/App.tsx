@@ -6,7 +6,10 @@ import { Header, Footer, type PageType } from "@/src/shared/components/layout";
 import { DashboardPage } from "./routes/DashboardPage";
 import { AnalyserPage } from "./routes/AnalyserPage";
 import { useTranslation } from "react-i18next";
-import { setApiKey as setYoutubeApiKey } from "@/src/features/youtube";
+import {
+  getApiKey as getYoutubeApiKey,
+  setApiKey as setYoutubeApiKey,
+} from "@/src/features/youtube";
 import { dashboardBackupService } from "@/src/features/dashboard";
 import { favoritesService } from "@/src/features/favorites";
 import {
@@ -25,9 +28,10 @@ import { safeRead, safeWrite } from "@/src/shared/lib/storage";
 const App: React.FC = () => {
   const { t } = useTranslation();
 
-  // API Key state
+  // API Key state — read via the canonical accessor (guarded against blocked
+  // storage). An empty key is normalized to null ("no key configured").
   const [apiKey, setApiKey] = useState<string | null>(() => {
-    return localStorage.getItem(STORAGE_KEYS.API_KEY);
+    return getYoutubeApiKey() || null;
   });
   const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
   const [isHiddenHighlightsModalOpen, setIsHiddenHighlightsModalOpen] = useState(false);

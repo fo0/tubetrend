@@ -6,20 +6,30 @@ type Endpoint = keyof typeof API_COSTS;
 
 // Single source of truth: localStorage. No module-level mirror to avoid drift
 // when the key is changed in another tab/window or by other code paths.
+// Storage access is guarded (try/catch) like the shared storage helpers so a
+// blocked localStorage (privacy mode / blocked site data) degrades gracefully.
 export function setApiKey(key: string): void {
   if (typeof window === "undefined") return;
-  if (key) {
-    localStorage.setItem(STORAGE_KEYS.API_KEY, key);
-  } else {
-    localStorage.removeItem(STORAGE_KEYS.API_KEY);
-    // Reset quota statistics when API key is deleted
-    quotaService.reset();
+  try {
+    if (key) {
+      localStorage.setItem(STORAGE_KEYS.API_KEY, key);
+    } else {
+      localStorage.removeItem(STORAGE_KEYS.API_KEY);
+      // Reset quota statistics when API key is deleted
+      quotaService.reset();
+    }
+  } catch {
+    // Ignore storage errors
   }
 }
 
 export function getApiKey(): string {
   if (typeof window === "undefined") return "";
-  return localStorage.getItem(STORAGE_KEYS.API_KEY) || "";
+  try {
+    return localStorage.getItem(STORAGE_KEYS.API_KEY) || "";
+  } catch {
+    return "";
+  }
 }
 
 export class YouTubeApiError extends Error {
