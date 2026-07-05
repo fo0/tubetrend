@@ -96,17 +96,25 @@ export function useFavorites() {
 export function useDashboardSort() {
   const [sortMode, setSortMode] = useState<DashboardSortMode>(() => {
     if (typeof window === "undefined") return "alpha";
-    const v = localStorage.getItem(STORAGE_KEYS.DASHBOARD_SORT);
-    return v === "velocity" ? "velocity" : "alpha";
+    try {
+      const v = localStorage.getItem(STORAGE_KEYS.DASHBOARD_SORT);
+      return v === "velocity" ? "velocity" : "alpha";
+    } catch {
+      return "alpha";
+    }
   });
 
   const [sortOrder, setSortOrder] = useState<SortOrder>(() => {
     if (typeof window === "undefined") return "asc";
-    const saved = localStorage.getItem(STORAGE_KEYS.DASHBOARD_ORDER);
-    if (saved === "asc" || saved === "desc") return saved;
-    const mode =
-      localStorage.getItem(STORAGE_KEYS.DASHBOARD_SORT) === "velocity" ? "velocity" : "alpha";
-    return mode === "velocity" ? "desc" : "asc";
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.DASHBOARD_ORDER);
+      if (saved === "asc" || saved === "desc") return saved;
+      const mode =
+        localStorage.getItem(STORAGE_KEYS.DASHBOARD_SORT) === "velocity" ? "velocity" : "alpha";
+      return mode === "velocity" ? "desc" : "asc";
+    } catch {
+      return "asc";
+    }
   });
 
   const [cacheTick, setCacheTick] = useState(0);
