@@ -192,6 +192,14 @@ function KeyboardShortcutsHint({ activePage }: { activePage: PageType }) {
                 A
               </kbd>
             </div>
+            <div className="flex items-center justify-between">
+              <span className="text-slate-500 dark:text-slate-400">
+                {t("keyboard.toggleTheme")}
+              </span>
+              <kbd className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono text-slate-600 dark:text-slate-300">
+                T
+              </kbd>
+            </div>
             {activePage === "dashboard" && (
               <div className="flex items-center justify-between">
                 <span className="text-slate-500 dark:text-slate-400">

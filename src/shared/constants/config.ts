@@ -19,6 +19,7 @@ export const STORAGE_KEYS = {
   HIDDEN_HIGHLIGHTS: "tt.dashboard.hiddenHighlights.v1",
   ANALYSER_SORT_MODE: "tt.analyser.sortMode",
   ANALYSER_TOP_N: "tt.analyser.topN",
+  ANALYSER_LAST_RESULT: "tt.analyser.lastResult.v1",
   ACTIVE_PAGE: "tt.activePage",
   THEME: "tt.theme",
 } as const;
@@ -26,6 +27,8 @@ export const STORAGE_KEYS = {
 export const CACHE_TTL = {
   AUTOCOMPLETE: 5 * 60 * 1000, // 5 minutes
   FAVORITES: 120 * 60 * 1000, // 2 hours
+  // Restore the last analyser result on reload only while it is reasonably fresh.
+  ANALYSER_RESULT: 24 * 60 * 60 * 1000, // 24 hours
 } as const;
 
 export const API_COSTS = {

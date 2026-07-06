@@ -68,11 +68,12 @@ export function buildResultsCsv(videos: VideoData[]): string {
 }
 
 /**
- * Build a filesystem-safe, timestamped CSV filename for an analyser export.
- * e.g. buildResultsCsvFilename("@MrBeast") -> "tubetrend-MrBeast_2026-06-08_12-30-00.csv"
+ * Build a filesystem-safe, timestamped export filename.
+ * e.g. buildExportFilename("@MrBeast", "csv") -> "tubetrend-MrBeast_2026-06-08_12-30-00.csv"
  */
-export function buildResultsCsvFilename(
+function buildExportFilename(
   label: string | null | undefined,
+  extension: string,
   now: Date = new Date(),
 ): string {
   const pad = (n: number) => String(n).padStart(2, "0");
@@ -86,5 +87,78 @@ export function buildResultsCsvFilename(
     .replace(/^-+|-+$/g, "")
     .slice(0, 40);
   const namePart = slug ? `-${slug}` : "";
-  return `tubetrend${namePart}_${stamp}.csv`;
+  return `tubetrend${namePart}_${stamp}.${extension}`;
+}
+
+/**
+ * Build a filesystem-safe, timestamped CSV filename for an analyser export.
+ * e.g. buildResultsCsvFilename("@MrBeast") -> "tubetrend-MrBeast_2026-06-08_12-30-00.csv"
+ */
+export function buildResultsCsvFilename(
+  label: string | null | undefined,
+  now: Date = new Date(),
+): string {
+  return buildExportFilename(label, "csv", now);
+}
+
+/** One video entry in the JSON export (mirrors the CSV columns, plus the stable video id). */
+interface JsonExportVideo {
+  rank: number;
+  id: string;
+  title: string;
+  url: string;
+  views: number;
+  viewsPerHour: number | null;
+  engagementRate: number | null;
+  trendingScore: number;
+  publishedAt: string;
+}
+
+/** Structured envelope for a JSON results export (self-describing for downstream tooling). */
+export interface ResultsJsonExport {
+  exportedAt: string;
+  channel: string | null;
+  count: number;
+  videos: JsonExportVideo[];
+}
+
+/**
+ * Build a pretty-printed JSON document from analyser results. Unlike the flat CSV
+ * export, this keeps the stable video id and wraps the rows in a self-describing
+ * envelope (export time + channel + count) so the data is easy to consume
+ * programmatically. Order is preserved exactly as passed in.
+ */
+export function buildResultsJson(
+  videos: VideoData[],
+  channel?: string | null,
+  now: Date = new Date(),
+): string {
+  const payload: ResultsJsonExport = {
+    exportedAt: now.toISOString(),
+    channel: channel && channel.trim() ? channel.trim() : null,
+    count: videos.length,
+    videos: videos.map((video, index) => ({
+      rank: index + 1,
+      id: video.id,
+      title: video.title,
+      url: video.url,
+      views: video.views,
+      viewsPerHour: video.viewsPerHour ?? null,
+      engagementRate: video.engagementRate ?? null,
+      trendingScore: video.trendingScore,
+      publishedAt: new Date(video.publishedTimestamp).toISOString(),
+    })),
+  };
+  return JSON.stringify(payload, null, 2);
+}
+
+/**
+ * Build a filesystem-safe, timestamped JSON filename for an analyser export.
+ * e.g. buildResultsJsonFilename("@MrBeast") -> "tubetrend-MrBeast_2026-06-08_12-30-00.json"
+ */
+export function buildResultsJsonFilename(
+  label: string | null | undefined,
+  now: Date = new Date(),
+): string {
+  return buildExportFilename(label, "json", now);
 }

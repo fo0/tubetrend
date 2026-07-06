@@ -10,6 +10,8 @@ import {
   searchVideosByKeyword,
   YouTubeApiError,
 } from "@/src/features/youtube";
+import { CACHE_TTL, STORAGE_KEYS } from "@/src/shared/constants";
+import { safeRead, safeRemove, safeWrite } from "@/src/shared/lib/storage";
 
 export interface SearchState {
   isLoading: boolean;
@@ -18,6 +20,8 @@ export interface SearchState {
   data: VideoData[] | null;
   channelName: string;
   channelId?: string;
+  /** Epoch ms when the currently displayed analysis was produced (undefined for cached favorite views). */
+  resultSavedAt?: number;
 }
 
 const initialSearchState: SearchState = {
@@ -28,12 +32,62 @@ const initialSearchState: SearchState = {
   channelName: "",
 };
 
+/** Snapshot of the last completed analyser search, persisted so it survives a page reload. */
+interface PersistedAnalyserResult {
+  data: VideoData[];
+  channelName: string;
+  channelId?: string;
+  savedAt: number;
+}
+
+function isPersistedAnalyserResult(value: unknown): value is PersistedAnalyserResult {
+  if (!value || typeof value !== "object") return false;
+  const v = value as Record<string, unknown>;
+  return (
+    Array.isArray(v.data) &&
+    typeof v.channelName === "string" &&
+    typeof v.savedAt === "number" &&
+    (v.channelId === undefined || typeof v.channelId === "string")
+  );
+}
+
+/** Read the persisted last result, ignoring anything malformed or older than the TTL. */
+function readPersistedResult(): PersistedAnalyserResult | null {
+  const raw = safeRead<unknown>(STORAGE_KEYS.ANALYSER_LAST_RESULT, null);
+  if (!isPersistedAnalyserResult(raw)) return null;
+  if (Date.now() - raw.savedAt > CACHE_TTL.ANALYSER_RESULT) return null;
+  return raw;
+}
+
+function persistResult(result: PersistedAnalyserResult): void {
+  safeWrite(STORAGE_KEYS.ANALYSER_LAST_RESULT, result);
+}
+
+function clearPersistedResult(): void {
+  safeRemove(STORAGE_KEYS.ANALYSER_LAST_RESULT);
+}
+
+/** Rehydrate the last completed search on mount so a reload keeps the results in view. */
+function restoreInitialSearchState(): SearchState {
+  const persisted = readPersistedResult();
+  if (!persisted) return initialSearchState;
+  return {
+    isLoading: false,
+    step: "complete",
+    error: null,
+    data: persisted.data,
+    channelName: persisted.channelName,
+    channelId: persisted.channelId,
+    resultSavedAt: persisted.savedAt,
+  };
+}
+
 interface UseSearchOptions {
   onApiKeyInvalid?: () => void;
 }
 
 export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
-  const [searchState, setSearchState] = useState<SearchState>(initialSearchState);
+  const [searchState, setSearchState] = useState<SearchState>(restoreInitialSearchState);
 
   const handleSearch = useCallback(
     async (
@@ -92,6 +146,7 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
         setSearchState((prev) => ({ ...prev, step: "analyzing_ai" }));
         const analyzedVideos = analyzeVideoStats(apiVideos, displayName, timeFrame);
 
+        const savedAt = Date.now();
         setSearchState({
           isLoading: false,
           step: "complete",
@@ -99,7 +154,10 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
           data: analyzedVideos,
           channelName: displayName,
           channelId,
+          resultSavedAt: savedAt,
         });
+        // Persist the snapshot so a page reload keeps the results in view.
+        persistResult({ data: analyzedVideos, channelName: displayName, channelId, savedAt });
       } catch (err: unknown) {
         if (import.meta.env.DEV) console.error(err);
         const errorMessage = err instanceof Error ? err.message : "Analysis failed.";
@@ -143,6 +201,7 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
   );
 
   const resetSearch = useCallback(() => {
+    clearPersistedResult();
     setSearchState(initialSearchState);
   }, []);
 

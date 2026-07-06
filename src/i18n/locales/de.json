@@ -178,7 +178,9 @@
     "copyAllUrls": "Alle Video-URLs kopieren",
     "copyAllFailed": "Zwischenablage nicht verfügbar",
     "exportCsv": "Ergebnisse als CSV exportieren",
+    "exportJson": "Ergebnisse als JSON exportieren",
     "exportFailed": "Export fehlgeschlagen",
+    "analyzedAgo": "Analysiert {{time}}",
     "announceLoading": "Ergebnisse werden geladen…",
     "announceResults_one": "{{count}} Video für {{channel}} gefunden.",
     "announceResults_other": "{{count}} Videos für {{channel}} gefunden.",
@@ -294,6 +296,7 @@
     "focusSearch": "Suche fokussieren",
     "openDashboard": "Dashboard öffnen",
     "openAnalyser": "Analyser öffnen",
+    "toggleTheme": "Theme wechseln",
     "refreshAll": "Alle Favoriten aktualisieren",
     "toggleHint": "Kuerzel anzeigen"
   },

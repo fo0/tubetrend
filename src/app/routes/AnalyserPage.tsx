@@ -1,5 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AlertCircle, Check, Copy, Download, Eye, List, Loader2, Trophy } from "lucide-react";
+import {
+  AlertCircle,
+  Check,
+  Copy,
+  Download,
+  Eye,
+  FileJson,
+  List,
+  Loader2,
+  Trophy,
+} from "lucide-react";
 import { Youtube } from "@/src/shared/components/ui/BrandIcons";
 import { InputSection } from "@/src/shared/components/ui/InputSection";
 import { VideoCard } from "@/src/shared/components/ui/VideoCard";
@@ -8,8 +18,14 @@ import { EmptyState, type EmptyStateExample } from "@/src/shared/components/ui/E
 import { useTranslation } from "react-i18next";
 import { SearchType, type TimeFrame } from "@/src/shared/types";
 import type { SearchState } from "@/src/features/search/hooks/useSearch";
-import { buildResultsCsv, buildResultsCsvFilename } from "@/src/features/videos";
-import { formatCompactNumber, formatNumber } from "@/src/shared/lib/formatters";
+import {
+  buildResultsCsv,
+  buildResultsCsvFilename,
+  buildResultsJson,
+  buildResultsJsonFilename,
+} from "@/src/features/videos";
+import { formatCompactNumber, formatNumber, formatTimeAgo } from "@/src/shared/lib/formatters";
+import { getLocale } from "@/src/shared/lib/locale";
 import { STORAGE_KEYS } from "@/src/shared/constants";
 
 interface AnalyserPageProps {
@@ -148,15 +164,18 @@ export function AnalyserPage({
   const [copiedAll, setCopiedAll] = useState(false);
   const [copyAllFailed, setCopyAllFailed] = useState(false);
   const [exportFailed, setExportFailed] = useState(false);
+  const [exportJsonFailed, setExportJsonFailed] = useState(false);
   const copiedAllTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const copyFailedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const exportFailedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const exportJsonFailedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     return () => {
       if (copiedAllTimerRef.current) clearTimeout(copiedAllTimerRef.current);
       if (copyFailedTimerRef.current) clearTimeout(copyFailedTimerRef.current);
       if (exportFailedTimerRef.current) clearTimeout(exportFailedTimerRef.current);
+      if (exportJsonFailedTimerRef.current) clearTimeout(exportJsonFailedTimerRef.current);
     };
   }, []);
 
@@ -185,6 +204,28 @@ export function AnalyserPage({
       setExportFailed(true);
       if (exportFailedTimerRef.current) clearTimeout(exportFailedTimerRef.current);
       exportFailedTimerRef.current = setTimeout(() => setExportFailed(false), 2500);
+    }
+  };
+
+  const handleExportJson = () => {
+    if (sortedVideos.length === 0) return;
+    try {
+      const json = buildResultsJson(sortedVideos, searchState.channelName);
+      const filename = buildResultsJsonFilename(searchState.channelName);
+      const blob = new Blob([json], { type: "application/json;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 0);
+    } catch {
+      // Surface download errors (e.g. blocked environments) instead of failing silently.
+      setExportJsonFailed(true);
+      if (exportJsonFailedTimerRef.current) clearTimeout(exportJsonFailedTimerRef.current);
+      exportJsonFailedTimerRef.current = setTimeout(() => setExportJsonFailed(false), 2500);
     }
   };
 
@@ -274,6 +315,16 @@ export function AnalyserPage({
                   {t("results.totalViews", { count: formatCompactNumber(totalViews) })}
                 </span>
               )}
+              {searchState.resultSavedAt != null && !searchState.isLoading && (
+                <span
+                  className="text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap cursor-help"
+                  title={new Date(searchState.resultSavedAt).toLocaleString(getLocale())}
+                >
+                  {t("results.analyzedAgo", {
+                    time: formatTimeAgo(searchState.resultSavedAt, t),
+                  })}
+                </span>
+              )}
               {searchState.isLoading && (
                 <span
                   className="inline-flex items-center gap-1 text-xs text-indigo-500 dark:text-indigo-400"
@@ -329,6 +380,28 @@ export function AnalyserPage({
                   )}
                   <span className="hidden lg:inline">
                     {exportFailed ? t("results.exportFailed") : "CSV"}
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleExportJson}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors ${
+                    exportJsonFailed
+                      ? "text-red-500 dark:text-red-400"
+                      : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800"
+                  }`}
+                  title={exportJsonFailed ? t("results.exportFailed") : t("results.exportJson")}
+                  aria-label={
+                    exportJsonFailed ? t("results.exportFailed") : t("results.exportJson")
+                  }
+                >
+                  {exportJsonFailed ? (
+                    <AlertCircle className="w-4 h-4" aria-hidden="true" />
+                  ) : (
+                    <FileJson className="w-4 h-4" aria-hidden="true" />
+                  )}
+                  <span className="hidden lg:inline">
+                    {exportJsonFailed ? t("results.exportFailed") : "JSON"}
                   </span>
                 </button>
               </div>
