@@ -296,6 +296,7 @@
     "focusSearch": "Focus search",
     "openDashboard": "Open Dashboard",
     "openAnalyser": "Open Analyser",
+    "toggleTheme": "Toggle theme",
     "refreshAll": "Refresh all favorites",
     "toggleHint": "Show shortcuts"
   },

@@ -18,6 +18,7 @@ import {
   useHighlights,
 } from "@/src/features/dashboard/hooks/useDashboard";
 import { useSearch } from "@/src/features/search/hooks/useSearch";
+import { useTheme } from "@/src/providers/ThemeProvider";
 import type { FavoriteConfig } from "@/src/features/favorites/types";
 import type { VideoData } from "@/src/features/videos/types";
 import { type SearchType, TimeFrame } from "@/src/shared/types";
@@ -27,6 +28,7 @@ import { safeRead, safeWrite } from "@/src/shared/lib/storage";
 
 const App: React.FC = () => {
   const { t } = useTranslation();
+  const { theme, setTheme } = useTheme();
 
   // API Key state — read via the canonical accessor (guarded against blocked
   // storage). An empty key is normalized to null ("no key configured").
@@ -76,6 +78,7 @@ const App: React.FC = () => {
   // Global hotkeys:
   // - "d" / "a" switch between Dashboard and Analyser
   // - "r" on the dashboard refreshes all favorites
+  // - "t" cycles the theme (system → light → dark)
   // - "?" toggles the keyboard-shortcuts help popover
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -108,6 +111,14 @@ const App: React.FC = () => {
         setActivePage("analyser");
         return;
       }
+      if (key === "t") {
+        e.preventDefault();
+        // Cycle system → light → dark, matching the ThemeToggle button.
+        const order: Array<"system" | "light" | "dark"> = ["system", "light", "dark"];
+        const idx = order.indexOf(theme);
+        setTheme(order[(idx + 1) % order.length]);
+        return;
+      }
       if (key === "r") {
         if (activePage !== "dashboard") return;
         if (favorites.length === 0) return;
@@ -115,7 +126,7 @@ const App: React.FC = () => {
         refreshAll();
       }
     },
-    [activePage, favorites.length, refreshAll],
+    [activePage, favorites.length, refreshAll, theme, setTheme],
   );
   useEventListener("keydown", handleKeyDown, document);
 
