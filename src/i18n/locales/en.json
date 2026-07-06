@@ -180,6 +180,7 @@
     "exportCsv": "Export results as CSV",
     "exportJson": "Export results as JSON",
     "exportFailed": "Export failed",
+    "analyzedAgo": "Analyzed {{time}}",
     "announceLoading": "Loading results…",
     "announceResults_one": "{{count}} video found for {{channel}}.",
     "announceResults_other": "{{count}} videos found for {{channel}}.",

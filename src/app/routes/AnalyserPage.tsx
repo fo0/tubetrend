@@ -24,7 +24,8 @@ import {
   buildResultsJson,
   buildResultsJsonFilename,
 } from "@/src/features/videos";
-import { formatCompactNumber, formatNumber } from "@/src/shared/lib/formatters";
+import { formatCompactNumber, formatNumber, formatTimeAgo } from "@/src/shared/lib/formatters";
+import { getLocale } from "@/src/shared/lib/locale";
 import { STORAGE_KEYS } from "@/src/shared/constants";
 
 interface AnalyserPageProps {
@@ -312,6 +313,16 @@ export function AnalyserPage({
                   })}
                 >
                   {t("results.totalViews", { count: formatCompactNumber(totalViews) })}
+                </span>
+              )}
+              {searchState.resultSavedAt != null && !searchState.isLoading && (
+                <span
+                  className="text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap cursor-help"
+                  title={new Date(searchState.resultSavedAt).toLocaleString(getLocale())}
+                >
+                  {t("results.analyzedAgo", {
+                    time: formatTimeAgo(searchState.resultSavedAt, t),
+                  })}
                 </span>
               )}
               {searchState.isLoading && (
