@@ -178,6 +178,7 @@
     "copyAllUrls": "Copy all video URLs",
     "copyAllFailed": "Clipboard unavailable",
     "exportCsv": "Export results as CSV",
+    "exportJson": "Export results as JSON",
     "exportFailed": "Export failed",
     "announceLoading": "Loading results…",
     "announceResults_one": "{{count}} video found for {{channel}}.",

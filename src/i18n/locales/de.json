@@ -178,6 +178,7 @@
     "copyAllUrls": "Alle Video-URLs kopieren",
     "copyAllFailed": "Zwischenablage nicht verfügbar",
     "exportCsv": "Ergebnisse als CSV exportieren",
+    "exportJson": "Ergebnisse als JSON exportieren",
     "exportFailed": "Export fehlgeschlagen",
     "announceLoading": "Ergebnisse werden geladen…",
     "announceResults_one": "{{count}} Video für {{channel}} gefunden.",

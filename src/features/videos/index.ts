@@ -7,4 +7,9 @@ export * from "./types";
 
 // Services
 export { analyzeVideoStats } from "./services/trendAnalysisService";
-export { buildResultsCsv, buildResultsCsvFilename } from "./services/exportResults";
+export {
+  buildResultsCsv,
+  buildResultsCsvFilename,
+  buildResultsJson,
+  buildResultsJsonFilename,
+} from "./services/exportResults";
