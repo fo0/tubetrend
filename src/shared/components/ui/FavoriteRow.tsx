@@ -417,6 +417,20 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
     return () => document.removeEventListener("mousedown", onDocClick);
   }, [showTfMenu, showMaxMenu]);
 
+  // Close an open popover on Escape (keyboard dismissal). Consistent with the
+  // app's other popovers (quota panel, search dropdowns, shortcuts hint); these
+  // two menus previously could only be closed via an outside mouse click.
+  useEffect(() => {
+    if (!showTfMenu && !showMaxMenu) return;
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      setShowTfMenu(false);
+      setShowMaxMenu(false);
+    };
+    document.addEventListener("keydown", handleEsc);
+    return () => document.removeEventListener("keydown", handleEsc);
+  }, [showTfMenu, showMaxMenu]);
+
   const handleChangeTimeFrame = (tf: TimeFrame) => {
     setShowTfMenu(false);
     if (tf === currentTimeFrame) return;
