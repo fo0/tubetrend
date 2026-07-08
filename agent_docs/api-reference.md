@@ -64,4 +64,13 @@ All storage access goes through the type-safe `StorageAdapter` in `src/shared/li
 | `tt.search.history`    | Search input history                 | `InputSection.tsx`  |
 | `tt.lang.explicit`     | Explicit language selection          | `i18n/config.ts`    |
 | `tt.theme`             | Theme preference (light/dark/system) | `ThemeProvider.tsx` |
+| `tt.activePage`        | Active page (dashboard/analyser)     | `App.tsx`           |
 | `yt_quota_tracking`    | API quota usage tracking & history   | `quotaService.ts`   |
+
+### Analyser
+
+| Key                         | Purpose                                     | Used by            |
+| --------------------------- | ------------------------------------------- | ------------------ |
+| `tt.analyser.sortMode`      | Analyser result sort mode                   | `AnalyserPage.tsx` |
+| `tt.analyser.topN`          | Analyser top-N result count                 | `AnalyserPage.tsx` |
+| `tt.analyser.lastResult.v1` | Cached last analyser result (TTL: 24 hours) | `useSearch.ts`     |
