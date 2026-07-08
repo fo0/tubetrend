@@ -109,7 +109,7 @@ export const LanguageSwitcher: React.FC = () => {
             if (val === "system") setSystem();
             else setLang(val);
           }}
-          title={`Language: ${title}`}
+          title={`${t("language.label")} ${title}`}
         >
           <option value="system">{t("language.system")}</option>
           {LANGS.map((lng) => (
