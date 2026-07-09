@@ -503,6 +503,17 @@ export const ApiQuotaIndicator: React.FC = () => {
                 style={{ width: `${quota.percentage}%` }}
               />
             </div>
+            {/* Exhausted notice: explains why searches fail and when the quota
+                resets (the button icon alone did not surface this). */}
+            {quota.exhausted && (
+              <div
+                className="mt-2 flex items-center gap-1.5 text-[11px] text-red-400"
+                role="status"
+              >
+                <AlertTriangle className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                <span>{t("quota.exhausted")}</span>
+              </div>
+            )}
           </div>
 
           {/* Timeline line chart - pure line chart showing usage over time */}

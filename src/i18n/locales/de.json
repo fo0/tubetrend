@@ -103,7 +103,8 @@
     "remove": "Favorit entfernen",
     "analyze": "Im Analyser öffnen (nutzt Cache-Daten)",
     "clearAll": "Alle Favoriten löschen",
-    "clearAllConfirm": "Alle {{count}} Favoriten entfernen? Das kann nicht rückgängig gemacht werden."
+    "clearAllConfirm": "Alle {{count}} Favoriten entfernen? Das kann nicht rückgängig gemacht werden.",
+    "noVideosInTimeFrame": "Keine Videos in diesem Zeitraum gefunden."
   },
   "dashboard": {
     "noFavorites": "Noch keine Favoriten. Lege im Analyser eine Suche als Favorit an.",

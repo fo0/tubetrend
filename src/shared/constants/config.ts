@@ -14,6 +14,7 @@ export const STORAGE_KEYS = {
   DASHBOARD_ORDER: "tt.dashboard.sortOrder.v1",
   SEARCH_TIMEFRAME: "tt.search.timeframe",
   SEARCH_MAX_RESULTS: "tt.search.maxResults",
+  SEARCH_QUERY: "tt.search.query",
   SEARCH_HISTORY: "tt.search.history",
   LANGUAGE: "tt.lang.explicit",
   HIDDEN_HIGHLIGHTS: "tt.dashboard.hiddenHighlights.v1",

@@ -61,7 +61,17 @@ export const InputSection: React.FC<InputSectionProps> = ({
   externalSyncToken,
 }) => {
   const { t } = useTranslation();
-  const [inputValue, setInputValue] = useState<string>(DEFAULT_SEARCH_INPUT);
+  const [inputValue, setInputValue] = useState<string>(() => {
+    // Restore the last query so a page reload doesn't discard what was typed.
+    // Falls back to the configured default on the first ever load.
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.SEARCH_QUERY);
+      if (saved !== null) return saved;
+    } catch {
+      // ignore storage errors
+    }
+    return DEFAULT_SEARCH_INPUT;
+  });
   const [timeFrame, setTimeFrame] = useState<TimeFrame>(TimeFrame.LAST_MONTH);
   const [maxResults, setMaxResults] = useState<number>(-1);
 
@@ -171,6 +181,15 @@ export const InputSection: React.FC<InputSectionProps> = ({
       // ignore storage errors
     }
   }, [timeFrame, maxResults]);
+
+  // Persist the query text so a reload restores it (mirrors timeframe/maxResults).
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.SEARCH_QUERY, inputValue);
+    } catch {
+      // ignore storage errors
+    }
+  }, [inputValue]);
 
   // Load history from storage once
   useEffect(() => {
