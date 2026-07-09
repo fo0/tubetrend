@@ -675,7 +675,7 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
         </div>
       )}
 
-      {!loading && !error && videos && (
+      {!loading && !error && videos && videos.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3">
           {videos.map((video) => {
             const isFresh =
@@ -687,6 +687,15 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Empty state: favorite loaded successfully but has no videos in the
+          selected time frame — previously this rendered a blank grid with no
+          explanation. */}
+      {!loading && !error && videos && videos.length === 0 && (
+        <div className="bg-slate-50 border border-slate-200 dark:bg-slate-900/50 dark:border-slate-800 rounded-xl p-4 text-sm text-slate-500 dark:text-slate-400">
+          {t("favorites.noVideosInTimeFrame")}
         </div>
       )}
     </section>

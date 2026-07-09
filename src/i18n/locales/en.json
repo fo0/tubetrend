@@ -103,7 +103,8 @@
     "remove": "Remove favorite",
     "analyze": "Open in Analyzer (uses cached data)",
     "clearAll": "Clear all favorites",
-    "clearAllConfirm": "Remove all {{count}} favorites? This cannot be undone."
+    "clearAllConfirm": "Remove all {{count}} favorites? This cannot be undone.",
+    "noVideosInTimeFrame": "No videos found in this time frame."
   },
   "dashboard": {
     "noFavorites": "No favorites yet. Create a favorite from the analyzer.",
