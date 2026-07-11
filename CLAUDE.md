@@ -113,19 +113,19 @@ Repository: `https://github.com/fo0/tubetrend`
 | -------------------- | ---------------------------------- | ----------------------------------------------------------------------------------------------------- |
 | Runtime              | Node.js                            | 22+                                                                                                   |
 | Language             | TypeScript                         | ~6.0.3                                                                                                |
-| UI Framework         | React                              | ^19.2.6                                                                                               |
-| Build Tool           | Vite                               | ^8.0.14                                                                                               |
+| UI Framework         | React                              | ^19.2.7                                                                                               |
+| Build Tool           | Vite                               | ^8.0.16                                                                                               |
 | Vite Plugin          | @vitejs/plugin-react               | ^6.0.2                                                                                                |
-| CSS Framework        | Tailwind CSS                       | ^4.2.4 (@tailwindcss/vite plugin)                                                                     |
+| CSS Framework        | Tailwind CSS                       | ^4.3.1 (@tailwindcss/vite plugin)                                                                     |
 | Font                 | @fontsource/inter                  | ^5.2 (locally bundled)                                                                                |
-| Icons                | Lucide React                       | ^1.17.0                                                                                               |
-| i18n                 | i18next + react-i18next            | ^26.2 / ^17.0.8                                                                                       |
+| Icons                | Lucide React                       | ^1.18.0                                                                                               |
+| i18n                 | i18next + react-i18next            | ^26.3.1 / ^17.0.8                                                                                     |
 | Language Detection   | i18next-browser-languagedetector   | ^8.2.1                                                                                                |
 | Package Manager      | npm                                | (lockfile v3)                                                                                         |
 | Electron Integration | vite-plugin-electron (conditional) | ^0.29.1                                                                                               |
 | Desktop App          | Electron                           | ^41.6.1                                                                                               |
-| Desktop Packaging    | electron-builder                   | ^26.8.1                                                                                               |
-| Android Build        | Capacitor                          | ^8.3.4                                                                                                |
+| Desktop Packaging    | electron-builder                   | ^26.15.3                                                                                              |
+| Android Build        | Capacitor                          | ^8.4.0                                                                                                |
 | Container            | Docker (multi-stage)               | Node 22-alpine + Nginx alpine                                                                         |
 | Chrome Extension     | Manifest V3                        | Tab-based, manual install via chrome://extensions/                                                    |
 | CI/CD                | GitHub Actions                     | typecheck, build, security audit, electron release, chromebook release, android APK, chrome extension |
@@ -377,7 +377,7 @@ Project-intended and common MCPs are documented in `agent_docs/mcp_catalog.md`. 
 
 CI failure handling is in `.claude/skills/ci/SKILL.md`. Triggered by `/ci`, "fix CI", "check the build". Auto-routes by run state (none / running / passed / failed / stale). Never auto-reruns; always verifies fixes locally before pushing.
 
-Workflows: `pr-checks.yml`, `docker-publish.yml`, `electron-release.yml`, `android-release.yml`, `extension-release.yml`.
+Workflows: `pr-checks.yml`, `docker-publish.yml`, `electron-release.yml`, `android-release.yml`, `extension-release.yml`, `cleanup-ghcr.yml`.
 
 ## Subagents
 
