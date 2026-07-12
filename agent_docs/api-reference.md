@@ -57,15 +57,16 @@ All storage access goes through the type-safe `StorageAdapter` in `src/shared/li
 
 ### Search & Preferences
 
-| Key                    | Purpose                              | Used by             |
-| ---------------------- | ------------------------------------ | ------------------- |
-| `tt.search.timeframe`  | Search timeframe preference          | `InputSection.tsx`  |
-| `tt.search.maxResults` | Search max results preference        | `InputSection.tsx`  |
-| `tt.search.history`    | Search input history                 | `InputSection.tsx`  |
-| `tt.lang.explicit`     | Explicit language selection          | `i18n/config.ts`    |
-| `tt.theme`             | Theme preference (light/dark/system) | `ThemeProvider.tsx` |
-| `tt.activePage`        | Active page (dashboard/analyser)     | `App.tsx`           |
-| `yt_quota_tracking`    | API quota usage tracking & history   | `quotaService.ts`   |
+| Key                    | Purpose                                     | Used by             |
+| ---------------------- | ------------------------------------------- | ------------------- |
+| `tt.search.timeframe`  | Search timeframe preference                 | `InputSection.tsx`  |
+| `tt.search.maxResults` | Search max results preference               | `InputSection.tsx`  |
+| `tt.search.query`      | Last search input text (restored on reload) | `InputSection.tsx`  |
+| `tt.search.history`    | Search input history                        | `InputSection.tsx`  |
+| `tt.lang.explicit`     | Explicit language selection                 | `i18n/config.ts`    |
+| `tt.theme`             | Theme preference (light/dark/system)        | `ThemeProvider.tsx` |
+| `tt.activePage`        | Active page (dashboard/analyser)            | `App.tsx`           |
+| `yt_quota_tracking`    | API quota usage tracking & history          | `quotaService.ts`   |
 
 ### Analyser
 
