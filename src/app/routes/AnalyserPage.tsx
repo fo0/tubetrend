@@ -26,6 +26,7 @@ import {
 } from "@/src/features/videos";
 import { formatCompactNumber, formatNumber, formatTimeAgo } from "@/src/shared/lib/formatters";
 import { getLocale } from "@/src/shared/lib/locale";
+import { downloadBlob } from "@/src/shared/lib/download";
 import { STORAGE_KEYS } from "@/src/shared/constants";
 
 interface AnalyserPageProps {
@@ -190,15 +191,7 @@ export function AnalyserPage({
     try {
       const csv = buildResultsCsv(sortedVideos);
       const filename = buildResultsCsvFilename(searchState.channelName);
-      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      setTimeout(() => URL.revokeObjectURL(url), 0);
+      downloadBlob(filename, new Blob([csv], { type: "text/csv;charset=utf-8;" }));
     } catch {
       // Surface download errors (e.g. blocked environments) instead of failing silently.
       setExportFailed(true);
@@ -212,15 +205,7 @@ export function AnalyserPage({
     try {
       const json = buildResultsJson(sortedVideos, searchState.channelName);
       const filename = buildResultsJsonFilename(searchState.channelName);
-      const blob = new Blob([json], { type: "application/json;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      setTimeout(() => URL.revokeObjectURL(url), 0);
+      downloadBlob(filename, new Blob([json], { type: "application/json;charset=utf-8;" }));
     } catch {
       // Surface download errors (e.g. blocked environments) instead of failing silently.
       setExportJsonFailed(true);

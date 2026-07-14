@@ -25,6 +25,7 @@ import { type SearchType, TimeFrame } from "@/src/shared/types";
 import { STORAGE_KEYS } from "@/src/shared/constants";
 import { dispatchEvent } from "@/src/shared/lib/eventBus";
 import { safeRead, safeWrite } from "@/src/shared/lib/storage";
+import { downloadBlob } from "@/src/shared/lib/download";
 
 const App: React.FC = () => {
   const { t } = useTranslation();
@@ -161,15 +162,7 @@ const App: React.FC = () => {
 
   const downloadTextFile = useCallback((filename: string, text: string) => {
     try {
-      const blob = new Blob([text], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      setTimeout(() => URL.revokeObjectURL(url), 0);
+      downloadBlob(filename, new Blob([text], { type: "application/json" }));
     } catch {
       // ignore
     }

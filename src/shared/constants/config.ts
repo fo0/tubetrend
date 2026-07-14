@@ -41,8 +41,6 @@ export const API_COSTS = {
 
 export const DEFAULT_DAILY_QUOTA = 10000;
 
-export const PLACEHOLDER_IMAGE = "https://picsum.photos/640/360";
-
 /**
  * Videos shorter than this threshold (in seconds) are classified as Shorts
  * and filtered out of channel/keyword results.
