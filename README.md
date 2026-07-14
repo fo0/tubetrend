@@ -78,6 +78,15 @@ These builds include `--no-sandbox` and Wayland auto-detection flags required fo
 sudo dpkg -i TubeTrend-*-Chromebook-*.deb
 ```
 
+To build from source:
+
+```bash
+npm install
+npm run build:chromebook
+```
+
+The `.deb` packages will be in `release-chromebook/`.
+
 ### Option 4: Android APK (Chromebook / ChromeOS)
 
 **No Linux (Crostini) required — runs natively on ChromeOS via ARCVM.**
