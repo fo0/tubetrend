@@ -177,6 +177,7 @@
     },
     "copyAll": "Copy all",
     "copyAllUrls": "Copy all video URLs",
+    "copyAllDone": "All video URLs copied",
     "copyAllFailed": "Clipboard unavailable",
     "exportCsv": "Export results as CSV",
     "exportJson": "Export results as JSON",

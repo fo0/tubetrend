@@ -177,6 +177,7 @@
     },
     "copyAll": "Alle kopieren",
     "copyAllUrls": "Alle Video-URLs kopieren",
+    "copyAllDone": "Alle Video-URLs kopiert",
     "copyAllFailed": "Zwischenablage nicht verfügbar",
     "exportCsv": "Ergebnisse als CSV exportieren",
     "exportJson": "Ergebnisse als JSON exportieren",
