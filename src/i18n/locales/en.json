@@ -223,7 +223,8 @@
       "step3": "Click \"Enable\" to activate the API for your project",
       "step4": "Go to \"Credentials\" → \"Create credentials\" → \"API key\"",
       "step5": "Copy the generated key and paste it here",
-      "keyFormat": "The key starts with \"AIza\" and is about 39 characters long."
+      "keyFormat": "The key starts with \"AIza\" and is about 39 characters long.",
+      "tooShort": "This key looks too short — please paste the full key."
     }
   },
   "confirm": {

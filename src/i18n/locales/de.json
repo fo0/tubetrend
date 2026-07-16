@@ -223,7 +223,8 @@
       "step3": "Klicke auf \"Aktivieren\" um die API für dein Projekt zu aktivieren",
       "step4": "Gehe zu \"Anmeldedaten\" → \"Anmeldedaten erstellen\" → \"API-Schlüssel\"",
       "step5": "Kopiere den erstellten Schlüssel und füge ihn hier ein",
-      "keyFormat": "Der Schlüssel beginnt mit \"AIza\" und hat ca. 39 Zeichen."
+      "keyFormat": "Der Schlüssel beginnt mit \"AIza\" und hat ca. 39 Zeichen.",
+      "tooShort": "Dieser Schlüssel scheint zu kurz — bitte den vollständigen Schlüssel einfügen."
     }
   },
   "confirm": {
