@@ -67,6 +67,14 @@ For a quick preview without packaging:
 npm run electron:preview
 ```
 
+For a Windows-specific portable build:
+
+```bash
+npm run build:win
+```
+
+The portable `TubeTrend-<version>-Portable.exe` will be in the `release/` directory.
+
 **Chromebook (ChromeOS / Crostini):** Download the matching `.deb` for your architecture from [Releases](https://github.com/fo0/tubetrend/releases):
 
 - `TubeTrend-*-Chromebook-x64.deb` — Intel/AMD Chromebooks (e.g., ASUS Chromebook CX1, Flip CX5)
