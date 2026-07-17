@@ -235,6 +235,18 @@ export function AnalyserPage({
     );
   };
 
+  // Screen-reader announcement for the bulk export/share actions. Their result
+  // is otherwise only conveyed by a transient icon swap (checkmark / warning),
+  // which is silent to assistive tech — mirrors the per-video copy announcements
+  // in VideoCard / VideoListTable.
+  const bulkActionAnnouncement = copyAllFailed
+    ? t("results.copyAllFailed")
+    : copiedAll
+      ? t("results.copyAllDone")
+      : exportFailed || exportJsonFailed
+        ? t("results.exportFailed")
+        : "";
+
   return (
     <>
       <InputSection
@@ -250,6 +262,11 @@ export function AnalyserPage({
       {/* Screen-reader-only live region: announces loading / result count / no-results. */}
       <p className="sr-only" role="status" aria-live="polite">
         {resultsAnnouncement}
+      </p>
+
+      {/* Screen-reader-only live region: announces copy-all / export action results. */}
+      <p className="sr-only" role="status" aria-live="polite">
+        {bulkActionAnnouncement}
       </p>
 
       {/* Error Message */}

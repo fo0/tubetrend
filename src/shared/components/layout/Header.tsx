@@ -158,12 +158,19 @@ function KeyboardShortcutsHint({ activePage }: { activePage: PageType }) {
         title={t("keyboard.label")}
         aria-label={t("keyboard.label")}
         aria-expanded={isOpen}
+        aria-haspopup="dialog"
+        aria-controls="keyboard-shortcuts-panel"
       >
         <Keyboard className="w-3.5 h-3.5" aria-hidden="true" />
       </button>
 
       {isOpen && (
-        <div className="absolute top-full right-0 mt-2 w-56 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl z-50 p-3 animate-fade-in">
+        <div
+          id="keyboard-shortcuts-panel"
+          role="dialog"
+          aria-label={t("keyboard.label")}
+          className="absolute top-full right-0 mt-2 w-56 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl z-50 p-3 animate-fade-in"
+        >
           <div className="text-xs font-semibold text-slate-600 dark:text-slate-300 mb-2">
             {t("keyboard.label")}
           </div>

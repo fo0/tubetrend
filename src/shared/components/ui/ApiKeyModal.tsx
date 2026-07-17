@@ -5,6 +5,12 @@ import { useTranslation } from "react-i18next";
 const FOCUSABLE_SELECTOR =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
+// Minimum plausible length for a YouTube Data API key (real keys are ~39 chars).
+// Single source of truth for both the disabled state and the submit guard so the
+// two can't drift out of sync (they previously used <10 vs >10 — a dead state
+// where the button looked enabled but submit silently did nothing).
+const MIN_API_KEY_LENGTH = 10;
+
 interface ApiKeyModalProps {
   onSave: (key: string) => void;
 }
@@ -16,6 +22,11 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ onSave }) => {
   const [showKey, setShowKey] = useState(false);
   const { t } = useTranslation();
   const dialogRef = useRef<HTMLDivElement>(null);
+
+  const trimmedKey = inputKey.trim();
+  const isKeyLongEnough = trimmedKey.length >= MIN_API_KEY_LENGTH;
+  // Show the "too short" hint only once the user has typed something.
+  const showTooShortHint = inputKey.length > 0 && !isKeyLongEnough;
 
   // Focus trap: keep focus inside the modal while it is open (WCAG 2.4.3)
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
@@ -43,8 +54,8 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ onSave }) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (inputKey.trim().length > 10) {
-      onSave(inputKey.trim());
+    if (isKeyLongEnough) {
+      onSave(trimmedKey);
     }
   };
 
@@ -89,6 +100,8 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ onSave }) => {
                   className="w-full pl-4 pr-11 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 outline-none transition-all font-mono text-sm"
                   autoFocus
                   autoComplete="off"
+                  aria-invalid={showTooShortHint}
+                  aria-describedby={showTooShortHint ? "apikey-too-short" : undefined}
                 />
                 <button
                   type="button"
@@ -105,11 +118,20 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ onSave }) => {
                   )}
                 </button>
               </div>
+              {showTooShortHint && (
+                <p
+                  id="apikey-too-short"
+                  role="alert"
+                  className="mt-2 text-xs text-amber-600 dark:text-amber-400"
+                >
+                  {t("modal.apiKey.tooShort")}
+                </p>
+              )}
             </div>
 
             <button
               type="submit"
-              disabled={inputKey.length < 10}
+              disabled={!isKeyLongEnough}
               className="w-full py-3 px-4 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 text-white font-bold rounded-xl transition-all shadow-lg shadow-red-900/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Check className="w-5 h-5" />
