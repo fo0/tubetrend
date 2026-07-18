@@ -18,18 +18,19 @@ This file documents:
 
 ## Common MCPs (reference — not necessarily used here)
 
-| MCP                             | Typical use                                                                                    |
-| ------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `gitnexus`                      | Code intelligence — symbol graph, impact, refactor (manifest-driven feature in this optimizer) |
-| `filesystem`                    | Sandboxed file access beyond CWD                                                               |
-| `github`                        | Issue / PR / repo metadata via API (alternative to `gh`)                                       |
-| `postgres` / `mysql` / `sqlite` | Live DB schema introspection + read queries                                                    |
-| `puppeteer` / `playwright`      | Headless browser, used for UI automation, scraping, e2e                                        |
-| `fetch`                         | HTTP fetch wrapper                                                                             |
-| `slack`                         | Read/post messages — for ops integrations                                                      |
-| `sentry`                        | Error tracking lookup                                                                          |
-| `notion` / `linear` / `jira`    | Work tracking integrations                                                                     |
-| `aws` / `gcp` / `azure`         | Cloud resource queries (use carefully — non-zero cost)                                         |
+| MCP                             | Typical use                                                                                                                                                                                                                                                                                                                              |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `gitnexus`                      | Code intelligence — symbol graph, impact, refactor (manifest-driven feature in this optimizer)                                                                                                                                                                                                                                           |
+| `filesystem`                    | Sandboxed file access beyond CWD                                                                                                                                                                                                                                                                                                         |
+| `github`                        | Issue / PR / repo metadata via API (alternative to `gh`)                                                                                                                                                                                                                                                                                 |
+| `claude-code-remote`            | Claude Code web/remote session management — scheduled Routines/triggers, `send_later` self check-ins, PR-activity subscriptions. Trigger self-management tools are pre-approved in `.claude/settings.json` → `permissions.allow` (optimizer feature "Agent trigger permissions") so autonomous check-ins don't stall on approval prompts |
+| `postgres` / `mysql` / `sqlite` | Live DB schema introspection + read queries                                                                                                                                                                                                                                                                                              |
+| `puppeteer` / `playwright`      | Headless browser, used for UI automation, scraping, e2e                                                                                                                                                                                                                                                                                  |
+| `fetch`                         | HTTP fetch wrapper                                                                                                                                                                                                                                                                                                                       |
+| `slack`                         | Read/post messages — for ops integrations                                                                                                                                                                                                                                                                                                |
+| `sentry`                        | Error tracking lookup                                                                                                                                                                                                                                                                                                                    |
+| `notion` / `linear` / `jira`    | Work tracking integrations                                                                                                                                                                                                                                                                                                               |
+| `aws` / `gcp` / `azure`         | Cloud resource queries (use carefully — non-zero cost)                                                                                                                                                                                                                                                                                   |
 
 ## Selection Heuristic for the Agent
 
@@ -44,4 +45,4 @@ This file documents:
 2. If the MCP needs setup, document the install/auth steps in CLAUDE.md "External Integrations" section.
 3. If a workflow becomes MCP-dependent, add a fallback path that works without it.
 
-<!-- Generated by claude-code-optimizer v1.8.0 -->
+<!-- Generated by claude-code-optimizer v1.15.0 -->
