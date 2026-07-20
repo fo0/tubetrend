@@ -182,6 +182,8 @@
     "exportCsv": "Export results as CSV",
     "exportJson": "Export results as JSON",
     "exportFailed": "Export failed",
+    "clear": "Clear",
+    "clearTitle": "Clear results",
     "analyzedAgo": "Analyzed {{time}}",
     "announceLoading": "Loading results…",
     "announceResults_one": "{{count}} video found for {{channel}}.",

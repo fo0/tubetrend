@@ -71,7 +71,10 @@ const App: React.FC = () => {
   }, []);
 
   const searchOptions = useMemo(() => ({ onApiKeyInvalid }), [onApiKeyInvalid]);
-  const { searchState, handleSearch, setSearchResult } = useSearch(apiKey, searchOptions);
+  const { searchState, handleSearch, setSearchResult, resetSearch } = useSearch(
+    apiKey,
+    searchOptions,
+  );
 
   // Sorted favorites
   const sortedFavorites = useMemo(() => sortFavorites(favorites), [favorites, sortFavorites]);
@@ -302,6 +305,7 @@ const App: React.FC = () => {
             externalInputValues={externalInputValues}
             onSearch={handleSearch}
             onPickExample={handlePickExample}
+            onClearResults={resetSearch}
           />
         )}
       </main>
