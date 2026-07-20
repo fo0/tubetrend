@@ -215,3 +215,20 @@ textarea:focus-visible {
   outline-offset: 2px;
   border-radius: 3px;
 }
+
+/* ── Reduced motion (WCAG 2.3.3) ──────────────────────────────────────────────
+   Respect the OS "reduce motion" preference: collapse animations/transitions to
+   near-instant so the spinners, pulses, glows, and fade-ins don't run at full
+   strength for motion-sensitive users. Durations are collapsed (not removed) so
+   animation end states (e.g. a completed fade-in) still apply.
+   ─────────────────────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
