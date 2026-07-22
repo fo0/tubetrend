@@ -125,7 +125,7 @@ export function FloatingScrollButton() {
       className={`
         fixed bottom-8 left-1/2 translate-x-[60%]
         z-40
-        w-10 h-10
+        w-11 h-11
         flex items-center justify-center
         rounded-full
         bg-slate-200/30 dark:bg-slate-700/30
