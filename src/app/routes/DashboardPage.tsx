@@ -123,9 +123,11 @@ export function DashboardPage({
         >
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-3">
             <div>
-              <div className="text-xs font-extrabold uppercase tracking-wide text-indigo-700 dark:text-indigo-300">
+              {/* h2: the page's <h1> (Header) otherwise skips straight to each
+                  favorite row's <h3> (WCAG 1.3.1 — no skipped heading levels). */}
+              <h2 className="text-xs font-extrabold uppercase tracking-wide text-indigo-700 dark:text-indigo-300">
                 {t("dashboard.highlights.title")}
-              </div>
+              </h2>
               <div className="text-sm text-slate-600 dark:text-slate-400">
                 {t("dashboard.highlights.subtitle")}
               </div>

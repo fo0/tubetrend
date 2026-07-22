@@ -290,7 +290,9 @@ export function AnalyserPage({
           {/* Control Bar */}
           <div className="flex flex-col sm:flex-row justify-between items-center bg-slate-100/50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200 dark:border-slate-800 gap-4 backdrop-blur-sm">
             <div className="flex items-center gap-2">
-              <h3 className="font-semibold text-slate-700 dark:text-slate-200">
+              {/* h2: the page's <h1> (Header) otherwise skips straight to the
+                  <h3> section titles below (WCAG 1.3.1 — no skipped heading levels). */}
+              <h2 className="font-semibold text-slate-700 dark:text-slate-200">
                 {t("results.resultsFor")}{" "}
                 {channelUrl ? (
                   <a
@@ -307,7 +309,7 @@ export function AnalyserPage({
                     <Youtube className="w-4 h-4" aria-hidden="true" />@{searchState.channelName}
                   </span>
                 )}
-              </h3>
+              </h2>
               <span className="bg-slate-200 dark:bg-slate-700 text-xs px-2 py-0.5 rounded-full text-slate-600 dark:text-slate-300 border border-slate-300 dark:border-slate-600">
                 {t("results.videosCount", { count: sortedVideos.length })}
               </span>
