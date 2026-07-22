@@ -455,6 +455,8 @@ export const ApiQuotaIndicator: React.FC = () => {
       {isOpen && (
         <div
           id="quota-history-panel"
+          role="dialog"
+          aria-label={t("quota.historyTitle")}
           className="absolute top-full right-0 mt-2 w-80 bg-slate-900 border border-slate-700 rounded-lg shadow-xl z-50"
         >
           {/* Header */}
