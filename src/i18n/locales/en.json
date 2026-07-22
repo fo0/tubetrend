@@ -240,6 +240,7 @@
     "importFailedStorage": "Import failed (could not write to browser storage)."
   },
   "errors": {
+    "apiKeyInvalid": "The API key appears to be invalid. Please check it.",
     "favoriteLoad": "Failed to load favorite data.",
     "somethingWentWrong": "Something went wrong",
     "tryAgain": "Try again"

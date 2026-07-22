@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { SearchType, TimeFrame, YouTubeVideoItem } from "@/src/shared/types";
 import { SearchType as ST } from "@/src/shared/types";
 import type { VideoData } from "@/src/features/videos/types";
@@ -87,6 +88,7 @@ interface UseSearchOptions {
 }
 
 export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
+  const { t } = useTranslation();
   const [searchState, setSearchState] = useState<SearchState>(restoreInitialSearchState);
 
   const handleSearch = useCallback(
@@ -170,7 +172,7 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
             ...prev,
             isLoading: false,
             step: "idle",
-            error: "The API key appears to be invalid. Please check it.",
+            error: t("errors.apiKeyInvalid"),
           }));
           options?.onApiKeyInvalid?.();
         } else {
@@ -183,7 +185,7 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
         }
       }
     },
-    [apiKey, options],
+    [apiKey, options, t],
   );
 
   const setSearchResult = useCallback(

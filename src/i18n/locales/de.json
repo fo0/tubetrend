@@ -240,6 +240,7 @@
     "importFailedStorage": "Import fehlgeschlagen (konnte nicht in den Browser-Speicher schreiben)."
   },
   "errors": {
+    "apiKeyInvalid": "Der API-Schlüssel scheint ungültig zu sein. Bitte überprüfe ihn.",
     "favoriteLoad": "Fehler beim Laden der Favoriten-Daten.",
     "somethingWentWrong": "Etwas ist schiefgelaufen",
     "tryAgain": "Erneut versuchen"

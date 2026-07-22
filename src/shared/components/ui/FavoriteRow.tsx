@@ -511,11 +511,17 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
                 onMouseDown={(e) => e.stopPropagation()}
                 className="absolute z-50 mt-2 left-0 w-56 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl p-1"
               >
-                <div className="max-h-60 overflow-auto">
+                <div
+                  className="max-h-60 overflow-auto"
+                  role="listbox"
+                  aria-label={t("favorites.changeTimeFrame")}
+                >
                   {TIME_FRAMES.map((opt) => (
                     <button
                       key={opt.value}
                       type="button"
+                      role="option"
+                      aria-selected={opt.value === currentTimeFrame}
                       onClick={() => handleChangeTimeFrame(opt.value)}
                       className={`w-full text-left px-3 py-2 rounded-md text-sm ${opt.value === currentTimeFrame ? "bg-indigo-600 text-white" : "text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"}`}
                     >
@@ -562,11 +568,17 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
                 onMouseDown={(e) => e.stopPropagation()}
                 className="absolute z-50 mt-2 left-44 w-56 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl p-1"
               >
-                <div className="max-h-60 overflow-auto">
+                <div
+                  className="max-h-60 overflow-auto"
+                  role="listbox"
+                  aria-label={t("favorites.changeMaxResults")}
+                >
                   {MAX_RESULTS_OPTIONS.map((opt) => (
                     <button
                       key={opt.value}
                       type="button"
+                      role="option"
+                      aria-selected={opt.value === currentMax}
                       onClick={() => handleChangeMax(opt.value)}
                       className={`w-full text-left px-3 py-2 rounded-md text-sm ${opt.value === currentMax ? "bg-indigo-600 text-white" : "text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"}`}
                     >
