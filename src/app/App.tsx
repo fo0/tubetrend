@@ -79,6 +79,21 @@ const App: React.FC = () => {
   // Sorted favorites
   const sortedFavorites = useMemo(() => sortFavorites(favorites), [favorites, sortFavorites]);
 
+  // Reflect the active page (and any active analysis) in the browser tab title so
+  // multiple open tabs, history entries, and bookmarks stay distinguishable.
+  // Reuses existing nav labels — no new strings.
+  useEffect(() => {
+    const appTitle = t("appTitle");
+    const activeChannel =
+      activePage === "analyser" && searchState.data && searchState.channelName.trim()
+        ? searchState.channelName.trim()
+        : null;
+    const pageLabel = activePage === "analyser" ? t("nav.analyser") : t("nav.dashboard");
+    document.title = activeChannel
+      ? `${activeChannel} · ${appTitle}`
+      : `${pageLabel} · ${appTitle}`;
+  }, [activePage, searchState.data, searchState.channelName, t]);
+
   // Global hotkeys:
   // - "d" / "a" switch between Dashboard and Analyser
   // - "r" on the dashboard refreshes all favorites
