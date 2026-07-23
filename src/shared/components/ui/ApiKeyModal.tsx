@@ -100,6 +100,10 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ onSave }) => {
                   className="w-full pl-4 pr-11 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 outline-none transition-all font-mono text-sm"
                   autoFocus
                   autoComplete="off"
+                  autoCapitalize="off"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  enterKeyHint="done"
                   aria-invalid={showTooShortHint}
                   aria-describedby={showTooShortHint ? "apikey-too-short" : undefined}
                 />
