@@ -18,7 +18,10 @@
       "mcp__Claude_Code_Remote__subscribe_pr_activity",
       "mcp__Claude_Code_Remote__unsubscribe_pr_activity",
       "mcp__github__subscribe_pr_activity",
-      "mcp__github__unsubscribe_pr_activity"
+      "mcp__github__unsubscribe_pr_activity",
+      "mcp__claude-code-remote__*",
+      "mcp__Claude_Code_Remote__*",
+      "mcp__claude_code_remote__*"
     ]
   },
   "hooks": {
@@ -38,7 +41,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "f=\"$CLAUDE_PROJECT_DIR/CLAUDE.md\"; [ -f \"$f\" ] && [ $(wc -c < \"$f\") -gt 40000 ] && echo 'WARNING: CLAUDE.md exceeds 40000 chars — extract largest section to agent_docs/ per Documentation Rules.' || true"
+            "command": "f=\"$CLAUDE_PROJECT_DIR/CLAUDE.md\"; if [ -f \"$f\" ] && [ \"$(wc -c < \"$f\")\" -gt 40000 ]; then printf '%s' '{\"hookSpecificOutput\":{\"hookEventName\":\"PostToolUse\",\"additionalContext\":\"CLAUDE.md exceeds 40000 chars — extract the largest section into agent_docs/ and replace it with a one-line reference, per Documentation Rules.\"}}'; fi; exit 0"
           }
         ]
       }
