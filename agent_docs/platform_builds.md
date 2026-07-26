@@ -1,0 +1,77 @@
+# Platform Builds & Development Notes — Detail
+
+Offloaded from `CLAUDE.md` (2026-07-26) per `agent_docs/context_budget.md` ladder step 8 / 10. CLAUDE.md keeps the 5 most load-bearing development notes; the per-platform detail lives here.
+
+TubeTrend ships one web build (`dist/`) that every other target wraps. Nothing under `src/` is platform-specific.
+
+## Commands
+
+```bash
+# Electron (Desktop) — requires ELECTRON=true (set automatically by these scripts)
+npm run electron:dev      # Vite dev + auto-launch Electron window
+npm run electron:preview  # Build + run Electron
+npm run electron:dist     # Build + package as portable app (release/)
+npm run build:chromebook  # Build Chromebook .deb (release-chromebook/)
+npm run build:win         # Build + package Windows portable
+
+# Capacitor (Android APK for ChromeOS)
+npm run cap:sync          # Build + sync to Android project
+npm run cap:build         # Build + sync + assemble release APK
+npm run cap:build:debug   # Build + sync + assemble debug APK
+
+# Chrome Extension
+npm run build:extension   # Build to dist-extension/
+
+# Docker
+docker-compose up         # Run production image at http://localhost:8889
+```
+
+## TypeScript configuration quirks
+
+- `moduleResolution: "bundler"` + `allowImportingTsExtensions: true` (Vite-style).
+- If adding tooling that assumes Node-style resolution (older Jest, ts-node), additional config may be needed.
+- `noUnusedLocals` and `noUnusedParameters` are enabled — unused variables are type errors, not warnings.
+- TypeScript 6 changed defaults; `baseUrl` is deprecated and was removed from `tsconfig.json`.
+
+## i18n details
+
+- Full translations: `en`, `de`.
+- Supported with fallback to `en`: `fr`, `es`, `it`, `pt`, `nl`, `pl`, `tr`, `ru`, `ja`, `zh`, `ko`.
+- Detection order: `localStorage` → `navigator` → `htmlTag`.
+- Translation namespace: `common` (single namespace).
+
+## Docker
+
+- Multi-stage: `node:22-alpine` (builder) → `nginx:alpine` (runner).
+- Git info passed as build args (`GIT_COMMIT_HASH`, `GIT_BRANCH`).
+- Published image: `ghcr.io/fo0/tubetrend:latest`.
+- Port mapping: container `80` → host `8889`.
+
+## Electron
+
+- **Conditionally integrated via `vite-plugin-electron`** — only active when the `ELECTRON=true` env var is set.
+- **Two build modes** — `npm run build` produces only `dist/` (web). `ELECTRON=true npm run build` additionally compiles `electron/main.ts` and `electron/preload.ts` to `dist-electron/`.
+- **Security defaults** — `nodeIntegration: false`, `contextIsolation: true`. External links open via `shell.openExternal`.
+- **Packaging** — `electron-builder` produces Windows portable, macOS DMG and Linux AppImage in `release/`.
+- **Chromebook** — a separate `electron-builder.chromebook.json` builds `.deb` packages for x64 + arm64.
+- **CI/CD** — `electron-release.yml` builds all platforms + Chromebook + Chrome Extension + Android APK in one pipeline on tag pushes.
+
+## Capacitor (Android / ChromeOS)
+
+- **Alternative to the Electron Chromebook `.deb`** — a native Android APK that runs on ChromeOS via ARCVM.
+- **Zero changes to `src/`** — wraps the same `dist/` web build output.
+- **ChromeOS-optimized `AndroidManifest.xml`** — resizable activity, freeform window support.
+- **Icon** — uses the same `build/icon.png` as Electron.
+- **Signing** — currently unsigned (debug key). Production Play Store distribution requires a signing keystore.
+
+## Chrome Extension
+
+- **Tab-based approach** — clicking the extension icon opens TubeTrend in a new Chrome tab.
+- **Zero changes to `src/`** — wraps the same `dist/` output.
+- **Manifest V3** — background service worker, no inline scripts (CSP-compliant).
+- **CSP compliance** — the inline FOUC-prevention script is extracted to an external `theme-init.js`.
+- **Build** — `npm run build:extension` produces `dist-extension/`.
+
+## Build info
+
+`vite.config.ts` injects a `__BUILD_INFO__` global with `version` (date-based `YYYYMMDD-HHMM`), `commitHash`, `branch` and `buildDate`.
