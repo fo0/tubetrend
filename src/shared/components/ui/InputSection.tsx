@@ -87,6 +87,11 @@ export const InputSection: React.FC<InputSectionProps> = ({
   const [history, setHistory] = useState<string[]>([]);
   const [showHistory, setShowHistory] = useState(false);
 
+  // Index of the keyboard-highlighted entry in whichever dropdown is open
+  // (-1 = nothing highlighted, the input itself keeps the "value"). Both
+  // dropdowns are mutually exclusive, so one index is enough for both.
+  const [activeIndex, setActiveIndex] = useState(-1);
+
   const searchInputRef = useRef<HTMLInputElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -375,6 +380,64 @@ export const InputSection: React.FC<InputSectionProps> = ({
     setShowHistory(false);
   };
 
+  // Which dropdown is currently open (they are mutually exclusive) and how many
+  // entries it holds — the basis for arrow-key navigation and the ARIA wiring.
+  const openList: "suggestions" | "history" | null =
+    showSuggestions && suggestions.length > 0
+      ? "suggestions"
+      : showHistory && history.length > 0
+        ? "history"
+        : null;
+  const openListLength = openList === "suggestions" ? suggestions.length : history.length;
+  const activeOptionId =
+    openList && activeIndex >= 0 ? `search-${openList}-option-${activeIndex}` : undefined;
+
+  // Any change to the open list (opened, closed, or refreshed with new entries)
+  // invalidates the highlight — start again from "nothing highlighted".
+  useEffect(() => {
+    setActiveIndex(-1);
+  }, [openList, suggestions, history]);
+
+  // Keyboard navigation for the open dropdown: ArrowDown/ArrowUp cycle through
+  // the entries, Home/End jump to the ends, Enter picks the highlighted one.
+  // Without a highlight Enter falls through to the form's normal submit.
+  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!openList || openListLength === 0) return;
+
+    switch (e.key) {
+      case "ArrowDown":
+        e.preventDefault();
+        setActiveIndex((prev) => (prev + 1) % openListLength);
+        break;
+      case "ArrowUp":
+        e.preventDefault();
+        setActiveIndex((prev) => (prev <= 0 ? openListLength - 1 : prev - 1));
+        break;
+      case "Home":
+        e.preventDefault();
+        setActiveIndex(0);
+        break;
+      case "End":
+        e.preventDefault();
+        setActiveIndex(openListLength - 1);
+        break;
+      case "Enter": {
+        if (activeIndex < 0) return; // no highlight → let the form submit
+        e.preventDefault();
+        if (openList === "suggestions") {
+          const suggestion = suggestions[activeIndex];
+          if (suggestion) selectSuggestion(suggestion);
+        } else {
+          const item = history[activeIndex];
+          if (item !== undefined) selectHistoryItem(item);
+        }
+        break;
+      }
+      default:
+        break;
+    }
+  };
+
   // Escape behaviour (only while the search input itself is focused, so we never
   // hijack Escape from modals or other widgets):
   //   1. If a dropdown (suggestions / history) is open, close it.
@@ -454,6 +517,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
               value={inputValue}
               onChange={handleInputChange}
               onFocus={handleFocus}
+              onKeyDown={handleInputKeyDown}
               className="block w-full pl-11 pr-10 py-4 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 transition-all shadow-inner text-lg"
               placeholder={t("input.searchPlaceholder")}
               disabled={isLoading}
@@ -468,13 +532,8 @@ export const InputSection: React.FC<InputSectionProps> = ({
               aria-expanded={
                 (showSuggestions && suggestions.length > 0) || (showHistory && history.length > 0)
               }
-              aria-controls={
-                showSuggestions && suggestions.length > 0
-                  ? "search-suggestions-listbox"
-                  : showHistory && history.length > 0
-                    ? "search-history-listbox"
-                    : undefined
-              }
+              aria-controls={openList ? `search-${openList}-listbox` : undefined}
+              aria-activedescendant={activeOptionId}
               aria-haspopup="listbox"
             />
 
@@ -500,12 +559,19 @@ export const InputSection: React.FC<InputSectionProps> = ({
             {showSuggestions && suggestions.length > 0 && (
               <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl overflow-hidden z-50 animate-fade-in">
                 <ul id="search-suggestions-listbox" role="listbox">
-                  {suggestions.map((sug) => (
-                    <li key={sug.id} role="option" aria-selected="false">
+                  {suggestions.map((sug, idx) => (
+                    <li
+                      key={sug.id}
+                      id={`search-suggestions-option-${idx}`}
+                      role="option"
+                      aria-selected={activeIndex === idx}
+                    >
                       <button
                         type="button"
                         onClick={() => selectSuggestion(sug)}
-                        className="w-full text-left px-4 py-3 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex items-center gap-3 group/item"
+                        className={`w-full text-left px-4 py-3 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex items-center gap-3 group/item ${
+                          activeIndex === idx ? "bg-slate-100 dark:bg-slate-800" : ""
+                        }`}
                       >
                         <div className="w-8 h-8 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-950 shrink-0 border border-slate-200 dark:border-slate-700">
                           <img
@@ -536,9 +602,12 @@ export const InputSection: React.FC<InputSectionProps> = ({
                   {history.map((item, idx) => (
                     <li
                       key={`${item}-${idx}`}
+                      id={`search-history-option-${idx}`}
                       role="option"
-                      aria-selected="false"
-                      className="group/item flex items-stretch hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                      aria-selected={activeIndex === idx}
+                      className={`group/item flex items-stretch hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors ${
+                        activeIndex === idx ? "bg-slate-100 dark:bg-slate-800" : ""
+                      }`}
                     >
                       <button
                         type="button"
