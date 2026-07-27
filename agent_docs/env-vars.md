@@ -11,8 +11,44 @@ Vite exposes **only** `VITE_`-prefixed variables to the client bundle. Copy `.en
 | `VITE_DEFAULT_SEARCH`  | Default search input value on app load  | Dev: `TEDx`, Prod: `""` |
 | `VITE_GIT_COMMIT_HASH` | Full git commit hash (Docker build arg) | Auto-detected from git  |
 | `VITE_GIT_BRANCH`      | Git branch name (Docker build arg)      | Auto-detected from git  |
+| `ELECTRON`             | Activates the Electron build pipeline   | unset (web build)       |
+| `VITE_DEV_SERVER_URL`  | Dev-server URL the Electron shell loads | Auto-injected by Vite   |
 
 Authoritative template: `.env.example`.
+
+### Build-time-only variables (never reach the client bundle)
+
+The last two rows are **not** client variables despite the `VITE_` prefix on one of them — both are read
+through `process.env` outside the browser bundle, so Vite never inlines them into `dist/`.
+
+- `ELECTRON` — read in `vite.config.ts` (`process.env.ELECTRON === "true"`). Set automatically by every
+  `electron:*` / `build:win` / `build:chromebook` npm script; it toggles `vite-plugin-electron`, which
+  compiles `electron/main.ts` + `electron/preload.ts` into `dist-electron/`. Do **not** put it in
+  `.env.local` — a stray `ELECTRON=true` makes plain web and Docker builds emit Electron artifacts.
+  Format: the literal string `true` (any other value counts as unset).
+- `VITE_DEV_SERVER_URL` — read in `electron/main.ts` (Electron main process, Node side). Injected by
+  `vite-plugin-electron` during `npm run electron:dev` so the desktop shell loads the hot-reload dev
+  server instead of the bundled `dist/index.html`. Never set it manually; production Electron builds
+  must leave it unset. Format: absolute http URL, e.g. `http://localhost:3000`.
+
+## Docker build arguments
+
+`Dockerfile` takes three `ARG`s and maps two of them onto the `VITE_*` variables above before running
+`npm run build`. They are build-time only — nothing is read from the environment at container runtime.
+
+| Build arg         | Description                               | Default     | Maps to                |
+| ----------------- | ----------------------------------------- | ----------- | ---------------------- |
+| `NODE_VERSION`    | Base image tag for the builder stage      | `22-alpine` | — (image tag only)     |
+| `GIT_COMMIT_HASH` | Commit stamped into the build-info footer | `unknown`   | `VITE_GIT_COMMIT_HASH` |
+| `GIT_BRANCH`      | Branch stamped into the build-info footer | `unknown`   | `VITE_GIT_BRANCH`      |
+
+`.github/workflows/docker-publish.yml` passes `GIT_COMMIT_HASH=${{ github.sha }}` and
+`GIT_BRANCH=${{ github.ref_name }}`. For a local image build, pass them yourself or accept `unknown`:
+
+```bash
+docker build --build-arg GIT_COMMIT_HASH="$(git rev-parse HEAD)" \
+             --build-arg GIT_BRANCH="$(git rev-parse --abbrev-ref HEAD)" -t tubetrend .
+```
 
 ## Secrets Locations
 

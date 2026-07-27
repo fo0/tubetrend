@@ -80,6 +80,26 @@ npm run format:check  # Verify formatting (read-only, matches CI)
 
 Formatting is enforced in CI via `npm run format:check`. PRs with formatting drift will fail the check.
 
+### Verification Before Submitting
+
+Formatting is only the first of three gates. `.github/workflows/pr-checks.yml` runs all of the
+following on every pull request, so run them locally in this order to catch failures before CI does:
+
+```bash
+npm run format:check  # 1. Prettier verification (read-only)
+npm run typecheck     # 2. tsc --noEmit — strict mode, noUnusedLocals/noUnusedParameters are ON
+npm run build         # 3. Production build to dist/ — must succeed
+```
+
+Notes:
+
+- **Run `npm run format` first** if step 1 fails — it rewrites files in place, then re-check.
+- **Unused variables are type errors, not warnings** (`noUnusedLocals` / `noUnusedParameters`), so a
+  leftover import fails step 2.
+- **There is no test suite yet.** No test framework is configured, so the three commands above are the
+  complete quality gate. See `agent_docs/testing.md` for the planned Vitest setup and priority targets.
+- CI additionally runs `npm audit --audit-level=high`, but that job is advisory and does not block.
+
 ### Project Structure
 
 ```
@@ -113,6 +133,12 @@ The app uses localStorage for persistence. When debugging, you may need to clear
 - Translations are in `src/i18n/locales/`
 - Currently supported: English (en), German (de)
 - When adding UI text, add translations for all supported languages
+- **`supportedLngs` declares 13 locales, but only two have translation files.** `src/i18n/config.ts`
+  lists `en, de, fr, es, it, pt, nl, pl, tr, ru, ja, zh, ko`; the other eleven resolve through
+  `fallbackLng: "en"`. So adding a key to `en.json` + `de.json` is enough — there is no third locale
+  file to keep in sync, and a missing key silently renders the English string rather than the raw key.
+- **Never hardcode UI strings.** All user-facing text goes through `t('key')`; the single namespace is
+  `common`. Language detection order is `localStorage` → `navigator` → `htmlTag`.
 
 ### No External AI APIs
 
