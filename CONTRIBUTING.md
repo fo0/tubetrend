@@ -133,6 +133,12 @@ The app uses localStorage for persistence. When debugging, you may need to clear
 - Translations are in `src/i18n/locales/`
 - Currently supported: English (en), German (de)
 - When adding UI text, add translations for all supported languages
+- **`supportedLngs` declares 13 locales, but only two have translation files.** `src/i18n/config.ts`
+  lists `en, de, fr, es, it, pt, nl, pl, tr, ru, ja, zh, ko`; the other eleven resolve through
+  `fallbackLng: "en"`. So adding a key to `en.json` + `de.json` is enough — there is no third locale
+  file to keep in sync, and a missing key silently renders the English string rather than the raw key.
+- **Never hardcode UI strings.** All user-facing text goes through `t('key')`; the single namespace is
+  `common`. Language detection order is `localStorage` → `navigator` → `htmlTag`.
 
 ### No External AI APIs
 
