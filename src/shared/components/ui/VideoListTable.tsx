@@ -1,8 +1,15 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import type { VideoData } from "@/src/features/videos";
-import { Check, Clock, Copy, ExternalLink, Heart, Type } from "lucide-react";
+import { AlertCircle, Check, Clock, Copy, ExternalLink, Heart, Type } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { formatNumber, formatTimeAgo } from "@/src/shared/lib/formatters";
+import { VideoListFilter } from "@/src/shared/components/ui/VideoListFilter";
+
+/**
+ * Below this many rows the list is short enough to scan by eye, so the filter
+ * bar would only add clutter.
+ */
+const FILTER_MIN_ROWS = 10;
 
 interface VideoListTableProps {
   videos: VideoData[];
@@ -11,24 +18,39 @@ interface VideoListTableProps {
 
 export const VideoListTable: React.FC<VideoListTableProps> = ({ videos, startIndex }) => {
   const { t } = useTranslation();
+  const [filter, setFilter] = useState("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [copiedTitleId, setCopiedTitleId] = useState<string | null>(null);
+  // Which row/action last failed, so a blocked clipboard is visible feedback
+  // instead of a dead button (mirrors the bulk actions on the analyser page).
+  const [copyFailed, setCopyFailed] = useState<{ id: string; kind: "url" | "title" } | null>(null);
   const resetCopiedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const resetCopiedTitleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const resetFailedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Clear pending copy-feedback timers on unmount to avoid setState after unmount
   useEffect(() => {
     return () => {
       if (resetCopiedTimerRef.current) clearTimeout(resetCopiedTimerRef.current);
       if (resetCopiedTitleTimerRef.current) clearTimeout(resetCopiedTitleTimerRef.current);
+      if (resetFailedTimerRef.current) clearTimeout(resetFailedTimerRef.current);
     };
   }, []);
+
+  const flashCopyFailed = (id: string, kind: "url" | "title") => {
+    setCopyFailed({ id, kind });
+    if (resetFailedTimerRef.current) clearTimeout(resetFailedTimerRef.current);
+    resetFailedTimerRef.current = setTimeout(() => setCopyFailed(null), 2500);
+  };
 
   const handleCopy = (video: VideoData) => {
     // navigator.clipboard is undefined in insecure contexts (HTTP, some iframes).
     // Accessing .writeText on it throws synchronously, which the promise
     // rejection handler below would not catch — so guard the property first.
-    if (!navigator.clipboard) return;
+    if (!navigator.clipboard) {
+      flashCopyFailed(video.id, "url");
+      return;
+    }
     navigator.clipboard.writeText(video.url).then(
       () => {
         setCopiedId(video.id);
@@ -36,13 +58,17 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({ videos, startInd
         resetCopiedTimerRef.current = setTimeout(() => setCopiedId(null), 1500);
       },
       () => {
-        // Clipboard API unavailable (HTTP context, iframe restriction, etc.)
+        // Clipboard write rejected (permissions / focus) — surface it.
+        flashCopyFailed(video.id, "url");
       },
     );
   };
 
   const handleCopyTitle = (video: VideoData) => {
-    if (!navigator.clipboard) return;
+    if (!navigator.clipboard) {
+      flashCopyFailed(video.id, "title");
+      return;
+    }
     navigator.clipboard.writeText(video.title).then(
       () => {
         setCopiedTitleId(video.id);
@@ -50,10 +76,28 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({ videos, startInd
         resetCopiedTitleTimerRef.current = setTimeout(() => setCopiedTitleId(null), 1500);
       },
       () => {
-        // Clipboard API unavailable (HTTP context, iframe restriction, etc.)
+        // Clipboard write rejected (permissions / focus) — surface it.
+        flashCopyFailed(video.id, "title");
       },
     );
   };
+
+  // Rank is assigned before filtering, so a row keeps its position in the full
+  // result set ("#42") instead of being renumbered inside the filtered view.
+  const rankedVideos = useMemo(
+    () => videos.map((video, index) => ({ video, rank: startIndex + index })),
+    [videos, startIndex],
+  );
+
+  const showFilter = videos.length >= FILTER_MIN_ROWS;
+  const normalizedFilter = filter.trim().toLowerCase();
+
+  const visibleVideos = useMemo(() => {
+    if (!showFilter || !normalizedFilter) return rankedVideos;
+    return rankedVideos.filter((entry) =>
+      entry.video.title.toLowerCase().includes(normalizedFilter),
+    );
+  }, [rankedVideos, showFilter, normalizedFilter]);
 
   const getScoreColor = (score: number) => {
     if (score >= 80) return "text-red-400 bg-red-400/10 border-red-400/20";
@@ -66,12 +110,22 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({ videos, startInd
       {/* Polite live region: announce copy success to assistive tech (the green
           checkmark alone is silent to screen readers). */}
       <span className="sr-only" role="status" aria-live="polite">
-        {copiedId
-          ? t("results.table.urlCopied")
-          : copiedTitleId
-            ? t("results.table.titleCopied")
-            : ""}
+        {copyFailed
+          ? t("results.table.copyFailed")
+          : copiedId
+            ? t("results.table.urlCopied")
+            : copiedTitleId
+              ? t("results.table.titleCopied")
+              : ""}
       </span>
+      {showFilter && (
+        <VideoListFilter
+          value={filter}
+          onChange={setFilter}
+          matchCount={visibleVideos.length}
+          totalCount={rankedVideos.length}
+        />
+      )}
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse" aria-label={t("results.moreVideos")}>
           <thead>
@@ -105,8 +159,7 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({ videos, startInd
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-200/50 dark:divide-slate-800/50 text-sm">
-            {videos.map((video, index) => {
-              const rank = startIndex + index;
+            {visibleVideos.map(({ video, rank }) => {
               return (
                 <tr
                   key={video.id}
@@ -188,11 +241,25 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({ videos, startInd
                       <button
                         type="button"
                         onClick={() => handleCopyTitle(video)}
-                        className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white transition-all border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"
-                        title={t("results.table.copyTitle")}
-                        aria-label={t("results.table.copyTitleAria", { title: video.title })}
+                        className={`inline-flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 ${
+                          copyFailed?.id === video.id && copyFailed.kind === "title"
+                            ? "text-red-500 dark:text-red-400"
+                            : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white"
+                        }`}
+                        title={
+                          copyFailed?.id === video.id && copyFailed.kind === "title"
+                            ? t("results.table.copyFailed")
+                            : t("results.table.copyTitle")
+                        }
+                        aria-label={
+                          copyFailed?.id === video.id && copyFailed.kind === "title"
+                            ? t("results.table.copyFailed")
+                            : t("results.table.copyTitleAria", { title: video.title })
+                        }
                       >
-                        {copiedTitleId === video.id ? (
+                        {copyFailed?.id === video.id && copyFailed.kind === "title" ? (
+                          <AlertCircle className="w-4 h-4" aria-hidden="true" />
+                        ) : copiedTitleId === video.id ? (
                           <Check className="w-4 h-4 text-green-500" aria-hidden="true" />
                         ) : (
                           <Type className="w-4 h-4" aria-hidden="true" />
@@ -201,11 +268,25 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({ videos, startInd
                       <button
                         type="button"
                         onClick={() => handleCopy(video)}
-                        className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white transition-all border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"
-                        title={t("results.table.copyUrl")}
-                        aria-label={t("results.table.copyUrlAria", { title: video.title })}
+                        className={`inline-flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 ${
+                          copyFailed?.id === video.id && copyFailed.kind === "url"
+                            ? "text-red-500 dark:text-red-400"
+                            : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white"
+                        }`}
+                        title={
+                          copyFailed?.id === video.id && copyFailed.kind === "url"
+                            ? t("results.table.copyFailed")
+                            : t("results.table.copyUrl")
+                        }
+                        aria-label={
+                          copyFailed?.id === video.id && copyFailed.kind === "url"
+                            ? t("results.table.copyFailed")
+                            : t("results.table.copyUrlAria", { title: video.title })
+                        }
                       >
-                        {copiedId === video.id ? (
+                        {copyFailed?.id === video.id && copyFailed.kind === "url" ? (
+                          <AlertCircle className="w-4 h-4" aria-hidden="true" />
+                        ) : copiedId === video.id ? (
                           <Check className="w-4 h-4 text-green-500" aria-hidden="true" />
                         ) : (
                           <Copy className="w-4 h-4" aria-hidden="true" />
@@ -226,6 +307,22 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({ videos, startInd
                 </tr>
               );
             })}
+            {visibleVideos.length === 0 && (
+              <tr>
+                <td colSpan={8} className="p-8 text-center">
+                  <p className="text-slate-500 dark:text-slate-400 mb-3">
+                    {t("results.table.filterNoMatches", { query: filter.trim() })}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setFilter("")}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                  >
+                    {t("results.table.filterClear")}
+                  </button>
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>

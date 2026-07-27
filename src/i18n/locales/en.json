@@ -173,7 +173,14 @@
       "copyTitle": "Copy video title",
       "copyTitleAria": "Copy title for {{title}}",
       "urlCopied": "Video URL copied",
-      "titleCopied": "Video title copied"
+      "titleCopied": "Video title copied",
+      "copyFailed": "Clipboard unavailable",
+      "filterPlaceholder": "Filter by title…",
+      "filterAria": "Filter videos by title",
+      "filterClear": "Clear filter",
+      "filterCount_one": "{{count}} of {{total}} shown",
+      "filterCount_other": "{{count}} of {{total}} shown",
+      "filterNoMatches": "No video title matches \"{{query}}\"."
     },
     "copyAll": "Copy all",
     "copyAllUrls": "Copy all video URLs",

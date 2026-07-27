@@ -173,7 +173,14 @@
       "copyTitle": "Videotitel kopieren",
       "copyTitleAria": "Titel für {{title}} kopieren",
       "urlCopied": "Video-URL kopiert",
-      "titleCopied": "Videotitel kopiert"
+      "titleCopied": "Videotitel kopiert",
+      "copyFailed": "Zwischenablage nicht verfügbar",
+      "filterPlaceholder": "Nach Titel filtern…",
+      "filterAria": "Videos nach Titel filtern",
+      "filterClear": "Filter zurücksetzen",
+      "filterCount_one": "{{count}} von {{total}} angezeigt",
+      "filterCount_other": "{{count}} von {{total}} angezeigt",
+      "filterNoMatches": "Kein Videotitel passt zu \"{{query}}\"."
     },
     "copyAll": "Alle kopieren",
     "copyAllUrls": "Alle Video-URLs kopieren",
