@@ -1,8 +1,15 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import type { VideoData } from "@/src/features/videos";
 import { AlertCircle, Check, Clock, Copy, ExternalLink, Heart, Type } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { formatNumber, formatTimeAgo } from "@/src/shared/lib/formatters";
+import { VideoListFilter } from "@/src/shared/components/ui/VideoListFilter";
+
+/**
+ * Below this many rows the list is short enough to scan by eye, so the filter
+ * bar would only add clutter.
+ */
+const FILTER_MIN_ROWS = 10;
 
 interface VideoListTableProps {
   videos: VideoData[];
@@ -11,6 +18,7 @@ interface VideoListTableProps {
 
 export const VideoListTable: React.FC<VideoListTableProps> = ({ videos, startIndex }) => {
   const { t } = useTranslation();
+  const [filter, setFilter] = useState("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [copiedTitleId, setCopiedTitleId] = useState<string | null>(null);
   // Which row/action last failed, so a blocked clipboard is visible feedback
@@ -74,6 +82,23 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({ videos, startInd
     );
   };
 
+  // Rank is assigned before filtering, so a row keeps its position in the full
+  // result set ("#42") instead of being renumbered inside the filtered view.
+  const rankedVideos = useMemo(
+    () => videos.map((video, index) => ({ video, rank: startIndex + index })),
+    [videos, startIndex],
+  );
+
+  const showFilter = videos.length >= FILTER_MIN_ROWS;
+  const normalizedFilter = filter.trim().toLowerCase();
+
+  const visibleVideos = useMemo(() => {
+    if (!showFilter || !normalizedFilter) return rankedVideos;
+    return rankedVideos.filter((entry) =>
+      entry.video.title.toLowerCase().includes(normalizedFilter),
+    );
+  }, [rankedVideos, showFilter, normalizedFilter]);
+
   const getScoreColor = (score: number) => {
     if (score >= 80) return "text-red-400 bg-red-400/10 border-red-400/20";
     if (score >= 50) return "text-amber-400 bg-amber-400/10 border-amber-400/20";
@@ -93,6 +118,14 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({ videos, startInd
               ? t("results.table.titleCopied")
               : ""}
       </span>
+      {showFilter && (
+        <VideoListFilter
+          value={filter}
+          onChange={setFilter}
+          matchCount={visibleVideos.length}
+          totalCount={rankedVideos.length}
+        />
+      )}
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse" aria-label={t("results.moreVideos")}>
           <thead>
@@ -126,8 +159,7 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({ videos, startInd
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-200/50 dark:divide-slate-800/50 text-sm">
-            {videos.map((video, index) => {
-              const rank = startIndex + index;
+            {visibleVideos.map(({ video, rank }) => {
               return (
                 <tr
                   key={video.id}
@@ -275,6 +307,22 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({ videos, startInd
                 </tr>
               );
             })}
+            {visibleVideos.length === 0 && (
+              <tr>
+                <td colSpan={8} className="p-8 text-center">
+                  <p className="text-slate-500 dark:text-slate-400 mb-3">
+                    {t("results.table.filterNoMatches", { query: filter.trim() })}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setFilter("")}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                  >
+                    {t("results.table.filterClear")}
+                  </button>
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
