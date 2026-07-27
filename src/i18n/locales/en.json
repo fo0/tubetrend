@@ -173,7 +173,8 @@
       "copyTitle": "Copy video title",
       "copyTitleAria": "Copy title for {{title}}",
       "urlCopied": "Video URL copied",
-      "titleCopied": "Video title copied"
+      "titleCopied": "Video title copied",
+      "copyFailed": "Clipboard unavailable"
     },
     "copyAll": "Copy all",
     "copyAllUrls": "Copy all video URLs",
