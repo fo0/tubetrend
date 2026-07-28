@@ -108,6 +108,7 @@ export const FavoriteAvatar: React.FC<FavoriteAvatarProps> = ({
             src={avatarUrl}
             alt={channelTitle}
             className="w-full h-full rounded-full object-cover"
+            loading="lazy"
           />
         ) : (
           <span className="select-none">{initials}</span>

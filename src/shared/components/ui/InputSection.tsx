@@ -578,6 +578,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
                             src={sug.thumbnailUrl}
                             alt=""
                             className="w-full h-full object-cover"
+                            loading="lazy"
                           />
                         </div>
                         <div className="min-w-0">
