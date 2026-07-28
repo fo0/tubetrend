@@ -143,6 +143,7 @@ export function HiddenHighlightsModal({ isOpen, onClose }: HiddenHighlightsModal
                       src={item.thumbnailUrl}
                       alt={item.videoTitle}
                       className="w-20 h-12 rounded-lg object-cover shrink-0 border border-slate-200 dark:border-slate-700"
+                      loading="lazy"
                     />
                   )}
 

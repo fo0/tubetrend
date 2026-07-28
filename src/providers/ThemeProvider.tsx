@@ -1,4 +1,12 @@
-import { createContext, type ReactNode, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  type ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { STORAGE_KEYS } from "@shared/constants";
 
 type Theme = "light" | "dark" | "system";
@@ -38,7 +46,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     return stored === "system" ? getSystemTheme() : stored;
   });
 
-  const setTheme = (newTheme: Theme) => {
+  // Stable identity: `setTheme` is a dependency of consumer callbacks
+  // (e.g. the global theme hotkey in App), so it must not change per render.
+  const setTheme = useCallback((newTheme: Theme) => {
     setThemeState(newTheme);
     if (typeof window !== "undefined") {
       try {
@@ -47,7 +57,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         // Ignore storage errors — the in-memory theme still applies
       }
     }
-  };
+  }, []);
 
   // Apply theme to document
   useEffect(() => {
@@ -76,11 +86,14 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     return () => mediaQuery.removeEventListener("change", handler);
   }, [theme]);
 
-  return (
-    <ThemeContext.Provider value={{ theme, resolvedTheme, setTheme }}>
-      {children}
-    </ThemeContext.Provider>
+  // Memoized so an unrelated re-render of this provider does not hand every
+  // consumer a new context object and force them all to re-render.
+  const value = useMemo(
+    () => ({ theme, resolvedTheme, setTheme }),
+    [theme, resolvedTheme, setTheme],
   );
+
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
 
 export function useTheme(): ThemeContextValue {
