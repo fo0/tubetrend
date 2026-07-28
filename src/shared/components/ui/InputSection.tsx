@@ -23,17 +23,17 @@ interface InputSectionProps {
     searchType: SearchType,
   ) => void;
   isLoading: boolean;
-  // Optional: Externe Werte zum Synchronisieren (z.B. von Favoriten)
+  // Optional: external values to sync in (e.g. from a favorite)
   externalQuery?: string;
   externalTimeFrame?: TimeFrame;
   externalMaxResults?: number;
   externalSearchType?: SearchType;
-  // Ändert sich bei jedem externen Sync, um useEffect-Trigger zu garantieren
+  // Changes on every external sync so the useEffect below always fires
   externalSyncToken?: number;
 }
 
-// Hilfsfunktion: Ermittelt den SearchType aus dem Input-Präfix
-// # am Anfang = Keyword-Suche, sonst Kanal-Suche
+// Helper: derive the SearchType from the input prefix.
+// Leading # = keyword search, otherwise channel search.
 const detectSearchType = (input: string): SearchType => {
   const trimmed = input.trim();
   if (trimmed.startsWith("#")) {
@@ -42,7 +42,7 @@ const detectSearchType = (input: string): SearchType => {
   return SearchType.CHANNEL;
 };
 
-// Hilfsfunktion: Entfernt das Präfix-Zeichen (#) vom Input
+// Helper: strip the prefix character (#) from the input
 const stripSearchPrefix = (input: string): string => {
   const trimmed = input.trim();
   if (trimmed.startsWith("#")) {
@@ -75,7 +75,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
   const [timeFrame, setTimeFrame] = useState<TimeFrame>(TimeFrame.LAST_MONTH);
   const [maxResults, setMaxResults] = useState<number>(-1);
 
-  // SearchType wird dynamisch aus dem Input-Präfix ermittelt
+  // SearchType is derived dynamically from the input prefix
   const searchType = detectSearchType(inputValue);
 
   // Autocomplete State
@@ -152,13 +152,14 @@ export const InputSection: React.FC<InputSectionProps> = ({
     }
   }, []);
 
-  // Synchronisiere externe Werte (z.B. von Favoriten-Analyse)
-  // externalSyncToken als Dependency sorgt dafür, dass auch bei gleichem Favoriten die Werte aktualisiert werden
+  // Sync externally supplied values (e.g. from analysing a favorite).
+  // externalSyncToken is a dependency so re-picking the same favorite still
+  // re-applies the values.
   useEffect(() => {
     if (externalQuery !== undefined && externalSyncToken !== undefined) {
       // The synced value replaces whatever was typed — drop pending lookups.
       cancelSuggestionLookup();
-      // Bei Keyword-Suche: Präfix # hinzufügen, falls nicht vorhanden
+      // Keyword search: add the # prefix when it is missing
       const prefix =
         externalSearchType === SearchType.KEYWORD && !externalQuery.startsWith("#") ? "#" : "";
       setInputValue(prefix + externalQuery);
@@ -249,7 +250,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
     // The input changed — a lookup scheduled for the previous value is stale.
     cancelSuggestionLookup();
 
-    // Autocomplete nur bei Kanal-Suche (basierend auf neuem Wert)
+    // Autocomplete only for channel search (based on the new value)
     const newSearchType = detectSearchType(val);
     if (newSearchType !== SearchType.CHANNEL) {
       setSuggestions([]);
@@ -309,16 +310,16 @@ export const InputSection: React.FC<InputSectionProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (inputValue.trim()) {
-      // Präfix entfernen und Query extrahieren
+      // Strip the prefix and extract the query
       const strippedInput = stripSearchPrefix(inputValue);
-      // Bei Kanal-Suche: Extract clean identifier (handle or ID) from URL if present
-      // Bei Keyword-Suche: Direkt den Suchbegriff verwenden
+      // Channel search: extract a clean identifier (handle or ID) from a URL if present.
+      // Keyword search: use the search term as typed.
       const query =
         searchType === SearchType.CHANNEL ? extractChannelIdentifier(strippedInput) : strippedInput;
       onSearch(query, timeFrame, maxResults, searchType);
       setShowSuggestions(false);
       setShowHistory(false);
-      // Save typed value to history (what the user entered, inkl. Präfix)
+      // Save typed value to history (what the user entered, including the prefix)
       addToHistory(inputValue);
     }
   };
@@ -352,7 +353,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
       inputValue.length >= 2 &&
       !inputValue.includes("http")
     ) {
-      // Autocomplete-Suggestions nur bei Kanal-Suche
+      // Autocomplete suggestions only for channel search
       setShowSuggestions(true);
       setShowHistory(false);
     }
@@ -462,7 +463,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
     return () => document.removeEventListener("keydown", handleEsc);
   }, [showSuggestions, showHistory, inputValue]);
 
-  // Synchronisiere Favoriten-Status, wenn Eingabe/Zeitfenster/MaxErgebnisse/SearchType sich ändern
+  // Re-sync the favorite state whenever query, time frame, max results or search type change
   useEffect(() => {
     const strippedInput = stripSearchPrefix(inputValue || "");
     const q =
