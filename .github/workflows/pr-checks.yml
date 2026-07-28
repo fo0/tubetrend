@@ -18,6 +18,12 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
+# Least privilege: both jobs only check out the code and run npm. Without this
+# block the GITHUB_TOKEN inherits the repository default, which can be
+# read/write. Every other workflow here already declares its scope.
+permissions:
+  contents: read
+
 jobs:
   # Format, typecheck, lint and build in a single job so dependencies are
   # installed once per run instead of once per check (previously 4 jobs each
