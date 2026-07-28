@@ -86,7 +86,11 @@ export function DashboardPage({
       return a.sourceLabel.localeCompare(b.sourceLabel, getLocale(), { sensitivity: "base" });
     });
 
-    const visible = sorted.filter((item) => !hiddenHighlightsService.isHidden(item.video.id));
+    // Read the hidden list once. `isHidden()` re-reads localStorage, JSON-parses
+    // it and re-validates every entry on each call, so calling it inside the
+    // filter did that work once per highlight item.
+    const hiddenIds = new Set(hiddenHighlightsService.list().map((h) => h.videoId));
+    const visible = sorted.filter((item) => !hiddenIds.has(item.video.id));
     const hiddenCount = sorted.length - visible.length;
 
     return { visible, hiddenCount };
