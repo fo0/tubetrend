@@ -60,6 +60,12 @@ docker-compose up         # Run production image at http://localhost:8889
 
 - **Alternative to the Electron Chromebook `.deb`** — a native Android APK that runs on ChromeOS via ARCVM.
 - **Zero changes to `src/`** — wraps the same `dist/` web build output.
+- **Toolchain prerequisites** — unlike every other target, the `cap:build*` scripts need more than Node:
+  **JDK 21 (Temurin)** and the **Android SDK** (`ANDROID_HOME`), because the last step is a Gradle
+  build inside `android/`. `.github/workflows/android-release.yml` sets both up via
+  `actions/setup-java@v5` (`java-version: "21"`) and `android-actions/setup-android@v4`; the same
+  requirement applies to the `build-android` job in `electron-release.yml`. Without them
+  `npm run cap:build:debug` fails at `./gradlew`, not at the Vite build.
 - **ChromeOS-optimized `AndroidManifest.xml`** — resizable activity, freeform window support.
 - **Icon** — uses the same `build/icon.png` as Electron.
 - **Signing** — currently unsigned (debug key). Production Play Store distribution requires a signing keystore.

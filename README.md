@@ -107,12 +107,20 @@ Download the `.apk` from [Releases](https://github.com/fo0/tubetrend/releases).
 
 To build from source:
 
+**Prerequisites:** Node.js v22+, JDK 21 (Temurin), and the Android SDK (Android Studio or
+`cmdline-tools` with `ANDROID_HOME` set). The Gradle build needs all three — Node alone is not
+enough. See `.github/workflows/android-release.yml` for the exact toolchain CI uses.
+
 ```bash
 npm install
 npm run cap:build:debug
 ```
 
 The APK will be in `android/app/build/outputs/apk/debug/`.
+
+For an unsigned release APK instead, use `npm run cap:build` (output:
+`android/app/build/outputs/apk/release/`). Play Store distribution additionally requires your own
+signing keystore.
 
 ### Option 5: Chrome Extension
 
