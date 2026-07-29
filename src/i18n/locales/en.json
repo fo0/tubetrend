@@ -17,6 +17,7 @@
   },
   "nav": {
     "main": "Main navigation",
+    "skipToContent": "Skip to main content",
     "dashboard": "Dashboard",
     "analyser": "Analyser"
   },

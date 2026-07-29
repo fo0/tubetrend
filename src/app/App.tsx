@@ -284,6 +284,17 @@ const App: React.FC = () => {
         onClose={() => setIsHiddenHighlightsModalOpen(false)}
       />
 
+      {/* Skip link (WCAG 2.4.1 Bypass Blocks): the sticky header carries ~8 tab
+          stops (nav, shortcuts, API key, quota, language, theme) that keyboard
+          users would otherwise traverse on every interaction. Visually hidden
+          until focused. */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[70] focus:px-4 focus:py-2 focus:rounded-md focus:bg-indigo-600 focus:text-white focus:font-medium focus:shadow-lg"
+      >
+        {t("nav.skipToContent")}
+      </a>
+
       <Header
         activePage={activePage}
         onPageChange={setActivePage}
@@ -293,7 +304,11 @@ const App: React.FC = () => {
         onResetApiKey={handleResetKey}
       />
 
-      <main className="flex-1 max-w-[101.2rem] mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+      <main
+        id="main-content"
+        tabIndex={-1}
+        className="flex-1 max-w-[101.2rem] mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full outline-none"
+      >
         {activePage === "dashboard" ? (
           <DashboardPage
             favorites={favorites}
