@@ -34,8 +34,16 @@ i18n
 
 // Sync <html lang> attribute with the active language so screen readers
 // announce content in the correct language (WCAG 3.1.1).
+//
+// `supportedLngs` lists 13 languages but only `en` and `de` ship resource
+// bundles, so selecting e.g. "Français" renders English text via fallbackLng.
+// Tagging that page `lang="fr"` makes screen readers pronounce English words
+// with French phonetics — worse than no tag at all. `resolvedLanguage` is the
+// first language in the fallback chain that actually has translations, i.e.
+// the language the user really sees, so tag that instead.
 function syncHtmlLang(lng: string) {
-  const short = (lng || "en").split("-")[0].toLowerCase();
+  const effective = i18n.resolvedLanguage || lng;
+  const short = (effective || "en").split("-")[0].toLowerCase();
   document.documentElement.lang = short;
 }
 
