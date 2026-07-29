@@ -69,6 +69,18 @@ export function HiddenHighlightsModal({ isOpen, onClose }: HiddenHighlightsModal
     };
   }, [isOpen, handleTabKey]);
 
+  // Lock background scrolling while the dialog is open. Without this, scrolling
+  // past the end of the modal list chains to the page behind the backdrop, which
+  // moves content the user cannot see and loses their place on close.
+  useEffect(() => {
+    if (!isOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isOpen]);
+
   const handleUnhide = (videoId: string) => {
     hiddenHighlightsService.show(videoId);
     setHiddenItems(hiddenHighlightsService.listChronological());
