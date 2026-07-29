@@ -16,6 +16,21 @@ Vite exposes **only** `VITE_`-prefixed variables to the client bundle. Copy `.en
 
 Authoritative template: `.env.example`.
 
+### `VITE_DEFAULT_SEARCH`: empty ≠ unset
+
+The `Dev: TEDx` default above applies only when the variable is **unset**. `.env.example` ships the
+key as `VITE_DEFAULT_SEARCH=`, and Vite reads that as the empty string `""`, not as absent. The read
+site is `src/shared/components/ui/InputSection.tsx`:
+
+```ts
+import.meta.env.VITE_DEFAULT_SEARCH ?? (import.meta.env.DEV ? "TEDx" : "");
+```
+
+`??` only falls back on `null`/`undefined`, so `""` wins and the dev-mode `TEDx` default is
+suppressed. Copying `.env.example` verbatim to `.env.local` therefore yields an empty search input in
+dev. Comment the line out to restore the fallback. The other four variables are read with `||` or a
+plain truthiness check, so an empty value behaves the same as unset for them.
+
 ### Build-time-only variables (never reach the client bundle)
 
 The last two rows are **not** client variables despite the `VITE_` prefix on one of them — both are read
