@@ -52,6 +52,16 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ onSave }) => {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [handleKeyDown]);
 
+  // Lock background scrolling while this blocking dialog is up, so the page
+  // behind the backdrop cannot be scrolled out from under the user.
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, []);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (isKeyLongEnough) {

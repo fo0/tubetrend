@@ -56,11 +56,30 @@ export function HiddenHighlightsModal({ isOpen, onClose }: HiddenHighlightsModal
 
   useEffect(() => {
     if (!isOpen) return;
+    // Remember what had focus so it can be restored on close (WCAG 2.4.3).
+    // Without this, closing the dialog drops focus to <body> and keyboard users
+    // resume tabbing from the top of the page instead of the trigger button.
+    const previouslyFocused = document.activeElement as HTMLElement | null;
     document.addEventListener("keydown", handleTabKey);
     // Move focus into the dialog on open so the trap has a starting point.
     dialogRef.current?.querySelector<HTMLElement>(FOCUSABLE_SELECTOR)?.focus();
-    return () => document.removeEventListener("keydown", handleTabKey);
+    return () => {
+      document.removeEventListener("keydown", handleTabKey);
+      previouslyFocused?.focus?.();
+    };
   }, [isOpen, handleTabKey]);
+
+  // Lock background scrolling while the dialog is open. Without this, scrolling
+  // past the end of the modal list chains to the page behind the backdrop, which
+  // moves content the user cannot see and loses their place on close.
+  useEffect(() => {
+    if (!isOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isOpen]);
 
   const handleUnhide = (videoId: string) => {
     hiddenHighlightsService.show(videoId);

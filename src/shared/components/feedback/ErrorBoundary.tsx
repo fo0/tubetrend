@@ -52,7 +52,10 @@ interface DefaultErrorFallbackProps {
 function DefaultErrorFallback({ error, onRetry }: DefaultErrorFallbackProps) {
   const { t } = useTranslation();
   return (
-    <div className="min-h-[200px] flex items-center justify-center p-8">
+    // role="alert" (implicit aria-live="assertive"): the fallback silently
+    // replaces a crashed subtree, so without a live region a screen reader user
+    // gets no signal that the content they were on is gone.
+    <div role="alert" className="min-h-[200px] flex items-center justify-center p-8">
       <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-6 max-w-md text-center">
         <div className="flex justify-center mb-4">
           <div className="bg-red-100 dark:bg-red-900/40 p-3 rounded-full">
