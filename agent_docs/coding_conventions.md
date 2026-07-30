@@ -4,10 +4,10 @@ Offloaded from `CLAUDE.md` (2026-07-26) per `agent_docs/context_budget.md` ladde
 
 ## Conventions
 
-- **Language** — UI text uses i18n translation keys (`t('key')`). Code comments and documentation in English. Some legacy German strings remain in API error messages (see `agent_docs/refactoring_guidelines.md`).
+- **Language** — UI text uses i18n translation keys (`t('key')`). Code comments and documentation in English. No hardcoded German strings remain in the API layer.
 - **Naming** — PascalCase for components and types; camelCase for functions, variables and hooks; kebab-case for CSS classes.
 - **Files** — PascalCase for React components (`ThemeProvider.tsx`); camelCase for services, hooks and utils (`favoritesService.ts`, `useSearch.ts`).
-- **Imports** — always use path aliases (see table below). Use `import type` for type-only imports.
+- **Imports** — cross-module imports use the `@/src/…` alias; relative paths stay inside a module. Use `import type` for type-only imports. See the alias table below for what is configured vs. what is actually used.
 - **Exports** — feature modules export through barrel files (`index.ts`). Never deep-import another feature's internals.
 - **Components** — functional components with hooks. `ErrorBoundary` is the single exception (React requires a class for error boundaries).
 - **Styling** — Tailwind CSS v4 utility classes with `dark:` variants via the `@tailwindcss/vite` plugin. No CSS modules, no styled-components.
@@ -19,13 +19,19 @@ Offloaded from `CLAUDE.md` (2026-07-26) per `agent_docs/context_budget.md` ladde
 
 Configured in **both** `tsconfig.json` and `vite.config.ts` — keep the two in sync when adding one.
 
-| Alias          | Maps to             |
-| -------------- | ------------------- |
-| `@/*`          | `./` (project root) |
-| `@features/*`  | `./src/features/*`  |
-| `@shared/*`    | `./src/shared/*`    |
-| `@providers/*` | `./src/providers/*` |
-| `@i18n/*`      | `./src/i18n/*`      |
+| Alias          | Maps to             | Actually used                    |
+| -------------- | ------------------- | -------------------------------- |
+| `@/*`          | `./` (project root) | **Yes — the convention** (~132×) |
+| `@features/*`  | `./src/features/*`  | No                               |
+| `@shared/*`    | `./src/shared/*`    | Once (`ThemeProvider.tsx`)       |
+| `@providers/*` | `./src/providers/*` | No                               |
+| `@i18n/*`      | `./src/i18n/*`      | No                               |
+
+**Write `@/src/shared/lib/storage`, not `@shared/lib/storage`.** Because `@/*` maps to the project root, the
+directory-specific aliases are redundant — and the codebase settled on the `@/src/…` form almost everywhere.
+The four short aliases still resolve, so existing code compiles, but new imports that use them read as
+inconsistent next to their ~132 neighbours. Relative imports (`./`, `../`) remain correct **within** a single
+feature or component folder; only cross-module hops take the alias.
 
 ## TubeTrend-specific architecture notes
 

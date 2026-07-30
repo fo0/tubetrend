@@ -22,13 +22,22 @@ Refactoring does NOT happen automatically. Only when:
 
 ## Known Refactoring Targets
 
-- **`FavoriteRow.tsx` (~670 lines)** — God component handling data fetching, caching, UI menus, state management, and event handling. Should be split into sub-components (`FavoriteRowHeader`, `FavoriteRowMenus`, `FavoriteRowVideos`) and a custom `useFavoriteRowData()` hook.
-- **Duplicate event listener patterns** — Multiple components use raw `window.addEventListener('favorites-changed', ...)` instead of the type-safe `useEventBus()` hook from `eventBus.ts`. Should be migrated consistently.
-- **Hard-coded German strings in API client** — `youtubeApiClient.ts` contains German error messages instead of i18n translation keys. Should use `t()` or throw error codes that the UI translates.
-- **Magic numbers in trend analysis** — `trendAnalysisService.ts` uses hardcoded thresholds (e.g., `viewsPerHour > 10000`, `engagementRate > 10`, `ageInHours < 2`) and scoring weights (`0.7`, `0.3`). Should be extracted to named constants.
-- **Module-level API key state** — `youtubeApiClient.ts` stores the API key both in a module-level variable and localStorage, risking sync issues. Could be simplified to read from storage directly.
-- **No test coverage** — No test setup exists. Critical services (`favoritesService`, `trendAnalysisService`, `quotaService`, `eventBus`) would benefit from unit tests.
-- **Complex `useEffect` chains in FavoriteRow** — Multiple interdependent `useEffect` hooks with complex dependency arrays and refs for synchronization. Should be extracted into a custom hook.
+Verified against the tree on 2026-07-30. Line counts come from `find src -name '*.ts*' | xargs wc -l | sort -rn`; re-run it before trusting a number here.
+
+- **`InputSection.tsx` (~768 lines)** — the largest file in `src/`. Search form, autocomplete, search history, timeframe/max-results controls and their `localStorage` persistence in one component. Split candidates: a `useSearchHistory()` hook and a separate autocomplete dropdown component.
+- **`FavoriteRow.tsx` (~715 lines)** — God component handling data fetching, caching, UI menus, state management and event handling, with 11 interdependent `useEffect` hooks plus refs for synchronization. Should be split into sub-components (`FavoriteRowHeader`, `FavoriteRowMenus`, `FavoriteRowVideos`) and a custom `useFavoriteRowData()` hook that absorbs the effect chain.
+- **`ApiQuotaIndicator.tsx` (~686 lines)** — quota badge, history panel and time-window selection in one file. The window/aggregation math is pure and extractable into a service, which would also make it the first easily testable target here.
+- **`AnalyserPage.tsx` (~576 lines)** — page shell plus sort/topN state, export handlers and clipboard handling. Extract the export + copy-all actions.
+- **No test coverage** — no test framework is configured. Critical services (`favoritesService`, `trendAnalysisService`, `quotaService`, `eventBus`, `storage`) would benefit from unit tests; priority order in `agent_docs/testing.md`.
+
+### Resolved — do not re-open
+
+These were listed as targets in earlier revisions and are fixed in the code. Re-adding them wastes a review cycle.
+
+- ~~**Duplicate event listener patterns**~~ — every `EventMap` key now goes through `eventBus.on()` / `useEventBus()`. The three remaining raw `window.addEventListener` calls are native events (`storage`, `scroll`, `mousemove`). Closed as BACKLOG #11 (2026-05-23).
+- ~~**Hard-coded German strings in API client**~~ — `youtubeApiClient.ts` carries no German strings; user-facing text is i18n-keyed.
+- ~~**Magic numbers in trend analysis**~~ — `trendAnalysisService.ts` declares named constants (`VELOCITY_WEIGHT`, `ENGAGEMENT_WEIGHT`, `VELOCITY_EXTREME_VPH`, …) at module top.
+- ~~**Module-level API key state**~~ — `localStorage` is now the single source of truth; the module-level mirror is gone (see the comment above `setApiKey`).
 
 ## GitNexus-Assisted Refactoring (read-only analysis)
 

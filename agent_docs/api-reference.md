@@ -6,11 +6,20 @@ TubeTrend communicates exclusively with the YouTube Data API v3. All calls go th
 
 ### Endpoints
 
-| Endpoint   | Method | API Cost  | Description                                                              |
-| ---------- | ------ | --------- | ------------------------------------------------------------------------ |
-| `search`   | GET    | 100 units | Search videos by keyword or channel, supports pagination via `pageToken` |
-| `videos`   | GET    | 1 unit    | Fetch video details (statistics, snippet, contentDetails) by video ID    |
-| `channels` | GET    | 1 unit    | Resolve channel ID from handle/URL/name                                  |
+| Endpoint        | Method | API Cost  | Description                                                                       |
+| --------------- | ------ | --------- | --------------------------------------------------------------------------------- |
+| `search`        | GET    | 100 units | Search videos by keyword or channel, supports pagination via `pageToken`          |
+| `videos`        | GET    | 1 unit    | Fetch video details (statistics, snippet, contentDetails) by video ID             |
+| `channels`      | GET    | 1 unit    | Resolve channel ID from handle/URL/name, and read the uploads playlist ID         |
+| `playlistItems` | GET    | 1 unit    | Walk a channel's uploads playlist — the 1-unit alternative to a 100-unit `search` |
+
+Costs are declared once in `API_COSTS` (`src/shared/constants/config.ts`); `quotaService.getCost()` is typed as
+`keyof typeof API_COSTS`, so adding an endpoint there is what makes it billable.
+
+**Why `playlistItems` matters for quota:** `channelService.ts` resolves a channel (`search` and/or `channels`),
+reads its uploads-playlist ID, then pages through that playlist with `playlistItems` (`maxResults: 50`, capped at
+`MAX_PAGES = 100`). Each additional page costs **1** unit; paging with `search` would cost **100**. Keep new
+channel-listing code on this path — swapping in a paginated `search` silently multiplies quota burn by 100×.
 
 ### Authentication
 
