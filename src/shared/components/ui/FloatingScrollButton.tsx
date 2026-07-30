@@ -6,7 +6,8 @@ import { useTranslation } from "react-i18next";
  * A floating scroll button that appears based on scroll direction.
  * - Shows "scroll to top" when user scrolled down
  * - Shows "scroll to bottom" when user is near the top
- * - Very subtle/transparent, becomes visible on hover or mouse proximity
+ * - Very subtle/transparent, becomes visible on hover, mouse proximity or
+ *   keyboard focus
  * - Positioned center-right of the viewport
  */
 export function FloatingScrollButton() {
@@ -137,6 +138,12 @@ export function FloatingScrollButton() {
         hover:border-indigo-400/50 hover:dark:border-indigo-500/50
         hover:shadow-lg hover:shadow-indigo-500/20
         hover:scale-110
+        focus-visible:opacity-100
+        focus-visible:bg-indigo-500/90 dark:focus-visible:bg-indigo-600/90
+        focus-visible:text-white dark:focus-visible:text-white
+        focus-visible:border-indigo-400/50 dark:focus-visible:border-indigo-500/50
+        focus-visible:shadow-lg focus-visible:shadow-indigo-500/20
+        focus-visible:scale-110
         transition-all duration-500 ease-out
         backdrop-blur-sm
         cursor-pointer
