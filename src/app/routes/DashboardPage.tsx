@@ -373,7 +373,12 @@ export function DashboardPage({
       ) : (
         <div className="space-y-10">
           {sortedFavorites.map((fav, idx) => (
-            <div key={fav.id} id={`favorite-${fav.id}`}>
+            // scroll-mt-20 (5rem) clears the sticky header (h-16 = 4rem) plus a
+            // little breathing room. Without it the avatar quick-jump below
+            // aligns the row flush with the viewport top, where the header
+            // covers the favorite's own title — the user lands on a row whose
+            // heading they cannot see.
+            <div key={fav.id} id={`favorite-${fav.id}`} className="scroll-mt-20">
               <FavoriteRow
                 favorite={fav}
                 onRemove={onRemoveFavorite}

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import type { VideoData } from "@/src/features/videos";
-import { Check, Clock, Copy, Eye, EyeOff, Sparkles, Zap } from "lucide-react";
+import { AlertCircle, Check, Clock, Copy, Eye, EyeOff, Sparkles, Zap } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { formatNumber, formatTimeAgo } from "@/src/shared/lib/formatters";
 
@@ -31,18 +31,38 @@ export const HighlightVideoCard: React.FC<HighlightVideoCardProps> = ({
 }) => {
   const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
+  // A blocked clipboard used to make this button a dead control: it neither
+  // copied nor said anything. That is the normal case whenever the app is
+  // reached over plain HTTP (e.g. the Docker image on a LAN address), where
+  // navigator.clipboard does not exist at all. Surface it instead — same
+  // feedback pattern as VideoCard / VideoListTable.
+  const [copyFailed, setCopyFailed] = useState(false);
   const resetCopiedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const resetFailedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     return () => {
       if (resetCopiedTimerRef.current) clearTimeout(resetCopiedTimerRef.current);
+      if (resetFailedTimerRef.current) clearTimeout(resetFailedTimerRef.current);
     };
   }, []);
+
+  const flashCopyFailed = () => {
+    setCopyFailed(true);
+    if (resetFailedTimerRef.current) clearTimeout(resetFailedTimerRef.current);
+    resetFailedTimerRef.current = setTimeout(() => setCopyFailed(false), 2500);
+  };
 
   const handleCopy = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!navigator.clipboard) return;
+    // navigator.clipboard is undefined in insecure contexts (HTTP, some
+    // iframes). Reading .writeText off it throws synchronously, which the
+    // rejection handler below would not catch — so guard the property first.
+    if (!navigator.clipboard) {
+      flashCopyFailed();
+      return;
+    }
     navigator.clipboard.writeText(video.url).then(
       () => {
         setCopied(true);
@@ -50,7 +70,8 @@ export const HighlightVideoCard: React.FC<HighlightVideoCardProps> = ({
         resetCopiedTimerRef.current = setTimeout(() => setCopied(false), 1500);
       },
       () => {
-        // Clipboard API unavailable
+        // Clipboard write rejected (permissions / focus) — surface it.
+        flashCopyFailed();
       },
     );
   };
@@ -68,7 +89,7 @@ export const HighlightVideoCard: React.FC<HighlightVideoCardProps> = ({
       {/* Polite live region: announce copy success to assistive tech (the green
           checkmark alone is silent to screen readers). Mirrors VideoCard. */}
       <span className="sr-only" role="status" aria-live="polite">
-        {copied ? t("results.table.urlCopied") : ""}
+        {copyFailed ? t("results.table.copyFailed") : copied ? t("results.table.urlCopied") : ""}
       </span>
 
       {/* Thumbnail Area */}
@@ -171,11 +192,21 @@ export const HighlightVideoCard: React.FC<HighlightVideoCardProps> = ({
           <button
             type="button"
             onClick={handleCopy}
-            className="inline-flex items-center justify-center w-7 h-7 rounded-md bg-slate-100 dark:bg-slate-900/60 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white transition-all border border-slate-200 dark:border-slate-700"
-            title={t("results.table.copyUrl")}
-            aria-label={t("results.table.copyUrlAria", { title: video.title })}
+            className={`inline-flex items-center justify-center w-7 h-7 rounded-md bg-slate-100 dark:bg-slate-900/60 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all border border-slate-200 dark:border-slate-700 ${
+              copyFailed
+                ? "text-red-500 dark:text-red-400"
+                : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white"
+            }`}
+            title={copyFailed ? t("results.table.copyFailed") : t("results.table.copyUrl")}
+            aria-label={
+              copyFailed
+                ? t("results.table.copyFailed")
+                : t("results.table.copyUrlAria", { title: video.title })
+            }
           >
-            {copied ? (
+            {copyFailed ? (
+              <AlertCircle className="w-3.5 h-3.5" aria-hidden="true" />
+            ) : copied ? (
               <Check className="w-3.5 h-3.5 text-green-500" aria-hidden="true" />
             ) : (
               <Copy className="w-3.5 h-3.5" aria-hidden="true" />
