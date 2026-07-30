@@ -32,14 +32,14 @@ When a session begins, read in this order. Stop early if a file is missing.
 
 ## Output Languages
 
-| Surface                                                                       | Language                                           |
-| ----------------------------------------------------------------------------- | -------------------------------------------------- |
-| Chat / status messages to user                                                | User's language (default: German)                  |
-| Code, identifiers, comments; console / log output                             | English                                            |
-| Commit messages                                                               | English (Conventional Commits)                     |
-| PR titles + bodies, GitHub issue comments                                     | English                                            |
-| Generated files (CLAUDE.md, agent_docs/\*, MEMORY/SCRATCHPAD/BACKLOG, skills) | English                                            |
-| User-facing UI strings                                                        | i18n keys (`t('key')`) — 13 locales, fallback `en` |
+| Surface                                                                       | Language                                                             |
+| ----------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| Chat / status messages to user                                                | User's language (default: German)                                    |
+| Code, identifiers, comments; console / log output                             | English                                                              |
+| Commit messages                                                               | English (Conventional Commits)                                       |
+| PR titles + bodies, GitHub issue comments                                     | English                                                              |
+| Generated files (CLAUDE.md, agent_docs/\*, MEMORY/SCRATCHPAD/BACKLOG, skills) | English                                                              |
+| User-facing UI strings                                                        | i18n keys (`t('key')`) — bundles for `en` + `de` only, fallback `en` |
 
 ## Performance / Modes
 
@@ -77,7 +77,7 @@ src/
   features/    # dashboard, favorites, search, videos, youtube
   shared/      # Cross-feature components, hooks, lib, constants, types
   providers/   # React context providers (ThemeProvider)
-  i18n/        # 13 locales (full: en, de)
+  i18n/        # en + de bundles; 11 more selectable, fall back to en
   styles/      # Global CSS
 android/       # Capacitor Android project (ChromeOS APK)
 chrome-extension/  electron/  scripts/   # Platform wrappers + build scripts
@@ -132,7 +132,7 @@ Try-catch with fallback values for storage. Custom `YouTubeApiError` for API err
 - **Language:** UI text via i18n keys (`t('key')`); code comments and docs in English.
 - **Naming:** PascalCase for components/types, camelCase for functions/variables/hooks, kebab-case for CSS classes.
 - **Files:** PascalCase for React components, camelCase for services/hooks/utils.
-- **Imports:** always use path aliases (`@features/`, `@shared/`, `@providers/`, `@i18n/`, `@/`); `import type` for type-only.
+- **Imports:** cross-module via the `@/src/…` alias (the convention, ~132 sites); relative paths only inside a module. `import type` for type-only. The `@features|@shared|@providers|@i18n` aliases resolve but are effectively unused — don't start using them.
 - **Exports:** feature modules export via barrel `index.ts`.
 - **Styling:** Tailwind v4 utility classes with `dark:` variants. No CSS modules, no styled-components.
 - **State:** custom hooks + `localStorage`; React Context only for theme. No external state library.
@@ -224,13 +224,13 @@ Platform detail, i18n locales, Docker, build-info: `agent_docs/platform_builds.m
 
 ## Refactoring Notes
 
-- **`FavoriteRow.tsx` (~670 lines)** — god component; split into sub-components + a `useFavoriteRowData()` hook.
-- **Duplicate event listeners** — raw `window.addEventListener` instead of the `useEventBus()` hook.
-- **German strings in `youtubeApiClient.ts`** — hardcoded error messages; should be i18n keys.
-- **Magic numbers** — `trendAnalysisService.ts` hardcodes thresholds and weights.
+- **`InputSection.tsx` (~768 lines)** — largest file; form + autocomplete + history + persistence in one component.
+- **`FavoriteRow.tsx` (~715 lines)** — god component with 11 interdependent `useEffect`s; split out a `useFavoriteRowData()` hook.
+- **`ApiQuotaIndicator.tsx` (~686 lines)** — badge + history panel + window math; the math is pure and extractable.
+- **`AnalyserPage.tsx` (~576 lines)** — extract the export / copy-all action handlers.
 - **No test coverage** — priority targets in `agent_docs/testing.md`.
 
-Details: `agent_docs/refactoring_guidelines.md`
+Resolved (do not re-open): duplicate event listeners, German strings in `youtubeApiClient.ts`, magic numbers in `trendAnalysisService.ts`, module-level API-key state. Details + evidence: `agent_docs/refactoring_guidelines.md`
 
 ## Documentation Rules
 

@@ -8,7 +8,9 @@ Cross-component communication without prop drilling. Events are typed via an `Ev
 
 **Location:** `src/shared/lib/eventBus.ts`
 
-**Events:** `favorites-changed`, `favorites-cache-updated`, `quota-updated`, `hidden-highlights-changed`, `favorite-refresh-start`, `favorite-refresh-end`
+**Events:** `favorites-changed`, `favorites-cache-updated`, `quota-updated`, `hidden-highlights-changed`, `favorite-refresh-start`, `favorite-refresh-end`, `toggle-shortcuts-hint`
+
+Raw `window.addEventListener` is reserved for **native** browser events (`storage`, `scroll`, `mousemove`). Every `EventMap` key goes through `eventBus.on()` / `useEventBus()` — that is what keeps the emit/subscribe pair type-checked.
 
 ## Type-Safe Storage Adapter
 
@@ -45,11 +47,18 @@ Client-side YouTube Data API v3 usage accounting. Per-endpoint cost: `search` = 
 
 **Location:** `src/features/youtube/services/quotaService.ts`
 
-## Infinite Scroll
+## Results Presentation (Analyser)
 
-24 videos per chunk. An `IntersectionObserver` triggers the next chunk 200px from the bottom. The display count resets whenever the search query or a filter changes. UI strings are German ("Schiffe" → here: "Videos", "Alle X Videos geladen").
+The analyser renders the full result set at once — there is no pagination and no `IntersectionObserver`. Presentation is driven by two persisted preferences:
 
-**Location:** `src/app/routes/AnalyserPage.tsx`
+- **`sortMode`** (`"trend" | "views"`) — sorts by `trendingScore` or raw view count. Persisted under `tt.analyser.sortMode`.
+- **`topN`** (`3 | 6`) — splits the sorted list into a highlighted podium (`topVideos = sorted.slice(0, topN)`) and the remainder (`otherVideos`). Persisted under `tt.analyser.topN`.
+
+Both are read from `localStorage` in the `useState` initializer and written back in an effect, so the layout survives a reload. The result set itself is restored from `tt.analyser.lastResult.v1` (24 h TTL) by `useSearch`.
+
+Export runs client-side over the already-sorted list via `buildResultsCsv` / `buildResultsJson` (+ their `*Filename` helpers), handed to `downloadBlob`. No API call, no quota cost.
+
+**Location:** `src/app/routes/AnalyserPage.tsx`, `src/features/videos/services/exportResults.ts`
 
 ## Error Handling
 
