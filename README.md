@@ -207,6 +207,18 @@ npm run preview  # Preview production build
 
 React 19 | TypeScript | Vite 8 | Tailwind CSS 4 | i18next | Electron | YouTube Data API v3
 
+## Contributing
+
+Contributions are welcome. [`CONTRIBUTING.md`](CONTRIBUTING.md) covers the development setup, the
+code style guidelines, the i18n rules and the three local checks that mirror CI
+(`npm run format:check` → `npm run typecheck` → `npm run build`) — run them before opening a PR.
+
+- **Code of Conduct:** [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md)
+- **Reporting a vulnerability:** [`SECURITY.md`](SECURITY.md) — please use GitHub's private
+  vulnerability reporting, not a public issue.
+- **Bug reports / feature requests:** [open an issue](https://github.com/fo0/tubetrend/issues) using
+  the matching template.
+
 ## License
 
 MIT
