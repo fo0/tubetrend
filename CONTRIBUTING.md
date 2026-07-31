@@ -62,7 +62,13 @@ Before submitting a bug report:
 ### Code Style Guidelines
 
 - **TypeScript**: Use strict typing, avoid `any`
-- **Imports**: Use path aliases (`@features/`, `@shared/`, etc.)
+- **Imports**: Cross-module imports use the `@/src/…` alias — write
+  `@/src/shared/lib/storage`, not `@shared/lib/storage`. Relative paths (`./`, `../`) stay inside a
+  single feature or component folder. Use `import type` for type-only imports.
+  - The `@features/`, `@shared/`, `@providers/` and `@i18n/` aliases are configured in
+    `tsconfig.json` + `vite.config.ts` and still resolve, but the codebase settled on `@/src/…`
+    (~132 sites vs. 1). Don't introduce new usages — full table in
+    `agent_docs/coding_conventions.md`.
 - **Components**: Functional components with hooks
 - **Naming**:
   - PascalCase for components and types
