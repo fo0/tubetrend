@@ -53,13 +53,7 @@
     "react-i18next": "^17.0.8"
   },
   "overrides": {
-    "electron-builder": {
-      "app-builder-lib": {
-        "minimatch": {
-          "brace-expansion": "^5.0.6"
-        }
-      }
-    }
+    "brace-expansion": "^5.0.6"
   },
   "devDependencies": {
     "@capacitor/cli": "^8.4.0",
