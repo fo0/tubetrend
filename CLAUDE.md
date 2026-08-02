@@ -195,7 +195,7 @@ Full API reference: `agent_docs/api-reference.md`
 - **Framework:** not yet configured. Recommended: Vitest (ESM-native, Vite-aligned, reuses the path aliases).
 - **Run:** `npm test` (once configured). Today the gate is `format:check` → `typecheck` → `build`.
 - **Structure:** `*.test.ts` next to source.
-- **Constraints:** agent-runnable (no setup/credentials), zero-cost (mock the YouTube API — a `search` costs 100 quota units), deterministic (fake clocks, in-memory storage). Details: `agent_docs/review_process.md → Test execution constraints`.
+- **Constraints:** agent-runnable, zero-cost, deterministic — defined once in `agent_docs/review_process.md → Test execution constraints`.
 
 Priority targets + full detail: `agent_docs/testing.md`
 
@@ -225,13 +225,9 @@ Platform detail, i18n locales, Docker, build-info: `agent_docs/platform_builds.m
 
 ## Refactoring Notes
 
-- **`InputSection.tsx` (~768 lines)** — largest file; form + autocomplete + history + persistence in one component.
-- **`FavoriteRow.tsx` (~715 lines)** — god component with 11 interdependent `useEffect`s; split out a `useFavoriteRowData()` hook.
-- **`ApiQuotaIndicator.tsx` (~686 lines)** — badge + history panel + window math; the math is pure and extractable.
-- **`AnalyserPage.tsx` (~576 lines)** — extract the export / copy-all action handlers.
-- **No test coverage** — priority targets in `agent_docs/testing.md`.
+Over the ~500-line bar: `InputSection.tsx` (~768) · `FavoriteRow.tsx` (~715) · `ApiQuotaIndicator.tsx` (~686) · `AnalyserPage.tsx` (~576). No test coverage — targets in `agent_docs/testing.md`.
 
-Resolved (do not re-open): duplicate event listeners, German strings in `youtubeApiClient.ts`, magic numbers in `trendAnalysisService.ts`, module-level API-key state. Details + evidence: `agent_docs/refactoring_guidelines.md`
+Split candidates, the already-resolved list (do not re-open) and the principles: `agent_docs/refactoring_guidelines.md`
 
 ## Documentation Rules
 

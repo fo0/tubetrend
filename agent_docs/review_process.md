@@ -1,35 +1,32 @@
 # Review Process
 
-This file defines the mandatory review process executed after every implementation.
+This file defines the review process. **It runs on demand only**, via `.claude/skills/review/SKILL.md` (`/review`, "review this"). The done-skill does NOT auto-run it — see CLAUDE.md → Workflow Triggers. Everything below describes how a review executes once it has been invoked.
 
 ## Core Rules
 
-1. **Every implementation triggers a full review** — no exceptions, no user prompt needed.
-2. **Never commit without completed review** — all P0/P1 findings must be fixed first.
+1. **A review covers all categories** — once invoked, no category is skipped because it "looks fine".
+2. **Never commit with unfixed P0/P1 findings** — if a review ran, its P0/P1 findings are fixed (or explicitly deferred with reasoning in BACKLOG.md) before the commit.
 3. **Deterministic checks run first** — linter/types/tests catch what they catch. The review covers what tools cannot.
 4. **Fix, don't list** — when a finding is actionable, fix it immediately. Don't just document it.
 5. **Re-review after fixes** — if fixes touched code, re-run automated checks and re-review affected categories only.
 
-## TODO Structure (MANDATORY!)
+## TODO Structure
 
-Your TODO list MUST contain these steps for EVERY task:
+When a review is invoked, its TODO list contains these steps:
 
 ```
-1. Implement feature
-2. Update documentation (if needed)
-3. Run automated checks (see Automated Checks)
-4. AUTOMATIC CODE-REVIEW (see Review Categories)           <- SEPARATE TODO!
-5. Auto-fix findings (P0/P1 immediately, P2 by judgment)
-6. Unfixed findings (Accepted/Deferred) -> BACKLOG.md      <- SEPARATE TODO!
-7. UI review (if UI was changed)                           <- SEPARATE TODO!
-8. Commit (push only when user asks)
+1. Run automated checks (see Automated Checks)
+2. CODE-REVIEW (see Review Categories)                     <- SEPARATE TODO!
+3. Auto-fix findings (P0/P1 immediately, P2 by judgment)
+4. Unfixed findings (Accepted/Deferred) -> BACKLOG.md      <- SEPARATE TODO!
+5. UI review (if UI was changed)                           <- SEPARATE TODO!
 ```
 
 **Rules:**
 
-- Step 3 and Step 4 are SEPARATE TODOs — NEVER combine them
-- Step 4 is **automatically triggered** after every implementation — no user request needed
+- Step 1 and Step 2 are SEPARATE TODOs — NEVER combine them
 - When issues are found: **Fix immediately** -> re-run checks -> repeat review until clean
+- Committing is the done-skill's job (`.claude/skills/done/SKILL.md`), not the review's
 
 ## Severity Definitions
 
@@ -44,13 +41,12 @@ Severity is based on impact, not category:
 ## Workflow
 
 ```
-Implement -> Run automated checks -> Fix failures ->
+Run automated checks -> Fix failures ->
 Code Review (all categories) -> Fix P0/P1 -> Re-check if needed ->
 Regression & Complexity QA ->
 Unresolved findings -> BACKLOG.md ->
 Learnings/context -> MEMORY.md / SCRATCHPAD.md ->
-UI Review (if UI changed) ->
-Commit
+UI Review (if UI changed)
 ```
 
 ### Error Recovery
@@ -61,18 +57,7 @@ Commit
 
 ## Automated Checks
 
-Run in this order before the review:
-
-```bash
-npm ci                   # ALWAYS first — install dependencies
-npm run typecheck        # TypeScript type checking must pass
-npm run build            # Production build must succeed
-```
-
-> **Note:** No linter or test framework is configured yet. When added, extend this section:
->
-> - Lint: `npm run lint` (once ESLint is configured)
-> - Test: `npm test` (once Vitest is configured)
+Canonical command list + order: **CLAUDE.md → Commands** (`format` write first, then `format:check` → `typecheck` → `build`). Run them before the review; `npm ci` first if dependencies are missing. Neither a linter nor a test runner is configured — those three commands are the whole gate.
 
 ### Test execution constraints (autonomy + zero-cost)
 
@@ -96,7 +81,7 @@ External boundaries (YouTube API, localStorage, event bus) → always mock or us
 
 - Use `gitnexus_impact` on changed functions to identify affected downstream code beyond the diff.
 - Use `gitnexus_detect_changes` after fixes to verify change scope matches expectations.
-- GitNexus is read-only here: never let it edit files or regenerate skills/docs (see the Read-Only Analysis Policy in CLAUDE.md).
+- GitNexus is read-only here: never let it edit files or regenerate skills/docs (Read-Only Analysis Policy: `agent_docs/gitnexus.md`, mirrored in `AGENTS.md`).
 
 ### Full-read review (when needed)
 

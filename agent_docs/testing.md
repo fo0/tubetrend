@@ -16,7 +16,7 @@ npm run build          # production build must succeed
 
 ## Recommended framework
 
-**Vitest** — ESM-native and Vite-aligned, so it reuses `vite.config.ts` resolution (including the `@features/`, `@shared/`, `@providers/`, `@i18n/` path aliases) with no extra config layer.
+**Vitest** — ESM-native and Vite-aligned, so it reuses `vite.config.ts` resolution (including the `@/*` alias the codebase actually imports through) with no extra config layer.
 
 When added:
 
@@ -39,10 +39,4 @@ Ordered by risk × churn:
 
 ## Constraints (autonomy + zero-cost)
 
-This codebase is built and verified by AI agents. Tests must be:
-
-- **Agent-runnable** with the standard test command — no manual setup, no credentials, no interactive login.
-- **Zero-cost** — no real YouTube Data API calls (a `search` costs 100 quota units), no production data writes. Mock the API layer at `youtubeApiClient`.
-- **Deterministic** — fake clocks (quota reset is timezone-dependent), in-memory storage adapters, mocked event bus.
-
-External boundaries (YouTube API, `localStorage`) → mock or use ephemeral in-memory fakes. Real-service smoke tests only on explicit user request; never part of the default check pipeline.
+Defined once in `agent_docs/review_process.md → Test execution constraints` — agent-runnable, zero-cost, deterministic, self-contained. Read them there before writing a test.

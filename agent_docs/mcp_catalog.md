@@ -15,6 +15,7 @@ This file documents:
 | ---------- | ------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
 | `gitnexus` | Code intelligence — symbol graph, impact analysis, safe refactor on the TypeScript/React codebase | Skills in `.claude/skills/gitnexus/`. Optional — workflows must work without it. |
 | `github`   | Issue / PR / repo metadata via API (alternative to `gh` CLI)                                      | Useful when running in environments without `gh` installed (CI, sandboxes).      |
+| `beacon`   | Dependency compatibility verdicts (`compat_*`) before a version bump; repo onboarded in #334      | Drives `.claude/skills/beacon/SKILL.md`. Optional — skip the skill when absent.  |
 
 ## Common MCPs (reference — not necessarily used here)
 

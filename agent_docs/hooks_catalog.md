@@ -143,7 +143,7 @@ Trigger: `PostToolUse`
 
 ## Tier 3 — Optional
 
-> GitNexus stays **analysis-only**: optional GitNexus snippets are read-only reminders (pre-edit impact hint, pre-commit scope check). There is deliberately **no** auto-`analyze` hook — see the Read-Only Analysis Policy in `CLAUDE.md`.
+> GitNexus stays **analysis-only**: optional GitNexus snippets are read-only reminders (pre-edit impact hint, pre-commit scope check). There is deliberately **no** auto-`analyze` hook — see the Read-Only Analysis Policy in `agent_docs/gitnexus.md`.
 
 ### Conventional Commits format check
 

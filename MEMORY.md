@@ -4,6 +4,12 @@ Session-spanning project knowledge. **Read at session start, update during work.
 
 ## Architecture Decisions
 
+- **Review is on-demand only** — `/review` is the sole entry point; done-skill never triggers it. `review_process.md` says _how_ a review runs, not _when_. Do not reintroduce "every implementation triggers a full review". (2026-08-02)
+
+- **Commit style is Conventional Commits** — `type(scope): description`, per CLAUDE.md → Git Conventions and all of the git history. Do not reintroduce CONTRIBUTING.md's old prose style (`Add feature X`). (2026-08-02)
+
+- **GitNexus policy lives in `agent_docs/gitnexus.md` (mirrored in `AGENTS.md`)** — CLAUDE.md holds only a pointer. Do not write "see the Read-Only Analysis Policy in CLAUDE.md"; that section is gone. (2026-08-02)
+
 ## Gotchas & Pitfalls
 
 - **Tailwind v4 migration (2026-02)** — Tailwind CSS was migrated from v3 (PostCSS plugin + tailwind.config.js) to v4 (@tailwindcss/vite plugin). Both `tailwind.config.js` and the empty `postcss.config.js` were deleted (postcss devDependency removed in PR #142). Dark mode now uses `@custom-variant dark` in CSS instead of `darkMode: 'class'` in config. (updated 2026-05-24)

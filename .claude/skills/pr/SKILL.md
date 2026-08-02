@@ -191,8 +191,7 @@ Report: `Merged PR #N (<strategy>). Branch deleted.`
 
 | Failure                                 | Action                                      |
 | --------------------------------------- | ------------------------------------------- |
-| `gh` not installed                      | Stop, print install instructions            |
-| `gh auth status` fails                  | Stop, print `gh auth login`                 |
+| `gh` missing or unauthenticated         | Switch to the GitHub MCP per Prerequisites; stop only if neither exists |
 | `git push` rejected (non-fast-forward)  | Stop, ask user before force operations      |
 | `gh pr create` fails due to existing PR | Re-run auto-route (will land in Phase B)    |
 | Merge conflict on `gh pr merge`         | Stop, instruct user to rebase/merge locally |

@@ -7,7 +7,7 @@ description: "Use for read-only GitNexus index maintenance: check index status, 
 
 All commands work via `npx` — no global install required.
 
-> **Read-only / analysis only.** GitNexus must never write tracked files. These commands manage the **index** (`.gitnexus/`, gitignored) and the global registry (`~/.gitnexus/`) only. `analyze` is the one command that *can* touch `CLAUDE.md` / `AGENTS.md` — always pass `--skip-agents-md`, run it only when genuinely needed, and revert any tracked file it changes. Wiki/doc generation is **not used** under this policy. See the Read-Only Analysis Policy in CLAUDE.md / AGENTS.md.
+> **Read-only / analysis only.** GitNexus must never write tracked files. These commands manage the **index** (`.gitnexus/`, gitignored) and the global registry (`~/.gitnexus/`) only. `analyze` is the one command that *can* touch `CLAUDE.md` / `AGENTS.md` — always pass `--skip-agents-md`, run it only when genuinely needed, and revert any tracked file it changes. Wiki/doc generation is **not used** under this policy. See the Read-Only Analysis Policy in `agent_docs/gitnexus.md` (mirrored in `AGENTS.md`).
 
 ## Commands
 
