@@ -169,7 +169,7 @@ Open http://localhost:3000
 | `npm run format`       | Auto-format with Prettier         |
 | `npm run format:check` | Verify formatting (CI-equivalent) |
 
-> **Tests:** No test framework is configured yet. A Vitest setup is planned — see `agent_docs/refactoring_guidelines.md`.
+> **Tests:** No test framework is configured yet. A Vitest setup is planned — see `agent_docs/testing.md`.
 
 ---
 
