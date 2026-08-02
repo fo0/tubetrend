@@ -15,7 +15,7 @@ For any task involving code understanding, debugging, impact analysis, or refact
 2. **Match your task to a skill below** and **read that skill file**
 3. **Follow the skill's workflow and checklist**
 
-> **GitNexus is read-only** — every tool and resource here only *reads* the index; none write tracked files (no `rename`, no `wiki`, no skill/doc regeneration). See the Read-Only Analysis Policy in CLAUDE.md / AGENTS.md.
+> **GitNexus is read-only** — every tool and resource here only *reads* the index; none write tracked files (no `rename`, no `wiki`, no skill/doc regeneration). See the Read-Only Analysis Policy in `agent_docs/gitnexus.md` (mirrored in `AGENTS.md`).
 > If step 1 warns the index is stale, rebuilding is **not routine** — only run `npx gitnexus analyze --skip-agents-md` when the task genuinely needs it, then `git status` and `git checkout --` any tracked file it touched (see `gitnexus-cli`).
 > If `gitnexus_query` returns empty for a known repo, `npx gitnexus index .` registers it in the global registry (writes only `~/.gitnexus`, no tracked files).
 

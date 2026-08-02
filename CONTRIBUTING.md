@@ -120,13 +120,13 @@ src/
 
 ### Commit Message Format
 
-Use clear, descriptive commit messages:
+This repository uses [Conventional Commits](https://www.conventionalcommits.org/): `type(scope): description`,
+with `type` one of `feat`, `fix`, `refactor`, `docs`, `chore`, `perf`, `build`, `ci`, `test`. Reference the issue
+number when there is one (`fix: resolve crash #42`). Examples from the history:
 
-- `Add feature X` - for new features
-- `Fix bug in Y` - for bug fixes
-- `Update Z` - for improvements to existing features
-- `Refactor W` - for code refactoring
-- `Docs: update README` - for documentation changes
+- `feat: add trend score badge to video cards`
+- `fix(quota): reset counter at midnight Pacific Time`
+- `docs(readme): document Chromebook build-from-source command`
 
 ## Development Notes
 

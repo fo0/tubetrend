@@ -57,3 +57,6 @@ docker-compose.override.yml
 
 # GitNexus index (local code-intelligence cache)
 .gitnexus/
+
+# JetBrains Junie agent config (untracked — agent guidance lives in CLAUDE.md + agent_docs/)
+.junie/
