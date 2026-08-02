@@ -24,6 +24,7 @@ When a session begins, read in this order. Stop early if a file is missing.
 | "rollback" / "revert" / "undo" / "/rollback"     | `.claude/skills/rollback/SKILL.md`                       |
 | "CI" / "fix CI" / "check the build" / "/ci"      | `.claude/skills/ci/SKILL.md`                             |
 | "stuck" / "loop" / "going in circles" / "/stuck" | `.claude/skills/stuck/SKILL.md`                          |
+| "check dependencies" / "update deps" / "/beacon" | `.claude/skills/beacon/SKILL.md`                         |
 | Diagram request                                  | `agent_docs/diagram_prompt.md` → `docs/ARCHITECTURE.mmd` |
 
 > Review runs via the `review` skill — done-skill does NOT auto-run it. Unresolved findings → `BACKLOG.md` (`agent_docs/backlog_process.md`). Long-term knowledge → `MEMORY.md`, temporary → `SCRATCHPAD.md` (`agent_docs/memory_process.md`).
