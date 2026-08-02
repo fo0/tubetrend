@@ -40,7 +40,7 @@ tubetrend/
 ├── agent_docs/                       # Agent process docs (review, backlog, memory, ADR, MCP, hooks, API ref, refactoring, context budget)
 ├── .claude/
 │   ├── settings.json                 # Tier-1 hooks + trigger permissions
-│   └── skills/                       # done / pr / review / security-review / rollback / ci / stuck / gitnexus/
+│   └── skills/                       # done / pr / review / security-review / rollback / ci / stuck / beacon / gitnexus/
 ├── .github/                          # Workflows + dependabot + templates
 ├── .junie/                           # JetBrains Junie agent guidelines
 ├── capacitor.config.ts               # Capacitor config
