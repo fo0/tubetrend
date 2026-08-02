@@ -203,7 +203,7 @@ Priority targets + full detail: `agent_docs/testing.md`
 
 Project-intended and common MCPs: `agent_docs/mcp_catalog.md`. Host MCP availability is never auto-detected — fall back to `Read` / `Bash` / `WebFetch` when an MCP is absent. Workflows must never hard-require an MCP.
 
-**Trigger tools never prompt.** `.claude/settings.json` → `permissions.allow` carries one `mcp__<server>__*` glob per Claude Code Remote spelling plus the two `mcp__github__(un)subscribe_pr_activity` entries, so scheduled check-ins and PR-watch subscriptions run unattended. **Self-heal:** a tool that still prompts means its server spelling is missing — append `mcp__<that server>__*` and commit it (additive only, never `deny`/`ask`). Trust-dialog caveat + user-level fallback: `agent_docs/mcp_catalog.md`.
+**Trigger tools never prompt.** `.claude/settings.json` → `permissions.allow` carries exactly **one `mcp__<server>__*` glob per spelling** — plus `mcp__github__(un)subscribe_pr_activity`, kept only because no `mcp__github__*` glob exists. Per-tool entries a glob already matches are redundant: they were pruned and must not be re-added. **Self-heal:** a tool that still prompts means its spelling has no glob — append `mcp__<that server>__*` and commit it. **Never write a `deny` or `ask` block.** Trust-dialog caveat + user-level fallback: `agent_docs/mcp_catalog.md`.
 
 ## CI
 

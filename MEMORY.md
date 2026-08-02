@@ -10,6 +10,10 @@ Session-spanning project knowledge. **Read at session start, update during work.
 
 - **GitNexus policy lives in `agent_docs/gitnexus.md` (mirrored in `AGENTS.md`)** — CLAUDE.md holds only a pointer. Do not write "see the Read-Only Analysis Policy in CLAUDE.md"; that section is gone. (2026-08-02)
 
+- **`.junie/` is removed and gitignored (owner decision)** — the JetBrains Junie guidelines had drifted (documented localStorage keys `tt.theme.explicit` / `tt.quota.tracking`, while `src/shared/constants/config.ts` defines `tt.theme` / `yt_quota_tracking`). Agent guidance lives in CLAUDE.md + `agent_docs/` only. Do not reintroduce `.junie/` or reference it in docs. (2026-08-02)
+
+- **Allowlist = one `mcp__<server>__*` glob per spelling (owner decision)** — 16 redundant per-tool entries were pruned from `.claude/settings.json`; only the three Claude-Code-Remote globs and `mcp__github__(un)subscribe_pr_activity` remain (the latter two only because no `mcp__github__*` glob exists). Self-heal by _appending_ a missing glob. Do not re-add per-tool entries a glob already matches, and never write a `deny`/`ask` block. Full rule: `agent_docs/mcp_catalog.md → Allowlist shape`. (2026-08-02)
+
 ## Gotchas & Pitfalls
 
 - **Tailwind v4 migration (2026-02)** — Tailwind CSS was migrated from v3 (PostCSS plugin + tailwind.config.js) to v4 (@tailwindcss/vite plugin). Both `tailwind.config.js` and the empty `postcss.config.js` were deleted (postcss devDependency removed in PR #142). Dark mode now uses `@custom-variant dark` in CSS instead of `darkMode: 'class'` in config. (updated 2026-05-24)

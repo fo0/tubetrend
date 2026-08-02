@@ -33,6 +33,21 @@ This file documents:
 | `notion` / `linear` / `jira`    | Work tracking integrations                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | `aws` / `gcp` / `azure`         | Cloud resource queries (use carefully — non-zero cost)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 
+## Allowlist shape (project `.claude/settings.json` → `permissions.allow`)
+
+Binding rules for this repo's allowlist:
+
+- **One `mcp__<server>__*` glob per server spelling** — that glob is the whole entry for that server. It already
+  matches every tool the server exposes, present and future.
+- **Per-tool entries a glob already covers are redundant.** They were pruned from this repo (2026-08-02, owner
+  decision). Do not re-add them, and never "restore" one because a single tool prompted.
+- **Narrow exception while no glob exists:** `mcp__github__subscribe_pr_activity` and
+  `mcp__github__unsubscribe_pr_activity` stay listed because there is no `mcp__github__*` glob. If that glob is ever
+  added, both entries become redundant — drop them in the same edit.
+- **Self-heal = append a glob.** A tool that still prompts means its server spelling has no glob yet: append
+  `mcp__<that server>__*` and commit it on the current branch/PR. Never reorder or delete a glob.
+- **Never write a `deny` or `ask` block.** Unconditional, no exceptions.
+
 ## Prompt-free triggers everywhere (one-time, optional)
 
 This repo's `.claude/settings.json` already pre-approves every Claude Code Remote trigger tool. Two things can still
@@ -55,9 +70,10 @@ no trust gate and apply to every repo:
 }
 ```
 
-Merge additively into an existing file; never remove user entries. To re-gate a single tool (e.g. `add_repo`), add it
-to `permissions.ask` — `ask` is evaluated before `allow`, so it prompts despite the glob. **The agent never writes
-this file on its own** — it lives outside the repo, so applying it is the user's call.
+Merge additively into this **user-level** file; never remove entries the user put there. **The agent never writes
+this file on its own** — it lives outside the repo, so applying it is the user's call. Re-gating a single tool (e.g.
+`add_repo`) via `permissions.ask` is likewise the user's own call — `ask` is evaluated before `allow`, so it prompts
+despite the glob. **The agent never writes a `deny` or `ask` block anywhere, project or user settings.**
 
 ## Selection Heuristic for the Agent
 
