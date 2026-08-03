@@ -259,8 +259,20 @@
   "errors": {
     "apiKeyInvalid": "Der API-Schlüssel scheint ungültig zu sein. Bitte überprüfe ihn.",
     "favoriteLoad": "Fehler beim Laden der Favoriten-Daten.",
+    "analysisFailed": "Analyse fehlgeschlagen. Bitte versuche es erneut.",
     "somethingWentWrong": "Etwas ist schiefgelaufen",
-    "tryAgain": "Erneut versuchen"
+    "tryAgain": "Erneut versuchen",
+    "api": {
+      "keyMissing": "Kein YouTube-API-Schlüssel hinterlegt. Trage deinen Schlüssel ein, um zu suchen.",
+      "quotaExceeded": "Das tägliche YouTube-API-Kontingent ist aufgebraucht. Reset um Mitternacht Pacific Time.",
+      "channelNotFound": "Kein YouTube-Kanal zu \"{{channel}}\" gefunden. Prüfe den Namen oder das @Handle.",
+      "channelDetails": "Der Kanal wurde gefunden, aber YouTube hat keine Videoliste geliefert. Bitte versuche es erneut.",
+      "noVideosInTimeFrame": "Im gewählten Zeitraum ({{timeFrame}}) wurden keine Videos veröffentlicht. Wähle einen längeren Zeitraum.",
+      "invalidResponse": "YouTube hat eine unlesbare Antwort geliefert. Bitte versuche es erneut.",
+      "http": "YouTube ist gerade nicht erreichbar (HTTP {{status}}). Prüfe deine Verbindung und versuche es erneut.",
+      "generic": "YouTube-API-Fehler: {{message}}",
+      "genericStatus": "YouTube-API-Fehler (HTTP {{status}})."
+    }
   },
   "loading": "Lädt…",
   "loadingState": {
