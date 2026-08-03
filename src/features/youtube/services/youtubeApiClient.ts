@@ -32,11 +32,23 @@ export function getApiKey(): string {
   }
 }
 
+/**
+ * i18n descriptor carried alongside the technical error message. Services have
+ * no access to `t` (they are not React), so they name the key and the UI layer
+ * resolves it in the active language. The plain `message` stays the developer /
+ * console text and the fallback when a descriptor is missing.
+ */
+export interface ErrorTranslation {
+  readonly key: string;
+  readonly params?: Record<string, string | number>;
+}
+
 export class YouTubeApiError extends Error {
   constructor(
     message: string,
     public readonly status: number,
     public readonly isQuotaError: boolean = false,
+    public readonly i18n?: ErrorTranslation,
   ) {
     super(message);
     this.name = "YouTubeApiError";
@@ -51,7 +63,9 @@ export async function fetchFromApi<T>(
 ): Promise<T> {
   const apiKey = getApiKey();
   if (!apiKey) {
-    throw new YouTubeApiError("YouTube API key missing.", 401);
+    throw new YouTubeApiError("YouTube API key missing.", 401, false, {
+      key: "errors.api.keyMissing",
+    });
   }
 
   const url = new URL(`https://www.googleapis.com/youtube/v3/${endpoint}`);
@@ -71,12 +85,16 @@ export async function fetchFromApi<T>(
       const lower = msg.toLowerCase();
 
       if (lower.includes("api key not valid")) {
-        throw new YouTubeApiError("The provided API key is invalid.", 403);
+        throw new YouTubeApiError("The provided API key is invalid.", 403, false, {
+          key: "errors.apiKeyInvalid",
+        });
       }
 
       if (lower.includes("quota")) {
         quotaService.markExhausted();
-        throw new YouTubeApiError("YouTube API quota exceeded.", 403, true);
+        throw new YouTubeApiError("YouTube API quota exceeded.", 403, true, {
+          key: "errors.api.quotaExceeded",
+        });
       }
 
       // 4xx errors still cost quota
@@ -87,6 +105,10 @@ export async function fetchFromApi<T>(
       throw new YouTubeApiError(
         msg ? `YouTube API error: ${msg}` : `YouTube API error (${response.status})`,
         response.status,
+        false,
+        msg
+          ? { key: "errors.api.generic", params: { message: msg } }
+          : { key: "errors.api.genericStatus", params: { status: response.status } },
       );
     }
 
@@ -94,11 +116,16 @@ export async function fetchFromApi<T>(
       quotaService.track(cost, endpoint, context);
     }
 
-    throw new YouTubeApiError(`HTTP error: ${response.status}`, response.status);
+    throw new YouTubeApiError(`HTTP error: ${response.status}`, response.status, false, {
+      key: "errors.api.http",
+      params: { status: response.status },
+    });
   }
 
   if (data === null) {
-    throw new YouTubeApiError("Invalid response from YouTube API.", response.status);
+    throw new YouTubeApiError("Invalid response from YouTube API.", response.status, false, {
+      key: "errors.api.invalidResponse",
+    });
   }
 
   // Track successful request

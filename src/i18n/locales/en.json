@@ -128,6 +128,14 @@
       "delete": "Delete",
       "empty": "No highlights available yet. Highlights will appear once your favorites have loaded videos."
     },
+    "filter": {
+      "placeholder": "Filter favorites…",
+      "aria": "Filter favorites by name",
+      "clear": "Clear filter",
+      "count_one": "{{count}} of {{total}} shown",
+      "count_other": "{{count}} of {{total}} shown",
+      "noMatches": "No favorite matches \"{{query}}\"."
+    },
     "sorting": {
       "label": "Sorting:",
       "alphaTitle": "Sort alphabetically (click again to reverse order)",
@@ -176,6 +184,7 @@
       "urlCopied": "Video URL copied",
       "titleCopied": "Video title copied",
       "copyFailed": "Clipboard unavailable",
+      "sortBy": "Sort by {{column}}",
       "filterPlaceholder": "Filter by title…",
       "filterAria": "Filter videos by title",
       "filterClear": "Clear filter",
@@ -250,8 +259,20 @@
   "errors": {
     "apiKeyInvalid": "The API key appears to be invalid. Please check it.",
     "favoriteLoad": "Failed to load favorite data.",
+    "analysisFailed": "Analysis failed. Please try again.",
     "somethingWentWrong": "Something went wrong",
-    "tryAgain": "Try again"
+    "tryAgain": "Try again",
+    "api": {
+      "keyMissing": "No YouTube API key configured. Add your key to start searching.",
+      "quotaExceeded": "Daily YouTube API quota used up. It resets at midnight Pacific Time.",
+      "channelNotFound": "No YouTube channel found for \"{{channel}}\". Check the name or @handle.",
+      "channelDetails": "The channel was found, but YouTube did not return its video list. Please try again.",
+      "noVideosInTimeFrame": "No videos published in the selected time frame ({{timeFrame}}). Try a longer one.",
+      "invalidResponse": "YouTube returned an unreadable response. Please try again.",
+      "http": "YouTube is not reachable right now (HTTP {{status}}). Check your connection and try again.",
+      "generic": "YouTube API error: {{message}}",
+      "genericStatus": "YouTube API error (HTTP {{status}})."
+    }
   },
   "loading": "Loading…",
   "loadingState": {

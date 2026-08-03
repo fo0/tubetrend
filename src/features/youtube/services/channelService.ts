@@ -22,7 +22,7 @@ import type {
   YoutubeVideoListResponse,
 } from "../types";
 
-import { fetchFromApi, getApiKey } from "./youtubeApiClient";
+import { fetchFromApi, getApiKey, YouTubeApiError } from "./youtubeApiClient";
 
 interface AutocompleteCacheEntry {
   results: ChannelSuggestion[];
@@ -263,14 +263,20 @@ export async function findChannelInfo(
   );
 
   if (!searchData.items || searchData.items.length === 0) {
-    throw new Error(`Channel "${channelName}" not found.`);
+    throw new YouTubeApiError(`Channel "${channelName}" not found.`, 404, false, {
+      key: "errors.api.channelNotFound",
+      params: { channel: channelName },
+    });
   }
 
   const firstSnippet = searchData.items[0].snippet;
   const channelId = firstSnippet?.channelId;
   const channelTitle = firstSnippet?.channelTitle;
   if (!channelId || !channelTitle) {
-    throw new Error(`Channel "${channelName}" not found.`);
+    throw new YouTubeApiError(`Channel "${channelName}" not found.`, 404, false, {
+      key: "errors.api.channelNotFound",
+      params: { channel: channelName },
+    });
   }
 
   // Get channel details
@@ -284,12 +290,16 @@ export async function findChannelInfo(
   );
 
   if (!channelDetails.items || channelDetails.items.length === 0) {
-    throw new Error("Channel details could not be loaded.");
+    throw new YouTubeApiError("Channel details could not be loaded.", 502, false, {
+      key: "errors.api.channelDetails",
+    });
   }
 
   const uploadsPlaylistId = channelDetails.items[0].contentDetails?.relatedPlaylists?.uploads;
   if (!uploadsPlaylistId) {
-    throw new Error("Channel details could not be loaded.");
+    throw new YouTubeApiError("Channel details could not be loaded.", 502, false, {
+      key: "errors.api.channelDetails",
+    });
   }
 
   const result: ChannelInfo = {

@@ -1,7 +1,8 @@
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Activity, BarChart3, Download, EyeOff, RefreshCw, Trash2, Upload } from "lucide-react";
 import { FavoriteRow } from "@/src/shared/components/ui/FavoriteRow";
 import { FavoriteAvatar } from "@/src/shared/components/ui/FavoriteAvatar";
+import { FavoritesFilter } from "@/src/shared/components/ui/FavoritesFilter";
 import { HighlightVideoCard } from "@/src/shared/components/ui/HighlightVideoCard";
 import { FloatingScrollButton } from "@/src/shared/components/ui/FloatingScrollButton";
 import { useTranslation } from "react-i18next";
@@ -14,6 +15,12 @@ import {
 } from "@/src/features/dashboard";
 import { getLocale } from "@/src/shared/lib/locale";
 import type { DashboardSortMode } from "@/src/shared/types";
+
+/**
+ * Below this many favorites the list fits on screen, so the filter bar would
+ * only add clutter (mirrors FILTER_MIN_ROWS in VideoListTable).
+ */
+const FAVORITES_FILTER_MIN_ROWS = 5;
 
 interface DashboardPageProps {
   favorites: FavoriteConfig[];
@@ -61,10 +68,33 @@ export function DashboardPage({
 }: DashboardPageProps) {
   const { t } = useTranslation();
   const importRef = useRef<HTMLInputElement | null>(null);
+  const [favoriteFilter, setFavoriteFilter] = useState("");
 
   const handleImportPick = () => {
     importRef.current?.click();
   };
+
+  const showFavoriteFilter = favorites.length >= FAVORITES_FILTER_MIN_ROWS;
+  const normalizedFavoriteFilter = showFavoriteFilter ? favoriteFilter.trim().toLowerCase() : "";
+
+  // `null` means "no filter active" — every favorite stays visible. Matching
+  // covers the saved label, the raw query and the resolved channel title from
+  // the cache, so "@mkbhd" and "Marques Brownlee" both find the same row.
+  const matchingFavoriteIds = useMemo<Set<string> | null>(() => {
+    if (!normalizedFavoriteFilter) return null;
+    const ids = new Set<string>();
+    for (const fav of sortedFavorites) {
+      const channelTitle = favoritesService.getCache(fav.id)?.meta?.channelTitle ?? "";
+      const haystack = `${fav.label ?? ""} ${fav.query} ${channelTitle}`.toLowerCase();
+      if (haystack.includes(normalizedFavoriteFilter)) ids.add(fav.id);
+    }
+    return ids;
+    // cacheTick: a refresh can resolve a channel title that was unknown before.
+  }, [sortedFavorites, normalizedFavoriteFilter, cacheTick]);
+
+  const visibleFavorites = matchingFavoriteIds
+    ? sortedFavorites.filter((fav) => matchingFavoriteIds.has(fav.id))
+    : sortedFavorites;
 
   const highlightVideosData = useMemo(() => {
     const raw = selectHighlightVideosFromFavorites(
@@ -313,10 +343,11 @@ export function DashboardPage({
               </button>
             </div>
 
-            {/* Favorite Avatars */}
-            {sortedFavorites.length > 0 && (
+            {/* Favorite Avatars — filtered-out favorites are dropped here too,
+                otherwise their quick-jump would scroll to a hidden row. */}
+            {visibleFavorites.length > 0 && (
               <div className="flex items-center gap-1.5 ml-2 pl-3 border-l border-slate-300 dark:border-slate-700">
-                {sortedFavorites.map((fav) => (
+                {visibleFavorites.map((fav) => (
                   <FavoriteAvatar
                     key={fav.id}
                     favorite={fav}
@@ -371,24 +402,60 @@ export function DashboardPage({
           </button>
         </div>
       ) : (
-        <div className="space-y-10">
-          {sortedFavorites.map((fav, idx) => (
-            // scroll-mt-20 (5rem) clears the sticky header (h-16 = 4rem) plus a
-            // little breathing room. Without it the avatar quick-jump below
-            // aligns the row flush with the viewport top, where the header
-            // covers the favorite's own title — the user lands on a row whose
-            // heading they cannot see.
-            <div key={fav.id} id={`favorite-${fav.id}`} className="scroll-mt-20">
-              <FavoriteRow
-                favorite={fav}
-                onRemove={onRemoveFavorite}
-                onAnalyze={onAnalyzeFavorite}
-                globalRefreshToken={refreshToken}
-                staggerIndex={idx}
-              />
+        <>
+          {showFavoriteFilter && (
+            <FavoritesFilter
+              value={favoriteFilter}
+              onChange={setFavoriteFilter}
+              matchCount={visibleFavorites.length}
+              totalCount={sortedFavorites.length}
+            />
+          )}
+
+          {matchingFavoriteIds && visibleFavorites.length === 0 && (
+            <div className="bg-slate-50 border border-slate-200 dark:bg-slate-900/50 dark:border-slate-800 rounded-xl p-8 text-center flex flex-col items-center gap-3">
+              <p className="text-slate-600 dark:text-slate-400">
+                {t("dashboard.filter.noMatches", { query: favoriteFilter.trim() })}
+              </p>
+              <button
+                type="button"
+                onClick={() => setFavoriteFilter("")}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              >
+                {t("dashboard.filter.clear")}
+              </button>
             </div>
-          ))}
-        </div>
+          )}
+
+          <div className="space-y-10">
+            {sortedFavorites.map((fav, idx) => {
+              // Filtered-out rows are hidden, not unmounted: a FavoriteRow
+              // re-fetches from the YouTube API when its cache is stale, so
+              // unmounting on every keystroke would burn API quota.
+              const isVisible = !matchingFavoriteIds || matchingFavoriteIds.has(fav.id);
+              return (
+                // scroll-mt-20 (5rem) clears the sticky header (h-16 = 4rem) plus a
+                // little breathing room. Without it the avatar quick-jump below
+                // aligns the row flush with the viewport top, where the header
+                // covers the favorite's own title — the user lands on a row whose
+                // heading they cannot see.
+                <div
+                  key={fav.id}
+                  id={`favorite-${fav.id}`}
+                  className={isVisible ? "scroll-mt-20" : "hidden"}
+                >
+                  <FavoriteRow
+                    favorite={fav}
+                    onRemove={onRemoveFavorite}
+                    onAnalyze={onAnalyzeFavorite}
+                    globalRefreshToken={refreshToken}
+                    staggerIndex={idx}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        </>
       )}
 
       {/* Floating scroll button - subtle, appears based on scroll direction */}

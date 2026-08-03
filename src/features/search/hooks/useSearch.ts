@@ -11,7 +11,7 @@ import {
   searchVideosByKeyword,
   YouTubeApiError,
 } from "@/src/features/youtube";
-import { CACHE_TTL, STORAGE_KEYS } from "@/src/shared/constants";
+import { CACHE_TTL, STORAGE_KEYS, TIME_FRAMES } from "@/src/shared/constants";
 import { safeRead, safeRemove, safeWrite } from "@/src/shared/lib/storage";
 
 export interface SearchState {
@@ -142,7 +142,13 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
         }
 
         if (apiVideos.length === 0) {
-          throw new Error(`No videos found in time frame "${timeFrame}".`);
+          // Translate the time-frame label here: the catch block only sees the
+          // error, and the raw enum value ("last_month") is not user-facing text.
+          const timeFrameLabelKey = TIME_FRAMES.find((tf) => tf.value === timeFrame)?.labelKey;
+          throw new YouTubeApiError(`No videos found in time frame "${timeFrame}".`, 404, false, {
+            key: "errors.api.noVideosInTimeFrame",
+            params: { timeFrame: timeFrameLabelKey ? t(timeFrameLabelKey) : String(timeFrame) },
+          });
         }
 
         setSearchState((prev) => ({ ...prev, step: "analyzing_ai" }));
@@ -162,7 +168,15 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
         persistResult({ data: analyzedVideos, channelName: displayName, channelId, savedAt });
       } catch (err: unknown) {
         if (import.meta.env.DEV) console.error(err);
-        const errorMessage = err instanceof Error ? err.message : "Analysis failed.";
+        // Services carry an i18n descriptor instead of a ready-made sentence —
+        // resolve it here so the alert speaks the user's language. The raw
+        // message stays the fallback for errors from outside our own layer.
+        const errorMessage =
+          err instanceof YouTubeApiError && err.i18n
+            ? t(err.i18n.key, err.i18n.params)
+            : err instanceof Error
+              ? err.message
+              : t("errors.analysisFailed");
 
         const isApiKeyInvalid =
           err instanceof YouTubeApiError && err.status === 403 && !err.isQuotaError;
