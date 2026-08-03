@@ -4,6 +4,16 @@ import { AlertCircle, Check, Clock, Copy, ExternalLink, Heart, Type } from "luci
 import { useTranslation } from "react-i18next";
 import { formatNumber, formatTimeAgo } from "@/src/shared/lib/formatters";
 import { VideoListFilter } from "@/src/shared/components/ui/VideoListFilter";
+import {
+  DEFAULT_TABLE_SORT,
+  isTableSort,
+  NATURAL_DIRECTION,
+  SortableHeader,
+  sortValue,
+} from "@/src/shared/components/ui/VideoListSortHeader";
+import type { TableSort, TableSortKey } from "@/src/shared/components/ui/VideoListSortHeader";
+import { STORAGE_KEYS } from "@/src/shared/constants";
+import { safeRead, safeWrite } from "@/src/shared/lib/storage";
 
 /**
  * Below this many rows the list is short enough to scan by eye, so the filter
@@ -82,22 +92,52 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({ videos, startInd
     );
   };
 
-  // Rank is assigned before filtering, so a row keeps its position in the full
-  // result set ("#42") instead of being renumbered inside the filtered view.
+  // Rank is assigned before sorting/filtering, so a row keeps its position in
+  // the full result set ("#42") instead of being renumbered inside the view.
   const rankedVideos = useMemo(
     () => videos.map((video, index) => ({ video, rank: startIndex + index })),
     [videos, startIndex],
   );
 
+  // Column sort, persisted so the preferred view survives a reload.
+  const [sort, setSort] = useState<TableSort>(() => {
+    const stored = safeRead<unknown>(STORAGE_KEYS.ANALYSER_TABLE_SORT, null);
+    return isTableSort(stored) ? stored : DEFAULT_TABLE_SORT;
+  });
+
+  useEffect(() => {
+    safeWrite(STORAGE_KEYS.ANALYSER_TABLE_SORT, sort);
+  }, [sort]);
+
+  /** Click a column: activate it in its natural direction, or flip it. */
+  const handleSort = (key: TableSortKey) => {
+    setSort((prev) =>
+      prev.key === key
+        ? { key, dir: prev.dir === "asc" ? "desc" : "asc" }
+        : { key, dir: NATURAL_DIRECTION[key] },
+    );
+  };
+
+  const sortedVideos = useMemo(() => {
+    const factor = sort.dir === "asc" ? 1 : -1;
+    return [...rankedVideos].sort((a, b) => {
+      const av = sortValue(a.video, a.rank, sort.key);
+      const bv = sortValue(b.video, b.rank, sort.key);
+      if (av !== bv) return (av - bv) * factor;
+      // Stable tie-break: fall back to the original result order.
+      return a.rank - b.rank;
+    });
+  }, [rankedVideos, sort]);
+
   const showFilter = videos.length >= FILTER_MIN_ROWS;
   const normalizedFilter = filter.trim().toLowerCase();
 
   const visibleVideos = useMemo(() => {
-    if (!showFilter || !normalizedFilter) return rankedVideos;
-    return rankedVideos.filter((entry) =>
+    if (!showFilter || !normalizedFilter) return sortedVideos;
+    return sortedVideos.filter((entry) =>
       entry.video.title.toLowerCase().includes(normalizedFilter),
     );
-  }, [rankedVideos, showFilter, normalizedFilter]);
+  }, [sortedVideos, showFilter, normalizedFilter]);
 
   const getScoreColor = (score: number) => {
     if (score >= 80) return "text-red-400 bg-red-400/10 border-red-400/20";
@@ -130,29 +170,55 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({ videos, startInd
         <table className="w-full text-left border-collapse" aria-label={t("results.moreVideos")}>
           <thead>
             <tr className="bg-slate-100/80 dark:bg-slate-900/80 border-b border-slate-200 dark:border-slate-800 text-xs uppercase tracking-wider text-slate-500 font-semibold">
-              <th scope="col" className="p-4 w-16 text-center">
-                {t("results.table.rank")}
-              </th>
+              <SortableHeader
+                sortKey="rank"
+                label={t("results.table.rank")}
+                activeSort={sort}
+                onSort={handleSort}
+                thClassName="w-16"
+                align="center"
+              />
               <th scope="col" className="p-4">
                 {t("results.table.video")}
               </th>
-              <th scope="col" className="p-4 hidden sm:table-cell">
-                {t("results.table.upload")}
-              </th>
-              <th scope="col" className="p-4 text-right">
-                {t("results.table.views")}
-              </th>
-              <th scope="col" className="p-4 text-right hidden md:table-cell">
-                {t("results.table.velocity")}
-              </th>
-              <th scope="col" className="p-4 text-right hidden lg:table-cell">
-                {t("results.table.engagement")}
-              </th>
-              <th scope="col" className="p-4 text-center">
-                <span className="cursor-help" title={t("results.table.scoreTooltip")}>
-                  {t("results.table.score")}
-                </span>
-              </th>
+              <SortableHeader
+                sortKey="upload"
+                label={t("results.table.upload")}
+                activeSort={sort}
+                onSort={handleSort}
+                thClassName="hidden sm:table-cell"
+              />
+              <SortableHeader
+                sortKey="views"
+                label={t("results.table.views")}
+                activeSort={sort}
+                onSort={handleSort}
+                align="right"
+              />
+              <SortableHeader
+                sortKey="velocity"
+                label={t("results.table.velocity")}
+                activeSort={sort}
+                onSort={handleSort}
+                thClassName="hidden md:table-cell"
+                align="right"
+              />
+              <SortableHeader
+                sortKey="engagement"
+                label={t("results.table.engagement")}
+                activeSort={sort}
+                onSort={handleSort}
+                thClassName="hidden lg:table-cell"
+                align="right"
+              />
+              <SortableHeader
+                sortKey="score"
+                label={t("results.table.score")}
+                activeSort={sort}
+                onSort={handleSort}
+                align="center"
+                title={t("results.table.scoreTooltip")}
+              />
               <th scope="col" className="p-4 w-16 text-center">
                 <span className="sr-only">{t("results.table.copyUrl")}</span>
               </th>

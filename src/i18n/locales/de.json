@@ -184,6 +184,7 @@
       "urlCopied": "Video-URL kopiert",
       "titleCopied": "Videotitel kopiert",
       "copyFailed": "Zwischenablage nicht verfügbar",
+      "sortBy": "Nach {{column}} sortieren",
       "filterPlaceholder": "Nach Titel filtern…",
       "filterAria": "Videos nach Titel filtern",
       "filterClear": "Filter zurücksetzen",

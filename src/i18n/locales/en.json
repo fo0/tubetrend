@@ -184,6 +184,7 @@
       "urlCopied": "Video URL copied",
       "titleCopied": "Video title copied",
       "copyFailed": "Clipboard unavailable",
+      "sortBy": "Sort by {{column}}",
       "filterPlaceholder": "Filter by title…",
       "filterAria": "Filter videos by title",
       "filterClear": "Clear filter",
