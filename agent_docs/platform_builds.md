@@ -16,8 +16,12 @@ npm run build:win         # Build + package Windows portable
 
 # Capacitor (Android APK for ChromeOS)
 npm run cap:sync          # Build + sync to Android project
+npm run cap:open          # Open android/ in Android Studio (no build)
 npm run cap:build         # Build + sync + assemble release APK
 npm run cap:build:debug   # Build + sync + assemble debug APK
+
+# Electron icon generation (invoked by electron:dist / build:chromebook)
+npm run electron:icon     # Regenerate build/icon.png via scripts/generate-icon.mjs
 
 # Chrome Extension
 npm run build:extension   # Build to dist-extension/

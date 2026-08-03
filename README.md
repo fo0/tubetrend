@@ -185,6 +185,10 @@ Open http://localhost:3000
 | `npm run format`       | Auto-format with Prettier         |
 | `npm run format:check` | Verify formatting (CI-equivalent) |
 
+> **Platform build scripts** (`electron:*`, `build:win`, `build:chromebook`, `cap:*`,
+> `build:extension`) are not listed above — they belong to Options 3–5. The complete list with
+> descriptions is in [`agent_docs/platform_builds.md`](agent_docs/platform_builds.md).
+
 > **Tests:** No test framework is configured yet. A Vitest setup is planned — see `agent_docs/testing.md`.
 
 ---
