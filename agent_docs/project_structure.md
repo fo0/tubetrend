@@ -28,6 +28,7 @@ tubetrend/
 │   ├── providers/                    # React context providers (ThemeProvider)
 │   ├── i18n/                         # Internationalization (en, de + 11 fallbacks)
 │   ├── styles/                       # Global CSS (themes, scrollbars, animations)
+│   ├── assets/                       # Bundled static assets (icon.svg)
 │   └── main.tsx                      # React entry point
 ├── android/                          # Capacitor Android project (ChromeOS APK)
 ├── chrome-extension/                 # Chrome Extension source files (Manifest V3)
@@ -42,12 +43,21 @@ tubetrend/
 │   ├── settings.json                 # Tier-1 hooks + trigger permissions
 │   └── skills/                       # done / pr / review / security-review / rollback / ci / stuck / beacon / gitnexus/
 ├── .github/                          # Workflows + dependabot + templates
+├── index.html / index.css            # Vite HTML entry + theme base styles
 ├── capacitor.config.ts               # Capacitor config
 ├── vite.config.ts                    # Vite config
 ├── tsconfig.json                     # TypeScript strict config with path aliases
+├── electron-builder.json             # electron-builder targets (win/mac/linux → release/)
+├── electron-builder.chromebook.json  # electron-builder .deb targets (x64/arm64)
 ├── Dockerfile / docker-compose.yml   # Container build + run
+├── nginx.conf                        # Nginx config baked into the runtime image
 └── README.md / CONTRIBUTING.md / SECURITY.md / LICENSE
 ```
+
+> Root config files map 1:1 to the build channels: `electron-builder*.json` are consumed by the
+> `electron:dist` / `build:win` / `build:chromebook` scripts, `nginx.conf` is copied into the runner
+> stage by the `Dockerfile`, and `capacitor.config.ts` drives the `cap:*` scripts. Per-channel
+> behaviour: `agent_docs/platform_builds.md`.
 
 ## Feature Module Pattern
 

@@ -26,6 +26,22 @@ docker run -d -p 8889:80 ghcr.io/fo0/tubetrend:latest
 
 Open http://localhost:8889
 
+To build the image from source instead:
+
+```bash
+git clone https://github.com/fo0/tubetrend.git
+cd tubetrend
+docker build --build-arg GIT_COMMIT_HASH="$(git rev-parse HEAD)" \
+             --build-arg GIT_BRANCH="$(git rev-parse --abbrev-ref HEAD)" \
+             -t tubetrend .
+docker run -d -p 8889:80 tubetrend
+```
+
+The two `--build-arg` values only stamp the build-info footer — omit them and they default to
+`unknown`. A third arg, `NODE_VERSION` (default `22-alpine`), selects the builder base image. The
+container serves the static build through Nginx on port `80` and reads **no** environment variables
+at runtime. Full build-arg table: [`agent_docs/env-vars.md`](agent_docs/env-vars.md).
+
 ### Option 2: Docker Compose
 
 **Linux / macOS:**
@@ -168,6 +184,10 @@ Open http://localhost:3000
 | `npm run typecheck`    | TypeScript type check (no emit)   |
 | `npm run format`       | Auto-format with Prettier         |
 | `npm run format:check` | Verify formatting (CI-equivalent) |
+
+> **Platform build scripts** (`electron:*`, `build:win`, `build:chromebook`, `cap:*`,
+> `build:extension`) are not listed above — they belong to Options 3–5. The complete list with
+> descriptions is in [`agent_docs/platform_builds.md`](agent_docs/platform_builds.md).
 
 > **Tests:** No test framework is configured yet. A Vitest setup is planned — see `agent_docs/testing.md`.
 
