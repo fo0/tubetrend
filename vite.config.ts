@@ -9,17 +9,35 @@ import { execSync } from "child_process";
 // This keeps the web app (dev server, Docker build) completely unaffected.
 const isElectron = process.env.ELECTRON === "true";
 
-// Get build information
-function getBuildInfo() {
-  let commitHash = process.env.VITE_GIT_COMMIT_HASH || "unknown";
-  let branch = process.env.VITE_GIT_BRANCH || "unknown";
+// Explicitly provided build info wins over local git detection. The Dockerfile
+// passes the CI-supplied GIT_COMMIT_HASH / GIT_BRANCH build args through as
+// these env vars, and its `COPY . .` may drag a `.git` directory into the build
+// context — so shelling out unconditionally would silently discard what CI said
+// the build is. "unknown" is the Dockerfile's ARG default, i.e. "not provided".
+function fromEnv(value: string | undefined): string | null {
+  const trimmed = value?.trim();
+  return trimmed && trimmed !== "unknown" ? trimmed : null;
+}
 
+// stderr is discarded so a non-git build context does not print
+// "fatal: not a git repository" into the build log.
+function gitOutput(command: string): string | null {
   try {
-    commitHash = execSync("git rev-parse HEAD", { encoding: "utf-8" }).trim();
-    branch = execSync("git rev-parse --abbrev-ref HEAD", { encoding: "utf-8" }).trim();
+    return execSync(command, { encoding: "utf-8", stdio: ["ignore", "pipe", "ignore"] }).trim();
   } catch {
     // Not a git repo or git not available
+    return null;
   }
+}
+
+// Get build information
+function getBuildInfo() {
+  const commitHash =
+    fromEnv(process.env.VITE_GIT_COMMIT_HASH) ?? gitOutput("git rev-parse HEAD") ?? "unknown";
+  const branch =
+    fromEnv(process.env.VITE_GIT_BRANCH) ??
+    gitOutput("git rev-parse --abbrev-ref HEAD") ??
+    "unknown";
 
   const now = new Date();
   const version =

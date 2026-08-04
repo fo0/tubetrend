@@ -7,7 +7,7 @@ import {
   useMemo,
   useState,
 } from "react";
-import { STORAGE_KEYS } from "@shared/constants";
+import { STORAGE_KEYS } from "@/src/shared/constants";
 
 type Theme = "light" | "dark" | "system";
 type ResolvedTheme = "light" | "dark";

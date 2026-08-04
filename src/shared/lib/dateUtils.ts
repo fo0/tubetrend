@@ -20,11 +20,22 @@ export function getTodayDateString(): string {
 }
 
 /**
- * Get a date N months ago
+ * Get a date N months ago.
+ *
+ * `setMonth` alone overflows when the current day does not exist in the target
+ * month: on 2026-03-31, `setMonth(month - 1)` asks for "2026-02-31" and JS rolls
+ * it forward to 2026-03-03 — the cutoff would land *after* the intended one and
+ * silently shrink every LAST_*_MONTHS time frame on the 29th–31st of a month.
+ * Pinning the day to 1 before shifting the month, then clamping to the target
+ * month's last day, keeps the result inside the intended month.
  */
 export function getDateMonthsAgo(n: number): Date {
   const d = new Date();
+  const day = d.getDate();
+  d.setDate(1);
   d.setMonth(d.getMonth() - n);
+  const lastDayOfTargetMonth = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+  d.setDate(Math.min(day, lastDayOfTargetMonth));
   return d;
 }
 

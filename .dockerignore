@@ -1,0 +1,59 @@
+# Build-context exclusions for the Dockerfile's `COPY . .`.
+#
+# Two reasons this file matters:
+#   1. Reproducibility — without it the build context carries `.git`, so the
+#      in-container `git rev-parse` in vite.config.ts sees a repo and competes
+#      with the GIT_COMMIT_HASH / GIT_BRANCH build args CI passes in.
+#   2. Speed — a host `node_modules/` or `android/` tree would be uploaded to
+#      the daemon and then copied over the `npm ci` layer.
+#
+# Only paths the web build (`npm run build`) does not read are listed. Keep
+# index.html, index.css, src/, vite.config.ts, tsconfig.json and package*.json
+# out of this list — the build needs them.
+
+# VCS + CI
+.git
+.gitignore
+.git-blame-ignore-revs
+.github
+.gitlab-ci.yml
+
+# Dependencies and build output
+node_modules
+dist
+dist-ssr
+dist-electron
+dist-extension
+release
+release-chromebook
+*.tsbuildinfo
+
+# Other distribution targets (not part of the web/Docker build)
+android
+build
+
+# Local environment files — never bake secrets into an image layer
+.env
+.env.local
+.env.*.local
+
+# Docker's own files
+Dockerfile
+.dockerignore
+docker-compose.yml
+docker-compose.override.yml
+
+# Docs and agent tooling
+docs
+agent_docs
+.claude
+.junie
+.gitnexus
+*.md
+
+# Editor / OS noise
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+*.log
