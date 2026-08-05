@@ -98,7 +98,7 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ onSave }) => {
                 htmlFor="apiKey"
                 className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2"
               >
-                YouTube Data API v3 Key
+                {t("modal.apiKey.fieldLabel")}
               </label>
               <div className="relative">
                 <input
