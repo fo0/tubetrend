@@ -79,8 +79,13 @@ All storage access goes through the type-safe `StorageAdapter` in `src/shared/li
 
 ### Analyser
 
-| Key                         | Purpose                                     | Used by            |
-| --------------------------- | ------------------------------------------- | ------------------ |
-| `tt.analyser.sortMode`      | Analyser result sort mode                   | `AnalyserPage.tsx` |
-| `tt.analyser.topN`          | Analyser top-N result count                 | `AnalyserPage.tsx` |
-| `tt.analyser.lastResult.v1` | Cached last analyser result (TTL: 24 hours) | `useSearch.ts`     |
+| Key                         | Purpose                                      | Used by              |
+| --------------------------- | -------------------------------------------- | -------------------- |
+| `tt.analyser.sortMode`      | Analyser result sort mode                    | `AnalyserPage.tsx`   |
+| `tt.analyser.topN`          | Analyser top-N result count                  | `AnalyserPage.tsx`   |
+| `tt.analyser.tableSort.v1`  | Result-table column sort (field + direction) | `VideoListTable.tsx` |
+| `tt.analyser.lastResult.v1` | Cached last analyser result (TTL: 24 hours)  | `useSearch.ts`       |
+
+> The tables above mirror `STORAGE_KEYS` in `src/shared/constants/config.ts` — that constant is the
+> single source of truth. Adding a key there means adding a row here; a stale list here is what made
+> the old `.junie/` guidelines drift (see `MEMORY.md`).
