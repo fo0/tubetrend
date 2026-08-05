@@ -80,6 +80,15 @@ docker-compose up         # Run production image at http://localhost:8889
 - **Zero changes to `src/`** — wraps the same `dist/` output.
 - **Manifest V3** — background service worker, no inline scripts (CSP-compliant).
 - **CSP compliance** — the inline FOUC-prevention script is extracted to an external `theme-init.js`.
+- **Declared permissions — exactly one: `tabs`** (`chrome-extension/manifest.json`). `background.js`
+  calls `chrome.tabs.query({})` to find an already-open TubeTrend tab and focus it instead of opening
+  a duplicate; without the permission that query returns tab objects with no `url`, so the lookup
+  silently fails and every click opens a new tab (#351). `chrome.tabs.create` / `.update` and
+  `chrome.windows.update` need no permission of their own. Keep the list at one entry — the store
+  review surfaces every added permission to users, and no other Chrome API is used.
+- **Assembled, not hand-maintained** — `scripts/build-extension.mjs` copies `dist/` plus the three
+  files in `chrome-extension/` (`manifest.json`, `background.js`, `theme-init.js`) into
+  `dist-extension/` and rewrites `index.html`. A new source file there must be added to that copy list.
 - **Build** — `npm run build:extension` produces `dist-extension/`.
 
 ## Build info
