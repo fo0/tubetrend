@@ -1,0 +1,59 @@
+name: Docs Format
+
+# Counterpart to pr-checks.yml. That workflow carries `paths-ignore: "**.md"`
+# so documentation-only PRs don't pay for the full typecheck/lint/build chain —
+# but `npm run format:check` is `prettier --check .`, which DOES cover
+# Markdown. That left a blind spot: Markdown formatting drift could never fail
+# a check, and a docs-only PR could merge a red `format:check` onto main.
+#
+# This workflow closes exactly that gap and nothing more: it runs on the paths
+# pr-checks.yml ignores, and checks only the files Prettier can parse there
+# (`*.md`). Deliberately no `npm ci` — Prettier is pinned to the version in
+# package.json and fetched standalone, so the gate stays cheap enough to
+# justify running on every docs change. It also runs on push to main, which
+# pr-checks.yml does not.
+
+on:
+  pull_request:
+    branches: [main, master]
+    types: [opened, synchronize, reopened]
+    paths:
+      - "**.md"
+  push:
+    branches: [main]
+    paths:
+      - "**.md"
+
+# Cancel in-progress runs for the same PR
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+# Least privilege: this job only checks out the code and runs Prettier. Without
+# this block the GITHUB_TOKEN inherits the repository default, which can be
+# read/write. Every other workflow here already declares its scope.
+permissions:
+  contents: read
+
+jobs:
+  format:
+    name: Prettier (Markdown)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+
+      # Read the pinned version out of package.json rather than hardcoding it,
+      # so this job can never drift from the Prettier `npm run format` applies.
+      - name: Resolve pinned Prettier version
+        id: prettier
+        run: echo "version=$(node -p "require('./package.json').devDependencies.prettier.replace(/^[^0-9]*/,'')")" >> "$GITHUB_OUTPUT"
+
+      - name: Check Markdown formatting
+        run: npx --yes prettier@${{ steps.prettier.outputs.version }} --check "**/*.md"
