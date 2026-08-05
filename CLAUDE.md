@@ -150,7 +150,7 @@ Significant decisions are recorded as ADRs under `docs/adr/`. Triggers + format:
 - **Branch Naming:** `feat/X`, `fix/X`, `refactor/X`, `chore/X`, `docs/X`, `dependabot/**`
 - **Commit Messages:** Conventional Commits — `type(scope): description`. Reference issue numbers (`fix: resolve crash #42`).
 - **Merge Strategy:** Squash (default). Reflected in the `pr` skill's merge phase.
-- **CI/CD:** GitHub Actions — `pr-checks`, `docker-publish`, `electron-release`, `android-release`, `extension-release`, `cleanup-ghcr`.
+- **CI/CD:** GitHub Actions — `pr-checks` (skips `**.md` / `docs/**`), `docs-format` (Prettier-Markdown on exactly those paths, so docs-only changes stay gated — `format:check` is `prettier --check .` and includes Markdown), `docker-publish`, `electron-release`, `android-release`, `extension-release`, `cleanup-ghcr`.
 - **Formatting guard:** staged files can be auto-formatted on commit (husky + lint-staged). Setup + pitfalls: `agent_docs/ci_formatting_guard.md`. Never bypass with `--no-verify`.
 
 ## Dependency Management
