@@ -229,6 +229,7 @@
     "apiKey": {
       "title": "YouTube API key",
       "description": "Enter your YouTube Data API key to continue.",
+      "fieldLabel": "YouTube Data API v3 Key",
       "save": "Save",
       "cancel": "Cancel",
       "showKey": "Show API key",
