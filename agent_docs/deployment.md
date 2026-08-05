@@ -4,14 +4,30 @@ Offloaded from `CLAUDE.md` (2026-07-26) per `agent_docs/context_budget.md` ladde
 
 ## Triggers
 
-| Event           | Workflow               | Result                                                      |
-| --------------- | ---------------------- | ----------------------------------------------------------- |
-| Push to `main`  | `docker-publish.yml`   | Builds and pushes `ghcr.io/fo0/tubetrend:latest`            |
-| Tag push (`v*`) | `electron-release.yml` | Builds + uploads all platform artifacts to a GitHub Release |
-| Pull request    | `pr-checks.yml`        | Verification only (format:check, typecheck, build)          |
-| Scheduled       | `cleanup-ghcr.yml`     | Prunes old container images                                 |
+All six workflow files, with every trigger each one actually declares:
 
-Additional workflows: `android-release.yml`, `extension-release.yml` — both fold into the tag-push release pipeline.
+| Workflow                | Triggers                                                           | Result                                                                                                       |
+| ----------------------- | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------ |
+| `docker-publish.yml`    | push to `main`/`master` · `workflow_dispatch`                      | Checks code, then builds and pushes `ghcr.io/fo0/tubetrend:latest`                                           |
+| `electron-release.yml`  | push to `main`/`master` · tag push `v*` · `workflow_dispatch`      | Builds win/mac/linux + Chromebook `.deb` + Chrome Extension + Android APK, then **creates a GitHub Release** |
+| `android-release.yml`   | push to `main`/`master` · `workflow_dispatch`                      | Standalone APK build, uploaded as a workflow artifact (no release)                                           |
+| `extension-release.yml` | push to `main`/`master` · `workflow_dispatch`                      | Standalone `dist-extension/` zip, uploaded as a workflow artifact (no release)                               |
+| `pr-checks.yml`         | `pull_request` → `main`/`master` (opened / synchronize / reopened) | `format:check` → `tsc --noEmit` → optional lint → `build`, plus an advisory `npm audit` job                  |
+| `cleanup-ghcr.yml`      | weekly cron (Sun 04:00 UTC) · `workflow_dispatch`                  | Prunes untagged GHCR image versions, keeps the newest 10                                                     |
+
+Three consequences worth knowing before merging anything into `main`:
+
+- **A merge to `main` is a release, not just a container push.** `electron-release.yml` fires on the
+  same push as `docker-publish.yml`; on a non-tag ref it synthesizes the tag `vYYYYMMDD.HHMM.0` and
+  publishes a full GitHub Release with every platform artifact. Tag pushes reuse the tag name instead.
+  `android-release.yml` and `extension-release.yml` additionally run their own standalone builds, so
+  the same artifacts also exist as workflow artifacts.
+- **Docs-only changes trigger nothing.** All five push/PR workflows share the same `paths-ignore`
+  list (`**.md`, `docs/**`, `.env.example`, `.gitignore`, `.editorconfig`, `LICENSE*`, `.vscode/**`).
+  A markdown-only PR legitimately shows **zero** checks — that is configuration, not a broken CI.
+- **The PR gate has two jobs, one of them advisory.** The `security` job runs
+  `npm audit --audit-level=high` with `continue-on-error: true`, so a high-severity advisory is
+  reported but never blocks the merge. Only the `checks` job is a real gate.
 
 ## Environments
 
