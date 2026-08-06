@@ -77,20 +77,35 @@ export function DashboardPage({
   const showFavoriteFilter = favorites.length >= FAVORITES_FILTER_MIN_ROWS;
   const normalizedFavoriteFilter = showFavoriteFilter ? favoriteFilter.trim().toLowerCase() : "";
 
-  // `null` means "no filter active" — every favorite stays visible. Matching
+  // Searchable text per favorite, built once per list/cache change. Matching
   // covers the saved label, the raw query and the resolved channel title from
   // the cache, so "@mkbhd" and "Marques Brownlee" both find the same row.
+  //
+  // This must stay out of the keystroke path: getCache() re-reads and
+  // re-JSON-parses the whole favorites cache blob on every call, so building
+  // the haystacks inside the filter did that work once per favorite for every
+  // single character typed (same reason the hidden list is read once below).
+  const favoriteHaystacks = useMemo(() => {
+    const haystacks = new Map<string, string>();
+    for (const fav of sortedFavorites) {
+      const channelTitle = favoritesService.getCache(fav.id)?.meta?.channelTitle ?? "";
+      haystacks.set(fav.id, `${fav.label ?? ""} ${fav.query} ${channelTitle}`.toLowerCase());
+    }
+    return haystacks;
+    // cacheTick: a refresh can resolve a channel title that was unknown before.
+  }, [sortedFavorites, cacheTick]);
+
+  // `null` means "no filter active" — every favorite stays visible. Typing only
+  // runs substring checks against the precomputed haystacks above.
   const matchingFavoriteIds = useMemo<Set<string> | null>(() => {
     if (!normalizedFavoriteFilter) return null;
     const ids = new Set<string>();
     for (const fav of sortedFavorites) {
-      const channelTitle = favoritesService.getCache(fav.id)?.meta?.channelTitle ?? "";
-      const haystack = `${fav.label ?? ""} ${fav.query} ${channelTitle}`.toLowerCase();
+      const haystack = favoriteHaystacks.get(fav.id) ?? "";
       if (haystack.includes(normalizedFavoriteFilter)) ids.add(fav.id);
     }
     return ids;
-    // cacheTick: a refresh can resolve a channel title that was unknown before.
-  }, [sortedFavorites, normalizedFavoriteFilter, cacheTick]);
+  }, [sortedFavorites, favoriteHaystacks, normalizedFavoriteFilter]);
 
   const visibleFavorites = matchingFavoriteIds
     ? sortedFavorites.filter((fav) => matchingFavoriteIds.has(fav.id))
