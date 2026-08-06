@@ -311,7 +311,7 @@ export function DashboardPage({
       {/* Sorting controls */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-4">
         {favorites.length > 0 ? (
-          <div className="flex items-center gap-3 text-xs font-medium">
+          <div className="flex flex-wrap items-center gap-3 text-xs font-medium min-w-0">
             <span className="text-slate-600 dark:text-slate-400">
               {t("dashboard.sorting.label")}
             </span>
@@ -359,9 +359,19 @@ export function DashboardPage({
             </div>
 
             {/* Favorite Avatars — filtered-out favorites are dropped here too,
-                otherwise their quick-jump would scroll to a hidden row. */}
+                otherwise their quick-jump would scroll to a hidden row.
+                flex-wrap + min-w-0: the avatars are shrink-0, so an unwrapped
+                strip grew past the page container once a user had ~15 favorites
+                and pushed the whole layout into a horizontal scroll.
+                role/aria-label: without them the strip is an unnamed run of
+                buttons whose only accessible name is a channel title, giving no
+                hint that activating one jumps to that favorite. */}
             {visibleFavorites.length > 0 && (
-              <div className="flex items-center gap-1.5 ml-2 pl-3 border-l border-slate-300 dark:border-slate-700">
+              <div
+                role="group"
+                aria-label={t("dashboard.quickJump")}
+                className="flex flex-wrap items-center gap-1.5 ml-2 pl-3 border-l border-slate-300 dark:border-slate-700 min-w-0"
+              >
                 {visibleFavorites.map((fav) => (
                   <FavoriteAvatar
                     key={fav.id}

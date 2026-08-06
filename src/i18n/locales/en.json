@@ -110,6 +110,7 @@
   "dashboard": {
     "noFavorites": "No favorites yet. Create a favorite from the analyzer.",
     "openAnalyser": "Open Analyser",
+    "quickJump": "Jump to favorite",
     "highlights": {
       "title": "Highlights",
       "subtitle": "Top videos across all favorites (click to open)",
