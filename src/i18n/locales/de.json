@@ -110,6 +110,7 @@
   "dashboard": {
     "noFavorites": "Noch keine Favoriten. Lege im Analyser eine Suche als Favorit an.",
     "openAnalyser": "Analyser öffnen",
+    "quickJump": "Zu Favorit springen",
     "highlights": {
       "title": "Highlights",
       "subtitle": "Top-Videos aus allen Favoriten (klickbar)",
@@ -131,6 +132,7 @@
     "filter": {
       "placeholder": "Favoriten filtern…",
       "aria": "Favoriten nach Name filtern",
+      "shortcutHint": "Favoriten nach Name filtern — mit / fokussieren",
       "clear": "Filter zurücksetzen",
       "count_one": "{{count}} von {{total}} angezeigt",
       "count_other": "{{count}} von {{total}} angezeigt",

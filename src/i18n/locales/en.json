@@ -110,6 +110,7 @@
   "dashboard": {
     "noFavorites": "No favorites yet. Create a favorite from the analyzer.",
     "openAnalyser": "Open Analyser",
+    "quickJump": "Jump to favorite",
     "highlights": {
       "title": "Highlights",
       "subtitle": "Top videos across all favorites (click to open)",
@@ -131,6 +132,7 @@
     "filter": {
       "placeholder": "Filter favorites…",
       "aria": "Filter favorites by name",
+      "shortcutHint": "Filter favorites by name — press / to focus",
       "clear": "Clear filter",
       "count_one": "{{count}} of {{total}} shown",
       "count_other": "{{count}} of {{total}} shown",

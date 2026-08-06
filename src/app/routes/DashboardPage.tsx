@@ -77,20 +77,35 @@ export function DashboardPage({
   const showFavoriteFilter = favorites.length >= FAVORITES_FILTER_MIN_ROWS;
   const normalizedFavoriteFilter = showFavoriteFilter ? favoriteFilter.trim().toLowerCase() : "";
 
-  // `null` means "no filter active" — every favorite stays visible. Matching
+  // Searchable text per favorite, built once per list/cache change. Matching
   // covers the saved label, the raw query and the resolved channel title from
   // the cache, so "@mkbhd" and "Marques Brownlee" both find the same row.
+  //
+  // This must stay out of the keystroke path: getCache() re-reads and
+  // re-JSON-parses the whole favorites cache blob on every call, so building
+  // the haystacks inside the filter did that work once per favorite for every
+  // single character typed (same reason the hidden list is read once below).
+  const favoriteHaystacks = useMemo(() => {
+    const haystacks = new Map<string, string>();
+    for (const fav of sortedFavorites) {
+      const channelTitle = favoritesService.getCache(fav.id)?.meta?.channelTitle ?? "";
+      haystacks.set(fav.id, `${fav.label ?? ""} ${fav.query} ${channelTitle}`.toLowerCase());
+    }
+    return haystacks;
+    // cacheTick: a refresh can resolve a channel title that was unknown before.
+  }, [sortedFavorites, cacheTick]);
+
+  // `null` means "no filter active" — every favorite stays visible. Typing only
+  // runs substring checks against the precomputed haystacks above.
   const matchingFavoriteIds = useMemo<Set<string> | null>(() => {
     if (!normalizedFavoriteFilter) return null;
     const ids = new Set<string>();
     for (const fav of sortedFavorites) {
-      const channelTitle = favoritesService.getCache(fav.id)?.meta?.channelTitle ?? "";
-      const haystack = `${fav.label ?? ""} ${fav.query} ${channelTitle}`.toLowerCase();
+      const haystack = favoriteHaystacks.get(fav.id) ?? "";
       if (haystack.includes(normalizedFavoriteFilter)) ids.add(fav.id);
     }
     return ids;
-    // cacheTick: a refresh can resolve a channel title that was unknown before.
-  }, [sortedFavorites, normalizedFavoriteFilter, cacheTick]);
+  }, [sortedFavorites, favoriteHaystacks, normalizedFavoriteFilter]);
 
   const visibleFavorites = matchingFavoriteIds
     ? sortedFavorites.filter((fav) => matchingFavoriteIds.has(fav.id))
@@ -296,7 +311,7 @@ export function DashboardPage({
       {/* Sorting controls */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-4">
         {favorites.length > 0 ? (
-          <div className="flex items-center gap-3 text-xs font-medium">
+          <div className="flex flex-wrap items-center gap-3 text-xs font-medium min-w-0">
             <span className="text-slate-600 dark:text-slate-400">
               {t("dashboard.sorting.label")}
             </span>
@@ -344,9 +359,19 @@ export function DashboardPage({
             </div>
 
             {/* Favorite Avatars — filtered-out favorites are dropped here too,
-                otherwise their quick-jump would scroll to a hidden row. */}
+                otherwise their quick-jump would scroll to a hidden row.
+                flex-wrap + min-w-0: the avatars are shrink-0, so an unwrapped
+                strip grew past the page container once a user had ~15 favorites
+                and pushed the whole layout into a horizontal scroll.
+                role/aria-label: without them the strip is an unnamed run of
+                buttons whose only accessible name is a channel title, giving no
+                hint that activating one jumps to that favorite. */}
             {visibleFavorites.length > 0 && (
-              <div className="flex items-center gap-1.5 ml-2 pl-3 border-l border-slate-300 dark:border-slate-700">
+              <div
+                role="group"
+                aria-label={t("dashboard.quickJump")}
+                className="flex flex-wrap items-center gap-1.5 ml-2 pl-3 border-l border-slate-300 dark:border-slate-700 min-w-0"
+              >
                 {visibleFavorites.map((fav) => (
                   <FavoriteAvatar
                     key={fav.id}
