@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useCallback, useRef } from "react";
 import { Search, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { useEventListener } from "@/src/shared/hooks";
 
 interface FavoritesFilterProps {
   value: string;
@@ -24,6 +25,27 @@ export const FavoritesFilter: React.FC<FavoritesFilterProps> = ({
 }) => {
   const { t } = useTranslation();
   const isFiltering = value.trim().length > 0;
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // "/" focuses this filter — the dashboard counterpart to the analyser's search
+  // box, which registers the same key. The shortcuts popover advertises "/" as a
+  // global "focus search", but nothing on the dashboard listened for it, so the
+  // key was dead on half the app. Dashboard and analyser are mutually exclusive
+  // pages, so the two inputs can never claim the key at the same time.
+  const handleFocusHotkey = useCallback((e: KeyboardEvent) => {
+    if (e.key !== "/") return;
+    const target = e.target as HTMLElement | null;
+    if (
+      target?.tagName === "INPUT" ||
+      target?.tagName === "TEXTAREA" ||
+      target?.isContentEditable
+    ) {
+      return;
+    }
+    e.preventDefault();
+    inputRef.current?.focus();
+  }, []);
+  useEventListener("keydown", handleFocusHotkey, document);
 
   return (
     <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-4">
@@ -32,18 +54,20 @@ export const FavoritesFilter: React.FC<FavoritesFilterProps> = ({
           <Search className="w-4 h-4 text-slate-400 dark:text-slate-500" aria-hidden="true" />
         </div>
         <input
+          ref={inputRef}
           type="search"
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={t("dashboard.filter.placeholder")}
           aria-label={t("dashboard.filter.aria")}
+          title={t("dashboard.filter.shortcutHint")}
           autoComplete="off"
           autoCapitalize="off"
           autoCorrect="off"
           spellCheck={false}
           className="block w-full pl-9 pr-9 py-2 text-sm bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 transition-all [&::-webkit-search-cancel-button]:hidden"
         />
-        {isFiltering && (
+        {isFiltering ? (
           <button
             type="button"
             onClick={() => onChange("")}
@@ -53,6 +77,18 @@ export const FavoritesFilter: React.FC<FavoritesFilterProps> = ({
           >
             <X className="w-4 h-4" aria-hidden="true" />
           </button>
+        ) : (
+          /* Discoverability for the "/" hotkey — decorative, the title attribute
+             above carries the same information for assistive tech. Shares the
+             right slot with the clear button, which only exists while filtering. */
+          <span
+            aria-hidden="true"
+            className="absolute inset-y-0 right-0 pr-3 hidden sm:flex items-center pointer-events-none"
+          >
+            <kbd className="px-1.5 py-0.5 rounded border border-slate-200 bg-slate-100 font-mono text-[10px] leading-none text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-500">
+              /
+            </kbd>
+          </span>
         )}
       </div>
 

@@ -132,6 +132,7 @@
     "filter": {
       "placeholder": "Favoriten filtern…",
       "aria": "Favoriten nach Name filtern",
+      "shortcutHint": "Favoriten nach Name filtern — mit / fokussieren",
       "clear": "Filter zurücksetzen",
       "count_one": "{{count}} von {{total}} angezeigt",
       "count_other": "{{count}} von {{total}} angezeigt",
