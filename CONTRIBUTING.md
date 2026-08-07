@@ -21,10 +21,22 @@ Thank you for your interest in contributing to TubeTrend! This document provides
    ```bash
    npm install
    ```
-4. Copy the environment file:
+4. Copy the environment file — **optional**, and read the caveat below before you do:
+
    ```bash
    cp .env.example .env.local
    ```
+
+   Every variable in `.env.example` is build-time configuration with a working default, so skipping
+   this step is fine. If you do copy it, note that the file ships `VITE_DEFAULT_SEARCH=` (empty), and
+   Vite reads an empty assignment as the empty string `""`, not as unset. The read site uses `??`,
+   which only falls back on `null`/`undefined` — so copying the file verbatim **suppresses** the
+   dev-mode `TEDx` default and starts you with an empty search input. Comment the line out to get it
+   back. Full explanation: [`agent_docs/env-vars.md`](agent_docs/env-vars.md).
+
+   > The YouTube Data API v3 key is **not** in this file and must never be added to it. You paste it
+   > into the app's API-key modal at runtime; it lives only in your browser's `localStorage`.
+
 5. Start the development server:
    ```bash
    npm run dev
