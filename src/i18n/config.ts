@@ -5,6 +5,11 @@ import LanguageDetector from "i18next-browser-languagedetector";
 import en from "./locales/en.json";
 import de from "./locales/de.json";
 
+// Duplicate of STORAGE_KEYS.LANGUAGE ("tt.lang.explicit", src/shared/constants/config.ts).
+// Declared locally so this i18next bootstrap stays free of app-module imports. Nothing links the
+// two literals and there is no test suite, so a rename over there does NOT fail typecheck or build
+// here — it silently resets every user's saved language. Change both, plus the row in
+// agent_docs/api-reference.md.
 export const LANG_STORAGE_KEY = "tt.lang.explicit";
 
 const resources = {
