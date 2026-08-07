@@ -108,16 +108,14 @@ export async function searchVideosByKeyword(
         if (seconds === null) return true;
         return seconds >= SHORTS_DURATION_THRESHOLD_SECONDS;
       })
-      .map(
-        (item): YouTubeVideoItem => ({
-          id: item.id,
-          // Cast through `unknown` to bridge the loose API type (all fields
-          // optional) and the stricter consumer type. Required fields are
-          // guaranteed by the `part=snippet,statistics` request.
-          snippet: item.snippet as unknown as YouTubeVideoItem["snippet"],
-          statistics: item.statistics,
-        }),
-      );
+      .map((item): YouTubeVideoItem => ({
+        id: item.id,
+        // Cast through `unknown` to bridge the loose API type (all fields
+        // optional) and the stricter consumer type. Required fields are
+        // guaranteed by the `part=snippet,statistics` request.
+        snippet: item.snippet as unknown as YouTubeVideoItem["snippet"],
+        statistics: item.statistics,
+      }));
   });
 
   const batchResults = await Promise.all(batchPromises);

@@ -19,8 +19,7 @@ export interface DashboardBackupPayload {
 }
 
 export type ParseResult =
-  | { ok: true; payload: DashboardBackupPayload }
-  | { ok: false; payload?: never };
+  { ok: true; payload: DashboardBackupPayload } | { ok: false; payload?: never };
 
 export const dashboardBackupService = {
   createBackup(options: {
