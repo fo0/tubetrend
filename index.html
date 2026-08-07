@@ -9,6 +9,11 @@
     <script>
       (function () {
         try {
+          // Duplicate of STORAGE_KEYS.THEME (src/shared/constants/config.ts). This script runs
+          // before the React bundle, so it cannot import the constant. chrome-extension/
+          // theme-init.js is a byte-for-byte copy of this block (Manifest-V3 CSP). Renaming the
+          // constant without updating BOTH copies stays green in typecheck/build and only shows up
+          // as the FOUC flash coming back. Sites are listed in agent_docs/api-reference.md.
           var storageKey = "tt.theme";
           var explicit = localStorage.getItem(storageKey);
           var systemPrefersDark =
