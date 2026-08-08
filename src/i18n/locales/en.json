@@ -126,7 +126,7 @@
       "hiddenModalTitle": "Hidden Videos",
       "noHiddenItems": "No hidden videos.",
       "unhide": "Show",
-      "delete": "Delete",
+      "unhideAria": "{{title}} – show again",
       "empty": "No highlights available yet. Highlights will appear once your favorites have loaded videos."
     },
     "filter": {

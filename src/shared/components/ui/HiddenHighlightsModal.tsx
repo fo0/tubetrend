@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Clock, ExternalLink, Eye, Trash2, X } from "lucide-react";
+import { Clock, ExternalLink, Eye, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { hiddenHighlightsService, type HiddenHighlight } from "@/src/features/dashboard";
 import { getLocale } from "@/src/shared/lib/locale";
@@ -81,13 +81,10 @@ export function HiddenHighlightsModal({ isOpen, onClose }: HiddenHighlightsModal
     };
   }, [isOpen]);
 
+  // The hidden list *is* the hide state: an entry exists only while the video is
+  // hidden, so removing it is the one and only action this row supports. There is
+  // no separate record left over to "delete" afterwards.
   const handleUnhide = (videoId: string) => {
-    hiddenHighlightsService.show(videoId);
-    setHiddenItems(hiddenHighlightsService.listChronological());
-  };
-
-  const handleDelete = (videoId: string) => {
-    // show() removes the entry from the hidden list (un-hiding it)
     hiddenHighlightsService.show(videoId);
     setHiddenItems(hiddenHighlightsService.listChronological());
   };
@@ -201,18 +198,12 @@ export function HiddenHighlightsModal({ isOpen, onClose }: HiddenHighlightsModal
                       type="button"
                       onClick={() => handleUnhide(item.videoId)}
                       className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md border border-indigo-500/30 text-indigo-500 dark:text-indigo-400 hover:bg-indigo-500/10 transition-colors"
+                      aria-label={t("dashboard.highlights.unhideAria", {
+                        title: item.videoTitle ?? "",
+                      })}
                     >
-                      <Eye className="w-3 h-3" />
+                      <Eye className="w-3 h-3" aria-hidden="true" />
                       {t("dashboard.highlights.unhide")}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(item.videoId)}
-                      className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md border border-red-500/30 text-red-400 dark:text-red-300 hover:bg-red-500/10 transition-colors"
-                      aria-label={t("dashboard.highlights.delete")}
-                      title={t("dashboard.highlights.delete")}
-                    >
-                      <Trash2 className="w-3 h-3" aria-hidden="true" />
                     </button>
                   </div>
                 </li>
