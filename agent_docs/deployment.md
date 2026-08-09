@@ -23,14 +23,16 @@ Three consequences worth knowing before merging anything into `main`:
   publishes a full GitHub Release with every platform artifact. Tag pushes reuse the tag name instead.
   `android-release.yml` and `extension-release.yml` additionally run their own standalone builds, so
   the same artifacts also exist as workflow artifacts.
-- **A markdown-only change runs exactly one check, not zero.** The five push/PR build workflows share
-  the same `paths-ignore` list (`**.md`, `docs/**`, `.env.example`, `.gitignore`, `.editorconfig`,
-  `LICENSE*`, `.vscode/**`), so none of them fires. `docs-format.yml` is their deliberate counterpart:
-  it triggers on exactly `**.md` and Prettier-checks the Markdown, closing the gap that
-  `format:check` is `prettier --check .` (which covers Markdown) yet never ran on a docs-only PR.
-  So expect the single `Prettier (Markdown)` check. A docs change that touches **no** `.md` file —
-  `.env.example`, `docs/*.jpeg`, `.gitignore` — still shows zero checks; that is configuration, not
-  a broken CI.
+- **A markdown-only change is still gated — it does not run "zero checks".** The five push/PR build
+  workflows share the same `paths-ignore` list (`**.md`, `docs/**`, `.env.example`, `.gitignore`,
+  `.editorconfig`, `LICENSE*`, `.vscode/**`), so none of them fires. `docs-format.yml` is their
+  deliberate counterpart: it triggers on exactly `**.md` and Prettier-checks the Markdown, closing
+  the gap that `format:check` is `prettier --check .` (which covers Markdown) yet never ran on a
+  docs-only PR. Expect `Prettier (Markdown)` from it, plus the three `Analyze (…)` runs from
+  **CodeQL default setup** — that one is configured in GitHub repo settings, not by a workflow file
+  in this repo, so it runs on every PR regardless of paths and you will not find a `.yml` for it. A
+  docs change that touches **no** `.md` file — `.env.example`, `docs/*.jpeg`, `.gitignore` — drops
+  back to CodeQL alone; that is configuration, not a broken CI.
 - **The PR gate has two jobs, one of them advisory.** The `security` job runs
   `npm audit --audit-level=high` with `continue-on-error: true`, so a high-severity advisory is
   reported but never blocks the merge. Only the `checks` job is a real gate.
