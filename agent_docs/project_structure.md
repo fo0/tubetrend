@@ -61,9 +61,19 @@ tubetrend/
 
 ## Feature Module Pattern
 
-Each `src/features/` module follows the same internal layout:
+A `src/features/` module draws from the same four parts, but takes only the ones it needs — no module currently has all four:
 
 - `services/` — pure business logic
 - `hooks/` — React-state composition
 - `types.ts` — module-local types
-- `index.ts` — barrel export (the only public surface other modules import from)
+- `index.ts` — barrel export (the public surface other modules import from, where one exists)
+
+| Module      | `services/` | `hooks/` | `types.ts` | `index.ts` |
+| ----------- | ----------- | -------- | ---------- | ---------- |
+| `dashboard` | ✅          | ✅       | —          | ✅         |
+| `favorites` | ✅          | —        | ✅         | ✅         |
+| `search`    | —           | ✅       | —          | —          |
+| `videos`    | ✅          | —        | ✅         | ✅         |
+| `youtube`   | ✅          | —        | ✅         | ✅         |
+
+`search` has no barrel, so `App.tsx` and `AnalyserPage.tsx` import `hooks/useSearch` directly. Every other cross-module import goes through the barrel.
