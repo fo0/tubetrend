@@ -20,7 +20,9 @@ All `localStorage` access goes through the `StorageAdapter` interface. `safeRead
 
 ## Feature Module Pattern
 
-Each `src/features/` module exposes `services/` (pure business logic), `hooks/` (React-state composition), `types.ts`, and an `index.ts` barrel export. Cross-feature imports go through the barrel only — never deep-import another feature's internals.
+A `src/features/` module draws from `services/` (pure business logic), `hooks/` (React-state composition), `types.ts` and an `index.ts` barrel export, but takes only the parts it needs — none of the five modules carries all four. Where a barrel exists, cross-feature imports go through it and never deep-import that module's internals.
+
+Actual shape (verified 2026-08-09): `dashboard` = services + hooks + barrel · `favorites` / `videos` / `youtube` = services + `types.ts` + barrel · `search` = `hooks/useSearch.ts` only, with **no barrel**, so `App.tsx` and `AnalyserPage.tsx` import it deeply. Giving `search` a barrel is an open cleanup, not a rule that already holds.
 
 **Location:** `src/features/*/`
 

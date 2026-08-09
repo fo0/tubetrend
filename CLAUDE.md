@@ -120,7 +120,7 @@ Top 5 — a lookup index, not documentation. Full descriptions: `agent_docs/key-
 
 - **Type-Safe Event Bus** — cross-component communication without prop drilling; events typed via `EventMap`, dual emission (class + DOM `CustomEvent`), `useEventBus()` handles lifecycle. → `src/shared/lib/eventBus.ts`
 - **Type-Safe Storage Adapter** — all `localStorage` access via `safeRead<T>` / `safeWrite<T>`; always try-catch wrapped, auto JSON, SSR-safe. → `src/shared/lib/storage.ts`
-- **Feature Module Pattern** — each module exposes `services/` (pure logic), `hooks/` (React state), `types.ts`, `index.ts` barrel. Never deep-import another feature. → `src/features/*/`
+- **Feature Module Pattern** — a module takes the subset of `services/` (pure logic), `hooks/` (React state), `types.ts`, `index.ts` barrel that it needs; no module has all four. Import through the barrel where one exists — `search/` has none and is deep-imported. → `src/features/*/`
 - **Trend Scoring (pure math)** — no external AI. Velocity (70%) + engagement (30%), each capped at 100; labels by threshold (Viral/Hot/Rising/Steady/Slow). → `src/features/videos/services/trendAnalysisService.ts`
 - **Quota Tracking** — client-side YouTube API accounting; search 100 units, videos/channels 1; daily reset Pacific Time; emits `quota-updated`. → `src/features/youtube/services/quotaService.ts`
 
