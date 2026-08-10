@@ -5,6 +5,7 @@ import { FavoriteAvatar } from "@/src/shared/components/ui/FavoriteAvatar";
 import { FavoritesFilter } from "@/src/shared/components/ui/FavoritesFilter";
 import { HighlightVideoCard } from "@/src/shared/components/ui/HighlightVideoCard";
 import { FloatingScrollButton } from "@/src/shared/components/ui/FloatingScrollButton";
+import { showToast } from "@/src/shared/components/feedback";
 import { useTranslation } from "react-i18next";
 import type { FavoriteConfig } from "@/src/features/favorites/types";
 import type { VideoData } from "@/src/features/videos/types";
@@ -157,11 +158,7 @@ export function DashboardPage({
           e.target.value = "";
           if (!f) return;
           onImportFile(f).catch(() => {
-            try {
-              window.alert(t("backup.importInvalid"));
-            } catch {
-              // ignore
-            }
+            showToast(t("backup.importInvalid"), "error");
           });
         }}
       />

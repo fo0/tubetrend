@@ -13,6 +13,7 @@ export interface EventMap {
   "favorite-refresh-start": { id: string };
   "favorite-refresh-end": { id: string };
   "toggle-shortcuts-hint": undefined;
+  toast: { id: string; message: string; tone: "success" | "error" };
 }
 
 type EventKey = keyof EventMap;

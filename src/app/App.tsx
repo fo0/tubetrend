@@ -3,6 +3,7 @@ import { useEventListener } from "@/src/shared/hooks";
 import { ApiKeyModal } from "@/src/shared/components/ui/ApiKeyModal";
 import { HiddenHighlightsModal } from "@/src/shared/components/ui/HiddenHighlightsModal";
 import { Header, Footer, type PageType } from "@/src/shared/components/layout";
+import { showToast, ToastHost } from "@/src/shared/components/feedback";
 import { DashboardPage } from "./routes/DashboardPage";
 import { AnalyserPage } from "./routes/AnalyserPage";
 import { useTranslation } from "react-i18next";
@@ -198,7 +199,7 @@ const App: React.FC = () => {
     });
     const json = dashboardBackupService.stringify(payload);
     downloadTextFile(filename, json);
-    window.alert(t("backup.exportSuccess"));
+    showToast(t("backup.exportSuccess"), "success");
   }, [sortMode, sortOrder, downloadTextFile, t]);
 
   const handleDashboardImportFile = useCallback(
@@ -207,7 +208,7 @@ const App: React.FC = () => {
       const parsed = dashboardBackupService.parse(text);
 
       if (!parsed.ok) {
-        window.alert(t("backup.importInvalid"));
+        showToast(t("backup.importInvalid"), "error");
         return;
       }
 
@@ -219,14 +220,14 @@ const App: React.FC = () => {
         safeWrite(STORAGE_KEYS.FAVORITES, parsed.payload.data.favorites);
         safeWrite(STORAGE_KEYS.FAVORITES_CACHE, parsed.payload.data.favoritesCache);
       } catch {
-        window.alert(t("backup.importFailedStorage"));
+        showToast(t("backup.importFailedStorage"), "error");
         return;
       }
 
       loadFavorites();
       dispatchEvent("favorites-cache-updated", { id: "*" });
 
-      window.alert(t("backup.importSuccess", { count }));
+      showToast(t("backup.importSuccess", { count }), "success");
     },
     [loadFavorites, t],
   );
@@ -283,6 +284,10 @@ const App: React.FC = () => {
         isOpen={isHiddenHighlightsModalOpen}
         onClose={() => setIsHiddenHighlightsModalOpen(false)}
       />
+
+      {/* Transient feedback (backup export/import). Mounted once at the root so
+          any callback can raise a message via showToast(). */}
+      <ToastHost />
 
       {/* Skip link (WCAG 2.4.1 Bypass Blocks): the sticky header carries ~8 tab
           stops (nav, shortcuts, API key, quota, language, theme) that keyboard
