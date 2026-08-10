@@ -9,6 +9,7 @@
     "clearSearch": "Clear search",
     "resetApiKey": "Delete API key",
     "refreshAll": "Refresh all (R)",
+    "refreshProgress": "Refreshing… {{done}}/{{total}}",
     "remove": "Remove",
     "refresh": "Refresh",
     "analyze": "Analyze",

@@ -1,10 +1,11 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Activity, BarChart3, Download, EyeOff, RefreshCw, Trash2, Upload } from "lucide-react";
 import { FavoriteRow } from "@/src/shared/components/ui/FavoriteRow";
 import { FavoriteAvatar } from "@/src/shared/components/ui/FavoriteAvatar";
 import { FavoritesFilter } from "@/src/shared/components/ui/FavoritesFilter";
 import { HighlightVideoCard } from "@/src/shared/components/ui/HighlightVideoCard";
 import { FloatingScrollButton } from "@/src/shared/components/ui/FloatingScrollButton";
+import { showToast } from "@/src/shared/components/feedback";
 import { useTranslation } from "react-i18next";
 import type { FavoriteConfig } from "@/src/features/favorites/types";
 import type { VideoData } from "@/src/features/videos/types";
@@ -73,6 +74,22 @@ export function DashboardPage({
   const handleImportPick = () => {
     importRef.current?.click();
   };
+
+  // Progress for a running refresh. "Refresh all" staggers one favorite every
+  // 300ms, so with a dozen favorites the button sat disabled with a spinner for
+  // a long while and gave no clue how much was left. refreshingIds only holds
+  // what is still in flight, so remember the highest value seen during the run
+  // as the total; it resets to 0 once the last row reports back.
+  const refreshingCount = refreshingIds.size;
+  const [refreshTotal, setRefreshTotal] = useState(0);
+  useEffect(() => {
+    setRefreshTotal((prev) => (refreshingCount === 0 ? 0 : Math.max(prev, refreshingCount)));
+  }, [refreshingCount]);
+  // Only meaningful for a batch — a single row refresh has its own spinner.
+  const showRefreshProgress = refreshTotal > 1 && refreshingCount > 0;
+  const refreshProgressLabel = showRefreshProgress
+    ? t("actions.refreshProgress", { done: refreshTotal - refreshingCount, total: refreshTotal })
+    : "";
 
   const showFavoriteFilter = favorites.length >= FAVORITES_FILTER_MIN_ROWS;
   const normalizedFavoriteFilter = showFavoriteFilter ? favoriteFilter.trim().toLowerCase() : "";
@@ -157,11 +174,7 @@ export function DashboardPage({
           e.target.value = "";
           if (!f) return;
           onImportFile(f).catch(() => {
-            try {
-              window.alert(t("backup.importInvalid"));
-            } catch {
-              // ignore
-            }
+            showToast(t("backup.importInvalid"), "error");
           });
         }}
       />
@@ -222,15 +235,19 @@ export function DashboardPage({
                            disabled:opacity-50 disabled:cursor-not-allowed
                            dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
                   title={
-                    refreshingIds.size > 0
-                      ? t("favorites.status.refreshing")
-                      : t("actions.refreshAll")
+                    showRefreshProgress
+                      ? refreshProgressLabel
+                      : refreshingIds.size > 0
+                        ? t("favorites.status.refreshing")
+                        : t("actions.refreshAll")
                   }
                 >
                   <RefreshCw
                     className={`w-3 h-3 ${refreshingIds.size > 0 ? "animate-spin" : ""}`}
                   />{" "}
-                  {t("actions.refreshAll")}
+                  <span className="whitespace-nowrap">
+                    {showRefreshProgress ? refreshProgressLabel : t("actions.refreshAll")}
+                  </span>
                 </button>
                 {favorites.length > 0 && (
                   <button
