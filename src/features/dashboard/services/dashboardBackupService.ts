@@ -19,7 +19,8 @@ export interface DashboardBackupPayload {
 }
 
 export type ParseResult =
-  { ok: true; payload: DashboardBackupPayload } | { ok: false; payload?: never };
+  | { ok: true; payload: DashboardBackupPayload }
+  | { ok: false; payload?: never };
 
 /** True only for absolute http(s) URLs — the schemes an <a href> may safely navigate to. */
 function isHttpUrl(value: unknown): boolean {

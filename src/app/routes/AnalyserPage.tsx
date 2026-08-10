@@ -16,6 +16,7 @@ import { InputSection } from "@/src/shared/components/ui/InputSection";
 import { VideoCard } from "@/src/shared/components/ui/VideoCard";
 import { VideoListTable } from "@/src/shared/components/ui/VideoListTable";
 import { EmptyState, type EmptyStateExample } from "@/src/shared/components/ui/EmptyState";
+import { FloatingScrollButton } from "@/src/shared/components/ui/FloatingScrollButton";
 import { useTranslation } from "react-i18next";
 import { SearchType, type TimeFrame } from "@/src/shared/types";
 import type { SearchState } from "@/src/features/search/hooks/useSearch";
@@ -571,6 +572,14 @@ export function AnalyserPage({
           onPickExample={onPickExample}
         />
       )}
+
+      {/* Floating scroll button — a full analysis renders the top-N cards plus a
+          table of every remaining video, which easily runs to several screens.
+          The dashboard has offered this affordance for a while; the analyser,
+          the longer of the two pages, had no way back to the search box other
+          than scrolling all the way up. The button hides itself when the page
+          is too short to scroll, so no results = no button. */}
+      <FloatingScrollButton />
     </>
   );
 }

@@ -45,14 +45,16 @@ export const hiddenHighlightsService = {
           (item.sourceId as string).length > 0 &&
           (item.videoId as string).length > 0,
       )
-      .map((item): HiddenHighlight => ({
-        sourceId: item.sourceId as string,
-        videoId: item.videoId as string,
-        hiddenAt: typeof item.hiddenAt === "number" ? item.hiddenAt : 0,
-        videoTitle: typeof item.videoTitle === "string" ? item.videoTitle : undefined,
-        thumbnailUrl: typeof item.thumbnailUrl === "string" ? item.thumbnailUrl : undefined,
-        sourceLabel: typeof item.sourceLabel === "string" ? item.sourceLabel : undefined,
-      }));
+      .map(
+        (item): HiddenHighlight => ({
+          sourceId: item.sourceId as string,
+          videoId: item.videoId as string,
+          hiddenAt: typeof item.hiddenAt === "number" ? item.hiddenAt : 0,
+          videoTitle: typeof item.videoTitle === "string" ? item.videoTitle : undefined,
+          thumbnailUrl: typeof item.thumbnailUrl === "string" ? item.thumbnailUrl : undefined,
+          sourceLabel: typeof item.sourceLabel === "string" ? item.sourceLabel : undefined,
+        }),
+      );
   },
 
   /**
