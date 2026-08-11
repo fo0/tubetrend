@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { SearchType, TimeFrame, YouTubeVideoItem } from "@/src/shared/types";
 import { SearchType as ST } from "@/src/shared/types";
@@ -90,6 +90,13 @@ interface UseSearchOptions {
 export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
   const { t } = useTranslation();
   const [searchState, setSearchState] = useState<SearchState>(restoreInitialSearchState);
+  // Generation counter for analyser runs. A search can take many seconds (paged
+  // playlist/search calls), so a second run — or opening a cached favorite, or
+  // clearing the results — can easily start before the first one resolves.
+  // Without this guard the slower earlier response wins: it overwrites the newer
+  // results and persists a stale snapshot that survives the next reload. Same
+  // pattern InputSection already uses for its autocomplete lookups.
+  const searchRequestRef = useRef(0);
 
   const handleSearch = useCallback(
     async (
@@ -102,6 +109,9 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
         options?.onApiKeyInvalid?.();
         return;
       }
+
+      const requestId = ++searchRequestRef.current;
+      const isStale = () => requestId !== searchRequestRef.current;
 
       setSearchState((prev) => ({
         ...prev,
@@ -141,6 +151,8 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
           channelId = id;
         }
 
+        if (isStale()) return;
+
         if (apiVideos.length === 0) {
           // Translate the time-frame label here: the catch block only sees the
           // error, and the raw enum value ("last_month") is not user-facing text.
@@ -168,6 +180,7 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
         persistResult({ data: analyzedVideos, channelName: displayName, channelId, savedAt });
       } catch (err: unknown) {
         if (import.meta.env.DEV) console.error(err);
+        if (isStale()) return;
         // Services carry an i18n descriptor instead of a ready-made sentence —
         // resolve it here so the alert speaks the user's language. The raw
         // message stays the fallback for errors from outside our own layer.
@@ -204,6 +217,8 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
 
   const setSearchResult = useCallback(
     (data: VideoData[], channelName: string, channelId?: string) => {
+      // Showing a cached favorite supersedes any run still in flight.
+      searchRequestRef.current += 1;
       setSearchState({
         isLoading: false,
         step: "complete",
@@ -217,6 +232,9 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
   );
 
   const resetSearch = useCallback(() => {
+    // Clearing supersedes any run still in flight, otherwise its late response
+    // would repopulate the view the user just emptied.
+    searchRequestRef.current += 1;
     clearPersistedResult();
     setSearchState(initialSearchState);
   }, []);

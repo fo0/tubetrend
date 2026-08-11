@@ -230,15 +230,19 @@ export const InputSection: React.FC<InputSectionProps> = ({
     }
   };
 
+  // Derive the next list from the current state and hand React a plain value.
+  // The localStorage write must not live inside a setState updater: React treats
+  // updaters as pure functions it may replay, and StrictMode (enabled in
+  // main.tsx) double-invokes them in development — so the side effect ran twice
+  // per edit. `clearAllHistory` below already follows this compute-then-commit
+  // shape; both history mutations now match it.
   const addToHistory = (value: string) => {
     const v = value.trim();
     if (!v) return;
-    setHistory((prev) => {
-      const withoutDup = prev.filter((x) => x.toLowerCase() !== v.toLowerCase());
-      const updated = [v, ...withoutDup].slice(0, 10);
-      persistHistory(updated);
-      return updated;
-    });
+    const withoutDup = history.filter((x) => x.toLowerCase() !== v.toLowerCase());
+    const updated = [v, ...withoutDup].slice(0, 10);
+    setHistory(updated);
+    persistHistory(updated);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -366,12 +370,10 @@ export const InputSection: React.FC<InputSectionProps> = ({
   };
 
   const removeHistoryItem = (val: string) => {
-    setHistory((prev) => {
-      const updated = prev.filter((x) => x !== val);
-      persistHistory(updated);
-      if (updated.length === 0) setShowHistory(false);
-      return updated;
-    });
+    const updated = history.filter((x) => x !== val);
+    setHistory(updated);
+    persistHistory(updated);
+    if (updated.length === 0) setShowHistory(false);
   };
 
   const clearAllHistory = () => {

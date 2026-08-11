@@ -91,8 +91,14 @@ export function extractChannelIdentifier(input: string): string {
       const path = url.pathname;
 
       if (path.startsWith("/@")) return path.substring(1);
-      if (path.startsWith("/channel/")) return path.split("/")[2];
-      if (path.startsWith("/c/") || path.startsWith("/user/")) return path.split("/")[2];
+      // `/channel/`, `/c/` and `/user/` without a trailing segment split to
+      // `undefined` at index 2, which this `string` return type hides: the value
+      // travels on to findChannelInfo(), where `channelName.trim()` throws a
+      // TypeError instead of producing a "channel not found" error. Falling back
+      // to the raw input treats such a stub URL like any other plain query.
+      if (path.startsWith("/channel/") || path.startsWith("/c/") || path.startsWith("/user/")) {
+        return path.split("/")[2] || trimmed;
+      }
     } catch {
       // Fall through
     }
