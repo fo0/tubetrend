@@ -22,8 +22,20 @@ export function FloatingScrollButton() {
   const buttonRef = useRef<HTMLButtonElement>(null);
 
   // Track mouse proximity to button - 30% larger detection area for earlier visibility
+  //
+  // The measurement is rAF-throttled (same `ticking` pattern as the scroll
+  // handler below): mousemove fires far more often than the screen refreshes,
+  // and getBoundingClientRect() forces a synchronous layout each time, so the
+  // unthrottled version made every pointer move across the page pay for a
+  // reflow. Coalescing to one measurement per frame keeps the last known
+  // pointer position, so the proximity result is unchanged.
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
+    let ticking = false;
+    let pointerX = 0;
+    let pointerY = 0;
+
+    const measure = () => {
+      ticking = false;
       if (!buttonRef.current) return;
 
       const rect = buttonRef.current.getBoundingClientRect();
@@ -32,7 +44,7 @@ export function FloatingScrollButton() {
 
       // Calculate distance from mouse to button center
       const distance = Math.sqrt(
-        Math.pow(e.clientX - buttonCenterX, 2) + Math.pow(e.clientY - buttonCenterY, 2),
+        Math.pow(pointerX - buttonCenterX, 2) + Math.pow(pointerY - buttonCenterY, 2),
       );
 
       // Proximity threshold: button size * 3.5 (30% larger than before)
@@ -40,6 +52,14 @@ export function FloatingScrollButton() {
       const proximityThreshold = Math.max(rect.width, rect.height) * 3.5;
 
       setIsNearButton(distance < proximityThreshold);
+    };
+
+    const handleMouseMove = (e: MouseEvent) => {
+      pointerX = e.clientX;
+      pointerY = e.clientY;
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(measure);
     };
 
     window.addEventListener("mousemove", handleMouseMove, { passive: true });
