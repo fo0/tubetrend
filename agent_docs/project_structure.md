@@ -43,7 +43,7 @@ tubetrend/
 │   ├── settings.json                 # Tier-1 hooks + trigger permissions
 │   └── skills/                       # done / pr / review / security-review / rollback / ci / stuck / beacon / gitnexus/
 ├── .github/                          # Workflows + dependabot + templates
-├── index.html / index.css            # Vite HTML entry + theme base styles
+├── index.html                        # Vite HTML entry (theme base styles: src/styles/index.css)
 ├── capacitor.config.ts               # Capacitor config
 ├── vite.config.ts                    # Vite config
 ├── tsconfig.json                     # TypeScript strict config with path aliases

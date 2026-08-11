@@ -8,8 +8,8 @@
 #      the daemon and then copied over the `npm ci` layer.
 #
 # Only paths the web build (`npm run build`) does not read are listed. Keep
-# index.html, index.css, src/, vite.config.ts, tsconfig.json and package*.json
-# out of this list — the build needs them.
+# index.html, src/, vite.config.ts, tsconfig.json and package*.json out of this
+# list — the build needs them.
 
 # VCS + CI
 .git
