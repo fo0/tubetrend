@@ -50,14 +50,8 @@ jobs:
       - name: Run TypeScript type check
         run: npx tsc --noEmit
 
-      - name: Run linter (if available)
-        run: |
-          if npm run 2>/dev/null | grep -q "^\s*lint"; then
-            echo "Running npm run lint..."
-            npm run lint
-          else
-            echo "No lint script found in package.json - skipping"
-          fi
+      - name: Run ESLint
+        run: npm run lint
 
       - name: Build project
         run: npm run build

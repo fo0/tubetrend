@@ -96,6 +96,10 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
     setCurrentFavId(favorite.id);
     // Reset channelId tracking wenn sich der Favorit ändert
     channelIdLoadedRef.current = false;
+    // Deliberately keyed on the favorite identity only. currentTimeFrame/currentMax
+    // are user-editable in this row's popovers; re-running on favorite.timeFrame /
+    // favorite.maxResults would overwrite that local choice on every parent render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [favorite.id]);
 
   const displayMax = useMemo(() => {
@@ -113,6 +117,10 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
   const lastFetchedAt = useMemo(() => {
     const entry = favoritesService.getCache(currentFavId);
     return entry?.fetchedAt ?? null;
+    // videos/loading/*RefreshToken are cache-busters, not inputs: getCache() is an
+    // imperative localStorage read, so these mark the moments the cache entry can
+    // have a new fetchedAt. Without them the "last fetched" label never updates.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentFavId, videos, loading, globalRefreshToken, localRefreshToken]);
 
   // Zeige Warnung, wenn ausgewählte Top-X kleiner als Gesamtmenge im Zeitraum ist
@@ -324,6 +332,11 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
         dispatchedStartRef.current = false;
       }
     };
+    // `t` is intentionally excluded: it is only used to format an error message,
+    // but its identity changes on every language switch. Including it would
+    // re-run the whole load — a real YouTube API request per row and per language
+    // change — instead of just relabelling. See agent_docs/key-patterns.md.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     currentFavId,
     currentMax,
@@ -376,6 +389,12 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
       cancelled = true;
       clearTimeout(timeout);
     };
+    // currentFavId is excluded on purpose: it is only forwarded as a cache key to
+    // findChannelInfo() and always changes together with favorite.query/searchType
+    // (both derive from the same favorite). Adding it makes this effect re-run on
+    // the render where the id has synced but the query has not — a duplicate
+    // channel lookup that costs YouTube quota.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [favorite.query, favorite.searchType, channelId]);
 
   const channelUrl = useMemo(() => {

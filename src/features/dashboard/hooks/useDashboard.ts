@@ -200,6 +200,11 @@ export function useDashboardSort() {
         return an.localeCompare(bn, getLocale(), { sensitivity: "base" });
       });
     },
+    // cacheTick is a cache-buster, not an input: the velocity branch reads the
+    // favorites cache imperatively via favoritesService.getCache(), so the tick
+    // is the only signal that the cached numbers changed. Removing it keeps the
+    // stale sort order after a refresh.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [sortMode, sortOrder, cacheTick],
   );
 
