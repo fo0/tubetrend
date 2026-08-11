@@ -4,8 +4,9 @@ Review findings not immediately fixed. **Only work on these upon explicit reques
 
 ## Open
 
-| #   | Date | Category | Sev | Location | Finding | Status | Source |
-| --- | ---- | -------- | --- | -------- | ------- | ------ | ------ |
+| #   | Date       | Category    | Sev | Location                                                    | Finding                                                                                                                                                                                                                                | Status   | Source   |
+| --- | ---------- | ----------- | --- | ----------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | -------- |
+| 14  | 2026-08-11 | Code Smells | P2  | `ThemeProvider.tsx`, `Toast.tsx`, `VideoListSortHeader.tsx` | 6 `react-refresh/only-export-components` warnings — these modules export helpers/constants next to a component, so Vite Fast Refresh drops their state on edit. Fixing means splitting the non-component exports into their own files. | Deferred | ESLint 9 |
 
 ## Done
 

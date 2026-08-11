@@ -22,6 +22,10 @@ Session-spanning project knowledge. **Read at session start, update during work.
 
 - **Vite 8 + Rolldown migration (2026-04)** — Vite 8 replaces Rollup with Rolldown. `rollupOptions` still works via compatibility layer but is deprecated; migrate to `rolldownOptions` when vite-plugin-electron has a stable Vite 8 release. `vite-plugin-electron` 0.29.1 has no explicit Vite 8 support but works for web builds. Electron desktop builds may need `vite-plugin-electron@1.0.0+` when stable. Build time dropped from ~7s to ~1s. (2026-04-06)
 
+- **`brace-expansion` override must be per-major, never a flat `^5` (2026-08-11)** — v5 is ESM-only and dropped the CommonJS default export, which `minimatch@3` (`require("brace-expansion")`) needs. A global `"brace-expansion": "^5"` override therefore crashes every tool carrying an old minimatch: ESLint died with `TypeError: expand is not a function`, and `electron-builder` had the same latent break. The override is now keyed per major (`brace-expansion@1` → `^1.1.12`, `@2` → `^2.0.2`, `@3` → `^3.0.1`, `@4` → `^4.0.1`), which stays above the CVE-2025-5889 ReDoS fix in every branch without changing any package's API. Do not collapse it back to a single range. (2026-08-11)
+
+- **ESLint suppressions need a reason, and `exhaustive-deps` is not always right (2026-08-11)** — this codebase leans on cache-buster dependencies (`cacheTick`, `hiddenTick`, `i18n.resolvedLanguage`, refresh tokens): counters listed in a dep array but never read in the body, because the memo/effect reads `localStorage` imperatively. `exhaustive-deps` calls those "unnecessary" — removing them freezes stale data on screen. Every such site carries an `// eslint-disable-next-line react-hooks/exhaustive-deps` with the reason above it. Never strip one without checking what the imperative read is. (2026-08-11)
+
 - **TypeScript 6 defaults changed (2026-04)** — TS 6 changes many defaults (types=[], esModuleInterop=true, noUncheckedSideEffectImports=true). Our tsconfig explicitly sets most values so impact was minimal. `baseUrl` is deprecated in TS 6 — removed it since paths already use `"./"` prefixes. (2026-04-06)
 
 ## Working Context

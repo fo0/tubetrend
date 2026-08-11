@@ -65,6 +65,10 @@ export const LanguageSwitcher: React.FC = () => {
     }
   }, [i18n.language]);
 
+  // i18n.resolvedLanguage is a cache-buster, not an input: getSystemLanguage()
+  // reads the navigator/i18next detector imperatively, so the resolved language is
+  // the only signal that its answer can have changed.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const systemLng = useMemo(() => getSystemLanguage(), [i18n.resolvedLanguage]);
 
   const title =
@@ -75,7 +79,9 @@ export const LanguageSwitcher: React.FC = () => {
   const setSystem = () => {
     try {
       localStorage.removeItem(LANG_STORAGE_KEY);
-    } catch {}
+    } catch {
+      // ignore storage errors — the language still switches in memory
+    }
     setMode("system");
     const sys = getSystemLanguage();
     i18n.changeLanguage(sys);
@@ -84,7 +90,9 @@ export const LanguageSwitcher: React.FC = () => {
   const setLang = (lng: ExplicitLang) => {
     try {
       localStorage.setItem(LANG_STORAGE_KEY, lng);
-    } catch {}
+    } catch {
+      // ignore storage errors — the language still switches in memory
+    }
     setMode("explicit");
     setExplicitLng(lng);
     i18n.changeLanguage(lng);

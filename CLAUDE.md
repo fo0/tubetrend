@@ -62,6 +62,7 @@ When a session begins, read in this order. Stop early if a file is missing.
 | Runtime         | Node.js                            | 22+       |
 | Package Manager | npm (lockfile v3)                  | —         |
 | Formatter       | Prettier                           | ^3        |
+| Linter          | ESLint 9 flat config               | ^9.39     |
 | Test Framework  | none (Vitest recommended)          | —         |
 
 Also ships via Electron ^41 (+ electron-builder ^26), Capacitor ^8 (Android/ChromeOS), a Manifest-V3 Chrome extension and a multi-stage Docker image. Detail: `agent_docs/platform_builds.md`
@@ -104,6 +105,8 @@ npm run preview          # Build + preview at http://localhost:4173
 npm run format           # Prettier --write (run before commit; done-skill auto-invokes)
 npm run format:check     # Prettier --check (matches CI; read-only)
 npm run typecheck        # tsc --noEmit
+npm run lint             # ESLint 9 flat config (eslint.config.js) — errors gate, warnings don't
+npm run lint:fix         # ESLint with --fix
 npm run build            # Production build to dist/ — must succeed
 
 # No test runner configured yet. See agent_docs/testing.md before adding one.
@@ -193,7 +196,7 @@ Full API reference: `agent_docs/api-reference.md`
 ## Testing
 
 - **Framework:** not yet configured. Recommended: Vitest (ESM-native, Vite-aligned, reuses the path aliases).
-- **Run:** `npm test` (once configured). Today the gate is `format:check` → `typecheck` → `build`.
+- **Run:** `npm test` (once configured). Today the gate is `format:check` → `typecheck` → `lint` → `build`.
 - **Structure:** `*.test.ts` next to source.
 - **Constraints:** agent-runnable, zero-cost, deterministic — defined once in `agent_docs/review_process.md → Test execution constraints`.
 
@@ -217,6 +220,7 @@ Delegate complex / parallel / read-heavy work: `Explore` (read-only search), `Pl
 
 - **Node.js 22+** required; `npm ci` in CI/Docker.
 - **`noUnusedLocals` / `noUnusedParameters` are on** — unused variables are type errors, not warnings.
+- **ESLint does not duplicate `tsc`** — `eslint.config.js` turns off `no-unused-vars` / `no-explicit-any`; `typecheck` owns those. Its job is `react-hooks/rules-of-hooks` + `exhaustive-deps`. A cache-buster dependency (`cacheTick` & co.) needs an `eslint-disable-next-line` **with a reason** — see MEMORY.md.
 - **`moduleResolution: "bundler"`** — tooling assuming Node-style resolution needs extra config.
 - **Path aliases live in two files** — `tsconfig.json` _and_ `vite.config.ts`. Adding one means editing both.
 - **Every platform target wraps the same `dist/`** — nothing under `src/` is platform-specific.

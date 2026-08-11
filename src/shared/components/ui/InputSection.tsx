@@ -463,6 +463,11 @@ export const InputSection: React.FC<InputSectionProps> = ({
     };
     document.addEventListener("keydown", handleEsc);
     return () => document.removeEventListener("keydown", handleEsc);
+    // clearInput is excluded on purpose: it is a plain function re-created on every
+    // render, so listing it would detach and re-attach the document-level keydown
+    // listener on every render. It only calls setState + cancelSuggestionLookup()
+    // (ref-based), so the closure captured here is never stale.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showSuggestions, showHistory, inputValue]);
 
   // Re-sync the favorite state whenever query, time frame, max results or search type change

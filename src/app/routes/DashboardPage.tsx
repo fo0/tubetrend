@@ -110,6 +110,9 @@ export function DashboardPage({
     }
     return haystacks;
     // cacheTick: a refresh can resolve a channel title that was unknown before.
+    // It is a cache-buster for the imperative getCache() reads above, never read
+    // in the body — exhaustive-deps cannot see that and calls it unnecessary.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sortedFavorites, cacheTick]);
 
   // `null` means "no filter active" — every favorite stays visible. Typing only
@@ -156,6 +159,11 @@ export function DashboardPage({
     const hiddenCount = sorted.length - visible.length;
 
     return { visible, hiddenCount };
+    // cacheTick / hiddenTick are cache-busters, not inputs: the memo reads the
+    // favorites cache and the hidden-highlights list imperatively, so these
+    // counters are the only signal that either store changed. Dropping them
+    // freezes the highlight list until an unrelated re-render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sortedFavorites, cacheTick, hiddenTick]);
 
   const highlightVideos = highlightVideosData.visible;
