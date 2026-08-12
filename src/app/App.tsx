@@ -179,11 +179,13 @@ const App: React.FC = () => {
     }
   }, [t]);
 
-  const downloadTextFile = useCallback((filename: string, text: string) => {
+  /** Returns false when the download was blocked, so the caller never claims success. */
+  const downloadTextFile = useCallback((filename: string, text: string): boolean => {
     try {
       downloadBlob(filename, new Blob([text], { type: "application/json" }));
+      return true;
     } catch {
-      // ignore
+      return false;
     }
   }, []);
 
@@ -198,8 +200,11 @@ const App: React.FC = () => {
       dashboardSortOrder: sortOrder,
     });
     const json = dashboardBackupService.stringify(payload);
-    downloadTextFile(filename, json);
-    showToast(t("backup.exportSuccess"), "success");
+    // The download can be blocked (sandboxed iframe, hardened Electron window).
+    // Reporting "Backup downloaded." regardless left the user believing a file
+    // existed that was never written.
+    const ok = downloadTextFile(filename, json);
+    showToast(ok ? t("backup.exportSuccess") : t("backup.exportFailed"), ok ? "success" : "error");
   }, [sortMode, sortOrder, downloadTextFile, t]);
 
   const handleDashboardImportFile = useCallback(

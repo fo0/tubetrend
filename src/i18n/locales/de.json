@@ -256,6 +256,7 @@
   },
   "backup": {
     "exportSuccess": "Backup-Datei wurde heruntergeladen.",
+    "exportFailed": "Download fehlgeschlagen. Der Browser hat die Datei blockiert.",
     "importSuccess": "Import abgeschlossen. {{count}} Favoriten wurden wiederhergestellt.",
     "importInvalid": "Ungültige Backup-Datei.",
     "importFailedStorage": "Import fehlgeschlagen (konnte nicht in den Browser-Speicher schreiben)."

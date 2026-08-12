@@ -256,6 +256,7 @@
   },
   "backup": {
     "exportSuccess": "Backup downloaded.",
+    "exportFailed": "Download failed. Your browser blocked the file.",
     "importSuccess": "Import completed. {{count}} favorites restored.",
     "importInvalid": "Invalid backup file.",
     "importFailedStorage": "Import failed (could not write to browser storage)."
