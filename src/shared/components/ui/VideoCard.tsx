@@ -76,12 +76,19 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video }) => {
     );
   };
 
-  // Determine color based on score
+  // Determine color based on score.
+  //
+  // The card surface is white in light mode, so the 400 shades that read well on
+  // the dark card were only ~1.7-2.9:1 there — the score is real content, so it
+  // has to clear the 4.5:1 of WCAG 1.4.3. Darker shades for light, the original
+  // 400s kept for dark. Only the text colour changes; the tinted background and
+  // border stay as they were. Mirrored in VideoListTable.
   const getScoreColor = (score: number) => {
     if (score >= 80)
-      return "text-red-400 bg-red-400/10 border-red-400/20 shadow-[0_0_15px_rgba(248,113,113,0.2)]";
-    if (score >= 50) return "text-amber-400 bg-amber-400/10 border-amber-400/20";
-    return "text-slate-400 bg-slate-400/10 border-slate-400/20";
+      return "text-red-700 dark:text-red-400 bg-red-400/10 border-red-400/20 shadow-[0_0_15px_rgba(248,113,113,0.2)]";
+    if (score >= 50)
+      return "text-amber-700 dark:text-amber-400 bg-amber-400/10 border-amber-400/20";
+    return "text-slate-600 dark:text-slate-400 bg-slate-400/10 border-slate-400/20";
   };
 
   return (
