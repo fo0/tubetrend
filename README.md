@@ -182,6 +182,8 @@ Open http://localhost:3000
 | `npm run build`        | Production build to `dist/`       |
 | `npm run preview`      | Build + local preview             |
 | `npm run typecheck`    | TypeScript type check (no emit)   |
+| `npm run lint`         | ESLint 9 flat config (CI gate)    |
+| `npm run lint:fix`     | ESLint with `--fix`               |
 | `npm run format`       | Auto-format with Prettier         |
 | `npm run format:check` | Verify formatting (CI-equivalent) |
 
@@ -230,8 +232,9 @@ React 19 | TypeScript | Vite 8 | Tailwind CSS 4 | i18next | Electron | YouTube D
 ## Contributing
 
 Contributions are welcome. [`CONTRIBUTING.md`](CONTRIBUTING.md) covers the development setup, the
-code style guidelines, the i18n rules and the three local checks that mirror CI
-(`npm run format:check` → `npm run typecheck` → `npm run build`) — run them before opening a PR.
+code style guidelines, the i18n rules and the four local checks that mirror CI
+(`npm run format:check` → `npm run typecheck` → `npm run lint` → `npm run build`) — run them before
+opening a PR.
 
 - **Code of Conduct:** [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md)
 - **Reporting a vulnerability:** [`SECURITY.md`](SECURITY.md) — please use GitHub's private

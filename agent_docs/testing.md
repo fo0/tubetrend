@@ -9,8 +9,12 @@ Offloaded from `CLAUDE.md` (2026-07-26) per `agent_docs/context_budget.md` ladde
 ```bash
 npm run format:check   # Prettier verification (matches CI)
 npm run typecheck      # tsc --noEmit (strict mode)
+npm run lint           # ESLint 9 flat config (matches CI; errors gate, warnings don't)
 npm run build          # production build must succeed
 ```
+
+A **linter** does exist — ESLint 9 landed in #376 and `pr-checks.yml` runs it as a hard step. Only the
+**test runner** is missing; do not read "no test framework" as "no static analysis".
 
 `package.json` has no `test` script. Do not invent one in generated docs or CI until a framework actually lands.
 
