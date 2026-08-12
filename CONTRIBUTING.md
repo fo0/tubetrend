@@ -100,13 +100,14 @@ Formatting is enforced in CI via `npm run format:check`. PRs with formatting dri
 
 ### Verification Before Submitting
 
-Formatting is only the first of three gates. `.github/workflows/pr-checks.yml` runs all of the
+Formatting is only the first of four gates. `.github/workflows/pr-checks.yml` runs all of the
 following on every pull request, so run them locally in this order to catch failures before CI does:
 
 ```bash
 npm run format:check  # 1. Prettier verification (read-only)
 npm run typecheck     # 2. tsc --noEmit — strict mode, noUnusedLocals/noUnusedParameters are ON
-npm run build         # 3. Production build to dist/ — must succeed
+npm run lint          # 3. ESLint 9 flat config — react-hooks rules; errors gate, warnings don't
+npm run build         # 4. Production build to dist/ — must succeed
 ```
 
 Notes:
@@ -114,7 +115,11 @@ Notes:
 - **Run `npm run format` first** if step 1 fails — it rewrites files in place, then re-check.
 - **Unused variables are type errors, not warnings** (`noUnusedLocals` / `noUnusedParameters`), so a
   leftover import fails step 2.
-- **There is no test suite yet.** No test framework is configured, so the three commands above are the
+- **ESLint does not duplicate `tsc`** — `eslint.config.js` disables `no-unused-vars` /
+  `no-explicit-any` and exists for `react-hooks/rules-of-hooks` + `exhaustive-deps`. Step 3 fails on
+  rule **errors** only; `react-refresh/only-export-components` warnings do not block. Use
+  `npm run lint:fix` for the auto-fixable subset.
+- **There is no test suite yet.** No test framework is configured, so the four commands above are the
   complete quality gate. See `agent_docs/testing.md` for the planned Vitest setup and priority targets.
 - CI additionally runs `npm audit --audit-level=high`, but that job is advisory and does not block.
 
