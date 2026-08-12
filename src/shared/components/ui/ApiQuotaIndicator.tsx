@@ -316,13 +316,21 @@ export const ApiQuotaIndicator: React.FC = () => {
   // Show all sources - the container is scrollable (max-h-48 overflow-y-auto)
   const groupedCalls = useMemo(() => groupCallsByContext(history), [history]);
 
-  // Color based on percentage and exhausted state
+  // Color based on percentage and exhausted state.
+  //
+  // `text` is used inside the dropdown panel, which has its own dark surface in
+  // both themes — the 400 shades are the readable choice there. `trigger` is the
+  // same status colour for the indicator button, which sits on the *themed*
+  // header (white in light mode): a 400 shade on white is ~1.7–2.9:1 and fails
+  // WCAG 1.4.3, so the light theme needs a darker shade. Keep the two apart —
+  // collapsing them back into one value breaks whichever surface loses.
   const getColorClasses = () => {
     if (quota.exhausted) {
       return {
         bg: "bg-red-600",
         border: "border-red-500/50",
         text: "text-red-400",
+        trigger: "text-red-700 dark:text-red-400",
         glow: "shadow-red-500/30",
         bar: "bg-red-500",
         stroke: "#f87171",
@@ -333,6 +341,7 @@ export const ApiQuotaIndicator: React.FC = () => {
         bg: "bg-red-500",
         border: "border-red-500/30",
         text: "text-red-400",
+        trigger: "text-red-700 dark:text-red-400",
         glow: "shadow-red-500/20",
         bar: "bg-red-400",
         stroke: "#f87171",
@@ -343,6 +352,7 @@ export const ApiQuotaIndicator: React.FC = () => {
         bg: "bg-amber-500",
         border: "border-amber-500/30",
         text: "text-amber-400",
+        trigger: "text-amber-700 dark:text-amber-400",
         glow: "shadow-amber-500/20",
         bar: "bg-amber-400",
         stroke: "#fbbf24",
@@ -352,6 +362,7 @@ export const ApiQuotaIndicator: React.FC = () => {
       bg: "bg-emerald-500",
       border: "border-emerald-500/30",
       text: "text-emerald-400",
+      trigger: "text-emerald-700 dark:text-emerald-400",
       glow: "shadow-emerald-500/20",
       bar: "bg-emerald-400",
       stroke: "#34d399",
@@ -414,7 +425,7 @@ export const ApiQuotaIndicator: React.FC = () => {
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="group flex items-center gap-1.5 px-2 py-1 rounded hover:bg-slate-700/50 transition-colors cursor-pointer"
+        className="group flex items-center gap-1.5 px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors cursor-pointer"
         aria-label={t("quota.historyTitle")}
         aria-expanded={isOpen}
         aria-haspopup="dialog"
@@ -427,14 +438,14 @@ export const ApiQuotaIndicator: React.FC = () => {
       >
         {/* Icon - warning when exhausted, otherwise battery */}
         {quota.exhausted ? (
-          <AlertTriangle className={`w-3 h-3 ${colors.text} animate-pulse`} />
+          <AlertTriangle className={`w-3 h-3 ${colors.trigger} animate-pulse`} aria-hidden="true" />
         ) : (
-          <Zap className={`w-3 h-3 ${colors.text}`} />
+          <Zap className={`w-3 h-3 ${colors.trigger}`} aria-hidden="true" />
         )}
 
         {/* Battery bar container */}
         <div
-          className={`relative w-8 h-2.5 rounded-sm border ${colors.border} bg-slate-800/50 overflow-hidden`}
+          className={`relative w-8 h-2.5 rounded-sm border ${colors.border} bg-slate-200 dark:bg-slate-800/50 overflow-hidden`}
         >
           {/* Fill bar */}
           <div
@@ -445,7 +456,7 @@ export const ApiQuotaIndicator: React.FC = () => {
 
         {/* Percentage text */}
         <span
-          className={`text-[10px] font-mono ${colors.text} opacity-60 group-hover:opacity-100 transition-opacity min-w-[2rem]`}
+          className={`text-[10px] font-mono ${colors.trigger} opacity-100 dark:opacity-60 dark:group-hover:opacity-100 transition-opacity min-w-[2rem]`}
         >
           {quota.percentage}%
         </span>

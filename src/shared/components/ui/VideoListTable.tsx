@@ -139,10 +139,15 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({ videos, startInd
     );
   }, [sortedVideos, showFilter, normalizedFilter]);
 
+  // Light mode paints this table on a white surface, where the 400 shades were
+  // only ~1.7-2.9:1 — the score is content, so it has to clear the 4.5:1 of WCAG
+  // 1.4.3. Darker shades for light, the original 400s kept for dark; the tinted
+  // background and border are unchanged. Mirrors VideoCard.
   const getScoreColor = (score: number) => {
-    if (score >= 80) return "text-red-400 bg-red-400/10 border-red-400/20";
-    if (score >= 50) return "text-amber-400 bg-amber-400/10 border-amber-400/20";
-    return "text-slate-400 bg-slate-400/10 border-slate-400/20";
+    if (score >= 80) return "text-red-700 dark:text-red-400 bg-red-400/10 border-red-400/20";
+    if (score >= 50)
+      return "text-amber-700 dark:text-amber-400 bg-amber-400/10 border-amber-400/20";
+    return "text-slate-600 dark:text-slate-400 bg-slate-400/10 border-slate-400/20";
   };
 
   return (

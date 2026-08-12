@@ -179,11 +179,13 @@ const App: React.FC = () => {
     }
   }, [t]);
 
-  const downloadTextFile = useCallback((filename: string, text: string) => {
+  /** Returns false when the download was blocked, so the caller never claims success. */
+  const downloadTextFile = useCallback((filename: string, text: string): boolean => {
     try {
       downloadBlob(filename, new Blob([text], { type: "application/json" }));
+      return true;
     } catch {
-      // ignore
+      return false;
     }
   }, []);
 
@@ -198,8 +200,11 @@ const App: React.FC = () => {
       dashboardSortOrder: sortOrder,
     });
     const json = dashboardBackupService.stringify(payload);
-    downloadTextFile(filename, json);
-    showToast(t("backup.exportSuccess"), "success");
+    // The download can be blocked (sandboxed iframe, hardened Electron window).
+    // Reporting "Backup downloaded." regardless left the user believing a file
+    // existed that was never written.
+    const ok = downloadTextFile(filename, json);
+    showToast(ok ? t("backup.exportSuccess") : t("backup.exportFailed"), ok ? "success" : "error");
   }, [sortMode, sortOrder, downloadTextFile, t]);
 
   const handleDashboardImportFile = useCallback(
@@ -230,6 +235,19 @@ const App: React.FC = () => {
       showToast(t("backup.importSuccess", { count }), "success");
     },
     [loadFavorites, t],
+  );
+
+  // Removing a favorite drops its config and its cached videos for good — there
+  // is no undo and no trash. "Clear all" already confirms; the per-row Remove
+  // button sat directly beside Refresh and deleted on the first click, so a
+  // mis-click cost the favorite silently. Same guard, same wording pattern.
+  const handleRemoveFavorite = useCallback(
+    (id: string) => {
+      const label = favorites.find((fav) => fav.id === id)?.query ?? "";
+      if (!window.confirm(t("favorites.removeConfirm", { name: label }))) return;
+      removeFavorite(id);
+    },
+    [favorites, removeFavorite, t],
   );
 
   const handleClearAllFavorites = useCallback(() => {
@@ -324,7 +342,7 @@ const App: React.FC = () => {
             dashboardSortOrder={sortOrder}
             cacheTick={cacheTick}
             hiddenTick={hiddenTick}
-            onRemoveFavorite={removeFavorite}
+            onRemoveFavorite={handleRemoveFavorite}
             onAnalyzeFavorite={handleAnalyzeFavorite}
             onRefreshAll={refreshAll}
             onSortClick={handleSortClick}

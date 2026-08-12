@@ -106,6 +106,7 @@
     "analyze": "Open in Analyzer (uses cached data)",
     "clearAll": "Clear all favorites",
     "clearAllConfirm": "Remove all {{count}} favorites? This cannot be undone.",
+    "removeConfirm": "Remove the favorite \"{{name}}\"? Its cached videos are deleted too. This cannot be undone.",
     "noVideosInTimeFrame": "No videos found in this time frame."
   },
   "dashboard": {
@@ -256,6 +257,7 @@
   },
   "backup": {
     "exportSuccess": "Backup downloaded.",
+    "exportFailed": "Download failed. Your browser blocked the file.",
     "importSuccess": "Import completed. {{count}} favorites restored.",
     "importInvalid": "Invalid backup file.",
     "importFailedStorage": "Import failed (could not write to browser storage)."
