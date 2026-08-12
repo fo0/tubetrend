@@ -288,9 +288,15 @@ export function AnalyserPage({
       {/* Results */}
       {sortedVideos.length > 0 && (
         <div className="space-y-12 animate-fade-in">
-          {/* Control Bar */}
-          <div className="flex flex-col sm:flex-row justify-between items-center bg-slate-100/50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200 dark:border-slate-800 gap-4 backdrop-blur-sm">
-            <div className="flex items-center gap-2">
+          {/* Control Bar — flex-wrap on both halves and min-w-0 on the bar:
+              from the `sm` breakpoint up the two halves sit side by side, and
+              the right half alone (3 export buttons + the sort-mode label +
+              two toggle groups + Clear) needs ~670px on one unwrapped line.
+              Between ~640px and ~1024px that pushed the bar past the page
+              container and put the whole document into a horizontal scroll.
+              Wrapping keeps every control reachable without one. */}
+          <div className="flex flex-col sm:flex-row flex-wrap justify-between items-center bg-slate-100/50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200 dark:border-slate-800 gap-4 backdrop-blur-sm">
+            <div className="flex flex-wrap items-center gap-2 min-w-0">
               {/* h2: the page's <h1> (Header) otherwise skips straight to the
                   <h3> section titles below (WCAG 1.3.1 — no skipped heading levels). */}
               <h2 className="font-semibold text-slate-700 dark:text-slate-200">
@@ -346,7 +352,7 @@ export function AnalyserPage({
               )}
             </div>
 
-            <div className="flex items-center gap-3 text-sm font-medium">
+            <div className="flex flex-wrap items-center justify-end gap-3 text-sm font-medium min-w-0">
               {/* Export & Share actions */}
               <div className="inline-flex items-center rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-100/60 dark:bg-slate-900/60 p-0.5">
                 <button

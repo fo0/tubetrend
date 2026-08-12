@@ -203,14 +203,18 @@ export function DashboardPage({
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2">
+            {/* flex-wrap: up to five labelled buttons (Import, Export, Refresh
+                all, Clear all, Hidden) share this row with the count badge. On
+                one unwrapped line they run past the section — and the page
+                container with it — on any viewport narrower than a desktop. */}
+            <div className="flex flex-wrap items-center justify-end gap-2 min-w-0">
               {highlightVideos.length > 0 && (
                 <div className="text-xs font-medium text-slate-500 dark:text-slate-400 mr-1">
                   {t("dashboard.highlights.count", { count: highlightVideos.length })}
                 </div>
               )}
 
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center justify-end gap-2 min-w-0">
                 <button
                   type="button"
                   onClick={handleImportPick}
