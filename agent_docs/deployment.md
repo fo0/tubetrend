@@ -12,7 +12,7 @@ All seven workflow files, with every trigger each one actually declares:
 | `electron-release.yml`  | push to `main`/`master` · tag push `v*` · `workflow_dispatch`        | Builds win/mac/linux + Chromebook `.deb` + Chrome Extension + Android APK, then **creates a GitHub Release** |
 | `android-release.yml`   | push to `main`/`master` · `workflow_dispatch`                        | Standalone APK build, uploaded as a workflow artifact (no release)                                           |
 | `extension-release.yml` | push to `main`/`master` · `workflow_dispatch`                        | Standalone `dist-extension/` zip, uploaded as a workflow artifact (no release)                               |
-| `pr-checks.yml`         | `pull_request` → `main`/`master` (opened / synchronize / reopened)   | `format:check` → `tsc --noEmit` → optional lint → `build`, plus an advisory `npm audit` job                  |
+| `pr-checks.yml`         | `pull_request` → `main`/`master` (opened / synchronize / reopened)   | `format:check` → `tsc --noEmit` → `lint` → `build`, plus an advisory `npm audit` job                         |
 | `docs-format.yml`       | `pull_request` → `main`/`master` · push to `main`, both `**.md` only | Prettier `--check "**/*.md"` via `npx` at the version pinned in `package.json` — no `npm ci`, no build       |
 | `cleanup-ghcr.yml`      | weekly cron (Sun 04:00 UTC) · `workflow_dispatch`                    | Prunes untagged GHCR image versions, keeps the newest 10                                                     |
 

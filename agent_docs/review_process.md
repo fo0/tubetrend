@@ -57,7 +57,7 @@ UI Review (if UI changed)
 
 ## Automated Checks
 
-Canonical command list + order: **CLAUDE.md → Commands** (`format` write first, then `format:check` → `typecheck` → `build`). Run them before the review; `npm ci` first if dependencies are missing. Neither a linter nor a test runner is configured — those three commands are the whole gate.
+Canonical command list + order: **CLAUDE.md → Commands** (`format` write first, then `format:check` → `typecheck` → `lint` → `build`). Run them before the review; `npm ci` first if dependencies are missing. No test runner is configured, so those four commands are the whole gate — but a linter **is** configured: ESLint 9 (`eslint.config.js`, added in #376) runs as a hard step in `pr-checks.yml`. Its rule errors gate; `react-refresh/only-export-components` warnings do not (BACKLOG #14).
 
 ### Test execution constraints (autonomy + zero-cost)
 
