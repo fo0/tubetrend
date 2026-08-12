@@ -237,6 +237,19 @@ const App: React.FC = () => {
     [loadFavorites, t],
   );
 
+  // Removing a favorite drops its config and its cached videos for good — there
+  // is no undo and no trash. "Clear all" already confirms; the per-row Remove
+  // button sat directly beside Refresh and deleted on the first click, so a
+  // mis-click cost the favorite silently. Same guard, same wording pattern.
+  const handleRemoveFavorite = useCallback(
+    (id: string) => {
+      const label = favorites.find((fav) => fav.id === id)?.query ?? "";
+      if (!window.confirm(t("favorites.removeConfirm", { name: label }))) return;
+      removeFavorite(id);
+    },
+    [favorites, removeFavorite, t],
+  );
+
   const handleClearAllFavorites = useCallback(() => {
     const count = favorites.length;
     if (!window.confirm(t("favorites.clearAllConfirm", { count }))) return;
@@ -329,7 +342,7 @@ const App: React.FC = () => {
             dashboardSortOrder={sortOrder}
             cacheTick={cacheTick}
             hiddenTick={hiddenTick}
-            onRemoveFavorite={removeFavorite}
+            onRemoveFavorite={handleRemoveFavorite}
             onAnalyzeFavorite={handleAnalyzeFavorite}
             onRefreshAll={refreshAll}
             onSortClick={handleSortClick}
