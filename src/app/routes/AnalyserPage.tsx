@@ -528,7 +528,15 @@ export function AnalyserPage({
                   {t("results.moreVideos")}
                 </h3>
               </div>
-              <VideoListTable videos={otherVideos} startIndex={topN + 1} />
+              {/* analysisKey identifies the analysis on screen (channel plus the
+                  moment it was produced), so the table can drop a title filter
+                  left over from the previous one. Re-sorting or switching
+                  Top 3/6 keeps the same key and therefore the same filter. */}
+              <VideoListTable
+                videos={otherVideos}
+                startIndex={topN + 1}
+                analysisKey={`${searchState.channelName}|${searchState.resultSavedAt ?? ""}`}
+              />
             </div>
           )}
         </div>

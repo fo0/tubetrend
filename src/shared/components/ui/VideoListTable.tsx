@@ -24,11 +24,29 @@ const FILTER_MIN_ROWS = 10;
 interface VideoListTableProps {
   videos: VideoData[];
   startIndex: number;
+  /**
+   * Identity of the analysis these rows belong to. Changing it clears the title
+   * filter — see the effect below. Optional so the table stays usable without it.
+   */
+  analysisKey?: string;
 }
 
-export const VideoListTable: React.FC<VideoListTableProps> = ({ videos, startIndex }) => {
+export const VideoListTable: React.FC<VideoListTableProps> = ({
+  videos,
+  startIndex,
+  analysisKey,
+}) => {
   const { t } = useTranslation();
   const [filter, setFilter] = useState("");
+
+  // The table is not remounted between analyses, so a filter typed for the
+  // previous channel stayed active for the next one: the user ran a new search
+  // and landed on "No video title matches <the word they typed minutes ago>",
+  // or on a silently truncated list. The filter belongs to the result set that
+  // was on screen when it was typed, so a new analysis drops it.
+  useEffect(() => {
+    setFilter("");
+  }, [analysisKey]);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [copiedTitleId, setCopiedTitleId] = useState<string | null>(null);
   // Which row/action last failed, so a blocked clipboard is visible feedback

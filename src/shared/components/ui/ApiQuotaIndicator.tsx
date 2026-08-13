@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Activity,
+  AlertCircle,
   AlertTriangle,
   AtSign,
   Check,
@@ -214,20 +215,38 @@ export const ApiQuotaIndicator: React.FC = () => {
   const [history, setHistory] = useState<QuotaHistoryEntry[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  // A blocked clipboard used to make this button a dead control: it returned
+  // silently, so the user clicked and nothing at all happened. Every other copy
+  // action in the app (VideoCard, VideoListTable, the analyser bulk actions)
+  // flashes a warning icon instead — this one now matches them.
+  const [copyFailed, setCopyFailed] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const copyFailedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Clear the copy-feedback timer on unmount to avoid setState after unmount
+  // Clear the copy-feedback timers on unmount to avoid setState after unmount
   useEffect(() => {
     return () => {
       if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+      if (copyFailedTimerRef.current) clearTimeout(copyFailedTimerRef.current);
     };
   }, []);
+
+  const flashCopyFailed = () => {
+    setCopyFailed(true);
+    if (copyFailedTimerRef.current) clearTimeout(copyFailedTimerRef.current);
+    copyFailedTimerRef.current = setTimeout(() => setCopyFailed(false), 2500);
+  };
 
   // Copy a plain-text quota summary (used / limit / percentage) to the clipboard.
   const handleCopyQuota = () => {
     // navigator.clipboard is undefined in insecure contexts (HTTP, some iframes).
-    if (!navigator.clipboard) return;
+    // Accessing .writeText on it throws synchronously, which the promise
+    // rejection handler below would not catch — so guard the property first.
+    if (!navigator.clipboard) {
+      flashCopyFailed();
+      return;
+    }
     const summary = `${t("quota.label")}: ${formatNumber(quota.used)} / ${formatNumber(
       quota.limit,
     )} ${t("quota.units")} (${quota.percentage}%)`;
@@ -238,7 +257,8 @@ export const ApiQuotaIndicator: React.FC = () => {
         copyTimerRef.current = setTimeout(() => setCopied(false), 1500);
       },
       () => {
-        // Clipboard API unavailable (HTTP context, iframe restriction, etc.)
+        // Clipboard write rejected (permissions / focus) — surface it.
+        flashCopyFailed();
       },
     );
   };
@@ -421,6 +441,11 @@ export const ApiQuotaIndicator: React.FC = () => {
 
   return (
     <div className="relative" ref={dropdownRef}>
+      {/* Polite live region: announce the copy result to assistive tech — the
+          icon swap alone is silent to screen readers (mirrors VideoCard). */}
+      <span className="sr-only" role="status" aria-live="polite">
+        {copyFailed ? t("quota.copyFailed") : copied ? t("quota.copied") : ""}
+      </span>
       {/* Clickable indicator */}
       <button
         type="button"
@@ -497,11 +522,15 @@ export const ApiQuotaIndicator: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleCopyQuota}
-                  className="inline-flex items-center justify-center w-6 h-6 rounded-md bg-slate-800/60 hover:bg-slate-700 text-slate-400 hover:text-slate-200 transition-colors border border-slate-700"
-                  title={t("quota.copySummary")}
-                  aria-label={t("quota.copySummary")}
+                  className={`inline-flex items-center justify-center w-6 h-6 rounded-md bg-slate-800/60 hover:bg-slate-700 transition-colors border border-slate-700 ${
+                    copyFailed ? "text-red-400" : "text-slate-400 hover:text-slate-200"
+                  }`}
+                  title={copyFailed ? t("quota.copyFailed") : t("quota.copySummary")}
+                  aria-label={copyFailed ? t("quota.copyFailed") : t("quota.copySummary")}
                 >
-                  {copied ? (
+                  {copyFailed ? (
+                    <AlertCircle className="w-3.5 h-3.5" aria-hidden="true" />
+                  ) : copied ? (
                     <Check className="w-3.5 h-3.5 text-green-500" aria-hidden="true" />
                   ) : (
                     <Copy className="w-3.5 h-3.5" aria-hidden="true" />
