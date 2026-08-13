@@ -306,6 +306,8 @@
     "historyTitle": "API-Nutzung",
     "units": "Einheiten",
     "copySummary": "Kontingent-Übersicht kopieren",
+    "copied": "Kontingent-Übersicht kopiert",
+    "copyFailed": "Zwischenablage nicht verfügbar",
     "calls": "Aufrufe",
     "last24Hours": "Letzte 24 Stunden",
     "lastTimeWindow": "Letzte {{time}}",

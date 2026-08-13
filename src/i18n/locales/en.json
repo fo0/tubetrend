@@ -306,6 +306,8 @@
     "historyTitle": "API Usage",
     "units": "Units",
     "copySummary": "Copy quota summary",
+    "copied": "Quota summary copied",
+    "copyFailed": "Clipboard unavailable",
     "calls": "Calls",
     "last24Hours": "Last 24 hours",
     "lastTimeWindow": "Last {{time}}",
