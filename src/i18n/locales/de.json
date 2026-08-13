@@ -128,6 +128,7 @@
       "hiddenModalTitle": "Ausgeblendete Videos",
       "noHiddenItems": "Keine ausgeblendeten Videos.",
       "unhide": "Einblenden",
+      "unhideAria": "\"{{title}}\" wieder einblenden",
       "delete": "Löschen",
       "empty": "Noch keine Highlights verfügbar. Highlights erscheinen, sobald deine Favoriten Videos geladen haben."
     },
@@ -253,6 +254,8 @@
   },
   "confirm": {
     "deleteApiKey": "Möchtest du den API Key wirklich löschen?",
+    "restoreAllHidden_one": "Das {{count}} ausgeblendete Video wieder einblenden?",
+    "restoreAllHidden_other": "Alle {{count}} ausgeblendeten Videos wieder einblenden?",
     "importDashboardReplace": "Import ersetzt deine aktuellen Dashboard-Favoriten und den Cache ({{count}} Favoriten). Fortfahren?"
   },
   "backup": {

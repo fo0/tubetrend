@@ -128,6 +128,7 @@
       "hiddenModalTitle": "Hidden Videos",
       "noHiddenItems": "No hidden videos.",
       "unhide": "Show",
+      "unhideAria": "Show \"{{title}}\" again",
       "delete": "Delete",
       "empty": "No highlights available yet. Highlights will appear once your favorites have loaded videos."
     },
@@ -253,6 +254,8 @@
   },
   "confirm": {
     "deleteApiKey": "Do you really want to delete the API key?",
+    "restoreAllHidden_one": "Show the {{count}} hidden video again?",
+    "restoreAllHidden_other": "Show all {{count}} hidden videos again?",
     "importDashboardReplace": "Import will replace your current dashboard favorites and cache ({{count}} favorites). Continue?"
   },
   "backup": {

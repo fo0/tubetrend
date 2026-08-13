@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Clock, ExternalLink, Eye, Trash2, X } from "lucide-react";
+import { Clock, ExternalLink, Eye, RotateCcw, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { hiddenHighlightsService, type HiddenHighlight } from "@/src/features/dashboard";
 import { getLocale } from "@/src/shared/lib/locale";
@@ -86,9 +86,14 @@ export function HiddenHighlightsModal({ isOpen, onClose }: HiddenHighlightsModal
     setHiddenItems(hiddenHighlightsService.listChronological());
   };
 
-  const handleDelete = (videoId: string) => {
-    // show() removes the entry from the hidden list (un-hiding it)
-    hiddenHighlightsService.show(videoId);
+  // Restoring one entry at a time is the only way back out of this list, so a
+  // user who hid a dozen highlights had a dozen clicks ahead of them. clearAll()
+  // already existed on the service and the label was already translated
+  // (dashboard.highlights.clearHidden) — nothing surfaced either. Confirmed
+  // first, matching the app's other bulk actions (clear all favorites, import).
+  const handleRestoreAll = () => {
+    if (!window.confirm(t("confirm.restoreAllHidden", { count: hiddenItems.length }))) return;
+    hiddenHighlightsService.clearAll();
     setHiddenItems(hiddenHighlightsService.listChronological());
   };
 
@@ -126,21 +131,43 @@ export function HiddenHighlightsModal({ isOpen, onClose }: HiddenHighlightsModal
         className="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] mx-4 flex flex-col overflow-hidden border border-slate-200 dark:border-slate-700"
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700">
-          <h2
-            id="hidden-highlights-modal-title"
-            className="text-lg font-bold text-slate-900 dark:text-white"
-          >
-            {t("dashboard.highlights.hiddenModalTitle")}
-          </h2>
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors"
-            aria-label={t("modal.close")}
-          >
-            <X className="w-5 h-5" aria-hidden="true" />
-          </button>
+        <div className="flex items-center justify-between gap-3 px-6 py-4 border-b border-slate-200 dark:border-slate-700">
+          <div className="flex items-center gap-2 min-w-0">
+            <h2
+              id="hidden-highlights-modal-title"
+              className="text-lg font-bold text-slate-900 dark:text-white truncate"
+            >
+              {t("dashboard.highlights.hiddenModalTitle")}
+            </h2>
+            {/* How many entries are in here — the list itself scrolls, so the
+                size was only knowable by counting rows. */}
+            {hiddenItems.length > 0 && (
+              <span className="shrink-0 rounded-full border border-slate-300 bg-slate-100 px-2 py-0.5 text-xs text-slate-600 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-300">
+                {t("dashboard.highlights.hiddenCount", { count: hiddenItems.length })}
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-1 shrink-0">
+            {hiddenItems.length > 0 && (
+              <button
+                type="button"
+                onClick={handleRestoreAll}
+                className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md border border-indigo-500/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/10 transition-colors"
+                title={t("dashboard.highlights.clearHidden")}
+              >
+                <RotateCcw className="w-3 h-3" aria-hidden="true" />
+                <span className="hidden sm:inline">{t("dashboard.highlights.clearHidden")}</span>
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={onClose}
+              className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors"
+              aria-label={t("modal.close")}
+            >
+              <X className="w-5 h-5" aria-hidden="true" />
+            </button>
+          </div>
         </div>
 
         {/* Content */}
@@ -197,22 +224,21 @@ export function HiddenHighlightsModal({ isOpen, onClose }: HiddenHighlightsModal
                     >
                       <ExternalLink className="w-3 h-3" aria-hidden="true" />
                     </a>
+                    {/* One restore action per row. The red "Delete" button that
+                        used to sit here called the exact same service method
+                        (show() = drop the entry from the hidden list), so the
+                        row offered a destructive-looking second button for an
+                        action that was already available and non-destructive. */}
                     <button
                       type="button"
                       onClick={() => handleUnhide(item.videoId)}
                       className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md border border-indigo-500/30 text-indigo-500 dark:text-indigo-400 hover:bg-indigo-500/10 transition-colors"
+                      aria-label={t("dashboard.highlights.unhideAria", {
+                        title: item.videoTitle ?? "",
+                      })}
                     >
-                      <Eye className="w-3 h-3" />
+                      <Eye className="w-3 h-3" aria-hidden="true" />
                       {t("dashboard.highlights.unhide")}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(item.videoId)}
-                      className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md border border-red-500/30 text-red-400 dark:text-red-300 hover:bg-red-500/10 transition-colors"
-                      aria-label={t("dashboard.highlights.delete")}
-                      title={t("dashboard.highlights.delete")}
-                    >
-                      <Trash2 className="w-3 h-3" aria-hidden="true" />
                     </button>
                   </div>
                 </li>
