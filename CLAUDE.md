@@ -2,7 +2,7 @@
 
 ## Session Start — Read Order
 
-When a session begins, read in this order. Stop early if a file is missing.
+When a session begins, read in this order. Skip any file that doesn't exist.
 
 1. `MEMORY.md` — long-term project knowledge
 2. `SCRATCHPAD.md` — short-term working context
@@ -15,77 +15,70 @@ When a session begins, read in this order. Stop early if a file is missing.
 
 ## Workflow Triggers
 
-| User says...                                     | Skill to load                                            |
-| ------------------------------------------------ | -------------------------------------------------------- |
-| "done" / "fertig" / "finished" / "/done"         | `.claude/skills/done/SKILL.md`                           |
-| "PR" / "create PR" / "/pr"                       | `.claude/skills/pr/SKILL.md`                             |
-| "review" / "/review"                             | `.claude/skills/review/SKILL.md`                         |
-| "security review" / "/security-review"           | `.claude/skills/security-review/SKILL.md`                |
-| "rollback" / "revert" / "undo" / "/rollback"     | `.claude/skills/rollback/SKILL.md`                       |
-| "CI" / "fix CI" / "check the build" / "/ci"      | `.claude/skills/ci/SKILL.md`                             |
-| "stuck" / "loop" / "going in circles" / "/stuck" | `.claude/skills/stuck/SKILL.md`                          |
-| "check dependencies" / "update deps" / "/beacon" | `.claude/skills/beacon/SKILL.md`                         |
-| Diagram request                                  | `agent_docs/diagram_prompt.md` → `docs/ARCHITECTURE.mmd` |
+Skills live at `.claude/skills/<name>/SKILL.md` — load the one whose trigger fires.
 
-> Review runs via the `review` skill — done-skill does NOT auto-run it. Unresolved findings → `BACKLOG.md` (`agent_docs/backlog_process.md`). Long-term knowledge → `MEMORY.md`, temporary → `SCRATCHPAD.md` (`agent_docs/memory_process.md`).
-> **On "done"/"fertig":** commit uncommitted changes; if the work relates to a GitHub issue, comment (English) with a summary and close it. **Do NOT push unless explicitly asked.** Reference issues in commits: `fix: resolve crash #42`.
+- `done` — "done" / "fertig" / "finished" / "/done"
+- `pr` — "PR" / "create PR" / "/pr"
+- `review` — "review" / "/review"
+- `security-review` — "security review" / "/security-review"
+- `rollback` — "rollback" / "revert" / "undo" / "/rollback"
+- `ci` — "CI" / "fix CI" / "check the build" / "/ci"
+- `stuck` — "stuck" / "loop" / "going in circles" / "/stuck"
+- `beacon` — "check dependencies" / "update deps" / "/beacon"
+- `scheduler` — "schedule" / "routine" / "nightly" / "remind me later" / "/scheduler"
+- `orca` — "orca" / "orca mode an/aus" / "orchestrator mode" / "/orca"
+- Diagram request → `agent_docs/diagram_prompt.md` → `docs/ARCHITECTURE.mmd`
+
+> Review runs on demand via the `review` skill — done-skill never auto-runs it. Findings → `BACKLOG.md`; knowledge → `MEMORY.md` / `SCRATCHPAD.md`.
+> **On "done"/"fertig":** commit; if the work relates to a GitHub issue, comment (English) and close it. **Do NOT push unless explicitly asked.** Reference issues in commits: `fix: resolve crash #42`.
 > **GitNexus is read-only / analysis-only.** Non-negotiable policy + code-intelligence block: `agent_docs/gitnexus.md` (mirrored in `AGENTS.md`).
 
 ## Output Languages
 
-| Surface                                                                       | Language                                                             |
-| ----------------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| Chat / status messages to user                                                | User's language (default: German)                                    |
-| Code, identifiers, comments; console / log output                             | English                                                              |
-| Commit messages                                                               | English (Conventional Commits)                                       |
-| PR titles + bodies, GitHub issue comments                                     | English                                                              |
-| Generated files (CLAUDE.md, agent_docs/\*, MEMORY/SCRATCHPAD/BACKLOG, skills) | English                                                              |
-| User-facing UI strings                                                        | i18n keys (`t('key')`) — bundles for `en` + `de` only, fallback `en` |
+- **Chat / status messages to user** — user's language (default: German).
+- **English:** code, identifiers, comments, console/log output · commit messages (Conventional Commits) · PR titles + bodies · GitHub issue comments · every generated file (CLAUDE.md, `agent_docs/*`, MEMORY/SCRATCHPAD/BACKLOG, skills).
+- **User-facing UI strings** — i18n keys (`t('key')`); bundles for `en` + `de` only, fallback `en`.
+- **Technical terms — every surface, chat included — English, never translated.**
+
+Keep the English word verbatim and inflect around it: „2 Bugs gefixt", „Code Smell in `quotaService.ts`", „PR gemerged", „Build ist rot" — never „Programmfehler", „Zusammenführungsantrag". Covers the whole vocabulary (bug, smell, lint, build, commit, merge, branch, PR, review, refactoring, deployment, rollback, regression, dependency, tech debt …) plus everything naming something real: file paths, commands, tool / skill / hook names, status labels, error strings (quoted verbatim). Test: English in code, a commit or a PR → English in chat.
 
 ## Performance / Modes
 
 - **Default model:** whatever the session resolves to — don't pin one here or in `.claude/settings.json`; `/model` switches mid-session.
 - **Fast mode** (`/fast`): same Opus model, faster output — not a downgrade.
-- **Caveman mode** (chat compression): `caveman lite|full|ultra` / `stop caveman`. Chat only, never generated files.
-- **Plan mode**: for non-trivial strategy — `Plan` subagent or `EnterPlanMode`. Not for single-step tasks.
+- **Caveman mode:** `caveman lite|full|ultra` / `stop caveman`. Chat only, never generated files.
+- **Orca mode** (orchestrator-only): `/orca` toggles it, `/orca <N>` sets the parallel width (default 5). While on, the agent does no task work itself — every unit goes to a subagent at the session's model and effort. Off by default; contract in `.claude/skills/orca/SKILL.md`.
+- **Plan mode:** for non-trivial strategy — `Plan` subagent or `EnterPlanMode`. Not for single-step tasks.
+
+## Autonomy
+
+Which session you are in is resolvable, so it is a rule and not a guess: `$CLAUDE_CODE_REMOTE` is `"true"` in Claude Code web/cloud sessions — routine runs included — and unset in the local CLI.
+
+- **Unattended** (`CLAUDE_CODE_REMOTE=true`, or the initial instructions are a routine): nobody will answer. Never end a turn with a question — decide under an assumption you state, finish every part that isn't blocked, carry the open point into the report or `BACKLOG.md`. A routine run has no permission prompts, so "waiting for approval" waits forever.
+- **Interactive** (local CLI): asking is cheap. Ask when two readings of the task produce materially different work; otherwise decide and mention the call.
+- **Both:** an action that is destructive _and_ not ordered _and_ not standard practice gets the same answer either way — skip it, report it with the recommendation, finish everything it does not block. Gates stay put: merges → `pr` skill `/pr merge`, reversals/force ops → `rollback` skill, deploys → _Deployment_, secrets → `agent_docs/env-vars.md`.
+
+## Scheduled Work
+
+Three schedulers, different lifetimes: **Routines** (cloud, durable, ≥1 h, survive the session), **`/loop` + `Cron*`** (this session only, 7-day expiry), **Desktop scheduled tasks** (local machine). Picking one, managing jobs, and the cleanup contract for agent-created jobs: `.claude/skills/scheduler/SKILL.md`. Default prompt for a bare `/loop`: `.claude/loop.md`.
 
 ## Tech Stack
 
-| Component       | Technology                         | Version   |
-| --------------- | ---------------------------------- | --------- |
-| Language        | TypeScript (strict)                | ~6.0.3    |
-| UI Framework    | React                              | ^19.2.7   |
-| Build Tool      | Vite (+ `@vitejs/plugin-react`)    | ^8.0.16   |
-| Styling         | Tailwind CSS (`@tailwindcss/vite`) | ^4.3.1    |
-| i18n            | i18next + react-i18next            | ^26 / ^17 |
-| Icons           | Lucide React                       | ^1.18.0   |
-| Runtime         | Node.js                            | 22+       |
-| Package Manager | npm (lockfile v3)                  | —         |
-| Formatter       | Prettier                           | ^3        |
-| Linter          | ESLint 9 flat config               | ^9.39     |
-| Test Framework  | none (Vitest recommended)          | —         |
+TypeScript ~6.0.3 (strict) · React ^19.2 + Vite ^8.0 · Tailwind CSS v4 (`@tailwindcss/vite`) · i18next ^26 · Lucide React ^1.18 · Node.js 22+ · npm (lockfile v3) · Prettier ^3 · ESLint 9 flat config. **No test framework configured.**
 
-Also ships via Electron ^41 (+ electron-builder ^26), Capacitor ^8 (Android/ChromeOS), a Manifest-V3 Chrome extension and a multi-stage Docker image. Detail: `agent_docs/platform_builds.md`
+Full version table + the Electron / Capacitor / Chrome-extension / Docker wrappers around the same `dist/`: `agent_docs/platform_builds.md`
 
 ## Project Overview
 
-**TubeTrend** (`github.com/fo0/tubetrend`) is a YouTube trend analysis SPA built with Vite + React 19 + TypeScript. It tracks favorite channels and keywords on a dashboard, scores video performance with pure-math trend analysis (view velocity + engagement rate), and visualizes YouTube Data API v3 quota usage. Ships as web app, Docker image, Electron desktop app, Android/ChromeOS APK and Chrome extension — all wrapping the same `dist/` build.
+**TubeTrend** (`github.com/fo0/tubetrend`) is a YouTube trend analysis SPA: it tracks favorite channels and keywords on a dashboard, scores video performance with pure-math trend analysis (view velocity + engagement rate), and visualizes YouTube Data API v3 quota usage. One `dist/` build ships as web app, Docker image, Electron desktop app, Android/ChromeOS APK and Chrome extension.
 
 ## Project Structure
 
 ```
-src/
-  app/         # Shell, routing, page-level components
-  features/    # dashboard, favorites, search, videos, youtube
-  shared/      # Cross-feature components, hooks, lib, constants, types
-  providers/   # React context providers (ThemeProvider)
-  i18n/        # en + de bundles; 11 more selectable, fall back to en
-  styles/      # Global CSS
-android/       # Capacitor Android project (ChromeOS APK)
-chrome-extension/  electron/  scripts/   # Platform wrappers + build scripts
-docs/          # ARCHITECTURE.mmd + adr/
-agent_docs/    # Agent process docs
-.claude/       # settings.json (Tier-1 hooks) + skills/
+src/       # app/ (shell, routing) · features/ (dashboard, favorites, search, videos, youtube)
+           # shared/ · providers/ · i18n/ (en + de bundles) · styles/
+android/  chrome-extension/  electron/  scripts/   # Platform wrappers + build scripts
+docs/ (ARCHITECTURE.mmd + adr/) · agent_docs/ · .claude/ (settings.json, loop.md, skills/)
 ```
 
 Full tree + feature-module layout: `agent_docs/project_structure.md`
@@ -102,10 +95,10 @@ npm run dev              # Vite dev server at http://localhost:3000
 npm run preview          # Build + preview at http://localhost:4173
 
 # Automated Checks (run in this order — format FIRST to avoid CI surprises)
-npm run format           # Prettier --write (run before commit; done-skill auto-invokes)
+npm run format           # Prettier --write (before commit; done-skill auto-invokes)
 npm run format:check     # Prettier --check (matches CI; read-only)
 npm run typecheck        # tsc --noEmit
-npm run lint             # ESLint 9 flat config (eslint.config.js) — errors gate, warnings don't
+npm run lint             # ESLint 9 flat config — errors gate, warnings don't
 npm run lint:fix         # ESLint with --fix
 npm run build            # Production build to dist/ — must succeed
 
@@ -115,143 +108,113 @@ npm run build            # Production build to dist/ — must succeed
 npx @mermaid-js/mermaid-cli mmdc -i docs/ARCHITECTURE.mmd -o docs/ARCHITECTURE.svg
 ```
 
-Platform builds (Electron, Capacitor, Chrome Extension, Docker) and GitNexus read-only CLI: `agent_docs/platform_builds.md`, `agent_docs/gitnexus.md`
+Platform builds (Electron, Capacitor, Chrome Extension, Docker) and the GitNexus read-only CLI: `agent_docs/platform_builds.md`, `agent_docs/gitnexus.md`
 
 ## Key Patterns
 
-Top 5 — a lookup index, not documentation. Full descriptions: `agent_docs/key-patterns.md`
+Top 5 lookup index — descriptions, event list, error handling: `agent_docs/key-patterns.md`
 
-- **Type-Safe Event Bus** — cross-component communication without prop drilling; events typed via `EventMap`, dual emission (class + DOM `CustomEvent`), `useEventBus()` handles lifecycle. → `src/shared/lib/eventBus.ts`
-- **Type-Safe Storage Adapter** — all `localStorage` access via `safeRead<T>` / `safeWrite<T>`; always try-catch wrapped, auto JSON, SSR-safe. → `src/shared/lib/storage.ts`
-- **Feature Module Pattern** — a module takes the subset of `services/` (pure logic), `hooks/` (React state), `types.ts`, `index.ts` barrel that it needs; no module has all four. Import through the barrel where one exists — `search/` has none and is deep-imported. → `src/features/*/`
-- **Trend Scoring (pure math)** — no external AI. Velocity (70%) + engagement (30%), each capped at 100; labels by threshold (Viral/Hot/Rising/Steady/Slow). → `src/features/videos/services/trendAnalysisService.ts`
-- **Quota Tracking** — client-side YouTube API accounting; search 100 units, videos/channels 1; daily reset Pacific Time; emits `quota-updated`. → `src/features/youtube/services/quotaService.ts`
+- **Type-Safe Event Bus** → `src/shared/lib/eventBus.ts` (via `useEventBus()`, not raw listeners)
+- **Type-Safe Storage Adapter** → `src/shared/lib/storage.ts` (`safeRead`/`safeWrite`, never bare `localStorage`)
+- **Feature Module Pattern** → `src/features/*/` (import through the barrel; `search/` has none)
+- **Trend Scoring** (pure math, no AI) → `src/features/videos/services/trendAnalysisService.ts`
+- **Quota Tracking** → `src/features/youtube/services/quotaService.ts`
 
-### Error Handling
-
-Try-catch with fallback values for storage. Custom `YouTubeApiError` for API errors. `ErrorBoundary` (the only class component) catches fatal React crashes.
+**Error handling:** try-catch with fallbacks for storage; `YouTubeApiError` for API errors; `ErrorBoundary` catches fatal React crashes.
 
 ## Coding Conventions
 
-- **Language:** UI text via i18n keys (`t('key')`); code comments and docs in English.
-- **Naming:** PascalCase for components/types, camelCase for functions/variables/hooks, kebab-case for CSS classes.
-- **Files:** PascalCase for React components, camelCase for services/hooks/utils.
-- **Imports:** cross-module via the `@/src/…` alias (the convention, ~132 sites); relative paths only inside a module. `import type` for type-only. The `@features|@shared|@providers|@i18n` aliases resolve but are effectively unused — don't start using them.
-- **Exports:** feature modules export via barrel `index.ts`.
-- **Styling:** Tailwind v4 utility classes with `dark:` variants. No CSS modules, no styled-components.
-- **State:** custom hooks + `localStorage`; React Context only for theme. No external state library.
-- **Max file length:** ~300 lines (split), ~500 lines (strongly recommended).
+- **Language:** UI text via i18n keys (`t('key')`); comments and docs in English.
+- **Naming:** PascalCase components/types, camelCase functions/variables/hooks, kebab-case CSS classes. Files: PascalCase components, camelCase services/hooks/utils.
+- **Imports:** cross-module via the `@/src/…` alias (~132 sites); relative only inside a module; `import type` for types. `@features|@shared|@providers|@i18n` resolve but are unused — don't start.
+- **Exports:** barrel `index.ts` per feature — never deep-import another feature's internals.
+- **Styling / state:** Tailwind v4 with `dark:` variants; custom hooks + `localStorage`, Context only for theme. No CSS modules, no state library.
+- **Max file length:** ~300 lines (split), ~500 (strongly recommended).
 
-Full conventions, path-alias table and TubeTrend-specific architecture notes: `agent_docs/coding_conventions.md`
+Full conventions, path-alias table, architecture notes: `agent_docs/coding_conventions.md`
 
 ## Architecture Decisions
 
-Significant decisions are recorded as ADRs under `docs/adr/`. Triggers + format: `agent_docs/adr_template.md`. Always grep `docs/adr/` before contradicting an existing decision. To reverse a past decision, add a new ADR with `Status: Supersedes ADR-NNNN` — never edit accepted ADRs.
+Significant decisions are ADRs under `docs/adr/`. Triggers + format: `agent_docs/adr_template.md`. Always grep `docs/adr/` before contradicting one. To reverse a decision, add a new ADR with `Status: Supersedes ADR-NNNN` — never edit accepted ADRs.
 
 ## Git Conventions
 
 - **Branch Naming:** `feat/X`, `fix/X`, `refactor/X`, `chore/X`, `docs/X`, `dependabot/**`
-- **Commit Messages:** Conventional Commits — `type(scope): description`. Reference issue numbers (`fix: resolve crash #42`).
+- **Commit Messages:** Conventional Commits — `type(scope): description`. Reference issues (`fix: resolve crash #42`).
 - **Merge Strategy:** Squash (default). Reflected in the `pr` skill's merge phase.
-- **CI/CD:** GitHub Actions — `pr-checks` (skips `**.md` / `docs/**`), `docs-format` (Prettier-Markdown on exactly those paths, so docs-only changes stay gated — `format:check` is `prettier --check .` and includes Markdown), `docker-publish`, `electron-release`, `android-release`, `extension-release`, `cleanup-ghcr`.
-- **Formatting guard:** staged files can be auto-formatted on commit (husky + lint-staged). Setup + pitfalls: `agent_docs/ci_formatting_guard.md`. Never bypass with `--no-verify`.
+- **CI/CD:** GitHub Actions — `pr-checks` gates code (skips `**.md` / `docs/**`), `docs-format` gates exactly those paths, so docs-only changes stay gated too. Release/publish workflows: `agent_docs/deployment.md`.
+- **Cloud / routine runs:** a `claude/`-prefixed branch is always accepted; a push to any other branch is rejected when it is protected, carries someone else's open PR, or holds someone else's commits. Unattended work therefore starts on `claude/<topic>` unless the task names a branch.
+- **Formatting guard:** staged files can be auto-formatted on commit (husky + lint-staged) — `agent_docs/ci_formatting_guard.md`. Never bypass with `--no-verify`.
 
 ## Dependency Management
 
-- **New dependencies:** Only after user approval with reasoning.
-- **devDependencies:** Can be added without approval for tooling/testing.
+- **New dependencies:** only after user approval with reasoning. **devDependencies:** fine without approval for tooling/testing.
 - **Lock file:** `package-lock.json` (npm v3), always commit. CI uses `npm ci`.
-- **Dependabot:** Weekly, configured in `.github/dependabot.yml`. The `pr` skill detects dep-bot PRs by head-branch pattern.
+- **Dependabot:** weekly, `.github/dependabot.yml`. The `pr` skill detects dep-bot PRs by head-branch pattern.
 
 ## Environment Variables
 
-Only `VITE_`-prefixed vars reach the client. Copy `.env.example` → `.env.local`; restart the dev server after changes.
+Only `VITE_`-prefixed vars reach the client (`VITE_DEFAULT_SEARCH`, `VITE_GIT_COMMIT_HASH`, `VITE_GIT_BRANCH`). Copy `.env.example` → `.env.local`; restart the dev server after changes.
 
-| Variable               | Description                        | Default                 |
-| ---------------------- | ---------------------------------- | ----------------------- |
-| `VITE_DEFAULT_SEARCH`  | Default search input on app load   | Dev: `TEDx`, Prod: `""` |
-| `VITE_GIT_COMMIT_HASH` | Git commit hash (Docker build arg) | Auto-detected           |
-| `VITE_GIT_BRANCH`      | Git branch name (Docker build arg) | Auto-detected           |
-
-The **YouTube API key is never a build-time secret** — the end user enters it in the app UI; it lives only in that browser's `localStorage`.
-
-Full list + secret-location table: `.env.example`, `agent_docs/env-vars.md`
+The **YouTube API key is never a build-time secret** — the end user enters it in the app UI; it lives only in that browser's `localStorage`. Full list + secret-location table: `.env.example`, `agent_docs/env-vars.md`
 
 ## Deployment
 
-- **Trigger:** push to `main` → `docker-publish.yml` pushes `ghcr.io/fo0/tubetrend:latest`. Tag push (`v*`) → `electron-release.yml` uploads all platform artifacts to a GitHub Release.
-- **Pipeline:** `.github/workflows/`. Single environment (public Docker image + GitHub Releases), no staging.
-- **Agent scope:** Agent can push to feature branches, open/update PRs, suggest merge. **Agent does NOT trigger production deploys** without an explicit user command.
-- **Routine exception:** a session running an **owner-authorized routine** counts as an explicit user command — its merges are pre-approved _including_ any pipeline they trigger, provided the change set is non-destructive and verification passed. Destructive changes stay gated. Full wording: `agent_docs/deployment.md`.
-- **Rollback:** `.claude/skills/rollback/SKILL.md`. For deployed regressions prefer a revert-PR over re-tagging.
+- **Trigger:** push to `main` → `docker-publish.yml` pushes `ghcr.io/fo0/tubetrend:latest`. Tag push (`v*`) → `electron-release.yml` uploads all platform artifacts to a GitHub Release. Single environment, no staging.
+- **Agent scope:** push to feature branches, open/update PRs, suggest merge. **Agent does NOT trigger production deploys** without an explicit user command.
+- **Routine exception:** merges ordered by an owner-authorized routine count as an explicit user command — conditions + full gate: `.claude/skills/pr/SKILL.md → /pr merge` (single source of truth).
+- **Rollback:** `rollback` skill; for deployed regressions prefer a revert-PR over re-tagging.
 
-Deployment detail (all workflows, distribution channels): `agent_docs/deployment.md`
+All workflows + distribution channels: `agent_docs/deployment.md`
 
 ## API / Interfaces
 
-YouTube Data API v3 (REST, API-key auth). All calls go through `youtubeApiClient.ts`. Client-side persistence via `localStorage` behind the type-safe `StorageAdapter`.
-
-Full API reference: `agent_docs/api-reference.md`
+YouTube Data API v3 (REST, API-key auth), all calls through `youtubeApiClient.ts`; client-side persistence via `localStorage` behind the type-safe `StorageAdapter`. Full reference: `agent_docs/api-reference.md`
 
 ## Testing
 
-- **Framework:** not yet configured. Recommended: Vitest (ESM-native, Vite-aligned, reuses the path aliases).
-- **Run:** `npm test` (once configured). Today the gate is `format:check` → `typecheck` → `lint` → `build`.
-- **Structure:** `*.test.ts` next to source.
-- **Constraints:** agent-runnable, zero-cost, deterministic — defined once in `agent_docs/review_process.md → Test execution constraints`.
-
-Priority targets + full detail: `agent_docs/testing.md`
+**No framework configured yet** (Vitest recommended). Today's gate is `format:check` → `typecheck` → `lint` → `build`; tests would live as `*.test.ts` next to source. Constraints (agent-runnable, zero-cost, deterministic): `agent_docs/review_process.md → Test execution constraints`. Priority targets: `agent_docs/testing.md`
 
 ## External Integrations / MCPs
 
-Project-intended and common MCPs: `agent_docs/mcp_catalog.md`. Host MCP availability is never auto-detected — fall back to `Read` / `Bash` / `WebFetch` when an MCP is absent. Workflows must never hard-require an MCP.
+Project-intended and common MCPs: `agent_docs/mcp_catalog.md`. Host MCP availability is never auto-detected — fall back to `Read` / `Bash` / `WebFetch`; workflows must never hard-require one. A server an unattended cloud or routine run needs must be a committed `.mcp.json` entry or a claude.ai connector — a local `claude mcp add` does not travel with the clone.
 
-**Trigger tools never prompt.** `.claude/settings.json` → `permissions.allow` carries exactly **one `mcp__<server>__*` glob per spelling** — plus `mcp__github__(un)subscribe_pr_activity`, kept only because no `mcp__github__*` glob exists. Per-tool entries a glob already matches are redundant: they were pruned and must not be re-added. **Self-heal:** a tool that still prompts means its spelling has no glob — append `mcp__<that server>__*` and commit it. **Never write a `deny` or `ask` block.** Trust-dialog caveat + user-level fallback: `agent_docs/mcp_catalog.md`.
+**Trigger tools never prompt.** `.claude/settings.json` → `permissions.allow` holds one `mcp__<server>__*` glob per spelling, the two `mcp__github__(un)subscribe_pr_activity` entries, and one `Bash(...)` entry per automated check — so an unattended run stalls on neither scheduling nor working. Per-tool MCP entries a glob already matches are redundant: pruned, never re-add. **Self-heal:** a tool that still prompts has no glob for its spelling — append `mcp__<that server>__*` and commit it. **Never write a `deny`/`ask` block.** Rationale, trust-dialog caveat, user-level fallback: `agent_docs/mcp_catalog.md`.
 
 ## CI
 
-CI failure handling is in `.claude/skills/ci/SKILL.md`. Triggered by `/ci`, "fix CI", "check the build". Auto-routes by run state (none / running / passed / failed / stale). Never auto-reruns; always verifies fixes locally before pushing.
+CI failure handling is in `.claude/skills/ci/SKILL.md` (`/ci`, "fix CI", "check the build"). Auto-routes by run state (none / running / passed / failed / stale). Never auto-reruns; always verifies fixes locally before pushing.
 
 ## Subagents
 
-Delegate complex / parallel / read-heavy work: `Explore` (read-only search), `Plan` (strategy), `general-purpose` (write+execute), `claude-code-guide` (Claude Code itself). Direct tools beat subagents when the target is known; parallelize independent calls in one message; pass full context — subagents have no history. Full guide: `agent_docs/review_process.md → Subagent Selection`.
+`Explore` (read-only search) · `Plan` (strategy) · `general-purpose` (write+execute) · `claude-code-guide` (Claude Code itself). Direct tools beat subagents when the target is known; parallelize independent calls; pass full context — subagents have no history. A repo-local `.claude/agents/*.md` is picked up automatically, cloud sessions included; a `model:` in its frontmatter overrides model inheritance. **Orca mode** (`/orca`) makes delegation the only path and voids these thresholds. Full guide: `agent_docs/review_process.md → Subagent Selection`.
 
 ## Development Notes
 
-- **Node.js 22+** required; `npm ci` in CI/Docker.
-- **`noUnusedLocals` / `noUnusedParameters` are on** — unused variables are type errors, not warnings.
-- **ESLint does not duplicate `tsc`** — `eslint.config.js` turns off `no-unused-vars` / `no-explicit-any`; `typecheck` owns those. Its job is `react-hooks/rules-of-hooks` + `exhaustive-deps`. A cache-buster dependency (`cacheTick` & co.) needs an `eslint-disable-next-line` **with a reason** — see MEMORY.md.
-- **`moduleResolution: "bundler"`** — tooling assuming Node-style resolution needs extra config.
-- **Path aliases live in two files** — `tsconfig.json` _and_ `vite.config.ts`. Adding one means editing both.
-- **Every platform target wraps the same `dist/`** — nothing under `src/` is platform-specific.
+- **`noUnusedLocals` / `noUnusedParameters` are on** — unused variables are type errors and fail `typecheck` + the build.
+- **ESLint does not duplicate `tsc`** — its job is `react-hooks/rules-of-hooks` + `exhaustive-deps`; a cache-buster dependency needs an `eslint-disable-next-line` **with a reason**.
+- **Path aliases live in `tsconfig.json` _and_ `vite.config.ts`** — adding one means editing both.
 
-Platform detail, i18n locales, Docker, build-info: `agent_docs/platform_builds.md`
+Toolchain rules, one-build-five-targets: `agent_docs/development_notes.md` · platform/i18n/Docker: `agent_docs/platform_builds.md`
 
 ## Refactoring Notes
 
-Over the ~500-line bar: `InputSection.tsx` (~768) · `FavoriteRow.tsx` (~715) · `ApiQuotaIndicator.tsx` (~686) · `AnalyserPage.tsx` (~576). No test coverage — targets in `agent_docs/testing.md`.
-
-Split candidates, the already-resolved list (do not re-open) and the principles: `agent_docs/refactoring_guidelines.md`
+Four files sit over the ~500-line bar (largest: `InputSection.tsx` ~768) and there is no test coverage. Current list, split candidates, the resolved list (do not re-open) and the principles: `agent_docs/refactoring_guidelines.md`
 
 ## Documentation Rules
 
 After every code change, check and update:
 
-| File                    | Update when...                                                         |
-| ----------------------- | ---------------------------------------------------------------------- |
-| `CLAUDE.md`             | New components, configs, patterns, technical details                   |
-| `README.md`             | New features, endpoints, env vars for users                            |
-| `BACKLOG.md`            | Unfixed review findings (Accepted/Deferred)                            |
-| `MEMORY.md`             | Architecture decisions, gotchas, external deps, user preferences       |
-| `SCRATCHPAD.md`         | Current working context, open questions, short-lived notes             |
-| `docs/ARCHITECTURE.mmd` | Structural changes (new modules, changed data flow, new external deps) |
-| `docs/adr/`             | New significant architecture decisions                                 |
-| `.env.example`          | New environment variables                                              |
+- `CLAUDE.md` — new components, configs, patterns, technical details
+- `README.md` — new features, endpoints, env vars for users
+- `BACKLOG.md` — unfixed review findings (Accepted/Deferred)
+- `MEMORY.md` / `SCRATCHPAD.md` — stable knowledge / current working context
+- `docs/ARCHITECTURE.mmd` — structural changes (modules, data flow, external deps)
+- `docs/adr/` — new significant architecture decisions
+- `.env.example` — new environment variables
 
 ### Context budget
 
-`CLAUDE.md`, `MEMORY.md` and `SCRATCHPAD.md` load into every session, so they have a fixed char budget: **15k / 8k / 4k** target, offload at **20k / 16k / 8k**. Everything under `agent_docs/`, `.claude/skills/` and `docs/adr/` is read on demand and unbudgeted.
+`CLAUDE.md` / `MEMORY.md` / `SCRATCHPAD.md` load every session: **15k / 8k / 4k** target, offload at **20k / 16k / 8k**. `agent_docs/`, `.claude/skills/`, `docs/adr/` are on-demand and unbudgeted. Over budget → **move** content out and leave a one-line pointer; never delete to fit. Ladder + archive format: `agent_docs/context_budget.md`. The Tier-1 guard flags it after any Edit/Write — act in the same session.
 
-Over budget → **move** content out and leave a one-line pointer: CLAUDE.md sections to `agent_docs/`, memory entries to `docs/adr/` or `agent_docs/memory_archive/`. Never delete to fit. Ladder + archive format: `agent_docs/context_budget.md`. The Tier-1 budget guard flags it after any Edit/Write; act in the same session.
-
-<!-- Generated by claude-code-optimizer v1.18.0 -->
+<!-- Generated by claude-code-optimizer v1.22.0 -->

@@ -1,8 +1,27 @@
 # Platform Builds & Development Notes — Detail
 
-Offloaded from `CLAUDE.md` (2026-07-26) per `agent_docs/context_budget.md` ladder step 8 / 10. CLAUDE.md keeps the 5 most load-bearing development notes; the per-platform detail lives here.
+Offloaded from `CLAUDE.md` (2026-07-26, extended 2026-08-14) per `agent_docs/context_budget.md` ladder step 8 / 10. CLAUDE.md keeps the load-bearing development notes and a four-row stack summary; the full tech-stack table and the per-platform detail live here.
 
 TubeTrend ships one web build (`dist/`) that every other target wraps. Nothing under `src/` is platform-specific.
+
+## Tech stack (full table)
+
+| Component       | Technology                         | Version   |
+| --------------- | ---------------------------------- | --------- |
+| Language        | TypeScript (strict)                | ~6.0.3    |
+| UI Framework    | React                              | ^19.2.7   |
+| Build Tool      | Vite (+ `@vitejs/plugin-react`)    | ^8.0.16   |
+| Styling         | Tailwind CSS (`@tailwindcss/vite`) | ^4.3.1    |
+| i18n            | i18next + react-i18next            | ^26 / ^17 |
+| Icons           | Lucide React                       | ^1.18.0   |
+| Runtime         | Node.js                            | 22+       |
+| Package Manager | npm (lockfile v3)                  | —         |
+| Formatter       | Prettier                           | ^3        |
+| Linter          | ESLint 9 flat config               | ^9.39     |
+| Test Framework  | none (Vitest recommended)          | —         |
+
+Distribution wrappers: Electron ^41 (+ electron-builder ^26), Capacitor ^8 (Android / ChromeOS), a Manifest-V3 Chrome
+extension and a multi-stage Docker image — all wrapping the same `dist/`.
 
 ## Commands
 

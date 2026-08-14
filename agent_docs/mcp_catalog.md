@@ -75,6 +75,44 @@ this file on its own** — it lives outside the repo, so applying it is the user
 `add_repo`) via `permissions.ask` is likewise the user's own call — `ask` is evaluated before `allow`, so it prompts
 despite the glob. **The agent never writes a `deny` or `ask` block anywhere, project or user settings.**
 
+Two more keys earn their place in that same user-level file:
+
+| Key                                             | Effect on unattended work                                                                                                                                                                                                                                                                                                                                             |
+| ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `"askUserQuestionTimeout": "5m"`                | An unanswered `AskUserQuestion` auto-continues after 5 minutes with whatever was preselected, instead of holding the session open. The default `"never"` waits forever — that is what turns one ambiguous moment into a dead overnight run. Values: `"60s"`, `"5m"`, `"10m"`, `"never"`. **Read from user settings only**, which is why the optimizer never writes it |
+| `"permissions": {"defaultMode": "acceptEdits"}` | Optional. File edits and common filesystem commands stop prompting; every other rule above still applies. Project settings _can_ carry this, but how much a machine may do unsupervised is the owner's call, not the repo's. `bypassPermissions` skips nearly all prompts and belongs only in a container or VM you are willing to lose                               |
+
+## MCPs in cloud and routine runs
+
+A cloud session — every routine run included — starts from a fresh clone of the repository. Nothing added locally with
+`claude mcp add` travels with it, because that configuration lives on the machine, not in the repo. Two paths make a
+server reachable in an unattended run:
+
+1. **A committed `.mcp.json` at the repo root** (project scope). It is part of the clone, so it applies everywhere the
+   repo goes:
+
+   ```json
+   {
+     "mcpServers": {
+       "example": { "type": "http", "url": "https://mcp.example.com/mcp" }
+     }
+   }
+   ```
+
+   stdio servers use `"command"` + `"args"` instead of `"type"`/`"url"`. `${VAR}` and `${VAR:-default}` expand in
+   `command`, `args` and `env` — **use them for every credential**; a token committed in `.mcp.json` is a leaked token.
+   Project servers need approval before they connect: `.claude/settings.json` → `enableAllProjectMcpServers: true`
+   grants it, and like every project-level allow rule it applies only after the workspace-trust dialog is accepted.
+   TubeTrend has **no `.mcp.json` today**, so that key is deliberately absent from `.claude/settings.json` — adding the
+   file is what should add the key.
+
+2. **claude.ai connectors.** A routine includes the account's connectors, and its own form is where you narrow them to
+   what the run needs. Connector traffic goes through Anthropic's servers, so it is unaffected by the environment's
+   allowed-domains list.
+
+Neither path is a hard requirement — Selection Heuristic rule 3 still holds. A run whose MCP is missing falls back and
+says so once.
+
 ## Selection Heuristic for the Agent
 
 1. **Project MCPs first.** If the project intends an MCP for a task, use it.

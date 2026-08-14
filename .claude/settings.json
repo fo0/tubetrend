@@ -1,11 +1,17 @@
 {
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "permissions": {
     "allow": [
       "mcp__github__subscribe_pr_activity",
       "mcp__github__unsubscribe_pr_activity",
       "mcp__claude-code-remote__*",
       "mcp__Claude_Code_Remote__*",
-      "mcp__claude_code_remote__*"
+      "mcp__claude_code_remote__*",
+      "Bash(npm run format)",
+      "Bash(npm run format:check)",
+      "Bash(npm run lint)",
+      "Bash(npm run typecheck)",
+      "Bash(npm run build)"
     ]
   },
   "hooks": {
@@ -36,7 +42,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cmd=$(jq -r '.tool_input.command // empty'); if echo \"$cmd\" | grep -qE 'git commit'; then cd \"$CLAUDE_PROJECT_DIR\" && staged=$(git diff --cached --name-only 2>/dev/null | grep -E '^(\\.claude/|CLAUDE\\.md|AGENTS\\.md|agent_docs/|docs/wiki/)' || true); [ -n \"$staged\" ] && printf \"GitNexus read-only guard: agent-config/doc files are staged — confirm these are intended (not GitNexus side-effects) before committing, else 'git restore --staged' / 'git checkout --':\\n%s\\n\" \"$staged\"; fi; exit 0"
+            "command": "cmd=$(jq -r '.tool_input.command // empty'); if echo \"$cmd\" | grep -qE 'git commit'; then cd \"$CLAUDE_PROJECT_DIR\" || exit 0; staged=$(git diff --cached --name-only 2>/dev/null | grep -E '^(\\.claude/|CLAUDE\\.md|AGENTS\\.md|agent_docs/|docs/wiki/)' || true); [ -n \"$staged\" ] && jq -nc --arg m \"GitNexus read-only guard: agent-config/doc files are staged — confirm these are intended (not GitNexus side-effects) before committing, else 'git restore --staged' / 'git checkout --': $staged\" '{hookSpecificOutput:{hookEventName:\"PreToolUse\",additionalContext:$m}}'; fi; exit 0"
           }
         ]
       }
