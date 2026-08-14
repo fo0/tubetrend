@@ -4,14 +4,14 @@ import { AlertCircle, Check, Clock, Copy, ExternalLink, Heart, Type } from "luci
 import { useTranslation } from "react-i18next";
 import { formatNumber, formatTimeAgo } from "@/src/shared/lib/formatters";
 import { VideoListFilter } from "@/src/shared/components/ui/VideoListFilter";
+import { SortableHeader } from "@/src/shared/components/ui/VideoListSortHeader";
 import {
   DEFAULT_TABLE_SORT,
   isTableSort,
   NATURAL_DIRECTION,
-  SortableHeader,
   sortValue,
-} from "@/src/shared/components/ui/VideoListSortHeader";
-import type { TableSort, TableSortKey } from "@/src/shared/components/ui/VideoListSortHeader";
+} from "@/src/shared/components/ui/videoListSort";
+import type { TableSort, TableSortKey } from "@/src/shared/components/ui/videoListSort";
 import { STORAGE_KEYS } from "@/src/shared/constants";
 import { safeRead, safeWrite } from "@/src/shared/lib/storage";
 

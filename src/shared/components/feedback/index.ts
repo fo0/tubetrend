@@ -1,3 +1,4 @@
 export { ErrorBoundary } from "./ErrorBoundary";
-export { showToast, ToastHost } from "./Toast";
-export type { ToastTone } from "./Toast";
+export { ToastHost } from "./Toast";
+export { showToast } from "./toastBus";
+export type { ToastTone } from "./toastBus";

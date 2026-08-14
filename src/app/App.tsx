@@ -19,7 +19,7 @@ import {
   useHighlights,
 } from "@/src/features/dashboard/hooks/useDashboard";
 import { useSearch } from "@/src/features/search/hooks/useSearch";
-import { useTheme } from "@/src/providers/ThemeProvider";
+import { useTheme } from "@/src/providers";
 import type { FavoriteConfig } from "@/src/features/favorites/types";
 import type { VideoData } from "@/src/features/videos/types";
 import { type SearchType, TimeFrame } from "@/src/shared/types";

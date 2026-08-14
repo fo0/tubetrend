@@ -1,28 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AlertCircle, CheckCircle2, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { dispatchEvent, useEventBus } from "@/src/shared/lib/eventBus";
-
-export type ToastTone = "success" | "error";
+import { useEventBus } from "@/src/shared/lib/eventBus";
+import type { ToastTone } from "./toastBus";
 
 /** How long a toast stays on screen before it removes itself. */
 const TOAST_TIMEOUT_MS = 5000;
-
-/**
- * Show a transient, non-blocking message.
- *
- * Routed through the typed event bus (not a React context) so plain callbacks
- * and services can raise a toast without being wrapped in a provider — the same
- * pattern the quota and favorites signals already use.
- */
-export function showToast(message: string, tone: ToastTone = "success"): void {
-  if (!message) return;
-  dispatchEvent("toast", {
-    id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-    message,
-    tone,
-  });
-}
 
 interface ToastEntry {
   id: string;
