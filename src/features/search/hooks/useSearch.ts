@@ -41,11 +41,35 @@ interface PersistedAnalyserResult {
   savedAt: number;
 }
 
+/** True only for absolute http(s) URLs — the schemes an `<a href>` may safely navigate to. */
+function isHttpUrl(value: unknown): boolean {
+  if (typeof value !== "string") return false;
+  try {
+    const { protocol } = new URL(value);
+    return protocol === "http:" || protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * The persisted snapshot is rehydrated straight into the analyser view, where every
+ * entry's `url` becomes an `<a href={video.url}>` (VideoCard, VideoListTable). Treat
+ * it like any other on-disk input and reject a snapshot carrying a non-http(s) URL,
+ * so a `javascript:` URL can never reach a link in the app origin — the origin whose
+ * localStorage holds the YouTube API key. dashboardBackupService.parse() applies the
+ * identical guard to the backup-import boundary; this is the second boundary the same
+ * cached-video shape crosses. Genuine snapshots only ever contain
+ * `https://www.youtube.com/watch?v=<id>` (built in trendAnalysisService), so this is
+ * behavior-equivalent for real data and fails closed — a rejected snapshot simply
+ * starts the analyser empty, exactly like an expired one. CWE-79 / OWASP A03.
+ */
 function isPersistedAnalyserResult(value: unknown): value is PersistedAnalyserResult {
   if (!value || typeof value !== "object") return false;
   const v = value as Record<string, unknown>;
   return (
     Array.isArray(v.data) &&
+    v.data.every((entry) => isHttpUrl((entry as { url?: unknown } | null | undefined)?.url)) &&
     typeof v.channelName === "string" &&
     typeof v.savedAt === "number" &&
     (v.channelId === undefined || typeof v.channelId === "string")
