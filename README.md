@@ -211,7 +211,7 @@ Enter your API key in the app when prompted.
 - **Highlights** — Auto-surface top-performing videos
 - **Desktop App** — Portable Electron app for Windows, macOS, and Linux
 - **Chrome Extension** — Install as browser extension, opens in a new tab
-- **Multi-language** — 13 languages with auto-detection
+- **Multi-language** — English and German translations; 11 further locales auto-detect and fall back to English
 - **Dark Mode** — System-aware with manual toggle
 - **Offline-ready** — All CSS and fonts bundled locally (only YouTube API needs internet)
 - **API Quota Tracking** — Monitor YouTube API usage
