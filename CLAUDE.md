@@ -126,7 +126,7 @@ Top 5 lookup index — descriptions, event list, error handling: `agent_docs/key
 
 - **Language:** UI text via i18n keys (`t('key')`); comments and docs in English.
 - **Naming:** PascalCase components/types, camelCase functions/variables/hooks, kebab-case CSS classes. Files: PascalCase components, camelCase services/hooks/utils.
-- **Imports:** cross-module via the `@/src/…` alias (~132 sites); relative only inside a module; `import type` for types. `@features|@shared|@providers|@i18n` resolve but are unused — don't start.
+- **Imports:** cross-module via the `@/src/…` alias (~148 sites); relative only inside a module; `import type` for types. `@features|@shared|@providers|@i18n` resolve but are unused — don't start.
 - **Exports:** barrel `index.ts` per feature — never deep-import another feature's internals.
 - **Styling / state:** Tailwind v4 with `dark:` variants; custom hooks + `localStorage`, Context only for theme. No CSS modules, no state library.
 - **Max file length:** ~300 lines (split), ~500 (strongly recommended).
@@ -199,7 +199,7 @@ Toolchain rules, one-build-five-targets: `agent_docs/development_notes.md` · pl
 
 ## Refactoring Notes
 
-Four files sit over the ~500-line bar (largest: `InputSection.tsx` ~768) and there is no test coverage. Current list, split candidates, the resolved list (do not re-open) and the principles: `agent_docs/refactoring_guidelines.md`
+Five files sit over the ~500-line bar (largest: `InputSection.tsx` ~775) and there is no test coverage. Current list, split candidates, the resolved list (do not re-open) and the principles: `agent_docs/refactoring_guidelines.md`
 
 ## Documentation Rules
 
