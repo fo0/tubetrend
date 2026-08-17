@@ -10,6 +10,7 @@ import { useTranslation } from "react-i18next";
 import {
   getApiKey as getYoutubeApiKey,
   setApiKey as setYoutubeApiKey,
+  useQuotaWarning,
 } from "@/src/features/youtube";
 import { dashboardBackupService } from "@/src/features/dashboard";
 import { favoritesService } from "@/src/features/favorites";
@@ -64,6 +65,11 @@ const App: React.FC = () => {
     useFavorites();
   const { sortMode, sortOrder, cacheTick, handleSortClick, sortFavorites } = useDashboardSort();
   const { hiddenTick } = useHighlights(favorites);
+
+  // Raise a toast when the daily YouTube quota is nearly spent or gone. Lives at
+  // the root because the quota is app-wide and the header indicator — the only
+  // previous signal — is easy to miss until a search fails.
+  useQuotaWarning();
 
   const onApiKeyInvalid = useCallback(() => {
     setYoutubeApiKey("");

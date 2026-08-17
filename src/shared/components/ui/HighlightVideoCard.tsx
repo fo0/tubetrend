@@ -12,6 +12,8 @@ interface HighlightVideoCardProps {
   sourceId: string;
   // When true, the card is visually marked as "refreshing"
   isRefreshing?: boolean;
+  /** Jump to the favorite this highlight came from. Omit to keep the label static. */
+  onJumpToSource?: (sourceId: string) => void;
   // Callback to hide the card (with optional metadata for the list)
   onHide?: (
     sourceId: string,
@@ -28,6 +30,7 @@ export const HighlightVideoCard: React.FC<HighlightVideoCardProps> = ({
   sourceId,
   isRefreshing = false,
   onHide,
+  onJumpToSource,
 }) => {
   const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
@@ -145,13 +148,31 @@ export const HighlightVideoCard: React.FC<HighlightVideoCardProps> = ({
       {/* Content Area */}
       <div className="p-4 flex flex-col grow">
         <div className="mb-2">
-          <div
-            className="text-xs font-semibold text-slate-500 dark:text-slate-400 truncate"
-            title={`${sourceLabel} • Top ${sourceRank}`}
-          >
-            {sourceLabel} <span className="text-slate-400 dark:text-slate-500">•</span> Top{" "}
-            {sourceRank}
-          </div>
+          {/* Source line. A highlight is the single best video of one favorite,
+              so the obvious next question is "what else has that favorite got?"
+              — until now the only answer was scrolling the dashboard for the
+              row by hand. With a handler the line becomes the shortcut to it;
+              without one it stays the plain label it always was. */}
+          {onJumpToSource ? (
+            <button
+              type="button"
+              onClick={() => onJumpToSource(sourceId)}
+              className="block max-w-full text-left text-xs font-semibold text-slate-500 dark:text-slate-400 truncate hover:text-indigo-500 dark:hover:text-indigo-400 hover:underline underline-offset-2 transition-colors"
+              title={t("dashboard.highlights.jumpToSource", { source: sourceLabel })}
+              aria-label={t("dashboard.highlights.jumpToSource", { source: sourceLabel })}
+            >
+              {sourceLabel} <span className="text-slate-400 dark:text-slate-500">•</span> Top{" "}
+              {sourceRank}
+            </button>
+          ) : (
+            <div
+              className="text-xs font-semibold text-slate-500 dark:text-slate-400 truncate"
+              title={`${sourceLabel} • Top ${sourceRank}`}
+            >
+              {sourceLabel} <span className="text-slate-400 dark:text-slate-500">•</span> Top{" "}
+              {sourceRank}
+            </div>
+          )}
           <h3 className="text-base font-bold leading-snug line-clamp-2 min-h-[2.75rem]">
             <a
               href={video.url}

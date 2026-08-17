@@ -130,7 +130,12 @@
       "unhide": "Einblenden",
       "unhideAria": "\"{{title}}\" wieder einblenden",
       "delete": "Löschen",
-      "empty": "Noch keine Highlights verfügbar. Highlights erscheinen, sobald deine Favoriten Videos geladen haben."
+      "empty": "Noch keine Highlights verfügbar. Highlights erscheinen, sobald deine Favoriten Videos geladen haben.",
+      "jumpToSource": "Zum Favoriten \"{{source}}\" springen",
+      "copyAll": "Alle kopieren",
+      "copyAllUrls": "Alle Highlight-URLs kopieren",
+      "copyAllDone": "Alle Highlight-URLs kopiert",
+      "copyAllFailed": "Zwischenablage nicht verfügbar"
     },
     "filter": {
       "placeholder": "Favoriten filtern…",
@@ -306,6 +311,7 @@
     "label": "API-Kontingent",
     "tooltip": "YouTube API: {{used}} / {{limit}} Einheiten ({{percentage}}%)",
     "exhausted": "Kontingent erschöpft! Reset um Mitternacht PT.",
+    "nearLimit": "API-Kontingent bei {{percentage}}% — heute sind nur noch wenige Units übrig. Reset um Mitternacht PT.",
     "historyTitle": "API-Nutzung",
     "units": "Einheiten",
     "copySummary": "Kontingent-Übersicht kopieren",
