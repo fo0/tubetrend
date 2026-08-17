@@ -204,6 +204,34 @@ export function DashboardPage({
     copyAllFailedTimerRef.current = setTimeout(() => setCopyAllHighlightsFailed(false), 2500);
   };
 
+  // Jump from a highlight card (or an avatar in the quick-jump strip) to the
+  // favorite row it belongs to.
+  const scrollToFavorite = (favoriteId: string) => {
+    document
+      .getElementById(`favorite-${favoriteId}`)
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  // A filtered-out row is rendered with `hidden` (never unmounted, to protect
+  // the API quota), so scrolling to it would land on a zero-height element.
+  // Drop the filter first and let the effect below scroll once the row is back.
+  const [pendingJumpId, setPendingJumpId] = useState<string | null>(null);
+
+  const handleJumpToSource = (sourceId: string) => {
+    if (matchingFavoriteIds && !matchingFavoriteIds.has(sourceId)) {
+      setFavoriteFilter("");
+      setPendingJumpId(sourceId);
+      return;
+    }
+    scrollToFavorite(sourceId);
+  };
+
+  useEffect(() => {
+    if (!pendingJumpId) return;
+    scrollToFavorite(pendingJumpId);
+    setPendingJumpId(null);
+  }, [pendingJumpId]);
+
   const handleCopyAllHighlights = () => {
     if (highlightVideos.length === 0) return;
     // navigator.clipboard is undefined in insecure contexts (HTTP, some
@@ -402,6 +430,7 @@ export function DashboardPage({
                   onHide={(sourceId, videoId, meta) =>
                     hiddenHighlightsService.hide(sourceId, videoId, meta)
                   }
+                  onJumpToSource={handleJumpToSource}
                 />
               ))}
             </div>
@@ -506,13 +535,8 @@ export function DashboardPage({
                     favorite={fav}
                     isRefreshing={refreshingIds.has(fav.id)}
                     size="sm"
-                    onClick={() => {
-                      // Scroll to the favorite section
-                      const element = document.getElementById(`favorite-${fav.id}`);
-                      if (element) {
-                        element.scrollIntoView({ behavior: "smooth", block: "start" });
-                      }
-                    }}
+                    // Same jump the highlight cards use — one implementation.
+                    onClick={() => scrollToFavorite(fav.id)}
                   />
                 ))}
               </div>

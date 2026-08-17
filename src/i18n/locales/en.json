@@ -131,6 +131,7 @@
       "unhideAria": "Show \"{{title}}\" again",
       "delete": "Delete",
       "empty": "No highlights available yet. Highlights will appear once your favorites have loaded videos.",
+      "jumpToSource": "Jump to favorite \"{{source}}\"",
       "copyAll": "Copy all",
       "copyAllUrls": "Copy all highlight URLs",
       "copyAllDone": "All highlight URLs copied",
