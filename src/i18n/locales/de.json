@@ -311,6 +311,7 @@
     "label": "API-Kontingent",
     "tooltip": "YouTube API: {{used}} / {{limit}} Einheiten ({{percentage}}%)",
     "exhausted": "Kontingent erschöpft! Reset um Mitternacht PT.",
+    "nearLimit": "API-Kontingent bei {{percentage}}% — heute sind nur noch wenige Units übrig. Reset um Mitternacht PT.",
     "historyTitle": "API-Nutzung",
     "units": "Einheiten",
     "copySummary": "Kontingent-Übersicht kopieren",

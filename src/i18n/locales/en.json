@@ -311,6 +311,7 @@
     "label": "API Quota",
     "tooltip": "YouTube API: {{used}} / {{limit}} units ({{percentage}}%)",
     "exhausted": "Quota exhausted! Resets at midnight PT.",
+    "nearLimit": "API quota at {{percentage}}% — few units left today. Resets at midnight PT.",
     "historyTitle": "API Usage",
     "units": "Units",
     "copySummary": "Copy quota summary",
