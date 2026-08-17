@@ -61,7 +61,7 @@ tubetrend/
 
 ## Feature Module Pattern
 
-A `src/features/` module draws from the same four parts, but takes only the ones it needs — no module currently has all four:
+A `src/features/` module draws from the same four parts, but takes only the ones it needs — `youtube` is currently the only one with all four:
 
 - `services/` — pure business logic
 - `hooks/` — React-state composition
@@ -74,6 +74,6 @@ A `src/features/` module draws from the same four parts, but takes only the ones
 | `favorites` | ✅          | —        | ✅         | ✅         |
 | `search`    | —           | ✅       | —          | —          |
 | `videos`    | ✅          | —        | ✅         | ✅         |
-| `youtube`   | ✅          | —        | ✅         | ✅         |
+| `youtube`   | ✅          | ✅       | ✅         | ✅         |
 
 `search` has no barrel, so `App.tsx` and `AnalyserPage.tsx` import `hooks/useSearch` directly. Every other cross-module import goes through the barrel.
