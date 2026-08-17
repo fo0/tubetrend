@@ -130,7 +130,11 @@
       "unhide": "Show",
       "unhideAria": "Show \"{{title}}\" again",
       "delete": "Delete",
-      "empty": "No highlights available yet. Highlights will appear once your favorites have loaded videos."
+      "empty": "No highlights available yet. Highlights will appear once your favorites have loaded videos.",
+      "copyAll": "Copy all",
+      "copyAllUrls": "Copy all highlight URLs",
+      "copyAllDone": "All highlight URLs copied",
+      "copyAllFailed": "Clipboard unavailable"
     },
     "filter": {
       "placeholder": "Filter favorites…",

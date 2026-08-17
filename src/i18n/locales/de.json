@@ -130,7 +130,11 @@
       "unhide": "Einblenden",
       "unhideAria": "\"{{title}}\" wieder einblenden",
       "delete": "Löschen",
-      "empty": "Noch keine Highlights verfügbar. Highlights erscheinen, sobald deine Favoriten Videos geladen haben."
+      "empty": "Noch keine Highlights verfügbar. Highlights erscheinen, sobald deine Favoriten Videos geladen haben.",
+      "copyAll": "Alle kopieren",
+      "copyAllUrls": "Alle Highlight-URLs kopieren",
+      "copyAllDone": "Alle Highlight-URLs kopiert",
+      "copyAllFailed": "Zwischenablage nicht verfügbar"
     },
     "filter": {
       "placeholder": "Favoriten filtern…",

@@ -1,5 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Activity, BarChart3, Download, EyeOff, RefreshCw, Trash2, Upload } from "lucide-react";
+import {
+  Activity,
+  AlertCircle,
+  BarChart3,
+  Check,
+  Copy,
+  Download,
+  EyeOff,
+  RefreshCw,
+  Trash2,
+  Upload,
+} from "lucide-react";
 import { FavoriteRow } from "@/src/shared/components/ui/FavoriteRow";
 import { FavoriteAvatar } from "@/src/shared/components/ui/FavoriteAvatar";
 import { FavoritesFilter } from "@/src/shared/components/ui/FavoritesFilter";
@@ -169,6 +180,53 @@ export function DashboardPage({
   const highlightVideos = highlightVideosData.visible;
   const hiddenHighlightsCount = highlightVideosData.hiddenCount;
 
+  // Bulk copy of every visible highlight URL. The analyser's results bar has
+  // offered this for a while; the dashboard — the surface most users start on —
+  // only had a per-card copy button, so collecting the day's highlights meant
+  // one click per card. Same clipboard guard and transient icon feedback as
+  // VideoCard / HighlightVideoCard, so a blocked clipboard is never a silent
+  // no-op.
+  const [copiedAllHighlights, setCopiedAllHighlights] = useState(false);
+  const [copyAllHighlightsFailed, setCopyAllHighlightsFailed] = useState(false);
+  const copiedAllTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const copyAllFailedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (copiedAllTimerRef.current) clearTimeout(copiedAllTimerRef.current);
+      if (copyAllFailedTimerRef.current) clearTimeout(copyAllFailedTimerRef.current);
+    };
+  }, []);
+
+  const flashCopyAllFailed = () => {
+    setCopyAllHighlightsFailed(true);
+    if (copyAllFailedTimerRef.current) clearTimeout(copyAllFailedTimerRef.current);
+    copyAllFailedTimerRef.current = setTimeout(() => setCopyAllHighlightsFailed(false), 2500);
+  };
+
+  const handleCopyAllHighlights = () => {
+    if (highlightVideos.length === 0) return;
+    // navigator.clipboard is undefined in insecure contexts (HTTP, some
+    // iframes); reading .writeText off it throws synchronously, which the
+    // rejection handler below would not catch — guard the property first.
+    if (!navigator.clipboard) {
+      flashCopyAllFailed();
+      return;
+    }
+    const urls = highlightVideos.map((item) => item.video.url).join("\n");
+    navigator.clipboard.writeText(urls).then(
+      () => {
+        setCopiedAllHighlights(true);
+        if (copiedAllTimerRef.current) clearTimeout(copiedAllTimerRef.current);
+        copiedAllTimerRef.current = setTimeout(() => setCopiedAllHighlights(false), 1500);
+      },
+      () => {
+        // Clipboard write rejected (permissions / focus) — surface it.
+        flashCopyAllFailed();
+      },
+    );
+  };
+
   return (
     <div className="animate-fade-in">
       {/* Hidden file input for dashboard import */}
@@ -186,6 +244,17 @@ export function DashboardPage({
           });
         }}
       />
+
+      {/* Polite live region: the bulk-copy result is otherwise only conveyed by a
+          transient icon swap, which is silent to assistive tech (mirrors the
+          analyser's bulk actions and the per-card copy buttons). */}
+      <p className="sr-only" role="status" aria-live="polite">
+        {copyAllHighlightsFailed
+          ? t("dashboard.highlights.copyAllFailed")
+          : copiedAllHighlights
+            ? t("dashboard.highlights.copyAllDone")
+            : ""}
+      </p>
 
       {favorites.length > 0 && (
         <section
@@ -215,6 +284,36 @@ export function DashboardPage({
               )}
 
               <div className="flex flex-wrap items-center justify-end gap-2 min-w-0">
+                {highlightVideos.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleCopyAllHighlights}
+                    className={`inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-md border transition-colors ${
+                      copyAllHighlightsFailed
+                        ? "border-red-300/60 text-red-600 dark:border-red-700/40 dark:text-red-400"
+                        : "border-slate-300 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                    }`}
+                    title={
+                      copyAllHighlightsFailed
+                        ? t("dashboard.highlights.copyAllFailed")
+                        : t("dashboard.highlights.copyAllUrls")
+                    }
+                    aria-label={
+                      copyAllHighlightsFailed
+                        ? t("dashboard.highlights.copyAllFailed")
+                        : t("dashboard.highlights.copyAllUrls")
+                    }
+                  >
+                    {copyAllHighlightsFailed ? (
+                      <AlertCircle className="w-3 h-3" aria-hidden="true" />
+                    ) : copiedAllHighlights ? (
+                      <Check className="w-3 h-3 text-green-500" aria-hidden="true" />
+                    ) : (
+                      <Copy className="w-3 h-3" aria-hidden="true" />
+                    )}
+                    <span className="whitespace-nowrap">{t("dashboard.highlights.copyAll")}</span>
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={handleImportPick}
