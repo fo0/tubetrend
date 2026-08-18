@@ -46,6 +46,24 @@ function escapeCsvField(value: string): string {
 }
 
 /**
+ * Render an epoch timestamp as ISO-8601, or an empty field when it is not a
+ * finite number.
+ *
+ * `VideoData` does not only come fresh out of `analyzeVideoStats()` — it is also
+ * rehydrated from on-disk input: the persisted analyser snapshot
+ * (`tt.analyser.lastResult.v1`) and imported dashboard backups. Both boundaries
+ * validate `url`, neither validates `publishedTimestamp`, and
+ * `analyzeVideoStats()` itself forwards `new Date(...).getTime()` unguarded, so
+ * the value can be `NaN` or `undefined`. `new Date(NaN).toISOString()` throws
+ * `RangeError: Invalid time value`, which aborted the whole export — CSV and
+ * JSON alike — over a single unparseable row. Output is byte-identical for every
+ * finite timestamp, i.e. for all real data.
+ */
+function toIsoTimestamp(timestamp: number): string {
+  return Number.isFinite(timestamp) ? new Date(timestamp).toISOString() : "";
+}
+
+/**
  * Build a CSV document (header + one row per video) from analyser results.
  * Order is preserved exactly as passed in (the caller controls sorting).
  */
@@ -60,7 +78,7 @@ export function buildResultsCsv(videos: VideoData[]): string {
       video.viewsPerHour != null ? String(video.viewsPerHour) : "",
       video.engagementRate != null ? String(video.engagementRate) : "",
       String(video.trendingScore),
-      new Date(video.publishedTimestamp).toISOString(),
+      toIsoTimestamp(video.publishedTimestamp),
     ];
     return fields.map((f) => escapeCsvField(f)).join(",");
   });
@@ -146,7 +164,7 @@ export function buildResultsJson(
       viewsPerHour: video.viewsPerHour ?? null,
       engagementRate: video.engagementRate ?? null,
       trendingScore: video.trendingScore,
-      publishedAt: new Date(video.publishedTimestamp).toISOString(),
+      publishedAt: toIsoTimestamp(video.publishedTimestamp),
     })),
   };
   return JSON.stringify(payload, null, 2);

@@ -127,21 +127,6 @@ export const hiddenHighlightsService = {
   },
 
   /**
-   * Checks whether an entry exists for a sourceId (independent of the videoId).
-   */
-  hasEntry(sourceId: string): boolean {
-    return this.list().some((h) => h.sourceId === sourceId);
-  },
-
-  /**
-   * Returns the stored videoId for a sourceId, or null if none exists.
-   */
-  getHiddenVideoId(sourceId: string): string | null {
-    const entry = this.list().find((h) => h.sourceId === sourceId);
-    return entry?.videoId ?? null;
-  },
-
-  /**
    * Removes all hidden highlights.
    */
   clearAll(): void {
