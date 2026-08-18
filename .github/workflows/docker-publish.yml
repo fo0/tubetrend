@@ -45,8 +45,11 @@ jobs:
         run: npx tsc --noEmit
 
       - name: Run Linter
-        # Führt Lint nur aus, wenn das Skript existiert, um Fehler zu vermeiden
-        run: if npm run | grep -q "lint"; then npm run lint; fi
+        # Called directly, like pr-checks.yml. The previous
+        # `if npm run | grep -q "lint"` wrapper turned this gate into a silent
+        # no-op whenever the grep missed (script renamed, `npm run` output
+        # reformatted) — a quality gate that can quietly skip itself is not one.
+        run: npm run lint
 
   build-and-push:
     # Startet erst, wenn check-code erfolgreich war
