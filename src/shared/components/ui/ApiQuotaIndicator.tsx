@@ -32,7 +32,16 @@ const getOptimalTimeWindow = (
   if (history.length === 0) return fullDay;
 
   const now = Date.now();
-  const oldestEntry = Math.min(...history.map((h) => h.timestamp));
+  // Folded instead of `Math.min(...history.map(...))`: quotaService caps the
+  // history at MAX_HISTORY_ENTRIES = 10000, and spreading an array that size
+  // into a call pushes one argument per entry onto the stack — the pattern that
+  // throws "Maximum call stack size exceeded" once the engine's argument limit
+  // is reached (lowest in JavaScriptCore). Same value, no argument explosion,
+  // and one pass instead of an intermediate array.
+  const oldestEntry = history.reduce(
+    (oldest, entry) => (entry.timestamp < oldest ? entry.timestamp : oldest),
+    Infinity,
+  );
   const dataSpan = now - oldestEntry;
 
   // Choose time window based on data span with some buffer
