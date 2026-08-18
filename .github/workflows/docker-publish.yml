@@ -14,6 +14,14 @@ on:
     # Trigger auch bei Release-Tags (z.B. v20260214-1530)
   workflow_dispatch:
 
+# Same guard the other four push-triggered workflows already carry. Without it,
+# two pushes to main run two publishes in parallel and both race for the `latest`
+# tag in GHCR — whichever finishes last wins, which is not necessarily the newer
+# commit. Superseded runs are cancelled instead.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
   packages: write
