@@ -569,7 +569,11 @@ export const ApiQuotaIndicator: React.FC = () => {
 
           {/* Timeline line chart - pure line chart showing usage over time */}
           <div className="px-3 py-3 border-b border-slate-700/50">
-            <div className="text-[10px] text-slate-500 mb-2">
+            {/* slate-400, not 500/600: this panel is dark in BOTH themes, and on
+                slate-900 the 500 shade is 3.8:1 and the 600 shade 2.4:1 — under
+                the 4.5:1 WCAG 1.4.3 asks of body text, which these 9–10px labels
+                are. slate-400 clears it at ~7:1. */}
+            <div className="text-[10px] text-slate-400 mb-2">
               {t("quota.lastTimeWindow", { time: t(timeWindow.labelKey) })}
             </div>
             <div className="relative h-16">
@@ -675,7 +679,7 @@ export const ApiQuotaIndicator: React.FC = () => {
               </div>
             </div>
             {/* Time labels - dynamic based on time window */}
-            <div className="flex justify-between mt-1 text-[9px] text-slate-600">
+            <div className="flex justify-between mt-1 text-[9px] text-slate-400">
               <span>-{t(timeWindow.labelKey)}</span>
               <span>-{t(timeWindow.halfLabelKey)}</span>
               <span>{t("quota.now")}</span>
@@ -684,9 +688,9 @@ export const ApiQuotaIndicator: React.FC = () => {
 
           {/* Grouped calls by source/context */}
           <div className="px-3 py-2 max-h-48 overflow-y-auto">
-            <div className="text-[10px] text-slate-500 mb-1.5">{t("quota.usageBySource")}</div>
+            <div className="text-[10px] text-slate-400 mb-1.5">{t("quota.usageBySource")}</div>
             {groupedCalls.length === 0 ? (
-              <div className="text-xs text-slate-500 italic py-2">{t("quota.noCalls")}</div>
+              <div className="text-xs text-slate-400 italic py-2">{t("quota.noCalls")}</div>
             ) : (
               <div className="space-y-1.5">
                 {groupedCalls.map((group, index) => (
@@ -715,7 +719,7 @@ export const ApiQuotaIndicator: React.FC = () => {
                       <div className="text-slate-300 font-medium">
                         {formatNumber(group.totalUnits)} {t("quota.units")}
                       </div>
-                      <div className="text-slate-600 text-[9px]">
+                      <div className="text-slate-400 text-[9px]">
                         {group.callCount}x ·{" "}
                         {(() => {
                           const { key, count } = getRelativeTimeParts(group.lastTimestamp);
