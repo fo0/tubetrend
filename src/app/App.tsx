@@ -108,6 +108,13 @@ const App: React.FC = () => {
   // - "?" toggles the keyboard-shortcuts help popover
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
+      // Skip while a modal dialog owns the screen. Both dialogs trap Tab, so a
+      // keyboard user lands on one of their buttons — and from there a bare "d",
+      // "a", "t" or "r" fell through to these handlers and switched the page,
+      // cycled the theme or refetched every favorite behind the backdrop, with
+      // no visible cause. Only the focused input was ever protected.
+      if (isApiKeyModalOpen || isHiddenHighlightsModalOpen) return;
+
       // Skip when focus is inside an input, textarea, or contentEditable element,
       // or when a modifier key is held (avoid hijacking browser/OS shortcuts).
       const target = e.target as HTMLElement;
@@ -152,7 +159,15 @@ const App: React.FC = () => {
         refreshAll();
       }
     },
-    [activePage, favorites.length, refreshAll, theme, setTheme],
+    [
+      activePage,
+      favorites.length,
+      refreshAll,
+      theme,
+      setTheme,
+      isApiKeyModalOpen,
+      isHiddenHighlightsModalOpen,
+    ],
   );
   useEventListener("keydown", handleKeyDown, document);
 

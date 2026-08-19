@@ -57,20 +57,24 @@ export function ToastHost() {
     };
   }, []);
 
-  if (toasts.length === 0) return null;
-
+  // The live region stays mounted even with no toasts. A `role="status"` element
+  // that enters the DOM together with its text is announced unreliably — screen
+  // readers only watch regions that already existed, so the first toast after a
+  // quiet period was regularly swallowed. Empty it renders nothing visible, and
+  // `pointer-events-none` keeps the zero-height container out of the click path
+  // (each toast re-enables pointer events for its own dismiss button).
   return (
     <div
       // Polite live region: the message must reach assistive tech, but never
       // interrupt whatever the user is doing (unlike the alert it replaces).
       role="status"
       aria-live="polite"
-      className="fixed bottom-4 right-4 z-[60] flex w-[min(22rem,calc(100vw-2rem))] flex-col gap-2"
+      className="pointer-events-none fixed bottom-4 right-4 z-[60] flex w-[min(22rem,calc(100vw-2rem))] flex-col gap-2"
     >
       {toasts.map((toast) => (
         <div
           key={toast.id}
-          className={`flex items-start gap-2 rounded-xl border p-3 text-sm shadow-xl backdrop-blur-sm animate-fade-in ${
+          className={`pointer-events-auto flex items-start gap-2 rounded-xl border p-3 text-sm shadow-xl backdrop-blur-sm animate-fade-in ${
             toast.tone === "error"
               ? "border-red-500/30 bg-red-50/95 text-red-700 dark:border-red-500/30 dark:bg-red-950/90 dark:text-red-200"
               : "border-emerald-500/30 bg-emerald-50/95 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-950/90 dark:text-emerald-200"

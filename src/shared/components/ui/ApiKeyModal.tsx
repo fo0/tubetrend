@@ -123,7 +123,10 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ onSave }) => {
                   aria-label={showKey ? t("modal.apiKey.hideKey") : t("modal.apiKey.showKey")}
                   aria-pressed={showKey}
                   title={showKey ? t("modal.apiKey.hideKey") : t("modal.apiKey.showKey")}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+                  // slate-400 on the slate-50 field is 2.5:1 — under the 3:1 WCAG
+                  // 1.4.11 asks of a control's own graphic. The 400 shade stays
+                  // for dark mode, where the field is slate-950.
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
                 >
                   {showKey ? (
                     <EyeOff className="w-4 h-4" aria-hidden="true" />

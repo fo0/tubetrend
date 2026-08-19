@@ -639,7 +639,10 @@ export const InputSection: React.FC<InputSectionProps> = ({
                           e.stopPropagation();
                           removeHistoryItem(item);
                         }}
-                        className="px-3 flex items-center text-slate-400 hover:text-red-500 dark:hover:text-red-400 opacity-0 group-hover/item:opacity-100 focus:opacity-100 transition-opacity"
+                        // slate-400 on the white dropdown is 2.6:1 — under the 3:1
+                        // WCAG 1.4.11 asks of a control's own graphic. The 400
+                        // shade is kept for dark mode, where it sits on slate-900.
+                        className="px-3 flex items-center text-slate-500 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400 opacity-0 group-hover/item:opacity-100 focus:opacity-100 transition-opacity"
                         title={t("history.remove")}
                         aria-label={t("history.removeAria", { item })}
                       >

@@ -254,9 +254,15 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({
                   key={video.id}
                   className="hover:bg-slate-100/40 dark:hover:bg-slate-800/40 transition-colors group"
                 >
-                  <td className="p-4 text-center text-slate-500 font-mono font-medium" scope="row">
+                  {/* <th scope="row">, not <td scope="row">: `scope` is only
+                      valid on a header cell, so on a <td> it was inert markup and
+                      the rank never became the row's header — screen readers read
+                      each following cell without saying which video it belongs to.
+                      font-medium + text-center keep the <th> default bold/centering
+                      overridden, so the cell renders exactly as before. */}
+                  <th scope="row" className="p-4 text-center text-slate-500 font-mono font-medium">
                     {rank}
-                  </td>
+                  </th>
                   <td className="p-4">
                     <div className="flex items-center gap-4">
                       <a
