@@ -48,13 +48,18 @@ Binding rules for this repo's allowlist:
   `mcp__<that server>__*` and commit it on the current branch/PR. Never reorder or delete a glob.
 - **Never write a `deny` or `ask` block.** Unconditional, no exceptions.
 
-## Prompt-free triggers everywhere (one-time, optional)
+## Prompt-free triggers everywhere (one-time)
 
-This repo's `.claude/settings.json` already pre-approves every Claude Code Remote trigger tool. Two things can still
-get in the way: `permissions.allow` from a **project** settings file applies only after the **workspace-trust dialog**
-for this repo has been accepted, and a repo that never ran the optimizer has no such block at all. Both are solved
-once, per machine, by putting the same rules into the **user-level** `~/.claude/settings.json` — user settings carry
-no trust gate and apply to every repo:
+This repo's `.claude/settings.json` pre-approves every Claude Code Remote trigger tool — but a **project** allowlist
+grants capability, so Claude Code applies it only after this repo's **workspace-trust dialog** has been accepted. That
+single fact splits the two surfaces:
+
+| Surface                                                             | What actually happens                                                                                                                                                                                                                                                      | The one-time fix                                                                                                   |
+| ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| **Local CLI**                                                       | The trust dialog appears on the first interactive run in the repo; accept it and the repo block is live                                                                                                                                                                    | Accept the dialog — or put the rules in user settings below and cover every repo at once                           |
+| **Claude Code web / cloud** (routines, Claude Tag, mobile included) | No trust dialog exists and every session starts from a fresh container, so the block is dropped at startup — `Ignoring N permissions.allow entries from .claude/settings.json: this workspace has not been trusted` — and `delete_trigger` & friends prompt on every merge | User settings, installed by the environment's **setup script** (below). Nothing inside the repo fixes this surface |
+
+Same rules either way, in `~/.claude/settings.json` — user scope carries no trust gate and applies to every repo:
 
 ```json
 {
@@ -69,6 +74,32 @@ no trust gate and apply to every repo:
   }
 }
 ```
+
+**Cloud/web — paste this into the environment's _Setup script_** (claude.ai → Claude Code → cloud environment settings).
+It runs as root before Claude Code launches, and what it writes survives in the environment snapshot, so later sessions
+start with the file already in place. Merge-safe: it adds only what is missing.
+
+```bash
+python3 - <<'PY'
+import json, os, pathlib
+d = pathlib.Path(os.environ.get("CLAUDE_CONFIG_DIR") or (pathlib.Path.home() / ".claude"))
+d.mkdir(parents=True, exist_ok=True)
+f = d / "settings.json"
+cfg = json.loads(f.read_text()) if f.exists() else {}
+allow = cfg.setdefault("permissions", {}).setdefault("allow", [])
+for rule in ["mcp__claude-code-remote__*", "mcp__Claude_Code_Remote__*", "mcp__claude_code_remote__*",
+             "mcp__github__subscribe_pr_activity", "mcp__github__unsubscribe_pr_activity"]:
+    if rule not in allow:
+        allow.append(rule)
+f.write_text(json.dumps(cfg, indent=2))
+PY
+```
+
+Editing the setup script re-runs it and rebuilds the snapshot; the cache also expires after roughly seven days. Verify in
+the next session with `cat ~/.claude/settings.json`. **Why not a `SessionStart` hook in the repo:** hooks do run in an
+untrusted workspace, but settings are read _before_ hooks fire — the rules would apply to the session _after_ the one
+that wrote them, and in the cloud there is no session after: each gets a new container. The web surface pre-approves the
+GitHub MCP server on its own, which is why the prompts that survive there are the Claude Code Remote ones.
 
 Merge additively into this **user-level** file; never remove entries the user put there. **The agent never writes
 this file on its own** — it lives outside the repo, so applying it is the user's call. Re-gating a single tool (e.g.
@@ -125,5 +156,3 @@ says so once.
 1. Add a row to the **Project MCPs** table above with purpose + notes.
 2. If the MCP needs setup, document the install/auth steps in CLAUDE.md "External Integrations" section.
 3. If a workflow becomes MCP-dependent, add a fallback path that works without it.
-
-<!-- Generated by claude-code-optimizer v1.17.0 -->
