@@ -29,6 +29,7 @@ import { MAX_RESULTS_OPTIONS, TIME_FRAMES } from "@/src/shared/constants";
 import { useTranslation } from "react-i18next";
 import { dispatchEvent, eventBus } from "@/src/shared/lib/eventBus";
 import { formatTimeAgo } from "@/src/shared/lib/formatters";
+import { getLocale } from "@/src/shared/lib/locale";
 
 interface FavoriteRowProps {
   favorite: FavoriteConfig;
@@ -623,7 +624,13 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
             )}
             <span
               className="px-2 py-0.5 rounded-full bg-slate-100/70 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400"
-              title={lastFetchedAt ? new Date(lastFetchedAt).toLocaleString() : undefined}
+              // getLocale(), not the browser default: the badge next to it
+              // ("as of 5 min ago") follows the chosen UI language, so an exact
+              // timestamp in a different locale is a jarring mismatch. Same
+              // helper AnalyserPage and HiddenHighlightsModal already use.
+              title={
+                lastFetchedAt ? new Date(lastFetchedAt).toLocaleString(getLocale()) : undefined
+              }
             >
               {loading
                 ? t("favorites.status.refreshing")
