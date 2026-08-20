@@ -11,6 +11,7 @@ import {
   getChannelQueryType,
   getVideosFromChannel,
   searchVideosByKeyword,
+  YouTubeApiError,
 } from "@/src/features/youtube";
 import { VideoCard } from "./VideoCard";
 import {
@@ -295,7 +296,20 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
         });
       } catch (e: unknown) {
         if (!cancelled) {
-          const message = e instanceof Error ? e.message : "";
+          // Services carry an i18n descriptor instead of a ready-made sentence
+          // (YouTubeApiError.i18n) — resolve it here so the row speaks the user's
+          // language. Without this the dashboard rendered the raw developer text
+          // ("YouTube API error: ...", "HTTP error: 503") for exactly the failures
+          // the analyser already reports translated: useSearch runs the same
+          // lookup, so one and the same outage read German on one page and
+          // English on the other. The plain message stays the fallback for errors
+          // from outside our own service layer.
+          const message =
+            e instanceof YouTubeApiError && e.i18n
+              ? t(e.i18n.key, e.i18n.params)
+              : e instanceof Error
+                ? e.message
+                : "";
           setError(message || t("errors.favoriteLoad"));
         }
       } finally {
