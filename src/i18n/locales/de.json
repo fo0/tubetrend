@@ -2,7 +2,9 @@
   "appTitle": "TubeTrend",
   "language": {
     "label": "Sprache:",
-    "system": "System"
+    "system": "System",
+    "groupTranslated": "Übersetzt",
+    "groupFallback": "Fällt auf Englisch zurück"
   },
   "actions": {
     "search": "Suchen",

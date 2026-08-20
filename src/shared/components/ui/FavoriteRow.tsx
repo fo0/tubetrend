@@ -11,6 +11,7 @@ import {
   getChannelQueryType,
   getVideosFromChannel,
   searchVideosByKeyword,
+  YouTubeApiError,
 } from "@/src/features/youtube";
 import { VideoCard } from "./VideoCard";
 import {
@@ -28,6 +29,7 @@ import { MAX_RESULTS_OPTIONS, TIME_FRAMES } from "@/src/shared/constants";
 import { useTranslation } from "react-i18next";
 import { dispatchEvent, eventBus } from "@/src/shared/lib/eventBus";
 import { formatTimeAgo } from "@/src/shared/lib/formatters";
+import { getLocale } from "@/src/shared/lib/locale";
 
 interface FavoriteRowProps {
   favorite: FavoriteConfig;
@@ -295,7 +297,20 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
         });
       } catch (e: unknown) {
         if (!cancelled) {
-          const message = e instanceof Error ? e.message : "";
+          // Services carry an i18n descriptor instead of a ready-made sentence
+          // (YouTubeApiError.i18n) — resolve it here so the row speaks the user's
+          // language. Without this the dashboard rendered the raw developer text
+          // ("YouTube API error: ...", "HTTP error: 503") for exactly the failures
+          // the analyser already reports translated: useSearch runs the same
+          // lookup, so one and the same outage read German on one page and
+          // English on the other. The plain message stays the fallback for errors
+          // from outside our own service layer.
+          const message =
+            e instanceof YouTubeApiError && e.i18n
+              ? t(e.i18n.key, e.i18n.params)
+              : e instanceof Error
+                ? e.message
+                : "";
           setError(message || t("errors.favoriteLoad"));
         }
       } finally {
@@ -609,7 +624,13 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
             )}
             <span
               className="px-2 py-0.5 rounded-full bg-slate-100/70 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400"
-              title={lastFetchedAt ? new Date(lastFetchedAt).toLocaleString() : undefined}
+              // getLocale(), not the browser default: the badge next to it
+              // ("as of 5 min ago") follows the chosen UI language, so an exact
+              // timestamp in a different locale is a jarring mismatch. Same
+              // helper AnalyserPage and HiddenHighlightsModal already use.
+              title={
+                lastFetchedAt ? new Date(lastFetchedAt).toLocaleString(getLocale()) : undefined
+              }
             >
               {loading
                 ? t("favorites.status.refreshing")

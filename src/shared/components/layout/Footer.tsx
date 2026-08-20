@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Info, Calendar, GitBranch, GitCommitHorizontal } from "lucide-react";
 import { Github } from "@/src/shared/components/ui/BrandIcons";
 import { useTranslation } from "react-i18next";
+import { getLocale } from "@/src/shared/lib/locale";
 
 const buildInfo = __BUILD_INFO__;
 
@@ -9,13 +10,19 @@ export function Footer() {
   const { t } = useTranslation();
   const [showDetails, setShowDetails] = useState(false);
 
+  // getLocale(), not `undefined`: passing undefined formats in the *browser's*
+  // locale, so a German UI on an English-language browser showed "Aug 18, 2026"
+  // right next to German labels — and switching the language in-app left the
+  // date untouched. The rest of the app routes date formatting through this
+  // helper (AnalyserPage, HiddenHighlightsModal); the build-info panel did not.
+  const locale = getLocale();
   const buildDate = new Date(buildInfo.buildDate);
-  const formattedDate = buildDate.toLocaleDateString(undefined, {
+  const formattedDate = buildDate.toLocaleDateString(locale, {
     year: "numeric",
     month: "short",
     day: "numeric",
   });
-  const formattedTime = buildDate.toLocaleTimeString(undefined, {
+  const formattedTime = buildDate.toLocaleTimeString(locale, {
     hour: "2-digit",
     minute: "2-digit",
   });

@@ -24,6 +24,20 @@ type ExplicitLang = (typeof LANGS)[number]["code"];
 
 const SUPPORTED = LANGS.map((l) => l.code) as unknown as ExplicitLang[];
 
+/**
+ * The languages that actually ship a resource bundle (`src/i18n/locales/`).
+ * The other eleven entries above are in i18next's `supportedLngs` so the
+ * detector accepts them, but they have no bundle — picking one renders English
+ * through `fallbackLng` (see the comment in `src/i18n/config.ts`).
+ *
+ * The picker used to be one flat list, so choosing "Français" left a control
+ * confidently reading "Français" above an untouched English UI, with nothing to
+ * tell the user whether they had mis-clicked or the app was broken. Splitting
+ * the options into two labelled groups states the outcome before the click.
+ * Keep this list in sync with the `resources` map in `src/i18n/config.ts`.
+ */
+const TRANSLATED_LANGS: readonly ExplicitLang[] = ["en", "de"];
+
 function normalizeLangCode(lng: string): string {
   return (lng || "en").split("-")[0].toLowerCase();
 }
@@ -120,11 +134,20 @@ export const LanguageSwitcher: React.FC = () => {
           title={`${t("language.label")} ${title}`}
         >
           <option value="system">{t("language.system")}</option>
-          {LANGS.map((lng) => (
-            <option key={lng.code} value={lng.code}>
-              {lng.label}
-            </option>
-          ))}
+          <optgroup label={t("language.groupTranslated")}>
+            {LANGS.filter((lng) => TRANSLATED_LANGS.includes(lng.code)).map((lng) => (
+              <option key={lng.code} value={lng.code}>
+                {lng.label}
+              </option>
+            ))}
+          </optgroup>
+          <optgroup label={t("language.groupFallback")}>
+            {LANGS.filter((lng) => !TRANSLATED_LANGS.includes(lng.code)).map((lng) => (
+              <option key={lng.code} value={lng.code}>
+                {lng.label}
+              </option>
+            ))}
+          </optgroup>
         </select>
       </div>
     </div>
