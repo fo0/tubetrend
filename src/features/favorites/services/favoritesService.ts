@@ -14,6 +14,40 @@ const makeId = (
   return `${query.trim().toLowerCase()}|${timeFrame}|${maxResults}|${searchType}`;
 };
 
+/** True only for absolute http(s) URLs — the schemes an `<a href>` may safely navigate to. */
+function isHttpUrl(value: unknown): boolean {
+  if (typeof value !== "string") return false;
+  try {
+    const { protocol } = new URL(value);
+    return protocol === "http:" || protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * The favorites cache is localStorage content, i.e. untrusted on-disk input, and
+ * `getCache()` is the single read boundary every consumer goes through
+ * (FavoriteRow, FavoriteAvatar, DashboardPage, useDashboard, dashboardTopVideos).
+ * Its videos are rendered straight into `<a href={video.url}>` (VideoCard,
+ * VideoListTable, HighlightVideoCard), so a tampered entry carrying a
+ * `javascript:` URL would put script execution one click away in the app origin —
+ * the origin whose localStorage holds the YouTube API key. Dropping non-http(s)
+ * entries here closes the third and last boundary this cached-video shape crosses;
+ * the backup-import boundary (dashboardBackupService.parse) and the persisted
+ * analyser snapshot (useSearch) already apply the identical guard.
+ * Genuine entries only ever contain `https://www.youtube.com/watch?v=<id>` (built
+ * in trendAnalysisService), so this is behavior-equivalent for real data and fails
+ * closed. The original object is returned untouched when nothing is filtered, which
+ * keeps referential identity for the memo/cache-buster call sites. CWE-79 / OWASP A03.
+ */
+function withSafeVideoUrls<T extends FavoriteCacheEntry>(entry: T): T {
+  const videos = entry?.videos;
+  if (!Array.isArray(videos)) return entry;
+  const safe = videos.filter((video) => isHttpUrl(video?.url));
+  return safe.length === videos.length ? entry : { ...entry, videos: safe };
+}
+
 export const favoritesService = {
   list(): FavoriteConfig[] {
     const raw = safeRead<unknown[]>(STORAGE_KEYS.FAVORITES, []);
@@ -202,7 +236,8 @@ export const favoritesService = {
       STORAGE_KEYS.FAVORITES_CACHE,
       {},
     );
-    return cache[id] ?? null;
+    const entry = cache[id];
+    return entry ? withSafeVideoUrls(entry) : null;
   },
 
   setCache(
