@@ -100,28 +100,30 @@ External boundaries (YouTube API, localStorage, event bus) → always mock or us
 
 Ordered by priority.
 
+Eight categories, fixed numbering — the report table indexes into them, so the set and the order do not change. What counts as a finding inside a category is current engineering knowledge applied to this stack (React 19 / TypeScript strict / Vite), not a list maintained here; the **scope line** is what fixes the boundary between neighbouring categories.
+
 ### P0 — Critical (always fix immediately)
 
-| #   | Category                | What to check                                                                                                                                                                                                   |
-| --- | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | **Security**            | Injection (SQL/command/template), XSS, CSRF, hardcoded secrets, unsafe dynamic code execution, prototype pollution, insecure crypto, improper auth checks, unvalidated input at trust boundaries                |
-| 2   | **Bugs & Logic Errors** | Off-by-one, null/undefined access, race conditions, incorrect conditionals, missing error handling at boundaries, wrong operator precedence, async pitfalls (unhandled promises, deadlocks), unclosed resources |
+| #   | Category                | Scope — where this category starts and stops                                                                                                                                  |
+| --- | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | **Security**            | Anything an attacker could reach: untrusted input crossing a trust boundary, authn/authz, secrets, unsafe execution, crypto misuse. Deeper audit: the `security-review` skill |
+| 2   | **Bugs & Logic Errors** | Code that is wrong for inputs it is _meant_ to handle — control flow, state, concurrency, resource lifetime, unhandled failure at boundaries                                  |
 
 ### P1 — Important (fix by default, defer only if disproportionate effort)
 
-| #   | Category                    | What to check                                                                                                                                                  |
-| --- | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 3   | **Edge Cases**              | Empty collections, null/undefined, boundary values (0, -1, MAX), empty strings, concurrent access, missing/malformed input, network failures, timeout handling |
-| 4   | **Typing & Type Safety**    | Correct types, no unsafe casts without reason, proper generics, exhaustive switch/union/enum handling, return type accuracy, TypeScript strict compliance      |
-| 5   | **Modern Coding Standards** | Idiomatic React 19 / TypeScript patterns, current best practices, no deprecated APIs, clean imports with path aliases, proper naming, DRY, KISS, SRP           |
+| #   | Category                    | Scope — where this category starts and stops                                                                                                                            |
+| --- | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 3   | **Edge Cases**              | Code that is wrong for inputs it is _not_ meant to handle — empty, absent, boundary, malformed, concurrent, slow, failing                                               |
+| 4   | **Typing & Type Safety**    | Whether the type system is actually carrying its weight: honest signatures, no escape hatches without a reason, exhaustiveness where the language offers it             |
+| 5   | **Modern Coding Standards** | Idiom and currency for _this_ project's stack and version — including APIs deprecated since the code was written. Judge against what is current now, not against a list |
 
 ### P2 — Contextual (review when relevant, defer freely)
 
-| #   | Category                          | What to check                                                                                                                                                  |
-| --- | --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 6   | **Code Smells**                   | Duplicated code, dead code, high cyclomatic complexity, god objects/functions, long parameter lists, magic numbers/strings, tight coupling                     |
-| 7   | **Performance**                   | Unnecessary re-renders/recomputations, missing memoization where beneficial, N+1 queries, unbounded loops/allocations, large imports that could be lazy-loaded |
-| 8   | **Readability & Maintainability** | Clear naming, self-documenting code, consistent style, logical code organization, comments for non-obvious logic                                               |
+| #   | Category                          | Scope — where this category starts and stops                                                                                                                                  |
+| --- | --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 6   | **Code Smells**                   | Structure that will cost the next change: duplication, dead weight, oversized units, coupling                                                                                 |
+| 7   | **Performance**                   | Cost that scales the wrong way — per-item work that should be batched, repeated work that should be cached, unbounded growth. Measured or clearly reasoned, never speculative |
+| 8   | **Readability & Maintainability** | Whether the next agent can follow it: naming, organization, and comments where the _why_ is not in the code                                                                   |
 
 ## Review Execution
 
@@ -170,24 +172,21 @@ Rules:
 
 ## UI Review (only when UI code changed)
 
-- **Responsive:** Different screen sizes considered?
-- **Accessibility:** Relevant attributes present?
-- **Consistency:** Matches existing Tailwind CSS design system (dark mode, Inter font)?
+Three axes, in this priority order: **accessibility** → **responsiveness** → **consistency with the project's existing patterns** (Tailwind v4 design system, `dark:` variants, Inter font). Apply current standards for each; findings take the severity the definitions above give them (an unreachable control is a bug, not a nit).
 
 ## Subagent Delegation
 
-For isolated, clearly bounded subtasks. Pick the matching `subagent_type` instead of always defaulting to `general-purpose`. The thresholds below are the default; while **Orca mode** is on (`.claude/skills/orca/SKILL.md`) they are void — everything is delegated, whatever its size.
+**Delegation is the default, not a decision per task** — orchestrator mode is on from session start (`CLAUDE.md → Subagents`, contract in `.claude/skills/orca/SKILL.md`), so every unit of task work goes to a subagent at width 5. Where the surface allows it, **run them asynchronously and keep working** — spawn-and-block gives up most of the benefit — and step in when one goes off track or is missing context it cannot discover.
 
-| Task                            | When to delegate                                     | Recommended `subagent_type` |
-| ------------------------------- | ---------------------------------------------------- | --------------------------- |
-| **Locate code / find symbols**  | Search across >3 paths or unknown location           | `Explore`                   |
-| **Plan refactoring/feature**    | Non-trivial, >3 files affected, architectural choice | `Plan`                      |
-| **Write tests**                 | >3 test files for a feature                          | `general-purpose`           |
-| **Doc updates**                 | >2 documentation files                               | `general-purpose`           |
-| **Refactoring chunks**          | Independent subtasks of larger refactoring           | `general-purpose`           |
-| **Boilerplate generation**      | Migrations, schemas, repetitive configs              | `general-purpose`           |
-| **Independent code review**     | Second-opinion on diff                               | `general-purpose`           |
-| **Q about Claude Code/SDK/API** | "Can Claude do X?", hooks, MCP, SDK questions        | `claude-code-guide`         |
+**The review itself is delegated, and to a different agent than wrote the code.** A fresh-context reviewer reads the diff without holding the author's intent, which is why it finds what self-critique does not; the author re-reading its own work verifies what it meant, not what it wrote. Where a change can fail in more than one way, seat _distinct_ lenses from the roster (`architect`, `domain`, `security`, `docs`) rather than a second reviewer with the same one — agreement between identical lenses is not evidence of correctness. The orchestrator still owns the process: it reads the returned diffs, decides what the findings mean, and holds the commit gate.
+
+| Task                                                      | Matching `subagent_type`                                                     |
+| --------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| **Locate code / find symbols**                            | `Explore` (read-only, fast, doesn't pollute main context)                    |
+| **Design an approach**                                    | `Plan`                                                                       |
+| **Write tests · docs · refactoring chunks · boilerplate** | `general-purpose`                                                            |
+| **Independent code review**                               | `general-purpose`, or a project-specific reviewer subagent if one is defined |
+| **Q about Claude Code/SDK/API**                           | `claude-code-guide`                                                          |
 
 ## Subagent Selection Rules
 
@@ -196,7 +195,7 @@ For isolated, clearly bounded subtasks. Pick the matching `subagent_type` instea
 - **Use `general-purpose` for write+execute** tasks. Default for "do this work" delegations.
 - **Use `claude-code-guide` for tooling questions** about Claude Code itself.
 - **Parallelize independent work** — multiple Agent calls in one message when no dependencies exist.
-- **Prefer direct tools when target is known** — `Read` for known path, `grep` via Bash for known symbol.
+- **Orchestrator mode changes what "known target" means.** Reading a file for its content is task work and goes to a subagent like anything else; the orchestrator's own reads are the _verification_ kind — `git status`, `git diff`, reading a returned change. `/orca off` is what restores direct-tool-first behavior, not a judgment per call.
 - **Pass full context** — subagents have no conversation history.
 - **Trust but verify** — inspect diffs after write-capable subagents finish.
 

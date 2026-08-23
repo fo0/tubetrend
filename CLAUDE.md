@@ -46,9 +46,20 @@ Keep the English word verbatim and inflect around it: „2 Bugs gefixt", „Code
 
 - **Default model:** whatever the session resolves to — don't pin one here or in `.claude/settings.json`; `/model` switches mid-session.
 - **Fast mode** (`/fast`): same Opus model, faster output — not a downgrade.
-- **Caveman mode:** `caveman lite|full|ultra` / `stop caveman`. Chat only, never generated files.
-- **Orca mode** (orchestrator-only): `/orca` toggles it, `/orca <N>` sets the parallel width (default 5). While on, the agent does no task work itself — every unit goes to a subagent at the session's model and effort. Off by default; contract in `.claude/skills/orca/SKILL.md`.
+- **Caveman mode** (chat compression): every session starts at `full` — own section below.
+- **Orchestrator mode** (`orca`): **the default**, width 5 — see _Subagents_ below.
 - **Plan mode:** for non-trivial strategy — `Plan` subagent or `EnterPlanMode`. Not for single-step tasks.
+
+## Caveman Mode — chat compression (default `full`)
+
+In force from the first reply of every session — no activation step, no environment check. Chat, status messages and confirmations only; **never** files (`CLAUDE.md`, `agent_docs/*`, MEMORY/SCRATCHPAD/BACKLOG, skills), code, commits, PR bodies or issue comments — those keep the form _Output Languages_ defines.
+
+- **Shorten by selection, not by compression.** Cut what would not change the reader's next move — never squeeze prose into abbreviations, arrow chains (`A → B → fails`) or invented shorthand.
+- Drop articles, filler, pleasantries, hedging. Fragments are fine for a status line. Technical terms exact, code blocks unchanged, error strings verbatim.
+- **The closing summary is never compressed** — outcome first, then what it rests on, in complete sentences, each file/commit/flag in its own plain clause.
+- Normal prose for security warnings, irreversible-action confirmations, and wherever fragment order risks a misread.
+
+`caveman lite|full|ultra` switches mode mid-session; **`stop caveman` turns it off** for the rest of the session. Neither carries forward — the next session starts at `full`.
 
 ## Autonomy
 
@@ -185,9 +196,23 @@ Project-intended and common MCPs: `agent_docs/mcp_catalog.md`. Host MCP availabi
 
 CI failure handling is in `.claude/skills/ci/SKILL.md` (`/ci`, "fix CI", "check the build"). Auto-routes by run state (none / running / passed / failed / stale). Never auto-reruns; always verifies fixes locally before pushing.
 
-## Subagents
+## Subagents — orchestrator mode is the default
 
-`Explore` (read-only search) · `Plan` (strategy) · `general-purpose` (write+execute) · `claude-code-guide` (Claude Code itself). Direct tools beat subagents when the target is known; parallelize independent calls; pass full context — subagents have no history. A repo-local `.claude/agents/*.md` is picked up automatically, cloud sessions included; a `model:` in its frontmatter overrides model inheritance. **Orca mode** (`/orca`) makes delegation the only path and voids these thresholds. Full guide: `agent_docs/review_process.md → Subagent Selection`.
+**Every session starts in orchestrator mode, width 5.** The main agent decides and delegates; subagents do the task work — not a mode to switch on, but how work happens here. `/orca <N>` changes the width, `/orca off` drops to plain behavior for that session only. Contract: `.claude/skills/orca/SKILL.md`.
+
+The orchestrator keeps only the decisions — decomposition, verification of what comes back, the integration gates (commit, push, `/pr`, `/ci`, merge), the report. **The type carries tool access** (`Explore`, `Plan`, `general-purpose`, `claude-code-guide`); **the role carries the lens**, named in the wave report:
+
+| Role          | Earns a seat when                                   |
+| ------------- | --------------------------------------------------- |
+| `implementer` | always, for any code change                         |
+| `reviewer`    | any code change — **never the agent that wrote it** |
+| `architect`   | the change adds, moves or crosses a boundary        |
+| `domain`      | it encodes a domain or business rule                |
+| `product`     | the request is ambiguous or scope could drift       |
+| `docs`        | a documented interface or contract changes          |
+| `security`    | it touches trust boundaries, input or secrets       |
+
+Seat the roles the change calls for — never a standing panel, never two agents with the same lens. **Quality parity by omission:** leave model and effort off and the subagent inherits the session's — a `model:` pinned in a repo-local `.claude/agents/*.md` overrides inheritance. Disjoint write scopes per wave; verify the diff, not the summary. Full guide: `agent_docs/review_process.md → Subagent Delegation`.
 
 ## Development Notes
 
@@ -217,4 +242,4 @@ After every code change, check and update:
 
 `CLAUDE.md` / `MEMORY.md` / `SCRATCHPAD.md` load every session: **15k / 8k / 4k** target, offload at **20k / 16k / 8k**. `agent_docs/`, `.claude/skills/`, `docs/adr/` are on-demand and unbudgeted. Over budget → **move** content out and leave a one-line pointer; never delete to fit. Ladder + archive format: `agent_docs/context_budget.md`. The Tier-1 guard flags it after any Edit/Write — act in the same session.
 
-<!-- Generated by claude-code-optimizer v1.24.0 -->
+<!-- Generated by claude-code-optimizer v1.28.6 -->
