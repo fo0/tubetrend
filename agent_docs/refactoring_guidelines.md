@@ -22,13 +22,13 @@ Refactoring does NOT happen automatically. Only when:
 
 ## Known Refactoring Targets
 
-Verified against the tree on 2026-08-16. Line counts come from `find src -name '*.ts*' | xargs wc -l | sort -rn`; re-run it before trusting a number here.
+Verified against the tree on 2026-08-23. Line counts come from `find src -name '*.ts*' | xargs wc -l | sort -rn`; re-run it before trusting a number here.
 
-- **`InputSection.tsx` (~775 lines)** — the largest file in `src/`. Search form, autocomplete, search history, timeframe/max-results controls and their `localStorage` persistence in one component. Split candidates: a `useSearchHistory()` hook and a separate autocomplete dropdown component.
-- **`FavoriteRow.tsx` (~734 lines)** — God component handling data fetching, caching, UI menus, state management and event handling, with 11 interdependent `useEffect` hooks plus refs for synchronization. Should be split into sub-components (`FavoriteRowHeader`, `FavoriteRowMenus`, `FavoriteRowVideos`) and a custom `useFavoriteRowData()` hook that absorbs the effect chain.
-- **`ApiQuotaIndicator.tsx` (~726 lines)** — quota badge, history panel and time-window selection in one file. The window/aggregation math is pure and extractable into a service, which would also make it the first easily testable target here.
+- **`InputSection.tsx` (~778 lines)** — the largest file in `src/`. Search form, autocomplete, search history, timeframe/max-results controls and their `localStorage` persistence in one component. Split candidates: a `useSearchHistory()` hook and a separate autocomplete dropdown component.
+- **`FavoriteRow.tsx` (~755 lines)** — God component handling data fetching, caching, UI menus, state management and event handling, with 11 interdependent `useEffect` hooks plus refs for synchronization. Should be split into sub-components (`FavoriteRowHeader`, `FavoriteRowMenus`, `FavoriteRowVideos`) and a custom `useFavoriteRowData()` hook that absorbs the effect chain.
+- **`ApiQuotaIndicator.tsx` (~739 lines)** — quota badge, history panel and time-window selection in one file. The window/aggregation math is pure and extractable into a service, which would also make it the first easily testable target here.
 - **`AnalyserPage.tsx` (~599 lines)** — page shell plus sort/topN state, export handlers and clipboard handling. Extract the export + copy-all actions.
-- **`DashboardPage.tsx` (~519 lines)** — page shell plus favorites filtering, import/export picking, refresh-progress tracking and highlight aggregation. Newly over the 500-line bar. The `useMemo` filter/aggregation chain (`favoriteHaystacks`, `matchingFavoriteIds`, `highlightVideosData`) is the natural extraction into a `useDashboardFilters()` hook.
+- **`DashboardPage.tsx` (~642 lines)** — page shell plus favorites filtering, import/export picking, refresh-progress tracking and highlight aggregation. Newly over the 500-line bar. The `useMemo` filter/aggregation chain (`favoriteHaystacks`, `matchingFavoriteIds`, `highlightVideosData`) is the natural extraction into a `useDashboardFilters()` hook.
 - **No test coverage** — no test framework is configured. Critical services (`favoritesService`, `trendAnalysisService`, `quotaService`, `eventBus`, `storage`) would benefit from unit tests; priority order in `agent_docs/testing.md`.
 
 ### Resolved — do not re-open
