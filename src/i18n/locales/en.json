@@ -217,6 +217,8 @@
     "exportFailed": "Export failed",
     "clear": "Clear",
     "clearTitle": "Clear results",
+    "retry": "Retry",
+    "retryTitle": "Run the last search again",
     "analyzedAgo": "Analyzed {{time}}",
     "announceLoading": "Loading results…",
     "announceResults_one": "{{count}} video found for {{channel}}.",

@@ -111,6 +111,14 @@ interface UseSearchOptions {
   onApiKeyInvalid?: () => void;
 }
 
+/** The arguments of the most recent analyser run, kept so it can be repeated. */
+interface LastSearchArgs {
+  query: string;
+  timeFrame: TimeFrame;
+  maxResults: number;
+  searchType: SearchType;
+}
+
 export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
   const { t } = useTranslation();
   const [searchState, setSearchState] = useState<SearchState>(restoreInitialSearchState);
@@ -121,6 +129,11 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
   // results and persists a stale snapshot that survives the next reload. Same
   // pattern InputSection already uses for its autocomplete lookups.
   const searchRequestRef = useRef(0);
+  // Arguments of the last run, so a failed search can be repeated verbatim.
+  // A ref (not state) because nothing renders from it directly — `retrySearch`
+  // reads it at click time, and storing it in state would re-render the whole
+  // analyser on every search for no visible change.
+  const lastSearchArgsRef = useRef<LastSearchArgs | null>(null);
 
   const handleSearch = useCallback(
     async (
@@ -136,6 +149,7 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
 
       const requestId = ++searchRequestRef.current;
       const isStale = () => requestId !== searchRequestRef.current;
+      lastSearchArgsRef.current = { query, timeFrame, maxResults, searchType };
 
       setSearchState((prev) => ({
         ...prev,
@@ -255,10 +269,28 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
     [],
   );
 
+  /**
+   * Run the last search again with the exact arguments it used.
+   *
+   * Most analyser errors are transient — a dropped connection, an HTTP 5xx from
+   * YouTube, a channel lookup that returned no video list. The banner stated the
+   * problem but offered no way out: the search box sits above the fold-height
+   * results area, so recovering meant scrolling back up and pressing Search
+   * again. Nothing is retried automatically; the user decides when.
+   */
+  const retrySearch = useCallback(() => {
+    const args = lastSearchArgsRef.current;
+    if (!args) return;
+    void handleSearch(args.query, args.timeFrame, args.maxResults, args.searchType);
+  }, [handleSearch]);
+
   const resetSearch = useCallback(() => {
     // Clearing supersedes any run still in flight, otherwise its late response
     // would repopulate the view the user just emptied.
     searchRequestRef.current += 1;
+    // The cleared view has no search behind it any more — a Retry offered after
+    // this would silently resurrect a query the user just dismissed.
+    lastSearchArgsRef.current = null;
     clearPersistedResult();
     setSearchState(initialSearchState);
   }, []);
@@ -268,5 +300,6 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
     handleSearch,
     setSearchResult,
     resetSearch,
+    retrySearch,
   };
 }

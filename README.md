@@ -207,7 +207,8 @@ Enter your API key in the app when prompted.
 ## Features
 
 - **Dashboard** — Track favorite channels and keywords with cached video data
-- **Analyser** — Search and analyze videos with trend scoring
+- **Analyser** — Search and analyze videos with trend scoring; a failed search can be retried
+  straight from the error banner
 - **Highlights** — Auto-surface top-performing videos, copy their URLs or export them as CSV
 - **Desktop App** — Portable Electron app for Windows, macOS, and Linux
 - **Chrome Extension** — Install as browser extension, opens in a new tab
