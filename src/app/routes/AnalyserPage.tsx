@@ -8,6 +8,7 @@ import {
   FileJson,
   List,
   Loader2,
+  RefreshCw,
   RotateCcw,
   Trophy,
 } from "lucide-react";
@@ -50,6 +51,8 @@ interface AnalyserPageProps {
   onPickExample?: (query: string, searchType: SearchType) => void;
   /** Clear the current analysis (and its persisted snapshot), returning to the welcome screen. */
   onClearResults?: () => void;
+  /** Run the failed search again with the arguments it used. */
+  onRetrySearch?: () => void;
 }
 
 export function AnalyserPage({
@@ -58,6 +61,7 @@ export function AnalyserPage({
   onSearch,
   onPickExample,
   onClearResults,
+  onRetrySearch,
 }: AnalyserPageProps) {
   const { t } = useTranslation();
 
@@ -278,10 +282,27 @@ export function AnalyserPage({
       {searchState.error && (
         <div
           role="alert"
-          className="mb-8 bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex items-center gap-3 text-red-500 dark:text-red-200 animate-fade-in shadow-lg shadow-red-900/10"
+          className="mb-8 bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex flex-wrap items-center gap-3 text-red-500 dark:text-red-200 animate-fade-in shadow-lg shadow-red-900/10"
         >
           <AlertCircle className="w-5 h-5 shrink-0" aria-hidden="true" />
-          <p>{searchState.error}</p>
+          <p className="min-w-0 grow">{searchState.error}</p>
+          {/* One-click recovery for the transient half of these errors (dropped
+              connection, HTTP 5xx, an empty video list from a channel that does
+              have uploads). Without it the only way back was scrolling up to the
+              search box and pressing Search again. No disabled state is needed:
+              a retry clears `error` before its first await, so this whole banner
+              is gone by the time a second click could land. */}
+          {onRetrySearch && (
+            <button
+              type="button"
+              onClick={onRetrySearch}
+              className="inline-flex shrink-0 items-center gap-1.5 px-3 py-1.5 rounded-lg border border-red-500/30 text-sm font-medium transition-colors hover:bg-red-500/10"
+              title={t("results.retryTitle")}
+            >
+              <RefreshCw className="w-4 h-4" aria-hidden="true" />
+              <span>{t("results.retry")}</span>
+            </button>
+          )}
         </div>
       )}
 

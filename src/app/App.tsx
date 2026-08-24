@@ -78,7 +78,7 @@ const App: React.FC = () => {
   }, []);
 
   const searchOptions = useMemo(() => ({ onApiKeyInvalid }), [onApiKeyInvalid]);
-  const { searchState, handleSearch, setSearchResult, resetSearch } = useSearch(
+  const { searchState, handleSearch, setSearchResult, resetSearch, retrySearch } = useSearch(
     apiKey,
     searchOptions,
   );
@@ -380,6 +380,7 @@ const App: React.FC = () => {
             onSearch={handleSearch}
             onPickExample={handlePickExample}
             onClearResults={resetSearch}
+            onRetrySearch={retrySearch}
           />
         )}
       </main>

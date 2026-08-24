@@ -137,7 +137,11 @@
       "copyAll": "Alle kopieren",
       "copyAllUrls": "Alle Highlight-URLs kopieren",
       "copyAllDone": "Alle Highlight-URLs kopiert",
-      "copyAllFailed": "Zwischenablage nicht verfügbar"
+      "copyAllFailed": "Zwischenablage nicht verfügbar",
+      "exportCsv": "CSV",
+      "exportCsvTitle": "Alle Highlights als CSV exportieren",
+      "exportDone": "Highlights als CSV exportiert.",
+      "exportFailed": "Export fehlgeschlagen. Dein Browser hat die Datei blockiert."
     },
     "filter": {
       "placeholder": "Favoriten filtern…",
@@ -213,6 +217,8 @@
     "exportFailed": "Export fehlgeschlagen",
     "clear": "Zurücksetzen",
     "clearTitle": "Ergebnisse zurücksetzen",
+    "retry": "Erneut versuchen",
+    "retryTitle": "Die letzte Suche erneut ausführen",
     "analyzedAgo": "Analysiert {{time}}",
     "announceLoading": "Ergebnisse werden geladen…",
     "announceResults_one": "{{count}} Video für {{channel}} gefunden.",

@@ -94,6 +94,9 @@ export const InputSection: React.FC<InputSectionProps> = ({
 
   const searchInputRef = useRef<HTMLInputElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  // Set while focus is being returned to the input programmatically, so the
+  // focus handler below does not immediately reopen the dropdown we just closed.
+  const suppressFocusOpenRef = useRef(false);
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Generation counter for suggestion lookups: bumped whenever the input
   // changes or is cleared so pending timers / in-flight responses for an
@@ -108,6 +111,21 @@ export const InputSection: React.FC<InputSectionProps> = ({
     suggestionRequestRef.current += 1;
     if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
     setIsSearchingSuggestions(false);
+  };
+
+  /**
+   * Return focus to the search input after a dropdown entry was picked.
+   *
+   * Picking an entry unmounts the button that was clicked, so focus fell back to
+   * `<body>`: the query was filled in, but Enter did nothing and a keyboard user
+   * had to tab back into the form to run the search they had just chosen.
+   * The suppress flag keeps `handleFocus` from reopening the dropdown that the
+   * selection just closed — it would otherwise fire on this very focus call.
+   */
+  const refocusSearchInput = () => {
+    suppressFocusOpenRef.current = true;
+    searchInputRef.current?.focus();
+    suppressFocusOpenRef.current = false;
   };
 
   // Clear timers on unmount to avoid state updates on unmounted component
@@ -300,6 +318,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
     setSuggestions([]);
     setShowSuggestions(false);
     setShowHistory(false);
+    refocusSearchInput();
   };
 
   const clearInput = () => {
@@ -348,6 +367,9 @@ export const InputSection: React.FC<InputSectionProps> = ({
   };
 
   const handleFocus = () => {
+    // Focus was handed back after picking an entry — the dropdown closed on
+    // purpose, so leave it closed.
+    if (suppressFocusOpenRef.current) return;
     // Show history only when input is empty and there is history
     if (inputValue.length === 0 && history.length > 0) {
       setShowHistory(true);
@@ -366,7 +388,9 @@ export const InputSection: React.FC<InputSectionProps> = ({
   const selectHistoryItem = (val: string) => {
     setInputValue(val);
     setShowHistory(false);
-    // Do not trigger search automatically; user can submit
+    // Do not trigger search automatically; user can submit — but hand focus back
+    // so submitting is a single Enter instead of a hunt for the Search button.
+    refocusSearchInput();
   };
 
   const removeHistoryItem = (val: string) => {

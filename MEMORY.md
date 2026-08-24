@@ -26,6 +26,8 @@ Session-spanning project knowledge. **Read at session start, update during work.
 
 - **ESLint suppressions need a reason, and `exhaustive-deps` is not always right (2026-08-11)** — this codebase leans on cache-buster dependencies (`cacheTick`, `hiddenTick`, `i18n.resolvedLanguage`, refresh tokens): counters listed in a dep array but never read in the body, because the memo/effect reads `localStorage` imperatively. `exhaustive-deps` calls those "unnecessary" — removing them freezes stale data on screen. Every such site carries an `// eslint-disable-next-line react-hooks/exhaustive-deps` with the reason above it. Never strip one without checking what the imperative read is. (2026-08-11)
 
+- **`InputSection.handleFocus` reopens a dropdown on _any_ focus, programmatic ones included (2026-08-24)** — the input's `onFocus` opens the history list (empty input) or the channel suggestions (≥2 chars), so a bare `searchInputRef.current.focus()` immediately reopens the dropdown the caller just closed. `refocusSearchInput()` exists for that: it raises `suppressFocusOpenRef` around the `.focus()` call, which `handleFocus` checks first. Native `focus()` dispatches `focusin` synchronously, so the flag is still up when React's handler runs. Never call `.focus()` on that input directly.
+
 - **TypeScript 6 defaults changed (2026-04)** — TS 6 changes many defaults (types=[], esModuleInterop=true, noUncheckedSideEffectImports=true). Our tsconfig explicitly sets most values so impact was minimal. `baseUrl` is deprecated in TS 6 — removed it since paths already use `"./"` prefixes. (2026-04-06)
 
 ## Working Context
