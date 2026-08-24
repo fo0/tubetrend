@@ -25,6 +25,8 @@ import {
   hiddenHighlightsService,
   selectHighlightVideosFromFavorites,
 } from "@/src/features/dashboard";
+import { buildResultsCsv, buildResultsCsvFilename } from "@/src/features/videos";
+import { downloadBlob } from "@/src/shared/lib/download";
 import { getLocale } from "@/src/shared/lib/locale";
 import type { DashboardSortMode } from "@/src/shared/types";
 
@@ -232,6 +234,27 @@ export function DashboardPage({
     setPendingJumpId(null);
   }, [pendingJumpId]);
 
+  // Export every visible highlight as CSV. The analyser has offered CSV/JSON for
+  // its result list for a while; the dashboard could only copy bare URLs, so
+  // getting the day's highlights into a sheet meant pasting links and refilling
+  // views, velocity and score by hand. Same builder as the analyser export, so
+  // both files share one column layout and one CSV-injection guard.
+  const handleExportHighlightsCsv = () => {
+    if (highlightVideos.length === 0) return;
+    try {
+      const csv = buildResultsCsv(highlightVideos.map((item) => item.video));
+      downloadBlob(
+        buildResultsCsvFilename("highlights"),
+        new Blob([csv], { type: "text/csv;charset=utf-8;" }),
+      );
+      showToast(t("dashboard.highlights.exportDone"), "success");
+    } catch {
+      // The download can be blocked (sandboxed iframe, hardened Electron
+      // window) — never report a file the browser refused to write.
+      showToast(t("dashboard.highlights.exportFailed"), "error");
+    }
+  };
+
   const handleCopyAllHighlights = () => {
     if (highlightVideos.length === 0) return;
     // navigator.clipboard is undefined in insecure contexts (HTTP, some
@@ -340,6 +363,20 @@ export function DashboardPage({
                       <Copy className="w-3 h-3" aria-hidden="true" />
                     )}
                     <span className="whitespace-nowrap">{t("dashboard.highlights.copyAll")}</span>
+                  </button>
+                )}
+                {highlightVideos.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleExportHighlightsCsv}
+                    className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-md border transition-colors
+                             border-slate-300 text-slate-700 hover:bg-slate-100
+                             dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                    title={t("dashboard.highlights.exportCsvTitle")}
+                    aria-label={t("dashboard.highlights.exportCsvTitle")}
+                  >
+                    <Download className="w-3 h-3" aria-hidden="true" />
+                    <span className="whitespace-nowrap">{t("dashboard.highlights.exportCsv")}</span>
                   </button>
                 )}
                 <button

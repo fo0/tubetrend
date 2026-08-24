@@ -137,7 +137,11 @@
       "copyAll": "Copy all",
       "copyAllUrls": "Copy all highlight URLs",
       "copyAllDone": "All highlight URLs copied",
-      "copyAllFailed": "Clipboard unavailable"
+      "copyAllFailed": "Clipboard unavailable",
+      "exportCsv": "CSV",
+      "exportCsvTitle": "Export all highlights as CSV",
+      "exportDone": "Highlights exported as CSV.",
+      "exportFailed": "Export failed. Your browser blocked the file."
     },
     "filter": {
       "placeholder": "Filter favorites…",
