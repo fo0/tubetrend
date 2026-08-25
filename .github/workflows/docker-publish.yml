@@ -47,6 +47,15 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
+      # Format first, in the same order pr-checks.yml uses. This job guards the
+      # only workflow that publishes on its own (push to main ->
+      # ghcr.io/fo0/tubetrend:latest), so it must not be weaker than the PR
+      # gate: a commit that reaches main without passing pr-checks — a direct
+      # push, an admin merge, or a PR whose paths-ignore skipped it — would
+      # otherwise publish an image built from a tree the PR gate rejects.
+      - name: Check Prettier formatting
+        run: npm run format:check
+
       # Diese Skripte sollten in der package.json vorhanden sein
       # (Vite Standard-Templates haben 'lint' und 'tsc' meist integriert)
       - name: Run Type Check
