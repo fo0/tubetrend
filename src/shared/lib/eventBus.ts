@@ -45,17 +45,17 @@ class EventBus {
     event: K,
     ...args: EventPayload<K> extends undefined ? [] : [EventPayload<K>]
   ): void {
+    // The bus is the only delivery channel. A mirrored `window.dispatchEvent`
+    // used to run alongside this loop for consumers still written as raw
+    // `window.addEventListener`; all of those were migrated to `eventBus.on()`
+    // / `useEventBus()`, leaving the mirror with no subscriber — it only
+    // allocated a CustomEvent per emit on hot paths (`quota-updated` fires on
+    // every API call, `favorites-cache-updated` on every favorite refresh) and
+    // published internal names, `toast` among them, into the global DOM event
+    // namespace where anything sharing the window can observe or forge them.
+    // Do not reintroduce it: a new subscriber belongs on `eventBus.on()`,
+    // which is the typed path.
     this.listeners.get(event)?.forEach((cb) => cb(args[0]));
-
-    // Also dispatch a DOM event for backward compatibility
-    if (typeof window !== "undefined") {
-      try {
-        const detail = args[0] ?? undefined;
-        window.dispatchEvent(new CustomEvent(event, { detail }));
-      } catch {
-        // Ignore
-      }
-    }
   }
 }
 
@@ -71,7 +71,9 @@ export function useEventBus<K extends EventKey>(event: K, callback: EventCallbac
 }
 
 /**
- * Backward-compatible emit function that uses both eventBus and window events
+ * Emit a bus event from outside a component (services, plain callbacks).
+ * Thin alias for `eventBus.emit` — kept because it reads better at the call
+ * sites that raise events from non-React code.
  */
 export function dispatchEvent<K extends EventKey>(
   event: K,
