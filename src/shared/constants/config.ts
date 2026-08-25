@@ -4,7 +4,11 @@
 
 export const STORAGE_KEYS = {
   API_KEY: "yt_api_key",
-  CHANNEL_CACHE: "yt_channel_cache",
+  // v2: Cache key changed when entries gained a timestamp. v1 entries were bare
+  // ChannelInfo objects with nothing to expire them, so a renamed channel stayed
+  // stale forever; the new key makes them unreachable instead of feeding a shape
+  // they do not satisfy.
+  CHANNEL_CACHE: "yt_channel_cache_v2",
   // v2: Cache key changed to invalidate old entries with incorrect thumbnail URLs
   AUTOCOMPLETE_CACHE: "yt_autocomplete_cache_v2",
   QUOTA_TRACKING: "yt_quota_tracking",
@@ -28,6 +32,11 @@ export const STORAGE_KEYS = {
 
 export const CACHE_TTL = {
   AUTOCOMPLETE: 5 * 60 * 1000, // 5 minutes
+  // Channel names change rarely and the uploads playlist ID is stable, so a day
+  // bounds how long a rename can stay invisible while keeping the refetch cost
+  // low (1 quota unit for a handle/ID lookup, 100 for a name that falls back to
+  // the search endpoint) against the 10000-unit daily quota.
+  CHANNEL: 24 * 60 * 60 * 1000, // 24 hours
   FAVORITES: 120 * 60 * 1000, // 2 hours
   // Restore the last analyser result on reload only while it is reasonably fresh.
   ANALYSER_RESULT: 24 * 60 * 60 * 1000, // 24 hours

@@ -29,14 +29,47 @@ interface AutocompleteCacheEntry {
   timestamp: number;
 }
 
+interface ChannelCacheEntry {
+  info: ChannelInfo;
+  timestamp: number;
+}
+
 // Channel cache helpers
-function getChannelCache(): Record<string, ChannelInfo> {
-  return safeRead<Record<string, ChannelInfo>>(STORAGE_KEYS.CHANNEL_CACHE, {});
+function getChannelCache(): Record<string, ChannelCacheEntry> {
+  return safeRead<Record<string, ChannelCacheEntry>>(STORAGE_KEYS.CHANNEL_CACHE, {});
+}
+
+// An entry without a usable timestamp makes the age NaN, and every NaN
+// comparison is false — so treat a non-finite age as expired rather than as
+// fresh, which would pin a malformed entry in the cache forever.
+function isExpired(age: number): boolean {
+  return !Number.isFinite(age) || age > CACHE_TTL.CHANNEL;
+}
+
+function getChannelFromCache(key: string): ChannelInfo | null {
+  const cache = getChannelCache();
+  const entry = cache[key];
+  if (!entry) return null;
+
+  if (isExpired(Date.now() - entry.timestamp)) return null;
+
+  return entry.info;
 }
 
 function saveChannelToCache(key: string, data: ChannelInfo): void {
   const cache = getChannelCache();
-  cache[key] = data;
+  const now = Date.now();
+
+  // Clean expired entries. The optional chain keeps a corrupt value (a bare
+  // `null` under a key) from throwing here: it yields NaN, which isExpired
+  // classifies as expired, so the junk entry is dropped instead of persisting.
+  Object.keys(cache).forEach((cachedKey) => {
+    if (isExpired(now - cache[cachedKey]?.timestamp)) {
+      delete cache[cachedKey];
+    }
+  });
+
+  cache[key] = { info: data, timestamp: now };
   safeWrite(STORAGE_KEYS.CHANNEL_CACHE, cache);
 }
 
@@ -202,9 +235,9 @@ export async function findChannelInfo(
   const query = channelName.trim();
 
   // Check cache first
-  const cache = getChannelCache();
-  if (cache[query.toLowerCase()]) {
-    return cache[query.toLowerCase()];
+  const cached = getChannelFromCache(query.toLowerCase());
+  if (cached) {
+    return cached;
   }
 
   const queryType = getChannelQueryType(query);

@@ -48,11 +48,11 @@ All storage access goes through the type-safe `StorageAdapter` in `src/shared/li
 
 ### YouTube API Keys
 
-| Key                        | Purpose                                     | Used by               |
-| -------------------------- | ------------------------------------------- | --------------------- |
-| `yt_api_key`               | YouTube API key                             | `youtubeApiClient.ts` |
-| `yt_channel_cache`         | Channel ID <-> name resolution cache        | `channelService.ts`   |
-| `yt_autocomplete_cache_v2` | Autocomplete suggestions cache (TTL: 5 min) | `channelService.ts`   |
+| Key                        | Purpose                                              | Used by               |
+| -------------------------- | ---------------------------------------------------- | --------------------- |
+| `yt_api_key`               | YouTube API key                                      | `youtubeApiClient.ts` |
+| `yt_channel_cache_v2`      | Channel ID <-> name resolution cache (TTL: 24 hours) | `channelService.ts`   |
+| `yt_autocomplete_cache_v2` | Autocomplete suggestions cache (TTL: 5 min)          | `channelService.ts`   |
 
 ### Favorites & Dashboard
 
