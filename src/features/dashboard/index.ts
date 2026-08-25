@@ -3,12 +3,7 @@
  */
 
 // Services
-export {
-  hiddenHighlightsService,
-  type HiddenHighlight,
-  type HiddenHighlightEntry,
-  type HiddenHighlightMeta,
-} from "./services/hiddenHighlightsService";
+export { hiddenHighlightsService, type HiddenHighlight } from "./services/hiddenHighlightsService";
 export {
   dashboardBackupService,
   type DashboardBackupPayload,

@@ -20,14 +20,6 @@ export interface HiddenHighlight {
   sourceLabel?: string; // Channel/favorite name for display in the list
 }
 
-// Keep old type names for backwards compatibility
-export type HiddenHighlightEntry = HiddenHighlight;
-export interface HiddenHighlightMeta {
-  readonly title?: string;
-  readonly thumbnailUrl?: string;
-  readonly channelTitle?: string;
-}
-
 export const hiddenHighlightsService = {
   /**
    * Returns all hidden highlights.
@@ -105,48 +97,10 @@ export const hiddenHighlightsService = {
   },
 
   /**
-   * Alias for show() - for API compatibility
-   */
-  unhide(videoId: string): void {
-    this.show(videoId);
-  },
-
-  /**
-   * Alias for show() - for API compatibility
-   */
-  remove(videoId: string): void {
-    this.show(videoId);
-  },
-
-  /**
-   * Checks whether a video is hidden (by its unique videoId).
-   * Once hidden, a video stays hidden permanently.
-   */
-  isHidden(videoId: string): boolean {
-    return this.list().some((h) => h.videoId === videoId);
-  },
-
-  /**
    * Removes all hidden highlights.
    */
   clearAll(): void {
     safeWrite(HIDDEN_HIGHLIGHTS_KEY, []);
     dispatchEvent("hidden-highlights-changed");
-  },
-
-  /**
-   * Returns the count of hidden highlights.
-   */
-  count(): number {
-    return this.list().length;
-  },
-
-  /**
-   * Cleans up stale entries for sourceIds that no longer exist in favorites.
-   */
-  cleanup(validSourceIds: string[]): void {
-    const validSet = new Set(validSourceIds);
-    const list = this.list().filter((h) => validSet.has(h.sourceId));
-    safeWrite(HIDDEN_HIGHLIGHTS_KEY, list);
   },
 };
