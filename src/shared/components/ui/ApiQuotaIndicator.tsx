@@ -230,6 +230,8 @@ export const ApiQuotaIndicator: React.FC = () => {
   // flashes a warning icon instead — this one now matches them.
   const [copyFailed, setCopyFailed] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  // The panel trigger, so dismissing the panel can hand focus back to it.
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const copyFailedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -322,7 +324,13 @@ export const ApiQuotaIndicator: React.FC = () => {
   useEffect(() => {
     if (!isOpen) return;
     const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setIsOpen(false);
+      if (e.key !== "Escape") return;
+      setIsOpen(false);
+      // Hand focus back to the trigger. The panel is unmounted on close, so
+      // without this focus falls to <body> and a keyboard user resumes tabbing
+      // from the top of the page instead of the control they just used
+      // (WCAG 2.4.3).
+      triggerRef.current?.focus();
     };
     document.addEventListener("keydown", handleEsc);
     return () => document.removeEventListener("keydown", handleEsc);
@@ -457,6 +465,7 @@ export const ApiQuotaIndicator: React.FC = () => {
       </span>
       {/* Clickable indicator */}
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className="group flex items-center gap-1.5 px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors cursor-pointer"
@@ -510,9 +519,17 @@ export const ApiQuotaIndicator: React.FC = () => {
               <Activity className={`w-4 h-4 ${colors.text}`} />
               <span className="text-sm font-medium text-slate-200">{t("quota.historyTitle")}</span>
             </div>
+            {/* h-6 w-6 + inline-flex: the bare icon made this a 16x16 hit area,
+                under the 24x24 CSS px WCAG 2.5.8 asks of a pointer target. The
+                icon keeps its size; only the box around it grows. */}
             <button
-              onClick={() => setIsOpen(false)}
-              className="text-slate-400 hover:text-slate-200 transition-colors"
+              onClick={() => {
+                setIsOpen(false);
+                // Same reason as the Escape handler: this button unmounts
+                // itself, so focus has to be placed somewhere deliberate.
+                triggerRef.current?.focus();
+              }}
+              className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-slate-400 hover:text-slate-200 transition-colors"
               aria-label={t("modal.close")}
               type="button"
             >

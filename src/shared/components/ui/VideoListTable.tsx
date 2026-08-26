@@ -189,7 +189,18 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({
           totalCount={rankedVideos.length}
         />
       )}
-      <div className="overflow-x-auto">
+      {/* tabIndex + role/label: this wrapper scrolls horizontally on narrow
+          viewports, and a scroll container with no focusable ancestor can only
+          be panned with a pointer — keyboard users never reach the columns that
+          are off-screen (WCAG 2.1.1, axe `scrollable-region-focusable`). Making
+          it a named, focusable region gives them arrow-key scrolling and says
+          what they landed in. */}
+      <div
+        className="overflow-x-auto"
+        tabIndex={0}
+        role="region"
+        aria-label={t("results.moreVideos")}
+      >
         <table className="w-full text-left border-collapse" aria-label={t("results.moreVideos")}>
           <thead>
             <tr className="bg-slate-100/80 dark:bg-slate-900/80 border-b border-slate-200 dark:border-slate-800 text-xs uppercase tracking-wider text-slate-500 font-semibold">

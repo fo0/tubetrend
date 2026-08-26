@@ -458,8 +458,13 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
     if (!showTfMenu && !showMaxMenu) return;
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
+      // Return focus to whichever tag opened the menu. The menu is unmounted on
+      // close, so without this focus falls to <body> and a keyboard user
+      // resumes tabbing from the top of the page (WCAG 2.4.3).
+      const restoreFocus = showTfMenu ? tfButtonRef.current : maxButtonRef.current;
       setShowTfMenu(false);
       setShowMaxMenu(false);
+      restoreFocus?.focus();
     };
     document.addEventListener("keydown", handleEsc);
     return () => document.removeEventListener("keydown", handleEsc);

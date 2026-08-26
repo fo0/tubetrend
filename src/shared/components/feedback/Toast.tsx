@@ -89,7 +89,10 @@ export function ToastHost() {
           <button
             type="button"
             onClick={() => dismiss(toast.id)}
-            className="shrink-0 rounded-md p-0.5 opacity-70 transition-opacity hover:opacity-100 focus-visible:opacity-100"
+            // h-6 w-6: p-0.5 around a 16px icon left a 20x20 hit area, under the
+            // 24x24 CSS px WCAG 2.5.8 asks of a pointer target — and this is the
+            // only way to dismiss a toast early.
+            className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md opacity-70 transition-opacity hover:opacity-100 focus-visible:opacity-100"
             title={t("modal.close")}
             aria-label={t("modal.close")}
           >
