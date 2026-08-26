@@ -126,6 +126,8 @@ function KeyboardShortcutsHint({ activePage }: { activePage: PageType }) {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  // The popover trigger, so Escape can hand focus back to it.
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   // Allow the global "?" hotkey (dispatched from App) to toggle this popover.
   const handleToggle = useCallback(() => setIsOpen((prev) => !prev), []);
@@ -142,11 +144,15 @@ function KeyboardShortcutsHint({ activePage }: { activePage: PageType }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
 
-  // Close on Escape
+  // Close on Escape, then return focus to the trigger: the panel is unmounted
+  // on close, so without the explicit focus() a keyboard user is dropped on
+  // <body> and resumes tabbing from the top of the page (WCAG 2.4.3).
   useEffect(() => {
     if (!isOpen) return;
     const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setIsOpen(false);
+      if (e.key !== "Escape") return;
+      setIsOpen(false);
+      triggerRef.current?.focus();
     };
     document.addEventListener("keydown", handleEsc);
     return () => document.removeEventListener("keydown", handleEsc);
@@ -155,6 +161,7 @@ function KeyboardShortcutsHint({ activePage }: { activePage: PageType }) {
   return (
     <div className="relative hidden md:block" ref={ref}>
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
         className="flex items-center gap-1 px-2 py-1 rounded-md text-xs text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border border-transparent hover:border-slate-200 dark:hover:border-slate-700"
