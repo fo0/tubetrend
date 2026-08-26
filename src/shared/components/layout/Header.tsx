@@ -29,7 +29,22 @@ export function Header({
 
   return (
     <header className="bg-white/80 border-b border-slate-200 dark:bg-slate-900/80 dark:border-slate-800 backdrop-blur-md sticky top-0 z-50">
-      <div className="max-w-[101.2rem] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      {/* Two mechanisms, in this order:
+          1. Below `md` the labelled controls collapse to icon-only (each keeps an
+             explicit aria-label). That is what this header already does for the
+             <h1>, ThemeToggle and the LanguageSwitcher label, and it is what
+             keeps the bar on ONE row at every width where the content can fit —
+             it is sticky, so a second row costs scarce vertical space, and
+             DashboardPage's `scroll-mt-20` quick-jump offset is documented
+             against this bar being 4rem tall.
+          2. `flex-wrap` is the guard below that, matching DashboardPage and
+             AnalyserPage. On the narrowest phones even the collapsed row does not
+             fit, and a second line is strictly better than controls pushed off
+             the side of the viewport.
+          `min-h-16` instead of a fixed `h-16` so a wrapped or grown row gets
+          taller rather than being clipped by it; 4rem stays the height in the
+          common case. */}
+      <div className="max-w-[101.2rem] mx-auto px-4 sm:px-6 lg:px-8 min-h-16 flex flex-wrap items-center justify-between gap-y-2">
         <div className="flex items-center gap-3">
           <div className="bg-gradient-to-br from-red-600 to-red-700 p-2 rounded-lg shadow-lg shadow-red-500/20">
             <BarChart3 className="w-5 h-5 text-white" />
@@ -41,11 +56,15 @@ export function Header({
             {t("appTitle")}
           </h1>
 
-          <nav aria-label={t("nav.main")} className="ml-4 flex items-center gap-2">
+          <nav aria-label={t("nav.main")} className="ml-1 md:ml-4 flex items-center gap-2">
             <button
               type="button"
               onClick={() => onPageChange("dashboard")}
               aria-current={activePage === "dashboard" ? "page" : undefined}
+              // The visible label is hidden below `md`, so the button needs an
+              // explicit accessible name — `title` alone is not one for touch or
+              // screen-reader users.
+              aria-label={t("nav.dashboard")}
               className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium border transition-colors
                 ${
                   activePage === "dashboard"
@@ -55,13 +74,14 @@ export function Header({
               `}
               title={t("nav.dashboard")}
             >
-              <LayoutDashboard className="w-4 h-4" />
-              <span>{t("nav.dashboard")}</span>
+              <LayoutDashboard className="w-4 h-4" aria-hidden="true" />
+              <span className="hidden md:inline">{t("nav.dashboard")}</span>
             </button>
             <button
               type="button"
               onClick={() => onPageChange("analyser")}
               aria-current={activePage === "analyser" ? "page" : undefined}
+              aria-label={t("nav.analyser")}
               className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium border transition-colors
                 ${
                   activePage === "analyser"
@@ -71,13 +91,13 @@ export function Header({
               `}
               title={t("nav.analyser")}
             >
-              <BarChart3 className="w-4 h-4" />
-              <span>{t("nav.analyser")}</span>
+              <BarChart3 className="w-4 h-4" aria-hidden="true" />
+              <span className="hidden md:inline">{t("nav.analyser")}</span>
             </button>
           </nav>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 md:gap-4">
           <KeyboardShortcutsHint activePage={activePage} />
           {isLoading ? (
             <div
@@ -86,7 +106,11 @@ export function Header({
               aria-live="polite"
             >
               <Activity className="w-3 h-3 animate-spin" aria-hidden="true" />
-              <span>
+              {/* sr-only below `md`, not `hidden`: this is the text of a live
+                  region, so removing it from the accessibility tree would leave
+                  the status pill announcing nothing on exactly the screens where
+                  the spinner is the only visible cue. Same trick as the <h1>. */}
+              <span className="sr-only md:not-sr-only">
                 {loadingStep === "fetching_youtube"
                   ? t("loadingState.fetchingYoutube")
                   : t("loadingState.analyzing")}
@@ -102,9 +126,10 @@ export function Header({
                              border-slate-300 text-slate-700 hover:bg-slate-100
                              dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800"
                   title={t("actions.resetApiKey")}
+                  aria-label={t("actions.resetApiKey")}
                 >
-                  <Settings className="w-3 h-3" />
-                  <span>{t("actions.resetApiKey")}</span>
+                  <Settings className="w-3 h-3" aria-hidden="true" />
+                  <span className="hidden md:inline">{t("actions.resetApiKey")}</span>
                 </button>
               )}
             </>
