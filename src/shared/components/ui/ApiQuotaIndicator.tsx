@@ -510,9 +510,12 @@ export const ApiQuotaIndicator: React.FC = () => {
               <Activity className={`w-4 h-4 ${colors.text}`} />
               <span className="text-sm font-medium text-slate-200">{t("quota.historyTitle")}</span>
             </div>
+            {/* h-6 w-6 + inline-flex: the bare icon made this a 16x16 hit area,
+                under the 24x24 CSS px WCAG 2.5.8 asks of a pointer target. The
+                icon keeps its size; only the box around it grows. */}
             <button
               onClick={() => setIsOpen(false)}
-              className="text-slate-400 hover:text-slate-200 transition-colors"
+              className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-slate-400 hover:text-slate-200 transition-colors"
               aria-label={t("modal.close")}
               type="button"
             >
