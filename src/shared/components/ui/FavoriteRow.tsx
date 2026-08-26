@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import type { FavoriteConfig } from "@/src/features/favorites";
 import type { VideoData } from "@/src/features/videos";
 import { SearchType } from "@/src/shared/types";
@@ -27,6 +27,7 @@ import {
 import { Youtube } from "@/src/shared/components/ui/BrandIcons";
 import { MAX_RESULTS_OPTIONS, TIME_FRAMES } from "@/src/shared/constants";
 import { useTranslation } from "react-i18next";
+import { useListboxKeyboard } from "@/src/shared/hooks";
 import { dispatchEvent, eventBus } from "@/src/shared/lib/eventBus";
 import { formatTimeAgo } from "@/src/shared/lib/formatters";
 import { getLocale } from "@/src/shared/lib/locale";
@@ -451,24 +452,33 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
     return () => document.removeEventListener("mousedown", onDocClick);
   }, [showTfMenu, showMaxMenu]);
 
-  // Close an open popover on Escape (keyboard dismissal). Consistent with the
-  // app's other popovers (quota panel, search dropdowns, shortcuts hint); these
-  // two menus previously could only be closed via an outside mouse click.
-  useEffect(() => {
-    if (!showTfMenu && !showMaxMenu) return;
-    const handleEsc = (e: KeyboardEvent) => {
-      if (e.key !== "Escape") return;
-      // Return focus to whichever tag opened the menu. The menu is unmounted on
-      // close, so without this focus falls to <body> and a keyboard user
-      // resumes tabbing from the top of the page (WCAG 2.4.3).
-      const restoreFocus = showTfMenu ? tfButtonRef.current : maxButtonRef.current;
-      setShowTfMenu(false);
-      setShowMaxMenu(false);
-      restoreFocus?.focus();
-    };
-    document.addEventListener("keydown", handleEsc);
-    return () => document.removeEventListener("keydown", handleEsc);
-  }, [showTfMenu, showMaxMenu]);
+  // Both tag menus are APG listboxes: arrow keys move the selection, Home/End
+  // jump to the edges, Escape closes and hands focus back to the tag that opened
+  // the menu. Escape used to live in a hand-rolled effect here; it now comes
+  // from the shared hook together with the rest of the pattern, so the two menus
+  // cannot drift apart. `useId` keeps the generated option ids unique across the
+  // several FavoriteRows a dashboard renders at once.
+  const rowId = useId();
+  const closeTfMenu = useCallback(() => setShowTfMenu(false), []);
+  const closeMaxMenu = useCallback(() => setShowMaxMenu(false), []);
+
+  const tfListbox = useListboxKeyboard({
+    isOpen: showTfMenu,
+    itemCount: TIME_FRAMES.length,
+    selectedIndex: TIME_FRAMES.findIndex((opt) => opt.value === currentTimeFrame),
+    onClose: closeTfMenu,
+    triggerRef: tfButtonRef,
+    idPrefix: `${rowId}-timeframe`,
+  });
+
+  const maxListbox = useListboxKeyboard({
+    isOpen: showMaxMenu,
+    itemCount: MAX_RESULTS_OPTIONS.length,
+    selectedIndex: MAX_RESULTS_OPTIONS.findIndex((opt) => opt.value === currentMax),
+    onClose: closeMaxMenu,
+    triggerRef: maxButtonRef,
+    idPrefix: `${rowId}-maxresults`,
+  });
 
   const handleChangeTimeFrame = (tf: TimeFrame) => {
     setShowTfMenu(false);
@@ -554,13 +564,15 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
                   className="max-h-60 overflow-auto"
                   role="listbox"
                   aria-label={t("favorites.changeTimeFrame")}
+                  {...tfListbox.listboxProps}
                 >
-                  {TIME_FRAMES.map((opt) => (
+                  {TIME_FRAMES.map((opt, index) => (
                     <button
                       key={opt.value}
                       type="button"
                       role="option"
                       aria-selected={opt.value === currentTimeFrame}
+                      {...tfListbox.getOptionProps(index)}
                       onClick={() => handleChangeTimeFrame(opt.value)}
                       className={`w-full text-left px-3 py-2 rounded-md text-sm ${opt.value === currentTimeFrame ? "bg-indigo-600 text-white" : "text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"}`}
                     >
@@ -611,13 +623,15 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
                   className="max-h-60 overflow-auto"
                   role="listbox"
                   aria-label={t("favorites.changeMaxResults")}
+                  {...maxListbox.listboxProps}
                 >
-                  {MAX_RESULTS_OPTIONS.map((opt) => (
+                  {MAX_RESULTS_OPTIONS.map((opt, index) => (
                     <button
                       key={opt.value}
                       type="button"
                       role="option"
                       aria-selected={opt.value === currentMax}
+                      {...maxListbox.getOptionProps(index)}
                       onClick={() => handleChangeMax(opt.value)}
                       className={`w-full text-left px-3 py-2 rounded-md text-sm ${opt.value === currentMax ? "bg-indigo-600 text-white" : "text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"}`}
                     >
