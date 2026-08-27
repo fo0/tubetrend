@@ -215,6 +215,7 @@
     "exportCsv": "Export results as CSV",
     "exportJson": "Export results as JSON",
     "exportFailed": "Export failed",
+    "exportDone": "Results exported",
     "clear": "Clear",
     "clearTitle": "Clear results",
     "retry": "Retry",
