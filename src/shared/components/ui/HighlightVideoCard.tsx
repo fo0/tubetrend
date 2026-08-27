@@ -136,7 +136,15 @@ export const HighlightVideoCard: React.FC<HighlightVideoCardProps> = ({
                 sourceLabel,
               });
             }}
-            className="absolute top-1.5 right-1.5 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white/70 hover:text-white backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
+            // pointer-coarse:opacity-100 — Tailwind's `hover:` variant compiles to
+            // `@media (hover: hover)`, so on a touch device `group-hover:opacity-100`
+            // never matches and this button stayed at `opacity-0`: fully invisible,
+            // with no way to discover it. That made "hide highlight" unreachable on
+            // the Android/ChromeOS APK and on any phone or tablet opening the web
+            // build — and its only counterpart, the "Hidden" toolbar button, only
+            // appears once something has been hidden. Coarse-pointer devices now get
+            // the button permanently; hover devices keep the reveal-on-hover they had.
+            className="absolute top-1.5 right-1.5 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white/70 hover:text-white backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 focus:opacity-100 pointer-coarse:opacity-100"
             title={t("dashboard.highlights.hide")}
             aria-label={t("dashboard.highlights.hide")}
           >
