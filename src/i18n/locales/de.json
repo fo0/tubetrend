@@ -215,6 +215,7 @@
     "exportCsv": "Ergebnisse als CSV exportieren",
     "exportJson": "Ergebnisse als JSON exportieren",
     "exportFailed": "Export fehlgeschlagen",
+    "exportDone": "Ergebnisse exportiert",
     "clear": "Zurücksetzen",
     "clearTitle": "Ergebnisse zurücksetzen",
     "retry": "Erneut versuchen",
@@ -269,6 +270,8 @@
     "deleteApiKey": "Möchtest du den API Key wirklich löschen?",
     "restoreAllHidden_one": "Das {{count}} ausgeblendete Video wieder einblenden?",
     "restoreAllHidden_other": "Alle {{count}} ausgeblendeten Videos wieder einblenden?",
+    "clearResults_one": "Aktuelle Analyse verwerfen ({{count}} Video)? Die Suche erneut auszuführen verbraucht YouTube-API-Quota.",
+    "clearResults_other": "Aktuelle Analyse verwerfen ({{count}} Videos)? Die Suche erneut auszuführen verbraucht YouTube-API-Quota.",
     "importDashboardReplace": "Import ersetzt deine aktuellen Dashboard-Favoriten und den Cache ({{count}} Favoriten). Fortfahren?"
   },
   "backup": {

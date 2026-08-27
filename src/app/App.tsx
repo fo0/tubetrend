@@ -278,6 +278,19 @@ const App: React.FC = () => {
     loadFavorites();
   }, [favorites.length, loadFavorites, t]);
 
+  // Clearing the analyser drops the result list AND its persisted snapshot, so
+  // getting it back means running the search again — which spends YouTube API
+  // quota (a channel search costs 100 of the 10,000 daily units). Every other
+  // destructive action in the app confirms first (remove favorite, clear all
+  // favorites, delete API key, replace-on-import, clear search history); this
+  // one deleted on the first click. Nothing to confirm while the screen is
+  // already empty, so the guard only applies once results are on screen.
+  const handleClearResults = useCallback(() => {
+    const count = searchState.data?.length ?? 0;
+    if (count > 0 && !window.confirm(t("confirm.clearResults", { count }))) return;
+    resetSearch();
+  }, [searchState.data, resetSearch, t]);
+
   const handleAnalyzeFavorite = useCallback(
     (
       favorite: FavoriteConfig,
@@ -379,7 +392,7 @@ const App: React.FC = () => {
             externalInputValues={externalInputValues}
             onSearch={handleSearch}
             onPickExample={handlePickExample}
-            onClearResults={resetSearch}
+            onClearResults={handleClearResults}
             onRetrySearch={retrySearch}
           />
         )}

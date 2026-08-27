@@ -175,10 +175,21 @@ export function AnalyserPage({
   const [copyAllFailed, setCopyAllFailed] = useState(false);
   const [exportFailed, setExportFailed] = useState(false);
   const [exportJsonFailed, setExportJsonFailed] = useState(false);
+  // A successful export was the only action in this bar with no feedback at all:
+  // the file lands in the download folder, which the app cannot see, so nothing
+  // on screen changed and the user had no way to tell a written file from a
+  // silently blocked one. Both counterparts already confirm — the copy button
+  // beside them flashes a checkmark, the dashboard's highlight export raises a
+  // toast. Same transient checkmark as `copiedAll`, one flag per format so the
+  // confirmation appears on the button that was pressed.
+  const [exportDone, setExportDone] = useState(false);
+  const [exportJsonDone, setExportJsonDone] = useState(false);
   const copiedAllTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const copyFailedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const exportFailedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const exportJsonFailedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const exportDoneTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const exportJsonDoneTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     return () => {
@@ -186,6 +197,8 @@ export function AnalyserPage({
       if (copyFailedTimerRef.current) clearTimeout(copyFailedTimerRef.current);
       if (exportFailedTimerRef.current) clearTimeout(exportFailedTimerRef.current);
       if (exportJsonFailedTimerRef.current) clearTimeout(exportJsonFailedTimerRef.current);
+      if (exportDoneTimerRef.current) clearTimeout(exportDoneTimerRef.current);
+      if (exportJsonDoneTimerRef.current) clearTimeout(exportJsonDoneTimerRef.current);
     };
   }, []);
 
@@ -201,6 +214,9 @@ export function AnalyserPage({
       const csv = buildResultsCsv(sortedVideos);
       const filename = buildResultsCsvFilename(searchState.channelName);
       downloadBlob(filename, new Blob([csv], { type: "text/csv;charset=utf-8;" }));
+      setExportDone(true);
+      if (exportDoneTimerRef.current) clearTimeout(exportDoneTimerRef.current);
+      exportDoneTimerRef.current = setTimeout(() => setExportDone(false), 1500);
     } catch {
       // Surface download errors (e.g. blocked environments) instead of failing silently.
       setExportFailed(true);
@@ -215,6 +231,9 @@ export function AnalyserPage({
       const json = buildResultsJson(sortedVideos, searchState.channelName);
       const filename = buildResultsJsonFilename(searchState.channelName);
       downloadBlob(filename, new Blob([json], { type: "application/json;charset=utf-8;" }));
+      setExportJsonDone(true);
+      if (exportJsonDoneTimerRef.current) clearTimeout(exportJsonDoneTimerRef.current);
+      exportJsonDoneTimerRef.current = setTimeout(() => setExportJsonDone(false), 1500);
     } catch {
       // Surface download errors (e.g. blocked environments) instead of failing silently.
       setExportJsonFailed(true);
@@ -254,7 +273,9 @@ export function AnalyserPage({
       ? t("results.copyAllDone")
       : exportFailed || exportJsonFailed
         ? t("results.exportFailed")
-        : "";
+        : exportDone || exportJsonDone
+          ? t("results.exportDone")
+          : "";
 
   return (
     <>
@@ -411,6 +432,8 @@ export function AnalyserPage({
                 >
                   {exportFailed ? (
                     <AlertCircle className="w-4 h-4" aria-hidden="true" />
+                  ) : exportDone ? (
+                    <Check className="w-4 h-4 text-green-500" aria-hidden="true" />
                   ) : (
                     <Download className="w-4 h-4" aria-hidden="true" />
                   )}
@@ -433,6 +456,8 @@ export function AnalyserPage({
                 >
                   {exportJsonFailed ? (
                     <AlertCircle className="w-4 h-4" aria-hidden="true" />
+                  ) : exportJsonDone ? (
+                    <Check className="w-4 h-4 text-green-500" aria-hidden="true" />
                   ) : (
                     <FileJson className="w-4 h-4" aria-hidden="true" />
                   )}

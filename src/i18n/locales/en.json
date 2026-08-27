@@ -215,6 +215,7 @@
     "exportCsv": "Export results as CSV",
     "exportJson": "Export results as JSON",
     "exportFailed": "Export failed",
+    "exportDone": "Results exported",
     "clear": "Clear",
     "clearTitle": "Clear results",
     "retry": "Retry",
@@ -269,6 +270,8 @@
     "deleteApiKey": "Do you really want to delete the API key?",
     "restoreAllHidden_one": "Show the {{count}} hidden video again?",
     "restoreAllHidden_other": "Show all {{count}} hidden videos again?",
+    "clearResults_one": "Discard the current analysis ({{count}} video)? Running the search again spends YouTube API quota.",
+    "clearResults_other": "Discard the current analysis ({{count}} videos)? Running the search again spends YouTube API quota.",
     "importDashboardReplace": "Import will replace your current dashboard favorites and cache ({{count}} favorites). Continue?"
   },
   "backup": {
