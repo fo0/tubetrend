@@ -41,7 +41,8 @@ tubetrend/
 ├── agent_docs/                       # Agent process docs (review, backlog, memory, ADR, MCP, hooks, API ref, refactoring, context budget)
 ├── .claude/
 │   ├── settings.json                 # Tier-1 hooks + trigger permissions
-│   └── skills/                       # done / pr / review / security-review / rollback / ci / stuck / beacon / gitnexus/
+│   ├── loop.md                       # Default prompt for a bare `/loop`
+│   └── skills/                       # done / pr / review / security-review / rollback / ci / stuck / beacon / scheduler / orca / gitnexus/
 ├── .github/                          # Workflows + dependabot + templates
 ├── index.html                        # Vite HTML entry (theme base styles: src/styles/index.css)
 ├── capacitor.config.ts               # Capacitor config
