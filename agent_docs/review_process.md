@@ -188,6 +188,28 @@ Three axes, in this priority order: **accessibility** → **responsiveness** →
 | **Independent code review**                               | `general-purpose`, or a project-specific reviewer subagent if one is defined |
 | **Q about Claude Code/SDK/API**                           | `claude-code-guide`                                                          |
 
+### The role roster — which change earns which seat
+
+Offloaded from `CLAUDE.md → Subagents` (2026-08-28) per `agent_docs/context_budget.md` ladder step 10. CLAUDE.md keeps
+the orchestrator default, the width and the role names; the seating conditions live here. The role is _how the
+assignment is framed_, not a separate mechanism: it goes to a `general-purpose` subagent whose brief names the lens, the
+standard it answers to, and what its return must contain. Closed vocabulary — the wave report names the role it used, so
+two runs over the same work stay comparable.
+
+| Role          | Lens it applies                                        | Earns a seat when                                   |
+| ------------- | ------------------------------------------------------ | --------------------------------------------------- |
+| `implementer` | the change itself, in this repo's idiom                | always, for any code change                         |
+| `reviewer`    | correctness of the diff, against a fresh reading       | any code change — **never the agent that wrote it** |
+| `architect`   | structural fit, boundaries, what this makes hard later | the change adds, moves or crosses a boundary        |
+| `domain`      | whether this matches how the subject actually works    | it encodes a domain or business rule                |
+| `product`     | is this what was asked, is the scope right             | the request is ambiguous or scope could drift       |
+| `docs`        | what a reader needs that the diff does not say         | a documented interface or contract changes          |
+| `security`    | trust boundaries, untrusted input, secrets             | it touches any of them → `security-review` skill    |
+
+**Roles are lenses, not a standing panel.** Seat the ones the change actually calls for — a typo fix needs
+`implementer` and `reviewer`, a new integration may need five. Never seat two agents with the same lens hoping agreement
+means correctness; distinct lenses catch failure modes that redundancy cannot.
+
 ## Subagent Selection Rules
 
 - **Use `Explore` for read-only search.** Specify breadth: `quick` / `medium` / `very thorough`. Do NOT use for code review — it reads excerpts, will miss content past its window.
