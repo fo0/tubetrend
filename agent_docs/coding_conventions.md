@@ -15,6 +15,22 @@ Offloaded from `CLAUDE.md` (2026-07-26) per `agent_docs/context_budget.md` ladde
 - **Error handling** — try-catch with fallback values for storage; custom `YouTubeApiError` for API errors.
 - **Max file length** — ~300 lines (split), ~500 lines (strongly recommended). TS/React convention.
 
+## Never-translate term list
+
+Offloaded from `CLAUDE.md → Output Languages` (2026-08-28). The rule itself stays in CLAUDE.md: **technical terms are
+never translated**, not even inside a German sentence — keep the English word verbatim and inflect the German sentence
+around it („2 Bugs gefixt", „Code Smell in `quotaService.ts`", „PR gemerged", „Build ist rot"), never „Programmfehler",
+„Code-Geruch", „Zusammenführungsantrag".
+
+The vocabulary it covers: bug · smell · lint · build · commit · merge · rebase · branch · PR · review · refactoring ·
+deployment · rollback · issue · breaking change · hotfix · coverage · flaky test · regression · edge case · stack trace ·
+dependency · tech debt.
+
+Plus everything that names something real, quoted exactly as it appears: file paths, commands, tool / skill / hook
+names, status labels, branch and workflow names, error strings (verbatim, never paraphrased or translated).
+
+Test: if it is English in the code, in a commit or in a PR, it stays English in chat.
+
 ## Path Aliases
 
 Configured in **both** `tsconfig.json` and `vite.config.ts` — keep the two in sync when adding one.
