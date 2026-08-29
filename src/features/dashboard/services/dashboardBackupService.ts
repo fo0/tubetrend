@@ -33,14 +33,45 @@ function isHttpUrl(value: unknown): boolean {
 }
 
 /**
- * A backup file is untrusted input the user picked from disk. Its cached videos are
- * rendered straight into `<a href={video.url}>` (HighlightVideoCard, VideoCard,
- * VideoListTable), so without this guard a crafted file can smuggle a `javascript:`
- * URL into the dashboard and run script in the app origin the moment the user clicks
- * a highlight — which is where the YouTube API key lives in localStorage.
- * Genuine exports only ever contain `https://www.youtube.com/watch?v=<id>` (built in
- * trendAnalysisService), so rejecting anything else is behavior-equivalent for real
- * backups and fails closed. CWE-79 / OWASP A03.
+ * True for the `thumbnailUrl` values a genuine export can carry: absent, or an
+ * absolute http(s) URL.
+ *
+ * The empty string must stay accepted — `analyzeVideoStats` (trendAnalysisService)
+ * falls back to `""` when a video carries no thumbnail at all, so real exports do
+ * contain it, and `<img src="">` is what the dashboard already renders for those
+ * rows today. Older backups may omit the field entirely. Rejecting either would
+ * refuse legitimate files, which is why this is deliberately laxer than `isHttpUrl`.
+ */
+function isSafeThumbnailUrl(value: unknown): boolean {
+  if (value === undefined || value === null || value === "") return true;
+  return isHttpUrl(value);
+}
+
+/**
+ * A backup file is untrusted input the user picked from disk — the only externally
+ * supplied input this client-only app accepts at all, which makes it the boundary
+ * that actually matters (the localStorage boundaries in favoritesService.getCache
+ * and useSearch guard the same shape, but anyone who can write localStorage already
+ * owns the origin).
+ *
+ * Two sinks, both fed straight from the cached videos:
+ *   - `<a href={video.url}>` (HighlightVideoCard, VideoCard, VideoListTable) — without
+ *     the `url` guard a crafted file smuggles a `javascript:` URL into the dashboard and
+ *     runs script in the app origin the moment the user clicks a highlight, which is the
+ *     origin whose localStorage holds the YouTube API key.
+ *   - `<img src={video.thumbnailUrl}>` (same three components) — an unvalidated value
+ *     here does not execute script, but it does make every dashboard render fire an
+ *     outbound GET to a host the author of the backup file chose: a beacon confirming
+ *     the import, with the victim's IP and User-Agent, from inside the app origin. The
+ *     nginx CSP (`img-src 'self' data: https:`) allows any https host, so it does not
+ *     close this on its own, and the targets that ship without that nginx config —
+ *     Capacitor, Chrome extension — restrict `img-src` not at all.
+ *
+ * Genuine exports only ever contain `https://www.youtube.com/watch?v=<id>` for `url`
+ * (built in trendAnalysisService) and an `https://i.ytimg.com/...` thumbnail or `""`,
+ * so rejecting anything else is behavior-equivalent for real backups and fails closed:
+ * an invalid file is refused whole, exactly as it already was for a bad `url`.
+ * CWE-79 (url sink) / CWE-200 (thumbnail beacon) / OWASP A03.
  */
 function hasOnlySafeVideoUrls(favoritesCache: Record<string, unknown>): boolean {
   for (const entry of Object.values(favoritesCache)) {
@@ -48,7 +79,9 @@ function hasOnlySafeVideoUrls(favoritesCache: Record<string, unknown>): boolean 
     if (videos === undefined || videos === null) continue;
     if (!Array.isArray(videos)) return false;
     for (const video of videos) {
-      if (!isHttpUrl((video as { url?: unknown } | null | undefined)?.url)) return false;
+      const candidate = video as { url?: unknown; thumbnailUrl?: unknown } | null | undefined;
+      if (!isHttpUrl(candidate?.url)) return false;
+      if (!isSafeThumbnailUrl(candidate?.thumbnailUrl)) return false;
     }
   }
   return true;
