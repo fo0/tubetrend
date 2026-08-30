@@ -13,10 +13,10 @@ TubeTrend ships one web build (`dist/`) that every other target wraps. Nothing u
 | Build Tool      | Vite (+ `@vitejs/plugin-react`)    | ^8.2.1    |
 | Styling         | Tailwind CSS (`@tailwindcss/vite`) | ^4.3.1    |
 | i18n            | i18next + react-i18next            | ^26 / ^17 |
-| Icons           | Lucide React                       | ^1.31.0   |
+| Icons           | Lucide React                       | ^1.33.0   |
 | Runtime         | Node.js                            | 22+       |
 | Package Manager | npm (lockfile v3)                  | —         |
-| Formatter       | Prettier                           | ^3        |
+| Formatter       | Prettier (pinned, no caret)        | 3.9.6     |
 | Linter          | ESLint 9 flat config               | ^9.39     |
 | Test Framework  | none (Vitest recommended)          | —         |
 
