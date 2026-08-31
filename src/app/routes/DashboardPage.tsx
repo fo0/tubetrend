@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Activity,
   AlertCircle,
@@ -7,6 +7,7 @@ import {
   Copy,
   Download,
   EyeOff,
+  FileJson,
   RefreshCw,
   Trash2,
   Upload,
@@ -17,6 +18,7 @@ import { FavoritesFilter } from "@/src/shared/components/ui/FavoritesFilter";
 import { HighlightVideoCard } from "@/src/shared/components/ui/HighlightVideoCard";
 import { FloatingScrollButton } from "@/src/shared/components/ui/FloatingScrollButton";
 import { showToast } from "@/src/shared/components/feedback";
+import { useFileDropZone } from "@/src/shared/hooks";
 import { useTranslation } from "react-i18next";
 import type { FavoriteConfig } from "@/src/features/favorites/types";
 import type { VideoData } from "@/src/features/videos/types";
@@ -87,6 +89,35 @@ export function DashboardPage({
   const handleImportPick = () => {
     importRef.current?.click();
   };
+
+  // Restoring a dashboard backup meant hunting for the "Import" button in a
+  // toolbar that already carries up to six others, then walking a file picker to
+  // the download folder the file was just written to. Dropping the file on the
+  // page is the shorter route and the one people try first — it used to make the
+  // browser navigate away from the app and render the raw JSON instead.
+  //
+  // Same handler as the file picker, so the confirm dialog, the validation and
+  // the replace semantics are identical however the file arrives.
+  const runImport = useCallback(
+    (file: File) => {
+      onImportFile(file).catch(() => {
+        showToast(t("backup.importInvalid"), "error");
+      });
+    },
+    [onImportFile, t],
+  );
+
+  const rejectImport = useCallback(() => {
+    // Anything but .json is refused before it is read — silently ignoring the
+    // drop would look exactly like a drop the page never received.
+    showToast(t("backup.importWrongType"), "error");
+  }, [t]);
+
+  const { isDragging, dropHandlers } = useFileDropZone({
+    extension: ".json",
+    onFile: runImport,
+    onReject: rejectImport,
+  });
 
   // Progress for a running refresh. "Refresh all" staggers one favorite every
   // 300ms, so with a dozen favorites the button sat disabled with a spinner for
@@ -279,7 +310,25 @@ export function DashboardPage({
   };
 
   return (
-    <div className="animate-fade-in">
+    <div className="animate-fade-in" {...dropHandlers}>
+      {/* Drop hint for a backup file dragged onto the page. `pointer-events-none`
+          is load-bearing: an overlay that took the pointer would sit between the
+          cursor and the drop target above, firing a dragleave/dragenter pair on
+          every frame and cancelling the drop it is advertising. z-[55] puts it
+          over the sticky header (z-50) but under the toasts (z-60) that report
+          the outcome. */}
+      {isDragging && (
+        <div
+          className="pointer-events-none fixed inset-0 z-[55] flex items-center justify-center bg-slate-900/40 backdrop-blur-[2px] animate-fade-in"
+          aria-hidden="true"
+        >
+          <div className="flex items-center gap-3 rounded-2xl border-2 border-dashed border-indigo-400 bg-white px-6 py-4 text-sm font-medium text-slate-700 shadow-2xl dark:border-indigo-500 dark:bg-slate-900 dark:text-slate-200">
+            <FileJson className="h-5 w-5 text-indigo-500 dark:text-indigo-400" />
+            {t("backup.dropHint")}
+          </div>
+        </div>
+      )}
+
       {/* Hidden file input for dashboard import */}
       <input
         ref={importRef}
@@ -290,9 +339,7 @@ export function DashboardPage({
           const f = e.target.files?.[0];
           e.target.value = "";
           if (!f) return;
-          onImportFile(f).catch(() => {
-            showToast(t("backup.importInvalid"), "error");
-          });
+          runImport(f);
         }}
       />
 

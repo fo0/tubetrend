@@ -209,7 +209,8 @@ Enter your API key in the app when prompted.
 - **Dashboard** — Track favorite channels and keywords with cached video data
 - **Analyser** — Search and analyze videos with trend scoring; a failed search can be retried
   straight from the error banner
-- **Highlights** — Auto-surface top-performing videos, copy their URLs or export them as CSV
+- **Highlights** — Auto-surface top-performing videos, copy their title or URL, or export them as CSV
+- **Backup** — Export the dashboard as JSON; import it back with the button or by dropping the file on the page
 - **Desktop App** — Portable Electron app for Windows, macOS, and Linux
 - **Chrome Extension** — Install as browser extension, opens in a new tab
 - **Multi-language** — English and German translations; 11 further locales auto-detect and fall back to English

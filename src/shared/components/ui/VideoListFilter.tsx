@@ -24,6 +24,20 @@ export const VideoListFilter: React.FC<VideoListFilterProps> = ({
   const { t } = useTranslation();
   const isFiltering = value.trim().length > 0;
 
+  // Escape clears an active filter and keeps the caret in the field (mirrors
+  // FavoritesFilter). The `type="search"` input below hides its native clear
+  // button via `[&::-webkit-search-cancel-button]:hidden`, so without this the
+  // only way back to the full table was a mouse click on the X. The key is only
+  // swallowed while there is something to clear; on an empty field it bubbles.
+  // The analyser's search box also listens for Escape, but only while it itself
+  // holds focus, so the two can never both act on one keypress.
+  const handleFilterKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key !== "Escape" || value.length === 0) return;
+    e.preventDefault();
+    e.stopPropagation();
+    onChange("");
+  };
+
   return (
     <div className="flex flex-col sm:flex-row sm:items-center gap-2 px-4 py-3 border-b border-slate-200 dark:border-slate-800 bg-slate-100/60 dark:bg-slate-900/60">
       <div className="relative flex-1 min-w-0">
@@ -34,8 +48,10 @@ export const VideoListFilter: React.FC<VideoListFilterProps> = ({
           type="search"
           value={value}
           onChange={(e) => onChange(e.target.value)}
+          onKeyDown={handleFilterKeyDown}
           placeholder={t("results.table.filterPlaceholder")}
           aria-label={t("results.table.filterAria")}
+          title={t("results.table.filterShortcutHint")}
           autoComplete="off"
           autoCapitalize="off"
           autoCorrect="off"

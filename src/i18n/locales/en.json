@@ -146,7 +146,7 @@
     "filter": {
       "placeholder": "Filter favorites…",
       "aria": "Filter favorites by name",
-      "shortcutHint": "Filter favorites by name — press / to focus",
+      "shortcutHint": "Filter favorites by name — press / to focus, Esc to clear",
       "clear": "Clear filter",
       "count_one": "{{count}} of {{total}} shown",
       "count_other": "{{count}} of {{total}} shown",
@@ -203,6 +203,7 @@
       "sortBy": "Sort by {{column}}",
       "filterPlaceholder": "Filter by title…",
       "filterAria": "Filter videos by title",
+      "filterShortcutHint": "Filter videos by title — press Esc to clear",
       "filterClear": "Clear filter",
       "filterCount_one": "{{count}} of {{total}} shown",
       "filterCount_other": "{{count}} of {{total}} shown",
@@ -279,6 +280,8 @@
     "exportFailed": "Download failed. Your browser blocked the file.",
     "importSuccess": "Import completed. {{count}} favorites restored.",
     "importInvalid": "Invalid backup file.",
+    "dropHint": "Drop the backup file here to import it",
+    "importWrongType": "Only .json backup files can be imported.",
     "importFailedStorage": "Import failed (could not write to browser storage)."
   },
   "errors": {
