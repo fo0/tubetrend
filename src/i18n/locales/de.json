@@ -146,7 +146,7 @@
     "filter": {
       "placeholder": "Favoriten filtern…",
       "aria": "Favoriten nach Name filtern",
-      "shortcutHint": "Favoriten nach Name filtern — mit / fokussieren",
+      "shortcutHint": "Favoriten nach Name filtern — mit / fokussieren, mit Esc leeren",
       "clear": "Filter zurücksetzen",
       "count_one": "{{count}} von {{total}} angezeigt",
       "count_other": "{{count}} von {{total}} angezeigt",
@@ -203,6 +203,7 @@
       "sortBy": "Nach {{column}} sortieren",
       "filterPlaceholder": "Nach Titel filtern…",
       "filterAria": "Videos nach Titel filtern",
+      "filterShortcutHint": "Videos nach Titel filtern — mit Esc leeren",
       "filterClear": "Filter zurücksetzen",
       "filterCount_one": "{{count}} von {{total}} angezeigt",
       "filterCount_other": "{{count}} von {{total}} angezeigt",

@@ -47,6 +47,22 @@ export const FavoritesFilter: React.FC<FavoritesFilterProps> = ({
   }, []);
   useEventListener("keydown", handleFocusHotkey, document);
 
+  // Escape clears an active filter and keeps the caret in the field, so the way
+  // back to the full list is the same key that dismisses everything else in the
+  // app. The analyser's search box has treated Escape as "clear what I typed"
+  // for a while; this bar did not, and the browser's own affordance is gone —
+  // `[&::-webkit-search-cancel-button]:hidden` below removes the native clear
+  // button of the `type="search"` input. That left the X button as the only way
+  // out, i.e. a mouse move for a filter that was reached by hotkey and typed
+  // into blind. The key is only swallowed while there is something to clear, so
+  // an empty field lets Escape bubble to whatever else may want it.
+  const handleFilterKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key !== "Escape" || value.length === 0) return;
+    e.preventDefault();
+    e.stopPropagation();
+    onChange("");
+  };
+
   return (
     <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-4">
       <div className="relative flex-1 min-w-0">
@@ -58,6 +74,7 @@ export const FavoritesFilter: React.FC<FavoritesFilterProps> = ({
           type="search"
           value={value}
           onChange={(e) => onChange(e.target.value)}
+          onKeyDown={handleFilterKeyDown}
           placeholder={t("dashboard.filter.placeholder")}
           aria-label={t("dashboard.filter.aria")}
           title={t("dashboard.filter.shortcutHint")}
