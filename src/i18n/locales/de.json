@@ -280,6 +280,8 @@
     "exportFailed": "Download fehlgeschlagen. Der Browser hat die Datei blockiert.",
     "importSuccess": "Import abgeschlossen. {{count}} Favoriten wurden wiederhergestellt.",
     "importInvalid": "Ungültige Backup-Datei.",
+    "dropHint": "Backup-Datei hier ablegen, um sie zu importieren",
+    "importWrongType": "Es können nur .json-Backup-Dateien importiert werden.",
     "importFailedStorage": "Import fehlgeschlagen (konnte nicht in den Browser-Speicher schreiben)."
   },
   "errors": {

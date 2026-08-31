@@ -280,6 +280,8 @@
     "exportFailed": "Download failed. Your browser blocked the file.",
     "importSuccess": "Import completed. {{count}} favorites restored.",
     "importInvalid": "Invalid backup file.",
+    "dropHint": "Drop the backup file here to import it",
+    "importWrongType": "Only .json backup files can be imported.",
     "importFailedStorage": "Import failed (could not write to browser storage)."
   },
   "errors": {
