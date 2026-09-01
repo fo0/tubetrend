@@ -11,9 +11,13 @@
         try {
           // Duplicate of STORAGE_KEYS.THEME (src/shared/constants/config.ts). This script runs
           // before the React bundle, so it cannot import the constant. chrome-extension/
-          // theme-init.js is a byte-for-byte copy of this block (Manifest-V3 CSP). Renaming the
-          // constant without updating BOTH copies stays green in typecheck/build and only shows up
-          // as the FOUC flash coming back. Sites are listed in agent_docs/api-reference.md.
+          // theme-init.js re-implements this block as an external file (Manifest-V3 CSP forbids
+          // inline script); the logic is identical, the text is not, so diff behaviour and not
+          // bytes. Renaming the constant without updating BOTH copies stays green in
+          // typecheck/build and only shows up as the FOUC flash coming back. Editing anything
+          // inside this <script> also changes its CSP hash — update the two script-src
+          // 'sha256-...' entries in nginx.conf in the same commit, or the deployed app blocks
+          // this script. Sites are listed in agent_docs/api-reference.md.
           var storageKey = "tt.theme";
           var explicit = localStorage.getItem(storageKey);
           var systemPrefersDark =
