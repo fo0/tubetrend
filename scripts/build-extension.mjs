@@ -5,9 +5,15 @@
  */
 import { readFileSync, writeFileSync, mkdirSync, cpSync, rmSync, existsSync } from "fs";
 import { join } from "path";
+import { fileURLToPath } from "node:url";
 import { deflateSync } from "zlib";
 
-const ROOT = new URL("..", import.meta.url).pathname;
+// `.pathname` of a file: URL is a URL path, not a filesystem path: it keeps the
+// leading slash on Windows ("/C:/src/tubetrend") and leaves percent-encoding
+// undecoded, so a checkout under a path containing a space resolves to a "%20"
+// directory that does not exist. fileURLToPath() is the conversion Node
+// documents for exactly this — electron/main.ts already uses it.
+const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const DIST = join(ROOT, "dist");
 const SRC = join(ROOT, "chrome-extension");
 const OUT = join(ROOT, "dist-extension");
