@@ -113,10 +113,23 @@ export function isWithinTimeFrame(timestamp: number, timeFrame: TimeFrame): bool
  * Parse a YouTube ISO 8601 duration (e.g. "PT1H23M45S") into total seconds.
  * Returns null when the string cannot be parsed — callers decide the policy
  * (e.g. include or exclude videos with unknown duration).
+ *
+ * The pattern is anchored on purpose. All three component groups are optional,
+ * so an unanchored `/PT(\d+H)?(\d+M)?(\d+S)?/` matches the bare literal "PT"
+ * wherever it appears and can therefore never fail for any string containing
+ * it — a malformed value ("PT", "PTx", "junkPT5M", a truncated field) returned 0
+ * instead of null. Zero is not "unknown": the Shorts filter in searchService
+ * keeps a video whose duration is null but drops anything under
+ * SHORTS_DURATION_THRESHOLD_SECONDS, so a garbled duration silently deleted the
+ * video from the results instead of leaving it in. The anchors reject trailing
+ * and leading junk, and the `(?=\d)` lookahead requires at least one component,
+ * which restores the documented contract. Well-formed "PT..." values parse
+ * exactly as before, and day-carrying durations ("P1DT2H") still return null —
+ * they contain no "PT" and did not parse before this change either.
  */
 export function parseISO8601DurationToSeconds(duration: string | undefined | null): number | null {
   if (!duration) return null;
-  const match = duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
+  const match = duration.match(/^PT(?=\d)(\d+H)?(\d+M)?(\d+S)?$/);
   if (!match) return null;
   const h = parseInt(match[1]?.replace("H", "") || "0", 10);
   const m = parseInt(match[2]?.replace("M", "") || "0", 10);
