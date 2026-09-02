@@ -593,8 +593,22 @@ export const ApiQuotaIndicator: React.FC = () => {
             <div className="text-[10px] text-slate-400 mb-2">
               {t("quota.lastTimeWindow", { time: t(timeWindow.labelKey) })}
             </div>
+            {/* aria-hidden on both layers: the chart is a bare <svg> with no
+                <text> and no name, so assistive tech met an anonymous graphic,
+                and the tooltip layer below it is a run of empty divs that only
+                fill in on :hover — unreachable by keyboard or screen reader
+                either way. Neither conveys anything a screen-reader user could
+                get at, so WCAG 1.1.1 treats them as decoration and asks that
+                they be hidden. The information itself stays available as text:
+                the window label above, the "usage by source" list below, and the
+                used/limit summary at the top of this panel. */}
             <div className="relative h-16">
-              <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <svg
+                className="w-full h-full"
+                viewBox="0 0 100 100"
+                preserveAspectRatio="none"
+                aria-hidden="true"
+              >
                 {/* Grid lines */}
                 <line
                   x1="0"
@@ -675,7 +689,7 @@ export const ApiQuotaIndicator: React.FC = () => {
               </svg>
 
               {/* Hover overlay for tooltips */}
-              <div className="absolute inset-0 flex">
+              <div className="absolute inset-0 flex" aria-hidden="true">
                 {timeBuckets.map((bucket, index) => (
                   <div key={index} className="flex-1 relative group/point">
                     {bucket.units > 0 && (
