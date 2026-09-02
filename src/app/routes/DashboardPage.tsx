@@ -239,10 +239,24 @@ export function DashboardPage({
 
   // Jump from a highlight card (or an avatar in the quick-jump strip) to the
   // favorite row it belongs to.
+  //
+  // The reduced-motion block in src/styles/index.css sets
+  // `scroll-behavior: auto !important`, but that only governs scrolls that ask
+  // for the *computed* behaviour. Per CSSOM-View, an explicit `behavior:
+  // "smooth"` argument wins over the CSS property, so this one call animated
+  // the whole page for motion-sensitive users no matter what their OS said —
+  // the single scroll in the app the stylesheet could not reach (WCAG 2.3.3).
+  // Resolving the preference here closes that hole; everyone else is unchanged.
   const scrollToFavorite = (favoriteId: string) => {
-    document
-      .getElementById(`favorite-${favoriteId}`)
-      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    const prefersReducedMotion =
+      typeof window !== "undefined" &&
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    document.getElementById(`favorite-${favoriteId}`)?.scrollIntoView({
+      behavior: prefersReducedMotion ? "auto" : "smooth",
+      block: "start",
+    });
   };
 
   // A filtered-out row is rendered with `hidden` (never unmounted, to protect

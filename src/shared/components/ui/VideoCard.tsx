@@ -123,9 +123,19 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video }) => {
           <Clock className="w-3 h-3 text-slate-300" />
           {formatTimeAgo(video.publishedTimestamp, t)}
         </div>
+        {/* role="note": this badge is deliberately focusable (tabIndex={0}) so a
+            keyboard user can reach the score explanation the `title` tooltip
+            carries — but a <div> with no role maps to role="generic", and ARIA
+            1.2 lists aria-label as PROHIBITED there (axe `aria-prohibited-attr`).
+            The name was therefore free to be dropped, leaving a focus stop that
+            announced nothing dependable. "note" is the matching non-interactive
+            role for ancillary content and permits an author-provided name, so
+            the label now actually reaches assistive tech. Nothing renders
+            differently. */}
         <div
           className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-bold border backdrop-blur-md flex items-center gap-1 cursor-help ${getScoreColor(video.trendingScore)}`}
           tabIndex={0}
+          role="note"
           title={t("results.table.scoreTooltip")}
           aria-label={`${t("results.table.score")}: ${video.trendingScore} — ${t("results.table.scoreTooltip")}`}
         >

@@ -64,7 +64,13 @@ export function EmptyState({ variant = "welcome", examples, onPickExample }: Emp
 
         {exampleChips && (
           <div className="mt-8 flex flex-col items-center gap-3">
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+            {/* slate-500/400, not 400/500: this is body text at 12px semibold —
+                too small to qualify as "large" — so WCAG 1.4.3 asks 4.5:1 of it.
+                slate-400 on the white page is 2.6:1 and slate-500 on the dark
+                page 3.8:1, i.e. the pair failed in BOTH themes. Swapping the two
+                shades clears it at 4.8:1 / 7.2:1 and matches the light/dark pair
+                the rest of the app already uses for secondary copy. */}
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
               {t("emptyState.tryExamples")}
             </p>
             {exampleChips}
@@ -86,7 +92,8 @@ export function EmptyState({ variant = "welcome", examples, onPickExample }: Emp
 
       {exampleChips && (
         <div className="mt-8 flex flex-col items-center gap-3">
-          <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+          {/* Same contrast pair as the "no-results" variant above (WCAG 1.4.3). */}
+          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
             {t("empty.tryExamples")}
           </p>
           {exampleChips}
