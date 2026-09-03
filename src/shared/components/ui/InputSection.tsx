@@ -136,12 +136,22 @@ export const InputSection: React.FC<InputSectionProps> = ({
     };
   }, []);
 
-  // Global hotkey: press "/" to focus search input (when not already in an input/textarea)
+  // Global hotkey: press "/" to focus search input (when focus is not already in
+  // a form control or a contentEditable element). SELECT is on that list for the
+  // same reason as in App.tsx: a focused <select> consumes printable keys for its
+  // native type-ahead, so stealing focus out of the header's language picker (or
+  // this section's own time-frame / max-results selects) mid-selection is never
+  // what the keypress meant.
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key !== "/") return;
       const target = e.target as HTMLElement;
-      if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable) {
+      if (
+        target.tagName === "INPUT" ||
+        target.tagName === "SELECT" ||
+        target.tagName === "TEXTAREA" ||
+        target.isContentEditable
+      ) {
         return;
       }
       e.preventDefault();

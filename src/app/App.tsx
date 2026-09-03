@@ -115,10 +115,24 @@ const App: React.FC = () => {
       // no visible cause. Only the focused input was ever protected.
       if (isApiKeyModalOpen || isHiddenHighlightsModalOpen) return;
 
-      // Skip when focus is inside an input, textarea, or contentEditable element,
+      // Skip when focus is inside a form control or a contentEditable element,
       // or when a modifier key is held (avoid hijacking browser/OS shortcuts).
+      //
+      // SELECT belongs on this list: a focused <select> answers a printable key
+      // with native type-ahead, and the header's language picker is reachable by
+      // Tab on every page. Pressing "D" there to jump to "Deutsch" also fired
+      // the Dashboard shortcut below — and its preventDefault() cancelled the
+      // type-ahead that was the point of the keypress, so the user was moved to
+      // another page AND lost the option they were selecting. Same collision for
+      // "T" ("Türkçe"), and for "A" / "R" / "?" on the analyser's time-frame and
+      // max-results selects.
       const target = e.target as HTMLElement;
-      if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable) {
+      if (
+        target.tagName === "INPUT" ||
+        target.tagName === "SELECT" ||
+        target.tagName === "TEXTAREA" ||
+        target.isContentEditable
+      ) {
         return;
       }
 
