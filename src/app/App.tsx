@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useEventListener } from "@/src/shared/hooks";
 import { ApiKeyModal } from "@/src/shared/components/ui/ApiKeyModal";
 import { HiddenHighlightsModal } from "@/src/shared/components/ui/HiddenHighlightsModal";
@@ -49,6 +49,33 @@ const App: React.FC = () => {
 
   useEffect(() => {
     safeWrite(STORAGE_KEYS.ACTIVE_PAGE, activePage);
+  }, [activePage]);
+
+  // Switching pages swaps the <main> content but leaves window.scrollY where it
+  // was, so the incoming page opens scrolled into its middle — or, once the
+  // browser clamps the offset to a shorter document, at its very bottom. Both
+  // pages run to several screens (a dozen favorite rows on the dashboard, the
+  // top-N cards plus the full result table on the analyser) and every route
+  // into the other one starts from somewhere down the current page: the
+  // "Analyze" button on a favorite row, "Open Analyser" in the empty state, the
+  // header nav, the "d" / "a" hotkeys. Land at the top instead, where the
+  // page's heading and its primary control (search box / highlights) are.
+  //
+  // `behavior: "instant"` matches FloatingScrollButton — a navigation jump is
+  // not an animation, so there is nothing here for prefers-reduced-motion to
+  // sit out.
+  //
+  // The ref holds the page this effect last acted on rather than a "first run"
+  // flag: the mount run must not scroll (on a reload the persisted page is
+  // restored and the browser restores its scroll offset with it), and a flag
+  // would be spent by the first of StrictMode's two development invocations,
+  // letting the second one scroll on mount after all. Comparing the value makes
+  // every run where the page did not actually change a no-op.
+  const lastScrolledPageRef = useRef<PageType>(activePage);
+  useEffect(() => {
+    if (lastScrolledPageRef.current === activePage) return;
+    lastScrolledPageRef.current = activePage;
+    window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
   }, [activePage]);
 
   // External input values for analyzer
@@ -115,10 +142,24 @@ const App: React.FC = () => {
       // no visible cause. Only the focused input was ever protected.
       if (isApiKeyModalOpen || isHiddenHighlightsModalOpen) return;
 
-      // Skip when focus is inside an input, textarea, or contentEditable element,
+      // Skip when focus is inside a form control or a contentEditable element,
       // or when a modifier key is held (avoid hijacking browser/OS shortcuts).
+      //
+      // SELECT belongs on this list: a focused <select> answers a printable key
+      // with native type-ahead, and the header's language picker is reachable by
+      // Tab on every page. Pressing "D" there to jump to "Deutsch" also fired
+      // the Dashboard shortcut below — and its preventDefault() cancelled the
+      // type-ahead that was the point of the keypress, so the user was moved to
+      // another page AND lost the option they were selecting. Same collision for
+      // "T" ("Türkçe"), and for "A" / "R" / "?" on the analyser's time-frame and
+      // max-results selects.
       const target = e.target as HTMLElement;
-      if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable) {
+      if (
+        target.tagName === "INPUT" ||
+        target.tagName === "SELECT" ||
+        target.tagName === "TEXTAREA" ||
+        target.isContentEditable
+      ) {
         return;
       }
 

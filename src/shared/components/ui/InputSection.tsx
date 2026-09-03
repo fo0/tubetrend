@@ -136,12 +136,22 @@ export const InputSection: React.FC<InputSectionProps> = ({
     };
   }, []);
 
-  // Global hotkey: press "/" to focus search input (when not already in an input/textarea)
+  // Global hotkey: press "/" to focus search input (when focus is not already in
+  // a form control or a contentEditable element). SELECT is on that list for the
+  // same reason as in App.tsx: a focused <select> consumes printable keys for its
+  // native type-ahead, so stealing focus out of the header's language picker (or
+  // this section's own time-frame / max-results selects) mid-selection is never
+  // what the keypress meant.
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key !== "/") return;
       const target = e.target as HTMLElement;
-      if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable) {
+      if (
+        target.tagName === "INPUT" ||
+        target.tagName === "SELECT" ||
+        target.tagName === "TEXTAREA" ||
+        target.isContentEditable
+      ) {
         return;
       }
       e.preventDefault();
@@ -666,7 +676,19 @@ export const InputSection: React.FC<InputSectionProps> = ({
                         // slate-400 on the white dropdown is 2.6:1 — under the 3:1
                         // WCAG 1.4.11 asks of a control's own graphic. The 400
                         // shade is kept for dark mode, where it sits on slate-900.
-                        className="px-3 flex items-center text-slate-500 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400 opacity-0 group-hover/item:opacity-100 focus:opacity-100 transition-opacity"
+                        //
+                        // pointer-coarse:opacity-100 — Tailwind's `hover:` variant
+                        // compiles to `@media (hover: hover)`, so on a touch device
+                        // `group-hover/item:opacity-100` never matches and this
+                        // button stayed at `opacity-0`: invisible, with nothing to
+                        // discover. That made "remove one history entry" unreachable
+                        // on the Android/ChromeOS APK and on any phone or tablet
+                        // opening the web build — the only remaining way out was
+                        // "Clear all", which drops the other nine entries with it.
+                        // Coarse-pointer devices now get the button permanently;
+                        // hover devices keep the reveal-on-hover they had. Same fix
+                        // and same reasoning as the hide button in HighlightVideoCard.
+                        className="px-3 flex items-center text-slate-500 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400 opacity-0 group-hover/item:opacity-100 focus:opacity-100 pointer-coarse:opacity-100 transition-opacity"
                         title={t("history.remove")}
                         aria-label={t("history.removeAria", { item })}
                       >

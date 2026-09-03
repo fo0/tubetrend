@@ -32,11 +32,16 @@ export const FavoritesFilter: React.FC<FavoritesFilterProps> = ({
   // global "focus search", but nothing on the dashboard listened for it, so the
   // key was dead on half the app. Dashboard and analyser are mutually exclusive
   // pages, so the two inputs can never claim the key at the same time.
+  //
+  // SELECT is on the skip list for the same reason as in App.tsx: a focused
+  // <select> consumes printable keys for its native type-ahead, and the header's
+  // language picker sits one Tab away on this page too.
   const handleFocusHotkey = useCallback((e: KeyboardEvent) => {
     if (e.key !== "/") return;
     const target = e.target as HTMLElement | null;
     if (
       target?.tagName === "INPUT" ||
+      target?.tagName === "SELECT" ||
       target?.tagName === "TEXTAREA" ||
       target?.isContentEditable
     ) {
