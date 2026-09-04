@@ -98,6 +98,20 @@ npm run format:check  # Verify formatting (read-only, matches CI)
 
 Formatting is enforced in CI via `npm run format:check`. PRs with formatting drift will fail the check.
 
+#### `git blame` and the Prettier baseline
+
+Commit `e5009c4` (PR #143) reformatted the whole tree at once, so a plain `git blame` attributes most
+lines to that commit instead of to the change that actually wrote them. The repository ships a
+`.git-blame-ignore-revs` file listing it. GitHub's blame view picks the file up automatically; local
+git needs a one-time opt-in per clone (it is a local setting and cannot be committed):
+
+```bash
+git config blame.ignoreRevsFile .git-blame-ignore-revs
+```
+
+If a future commit reformats the tree wholesale again, add its full SHA to `.git-blame-ignore-revs`
+in the same PR, with a comment line naming the reason.
+
 ### Verification Before Submitting
 
 Formatting is only the first of four gates. `.github/workflows/pr-checks.yml` runs all of the
