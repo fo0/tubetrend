@@ -12,6 +12,9 @@ updates:
       # electron major: needs manual migration
       - dependency-name: "electron"
         update-types: ["version-update:semver-major"]
+      # @types/node major: must track the Node 22 runtime, not the latest major
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
