@@ -107,3 +107,22 @@ here in the same commit.
 Manifest-V3 CSP compliance, see `agent_docs/platform_builds.md → Chrome Extension`), so a change to
 one must be mirrored in the other. Every other key in the tables above is read only through
 `STORAGE_KEYS`.
+
+#### A third site moves with the `index.html` script: the CSP hash
+
+`nginx.conf` pins that inline block by its sha256 in `script-src` instead of allowing
+`'unsafe-inline'` — **twice**: once in the `server` block and once again in `location /assets/`,
+because an `add_header` in a child block replaces the parent's headers. The hash covers the exact
+text between `<script>` and `</script>`, which Vite copies verbatim into `dist/index.html`, so any
+edit to that block — a reformat or a changed comment included — invalidates both entries. The
+symptom is deployment-only and silent locally: `typecheck`, `lint` and `build` all stay green, and
+the container then blocks the script, which brings the FOUC flash back. Recompute after a build and
+update both lines in the same commit:
+
+```bash
+node -e "const f=require('fs'),c=require('crypto');const b=f.readFileSync('dist/index.html','utf8').match(/<script>([\s\S]*?)<\/script>/)[1];console.log('sha256-'+c.createHash('sha256').update(b,'utf8').digest('base64'))"
+```
+
+Only the Nginx/Docker target is affected. `scripts/build-extension.mjs` replaces the inline block
+with `theme-init.js` for the Chrome Extension, and the Electron, Capacitor and dev-server targets
+serve no `nginx.conf` at all.
