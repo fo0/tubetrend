@@ -155,7 +155,7 @@ ADRs live under `docs/adr/`; triggers + format: `agent_docs/adr_template.md`. Gr
 
 - **Branch Naming:** `feat/X`, `fix/X`, `refactor/X`, `chore/X`, `docs/X`, `dependabot/**`; agent work on `claude/<topic>`.
 - **Commit Messages:** Conventional Commits — `type(scope): description`. Reference issues (`fix: resolve crash #42`). **Merge:** squash (default), reflected in the `pr` skill.
-- **CI/CD:** `pr-checks` gates code (skips `**.md` / `docs/**`), `docs-format` gates exactly those paths, so docs-only changes stay gated. All workflows: _Deployment_ below.
+- **CI/CD:** `pr-checks` gates code, `docs-format` gates `**.md`; all workflows: _Deployment_ below.
 - **Cloud / routine runs:** unattended work starts on `claude/<topic>` unless the task names a branch — a `claude/` branch is always accepted; which other pushes are rejected: `agent_docs/autonomy.md → Branch rule`.
 - **Formatting guard: not installed** (no husky, no lint-staged) — `npm run format` before every commit is the guard. Optional setup: `agent_docs/ci_formatting_guard.md`. Never bypass a configured hook with `--no-verify`.
 
@@ -171,8 +171,8 @@ The **YouTube API key is never a build-time secret** — the end user enters it 
 
 ## Deployment
 
-- **Trigger:** push to `main` → `docker-publish.yml` pushes `ghcr.io/fo0/tubetrend:latest`; tag push (`v*`) → `electron-release.yml` uploads all platform artifacts to a GitHub Release. Single environment, no staging.
-- **Agent scope:** feature branches, open/update PRs, suggest merge — **no production deploys** without an explicit user command. The routine exception + full gate live once in `.claude/skills/pr/SKILL.md → /pr merge`. **Rollback:** `rollback` skill — revert-PR over re-tagging.
+- **Trigger:** every code push to `main` runs four workflows — `docker-publish.yml` (GHCR), `electron-release.yml` (also on a `v*` tag → GitHub Release), `android-release.yml` (APK), `extension-release.yml` (extension); docs-only pushes skip them (`paths-ignore`: `agent_docs/deployment.md`). Single environment, no staging.
+- **Agent scope:** feature branches, open/update PRs, suggest merge — **no production deploys** without an explicit user command; routine exception + gate: `.claude/skills/pr/SKILL.md → /pr merge`. **Rollback:** `rollback` skill — revert-PR over re-tagging.
 
 All workflows + distribution channels: `agent_docs/deployment.md`
 

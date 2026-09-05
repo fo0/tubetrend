@@ -25,7 +25,9 @@ Three consequences worth knowing before merging anything into `main`:
   the same artifacts also exist as workflow artifacts.
 - **A markdown-only change is still gated — it does not run "zero checks".** The five push/PR build
   workflows share the same `paths-ignore` list (`**.md`, `docs/**`, `.env.example`, `.gitignore`,
-  `.editorconfig`, `LICENSE*`, `.vscode/**`), so none of them fires. `docs-format.yml` is their
+  `.editorconfig`, `LICENSE*`, `.vscode/**`; the three release workflows additionally ignore
+  `agent_docs/**` and `.claude/**`, so an agent-config change never cuts a release), so none of
+  them fires. `docs-format.yml` is their
   deliberate counterpart: it triggers on exactly `**.md` and Prettier-checks the Markdown, closing
   the gap that `format:check` is `prettier --check .` (which covers Markdown) yet never ran on a
   docs-only PR. Expect `Prettier (Markdown)` from it, plus the three `Analyze (…)` runs from
