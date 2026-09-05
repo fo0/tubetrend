@@ -171,7 +171,7 @@ The **YouTube API key is never a build-time secret** — the end user enters it 
 
 ## Deployment
 
-- **Trigger:** every code push to `main` runs four workflows — `docker-publish.yml` (GHCR), `electron-release.yml` (also on a `v*` tag → GitHub Release), `android-release.yml` (APK), `extension-release.yml` (extension); docs-only pushes skip them (`paths-ignore`: `agent_docs/deployment.md`). Single environment, no staging.
+- **Trigger:** every code push to `main` runs four workflows — `docker-publish.yml` (GHCR), `electron-release.yml` (also on a `v*` tag → GitHub Release), `android-release.yml` (APK), `extension-release.yml` (extension); docs-only pushes skip them (`paths-ignore`, listed in `agent_docs/deployment.md`). Single environment, no staging.
 - **Agent scope:** feature branches, open/update PRs, suggest merge — **no production deploys** without an explicit user command; routine exception + gate: `.claude/skills/pr/SKILL.md → /pr merge`. **Rollback:** `rollback` skill — revert-PR over re-tagging.
 
 All workflows + distribution channels: `agent_docs/deployment.md`
