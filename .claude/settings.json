@@ -11,7 +11,8 @@
       "Bash(npm run format:check)",
       "Bash(npm run lint)",
       "Bash(npm run typecheck)",
-      "Bash(npm run build)"
+      "Bash(npm run build)",
+      "Bash(npm ci)"
     ]
   },
   "hooks": {
@@ -43,6 +44,15 @@
           {
             "type": "command",
             "command": "cmd=$(jq -r '.tool_input.command // empty'); if echo \"$cmd\" | grep -qE 'git commit'; then cd \"$CLAUDE_PROJECT_DIR\" || exit 0; staged=$(git diff --cached --name-only 2>/dev/null | grep -E '^(\\.claude/|CLAUDE\\.md|AGENTS\\.md|agent_docs/|docs/wiki/)' || true); [ -n \"$staged\" ] && jq -nc --arg m \"GitNexus read-only guard: agent-config/doc files are staged — confirm these are intended (not GitNexus side-effects) before committing, else 'git restore --staged' / 'git checkout --': $staged\" '{hookSpecificOutput:{hookEventName:\"PreToolUse\",additionalContext:$m}}'; fi; exit 0"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "command -v jq >/dev/null 2>&1 || { printf '%s' '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"additionalContext\":\"Quality-config guard is inert on this machine: jq is not installed, so the hook cannot read the edited path and protects nothing. Install jq, or say so in the report - until then linter/formatter config edits are unguarded.\"}}'; exit 0; }; f=$(jq -r '.tool_input.file_path // empty'); case \"${f##*/}\" in eslint.config.js|.prettierrc.json|.prettierignore|tsconfig.json) printf '%s' '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"Quality-tool config is protected: a red check is fixed in the code, not by weakening the rule that caught it. If editing this config is itself the task, the user applies it or re-gates the path with a permissions.ask entry.\"}}';; esac; exit 0"
           }
         ]
       }
