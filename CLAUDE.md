@@ -84,7 +84,7 @@ Three schedulers, three lifetimes: **Routines** (cloud, durable, ≥1 h), **`/lo
 
 ## Tech Stack
 
-TypeScript ~6.0.3 (strict) · React ^19.2 + Vite ^8.2 · Tailwind CSS v4 (`@tailwindcss/vite`) · i18next ^26 · Lucide React ^1.34 · Node.js 22+ · npm (lockfile v3) · Prettier 3.9.6 (pinned) · ESLint 9 flat config. **No test framework configured.**
+TypeScript ~6.0.3 (strict) · React ^19.2 + Vite ^8.2 · Tailwind CSS v4 (`@tailwindcss/vite`) · i18next ^26 · Lucide React ^1.38 · Node.js 22+ · npm (lockfile v3) · Prettier 3.9.6 (pinned) · ESLint 9 flat config. **No test framework configured.**
 
 Full version table + the Electron / Capacitor / Chrome-extension / Docker wrappers around the same `dist/`: `agent_docs/platform_builds.md` · GitNexus read-only CLI: `agent_docs/gitnexus.md`
 
