@@ -4,9 +4,10 @@ Review findings not immediately fixed. **Only work on these upon explicit reques
 
 ## Open
 
-| #   | Date       | Category | Sev | Location                | Finding                                                                                                                                                                                                   | Status   | Source                                           |
-| --- | ---------- | -------- | --- | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------------------------------------------------ |
-| 15  | 2026-08-23 | Testing  | P2  | package.json -> scripts | No test framework configured — the gate is `format:check` → `typecheck` → `lint` → `build` only, so no behavioural regression is caught. Vitest recommended; priority targets in `agent_docs/testing.md`. | Deferred | Routine: quality & housekeeping sweep 2026-08-23 |
+_None._
+
+| #   | Date | Category | Sev | Location | Finding | Status | Source |
+| --- | ---- | -------- | --- | -------- | ------- | ------ | ------ |
 
 ## Migrated to GitHub Issues
 
@@ -14,6 +15,7 @@ Entries too large for a sweep's auto-fix threshold, moved to issues so they stay
 
 | #   | Date       | Migrated   | Category    | Location                                                                                              | Issue                                                                             |
 | --- | ---------- | ---------- | ----------- | ----------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| 15  | 2026-08-23 | 2026-09-07 | Testing     | `package.json` -> scripts                                                                             | #463 — introduce Vitest as the missing test framework                             |
 | 16  | 2026-09-01 | 2026-09-02 | Code Smells | `src/shared/hooks/useLocalStorage.ts`, `src/shared/hooks/useDebounce.ts`, `src/shared/lib/storage.ts` | #439 — remove unused `useLocalStorage` / `useDebounce` / `StorageAdapter` exports |
 | 17  | 2026-09-01 | 2026-09-02 | Standards   | `src/shared/components/ui/FavoriteRow.tsx`                                                            | #440 — translate the remaining German comments to English                         |
 
