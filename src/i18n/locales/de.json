@@ -141,6 +141,9 @@
       "exportCsv": "CSV",
       "exportCsvTitle": "Alle Highlights als CSV exportieren",
       "exportDone": "Highlights als CSV exportiert.",
+      "exportJson": "JSON",
+      "exportJsonTitle": "Alle Highlights als JSON exportieren",
+      "exportJsonDone": "Highlights als JSON exportiert.",
       "exportFailed": "Export fehlgeschlagen. Dein Browser hat die Datei blockiert."
     },
     "filter": {

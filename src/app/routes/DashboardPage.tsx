@@ -27,7 +27,12 @@ import {
   hiddenHighlightsService,
   selectHighlightVideosFromFavorites,
 } from "@/src/features/dashboard";
-import { buildResultsCsv, buildResultsCsvFilename } from "@/src/features/videos";
+import {
+  buildResultsCsv,
+  buildResultsCsvFilename,
+  buildResultsJson,
+  buildResultsJsonFilename,
+} from "@/src/features/videos";
 import { downloadBlob } from "@/src/shared/lib/download";
 import { getLocale } from "@/src/shared/lib/locale";
 import type { DashboardSortMode } from "@/src/shared/types";
@@ -300,6 +305,33 @@ export function DashboardPage({
     }
   };
 
+  // Export every visible highlight as JSON. The analyser results bar offers CSV
+  // *and* JSON side by side; the dashboard only had CSV, so the surface most
+  // users start on could not produce the machine-readable format. CSV is the
+  // lossy one of the pair — it drops the stable video id and the self-describing
+  // envelope (export time, count) — which is exactly what a script consuming the
+  // day's highlights needs. Same builder as the analyser export, so both files
+  // share one schema.
+  const handleExportHighlightsJson = () => {
+    if (highlightVideos.length === 0) return;
+    try {
+      // No channel argument: unlike an analyser export these videos come from
+      // many favorites at once, so the envelope's `channel` field stays null
+      // rather than claiming a channel that does not exist. The per-video rows
+      // carry the source through their own ids and URLs.
+      const json = buildResultsJson(highlightVideos.map((item) => item.video));
+      downloadBlob(
+        buildResultsJsonFilename("highlights"),
+        new Blob([json], { type: "application/json;charset=utf-8;" }),
+      );
+      showToast(t("dashboard.highlights.exportJsonDone"), "success");
+    } catch {
+      // The download can be blocked (sandboxed iframe, hardened Electron
+      // window) — never report a file the browser refused to write.
+      showToast(t("dashboard.highlights.exportFailed"), "error");
+    }
+  };
+
   const handleCopyAllHighlights = () => {
     if (highlightVideos.length === 0) return;
     // navigator.clipboard is undefined in insecure contexts (HTTP, some
@@ -438,6 +470,22 @@ export function DashboardPage({
                   >
                     <Download className="w-3 h-3" aria-hidden="true" />
                     <span className="whitespace-nowrap">{t("dashboard.highlights.exportCsv")}</span>
+                  </button>
+                )}
+                {highlightVideos.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleExportHighlightsJson}
+                    className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-md border transition-colors
+                             border-slate-300 text-slate-700 hover:bg-slate-100
+                             dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                    title={t("dashboard.highlights.exportJsonTitle")}
+                    aria-label={t("dashboard.highlights.exportJsonTitle")}
+                  >
+                    <FileJson className="w-3 h-3" aria-hidden="true" />
+                    <span className="whitespace-nowrap">
+                      {t("dashboard.highlights.exportJson")}
+                    </span>
                   </button>
                 )}
                 <button
