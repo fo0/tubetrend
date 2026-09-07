@@ -105,10 +105,8 @@ const App: React.FC = () => {
   }, []);
 
   const searchOptions = useMemo(() => ({ onApiKeyInvalid }), [onApiKeyInvalid]);
-  const { searchState, handleSearch, setSearchResult, resetSearch, retrySearch } = useSearch(
-    apiKey,
-    searchOptions,
-  );
+  const { searchState, handleSearch, setSearchResult, resetSearch, retrySearch, canRepeatSearch } =
+    useSearch(apiKey, searchOptions);
 
   // Sorted favorites
   const sortedFavorites = useMemo(() => sortFavorites(favorites), [favorites, sortFavorites]);
@@ -350,7 +348,16 @@ const App: React.FC = () => {
       });
 
       if (cachedVideos && cachedVideos.length > 0) {
-        setSearchResult(cachedVideos, channelTitle || favorite.query, channelId || undefined);
+        // Hand the favorite's own configuration over with the cached videos, so
+        // the results bar can offer to re-run it. A favorite cache holds up to
+        // two hours of drift, and until now the only way to refresh what it
+        // showed was to scroll up and press Search on values already in the box.
+        setSearchResult(cachedVideos, channelTitle || favorite.query, channelId || undefined, {
+          query: favorite.query,
+          timeFrame: favorite.timeFrame,
+          maxResults: favorite.maxResults,
+          searchType: favorite.searchType,
+        });
       } else {
         handleSearch(favorite.query, favorite.timeFrame, favorite.maxResults, favorite.searchType);
       }
@@ -435,6 +442,10 @@ const App: React.FC = () => {
             onPickExample={handlePickExample}
             onClearResults={handleClearResults}
             onRetrySearch={retrySearch}
+            // Only offered when a repeat is actually possible: results restored
+            // from a pre-existing snapshot carry no arguments, and a refresh
+            // button that does nothing is worse than no button at all.
+            onRefreshResults={canRepeatSearch ? retrySearch : undefined}
           />
         )}
       </main>

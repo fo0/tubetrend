@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type KeyboardEvent as ReactKeyboardEvent,
+} from "react";
 import {
   Activity,
   AlertCircle,
@@ -27,7 +34,12 @@ import {
   hiddenHighlightsService,
   selectHighlightVideosFromFavorites,
 } from "@/src/features/dashboard";
-import { buildResultsCsv, buildResultsCsvFilename } from "@/src/features/videos";
+import {
+  buildResultsCsv,
+  buildResultsCsvFilename,
+  buildResultsJson,
+  buildResultsJsonFilename,
+} from "@/src/features/videos";
 import { downloadBlob } from "@/src/shared/lib/download";
 import { getLocale } from "@/src/shared/lib/locale";
 import type { DashboardSortMode } from "@/src/shared/types";
@@ -279,6 +291,57 @@ export function DashboardPage({
     setPendingJumpId(null);
   }, [pendingJumpId]);
 
+  // Roving tab stop for the avatar quick-jump strip.
+  //
+  // Every avatar used to be its own tab stop, so a dashboard with fifteen
+  // favorites put fifteen presses of Tab between the sort buttons and the filter
+  // below — a run of identical round buttons a keyboard user has to walk through
+  // on the way to anything else on the page. The strip is a toolbar (WAI-ARIA
+  // Authoring Practices): it holds one tab stop, and the arrow keys move between
+  // its buttons, with Home / End for the ends.
+  //
+  // Focus is applied to the DOM node rather than kept per-item in React, because
+  // the strip re-renders whenever the filter changes and the buttons themselves
+  // are stateless. Up/Down do the same as Left/Right: the strip wraps onto
+  // several lines once there are enough favorites, so "the next one" is the
+  // honest reading of either axis.
+  const quickJumpRef = useRef<HTMLDivElement | null>(null);
+  const [quickJumpIndex, setQuickJumpIndex] = useState(0);
+  const quickJumpCount = visibleFavorites.length;
+  // Filtering shortens the strip, so the remembered index can point past its end
+  // — fall back to the first avatar rather than leaving the group with no tab
+  // stop at all.
+  const activeQuickJumpIndex = quickJumpIndex < quickJumpCount ? quickJumpIndex : 0;
+
+  const focusQuickJumpAt = (index: number) => {
+    setQuickJumpIndex(index);
+    quickJumpRef.current?.querySelectorAll<HTMLButtonElement>("button")[index]?.focus();
+  };
+
+  const handleQuickJumpKeyDown = (e: ReactKeyboardEvent<HTMLButtonElement>, index: number) => {
+    const last = quickJumpCount - 1;
+    if (last < 0) return;
+
+    let next: number;
+    if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+      next = index === last ? 0 : index + 1;
+    } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+      next = index === 0 ? last : index - 1;
+    } else if (e.key === "Home") {
+      next = 0;
+    } else if (e.key === "End") {
+      next = last;
+    } else {
+      return;
+    }
+
+    // Arrow keys would otherwise scroll the page under the strip, and Home / End
+    // would jump to the top or bottom of the document — the opposite of moving
+    // within a toolbar.
+    e.preventDefault();
+    focusQuickJumpAt(next);
+  };
+
   // Export every visible highlight as CSV. The analyser has offered CSV/JSON for
   // its result list for a while; the dashboard could only copy bare URLs, so
   // getting the day's highlights into a sheet meant pasting links and refilling
@@ -293,6 +356,33 @@ export function DashboardPage({
         new Blob([csv], { type: "text/csv;charset=utf-8;" }),
       );
       showToast(t("dashboard.highlights.exportDone"), "success");
+    } catch {
+      // The download can be blocked (sandboxed iframe, hardened Electron
+      // window) — never report a file the browser refused to write.
+      showToast(t("dashboard.highlights.exportFailed"), "error");
+    }
+  };
+
+  // Export every visible highlight as JSON. The analyser results bar offers CSV
+  // *and* JSON side by side; the dashboard only had CSV, so the surface most
+  // users start on could not produce the machine-readable format. CSV is the
+  // lossy one of the pair — it drops the stable video id and the self-describing
+  // envelope (export time, count) — which is exactly what a script consuming the
+  // day's highlights needs. Same builder as the analyser export, so both files
+  // share one schema.
+  const handleExportHighlightsJson = () => {
+    if (highlightVideos.length === 0) return;
+    try {
+      // No channel argument: unlike an analyser export these videos come from
+      // many favorites at once, so the envelope's `channel` field stays null
+      // rather than claiming a channel that does not exist. The per-video rows
+      // carry the source through their own ids and URLs.
+      const json = buildResultsJson(highlightVideos.map((item) => item.video));
+      downloadBlob(
+        buildResultsJsonFilename("highlights"),
+        new Blob([json], { type: "application/json;charset=utf-8;" }),
+      );
+      showToast(t("dashboard.highlights.exportJsonDone"), "success");
     } catch {
       // The download can be blocked (sandboxed iframe, hardened Electron
       // window) — never report a file the browser refused to write.
@@ -438,6 +528,22 @@ export function DashboardPage({
                   >
                     <Download className="w-3 h-3" aria-hidden="true" />
                     <span className="whitespace-nowrap">{t("dashboard.highlights.exportCsv")}</span>
+                  </button>
+                )}
+                {highlightVideos.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleExportHighlightsJson}
+                    className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-md border transition-colors
+                             border-slate-300 text-slate-700 hover:bg-slate-100
+                             dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                    title={t("dashboard.highlights.exportJsonTitle")}
+                    aria-label={t("dashboard.highlights.exportJsonTitle")}
+                  >
+                    <FileJson className="w-3 h-3" aria-hidden="true" />
+                    <span className="whitespace-nowrap">
+                      {t("dashboard.highlights.exportJson")}
+                    </span>
                   </button>
                 )}
                 <button
@@ -620,21 +726,32 @@ export function DashboardPage({
                 and pushed the whole layout into a horizontal scroll.
                 role/aria-label: without them the strip is an unnamed run of
                 buttons whose only accessible name is a channel title, giving no
-                hint that activating one jumps to that favorite. */}
+                hint that activating one jumps to that favorite. "toolbar" is
+                the role that goes with the roving tab stop below — it tells
+                assistive tech that the arrow keys, not Tab, move within. */}
             {visibleFavorites.length > 0 && (
               <div
-                role="group"
+                ref={quickJumpRef}
+                role="toolbar"
                 aria-label={t("dashboard.quickJump")}
                 className="flex flex-wrap items-center gap-1.5 ml-2 pl-3 border-l border-slate-300 dark:border-slate-700 min-w-0"
               >
-                {visibleFavorites.map((fav) => (
+                {visibleFavorites.map((fav, idx) => (
                   <FavoriteAvatar
                     key={fav.id}
                     favorite={fav}
                     isRefreshing={refreshingIds.has(fav.id)}
                     size="sm"
+                    // Exactly one avatar is in the tab order; the arrows move the
+                    // stop along, and a click hands it to whatever was clicked so
+                    // Tab and pointer never disagree about where the user is.
+                    tabIndex={idx === activeQuickJumpIndex ? 0 : -1}
+                    onKeyDown={(e) => handleQuickJumpKeyDown(e, idx)}
                     // Same jump the highlight cards use — one implementation.
-                    onClick={() => scrollToFavorite(fav.id)}
+                    onClick={() => {
+                      setQuickJumpIndex(idx);
+                      scrollToFavorite(fav.id);
+                    }}
                   />
                 ))}
               </div>

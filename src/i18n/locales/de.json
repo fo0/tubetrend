@@ -141,6 +141,9 @@
       "exportCsv": "CSV",
       "exportCsvTitle": "Alle Highlights als CSV exportieren",
       "exportDone": "Highlights als CSV exportiert.",
+      "exportJson": "JSON",
+      "exportJsonTitle": "Alle Highlights als JSON exportieren",
+      "exportJsonDone": "Highlights als JSON exportiert.",
       "exportFailed": "Export fehlgeschlagen. Dein Browser hat die Datei blockiert."
     },
     "filter": {
@@ -221,6 +224,8 @@
     "clearTitle": "Ergebnisse zurücksetzen",
     "retry": "Erneut versuchen",
     "retryTitle": "Die letzte Suche erneut ausführen",
+    "refresh": "Aktualisieren",
+    "refreshTitle": "Diese Analyse mit frischen Daten erneut ausführen",
     "analyzedAgo": "Analysiert {{time}}",
     "announceLoading": "Ergebnisse werden geladen…",
     "announceResults_one": "{{count}} Video für {{channel}} gefunden.",

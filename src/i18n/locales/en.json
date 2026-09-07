@@ -141,6 +141,9 @@
       "exportCsv": "CSV",
       "exportCsvTitle": "Export all highlights as CSV",
       "exportDone": "Highlights exported as CSV.",
+      "exportJson": "JSON",
+      "exportJsonTitle": "Export all highlights as JSON",
+      "exportJsonDone": "Highlights exported as JSON.",
       "exportFailed": "Export failed. Your browser blocked the file."
     },
     "filter": {
@@ -221,6 +224,8 @@
     "clearTitle": "Clear results",
     "retry": "Retry",
     "retryTitle": "Run the last search again",
+    "refresh": "Refresh",
+    "refreshTitle": "Run this analysis again with fresh data",
     "analyzedAgo": "Analyzed {{time}}",
     "announceLoading": "Loading results…",
     "announceResults_one": "{{count}} video found for {{channel}}.",

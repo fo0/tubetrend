@@ -8,6 +8,14 @@ interface FavoriteAvatarProps {
   isRefreshing?: boolean;
   onClick?: () => void;
   size?: "sm" | "md";
+  /**
+   * Tab stop of the underlying button. Pass -1 to take it out of the tab order —
+   * a strip of avatars managing a roving tab stop sets 0 on exactly one of them.
+   * Left undefined the button keeps the browser default (a normal tab stop).
+   */
+  tabIndex?: number;
+  /** Key handler on the button, for a container implementing arrow-key navigation. */
+  onKeyDown?: React.KeyboardEventHandler<HTMLButtonElement>;
 }
 
 /**
@@ -67,6 +75,8 @@ export const FavoriteAvatar: React.FC<FavoriteAvatarProps> = ({
   isRefreshing = false,
   onClick,
   size = "md",
+  tabIndex,
+  onKeyDown,
 }) => {
   const cache = favoritesService.getCache(favorite.id);
   const channelTitle = cache?.meta?.channelTitle || favorite.query;
@@ -93,6 +103,8 @@ export const FavoriteAvatar: React.FC<FavoriteAvatarProps> = ({
     <button
       type="button"
       onClick={onClick}
+      onKeyDown={onKeyDown}
+      tabIndex={tabIndex}
       className={`relative shrink-0 group ${buttonSizeClasses} ${isRefreshing ? "avatar-loading-spin" : ""}`}
       title={channelTitle}
       aria-label={channelTitle}
