@@ -224,6 +224,8 @@
     "clearTitle": "Ergebnisse zurücksetzen",
     "retry": "Erneut versuchen",
     "retryTitle": "Die letzte Suche erneut ausführen",
+    "refresh": "Aktualisieren",
+    "refreshTitle": "Diese Analyse mit frischen Daten erneut ausführen",
     "analyzedAgo": "Analysiert {{time}}",
     "announceLoading": "Ergebnisse werden geladen…",
     "announceResults_one": "{{count}} Video für {{channel}} gefunden.",

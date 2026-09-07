@@ -53,6 +53,8 @@ interface AnalyserPageProps {
   onClearResults?: () => void;
   /** Run the failed search again with the arguments it used. */
   onRetrySearch?: () => void;
+  /** Re-run the analysis currently on screen. Omitted when no repeatable search stands behind it. */
+  onRefreshResults?: () => void;
 }
 
 export function AnalyserPage({
@@ -62,6 +64,7 @@ export function AnalyserPage({
   onPickExample,
   onClearResults,
   onRetrySearch,
+  onRefreshResults,
 }: AnalyserPageProps) {
   const { t } = useTranslation();
 
@@ -533,6 +536,33 @@ export function AnalyserPage({
                   <span>Top 6</span>
                 </button>
               </div>
+
+              {/* Refresh: run the analysis on screen again with the arguments
+                  that produced it. Views, velocity and trend score age by the
+                  minute, and this list can be far older than it looks — a
+                  restored snapshot is up to 24 hours old, a favorite's cache up
+                  to two. The only way to update it was to scroll back past the
+                  results to the search box and press Search on values that were
+                  already filled in. The "analyzed X ago" badge beside the result
+                  count states the age; this is the answer to it.
+                  Disabled while a run is in flight, so the button cannot queue a
+                  second fetch behind the one the spinner is already reporting. */}
+              {onRefreshResults && (
+                <button
+                  type="button"
+                  onClick={onRefreshResults}
+                  disabled={searchState.isLoading}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-100/60 dark:bg-slate-900/60 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  title={t("results.refreshTitle")}
+                  aria-label={t("results.refreshTitle")}
+                >
+                  <RefreshCw
+                    className={`w-4 h-4 ${searchState.isLoading ? "animate-spin" : ""}`}
+                    aria-hidden="true"
+                  />
+                  <span className="hidden lg:inline">{t("results.refresh")}</span>
+                </button>
+              )}
 
               {/* Clear results: drop the persisted snapshot and return to the welcome screen. */}
               {onClearResults && (
