@@ -108,9 +108,9 @@ After push on a feature branch, suggest follow-ups — do NOT run them automatic
 Strict format, strict limits:
 
 ```
-✅ {branch}: {what was done}
+✅ <branch>: <what was done>
 
-→ Next: {only if something is open; omit entirely if nothing pending}
+→ Next: <only if something is open; omit entirely if nothing pending>
 ```
 
 ## Rules
@@ -122,4 +122,4 @@ Strict format, strict limits:
 - **Never force-push** without explicit user request.
 - **Ambiguous state on main** (large uncommitted diff, unclear scope) → ask first; unattended → uncommitted plus a report line (step 6).
 - **The report is the two lines above and nothing else.** No preamble, no postamble, nothing the commit message already says; the `Next:` line only when something is open.
-- If nothing to commit AND nothing to push AND no open issue → single-line confirmation: `✅ {branch}: already clean, nothing to do.`
+- If nothing to commit AND nothing to push AND no open issue → single-line confirmation: `✅ <branch>: already clean, nothing to do.`

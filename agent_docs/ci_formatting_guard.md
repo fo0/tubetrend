@@ -1,71 +1,52 @@
-# CI Formatting Guard — auto-format staged files on commit (husky + lint-staged)
+# CI Formatting Guard — auto-format staged files on commit
 
-Stops the recurring CI failure of the form `prettier --check` → "Code style issues found".
+Stops the recurring CI failure where the format check reports style issues on a commit nobody formatted.
 
 ## When this applies
 
-- Repo has a `package.json`, uses **Prettier** as its formatter (`.prettierrc.json` exists, `prettier` is a devDependency) and CI runs a check like `npm run format:check` (= `prettier --check .`) in `.github/workflows/pr-checks.yml`.
-- **Skip or adapt** if the repo uses a different formatter (Biome, dprint, gofmt, ruff) — only the command in step 4 changes.
-- **Non-Node stacks** (no `package.json`): use the `pre-commit` framework (https://pre-commit.com) as the analog — same idea (auto-format staged files on commit), different runner.
-- **Idempotent:** if `lint-staged` + `.husky/pre-commit` already exist, only reconcile the config; do not reinstall.
+- **This file is generated for Node projects only** — a Node manifest plus a configured formatter. The idea carries to any stack (the `pre-commit` framework is the usual analogue), but nothing generates this doc there, so do not read it as coverage you have.
+- **Not installed in this repo** (no husky, no lint-staged) — `npm run format` before every commit is the guard (`CLAUDE.md → Git Conventions`). This file is the setup guide for the day the owner opts in.
+- Any formatter within that scope: only the runner and the command change, never the contract below. Commands are this project's own, as CLAUDE.md → _Commands_ names them — here Prettier 3.9.6 (pinned), `npm run format` / `npm run format:check`, checked by `.github/workflows/pr-checks.yml` (code) and `docs-format.yml` (`**.md`).
+- **Idempotent:** if the hook and its staged-files runner already exist, reconcile the config; do not reinstall.
 
 ## Problem
 
-Hand-edited files — especially long Markdown tables (e.g. `BACKLOG.md`, the wide Tech Stack / i18n tables in `CLAUDE.md`) — drift from Prettier's normalization (column padding, line wrapping, `printWidth: 100`). They get committed unformatted and CI's `prettier --check .` fails. There is no local guard, so the failure only surfaces after the push. Recurring, disruptive, blocks the green build.
+Hand-edited files — long Markdown tables like `BACKLOG.md` and the wide tables in `CLAUDE.md` above all — drift from the formatter's normalization (column padding, wrapping at `printWidth: 100`). They get committed unformatted, CI's format check fails, and without a local guard the failure only surfaces after the push. Recurring, disruptive, blocks the green build.
 
 ## Goal
 
 - Unformatted files can **never enter a commit**.
-- CI `format:check` is always green.
-- **No manual discipline required** — no need to remember to run `npm run format`.
+- CI's format check is always green.
+- **No manual discipline required** — no need to remember to run the format command by hand.
 - **Self-installing** for every fresh clone and every teammate.
 
 ## Solution — auto-format on pre-commit
 
-Run in the repo root:
+Install the stack's standard pre-commit runner and wire the formatter to run over **staged files only**, then re-stage them. For a Node project that is husky + lint-staged with a self-installing `prepare` script; outside Node the analogue is the `pre-commit` framework (https://pre-commit.com). The exact commands are standard for the tooling — derive them, don't copy a snapshot of them.
 
-```bash
-# 1. Tooling — husky MUST be >= 9.1 (see pitfalls)
-npm install -D husky lint-staged
+Two things belong in the same change and are easy to forget:
 
-# 2. Self-installing hook: 'husky init' creates .husky/, sets core.hooksPath
-#    and adds "prepare": "husky" to package.json (re-runs on every npm install / npm ci)
-npx husky init
+- **Pay down existing formatting debt once**, in its own commit, so the first CI run after this is green. Review that diff — it touches every file.
+- **Verify against what CI actually runs**, not against the hook. Run `npm run format:check` locally and require exit 0.
 
-# 3. Switch the hook to lint-staged (replaces the 'npm test' sample).
-#    LF line ending, no shebang and no +x needed in husky v9 (the wrapper sources the file).
-printf '%s\n' 'npx lint-staged' > .husky/pre-commit
+**Commit:** the manifest + lockfile, the hook file, and the runner's config — plus everything reformatted by the debt payoff. Never commit husky's generated wrapper directory (`.husky/_/`); husky gitignores it itself.
 
-# 4. lint-staged config — Prettier's official recommendation
-printf '%s\n' '{' '  "*": "prettier --write --ignore-unknown"' '}' > .lintstagedrc.json
+## Critical pitfalls (earned the hard way — these are why this file exists)
 
-# 5. Pay down existing formatting debt ONCE so the first CI run is green (review the diff!)
-npx prettier --write .
-
-# 6. Verify exactly what CI runs
-npx prettier --check .
-```
-
-**Commit:** `package.json`, `package-lock.json`, `.husky/pre-commit`, `.lintstagedrc.json` (plus every file reformatted in step 5). `.husky/_/` is auto-gitignored by husky — never commit it.
-
-**Result:** every `git commit` runs `prettier --write --ignore-unknown` over the staged files and re-stages them. `--ignore-unknown` skips files Prettier can't parse and respects `.prettierignore`.
-
-## Critical pitfalls (do not skip)
-
-- **husky >= 9.1 is mandatory.** `prepare: "husky"` runs on every `npm ci` — including the Docker `builder` stage that `COPY package*.json` then `RUN npm ci` **without `.git`**. husky >= 9.1 only prints a warning and **exits 0** when `.git` is missing; older husky versions abort with an error and break the Docker build (`Dockerfile`). Verify: run `node node_modules/husky/bin.js` in a non-git directory → expect exit 0.
-- **`.husky/pre-commit` must use LF**, not CRLF (it runs on Linux/CI). On Windows generate it via `printf`, not an editor that writes CRLF.
-- **Only commit `.husky/pre-commit`.** husky writes `.husky/_/.gitignore` (`*`), which ignores the wrapper directory. In husky v9 the hook file needs no `+x` and no shebang.
-- **`prettier --check .` silently skips files without a parser in directory mode** (shell hook scripts, `.gitignore`, etc.), so the hook scripts never break the check. (Errors occur only for _explicitly named_ unknown files — CI passes a directory, so this is harmless.)
-- **Never bypass with `git commit --no-verify`.**
-- The guard auto-corrects on **commit**. If commits via external GUIs are a concern, add a `pre-push` mirror that runs `npm run format:check` as a hard gate.
+- **husky must be >= 9.1.** Its `prepare` script runs on every `npm ci`, including Docker stages that `COPY package*.json` and `RUN npm ci` **without `.git`** — this repo's `Dockerfile` builder stage is one. From 9.1 on, a missing `.git` is a warning and exit 0; older versions abort and break the image build. Verify: run husky's bin in a non-git directory and expect exit 0.
+- **The hook file must use LF**, not CRLF — it executes on Linux and CI. Generate it with `printf`, not an editor that writes CRLF.
+- **In directory mode, a formatter silently skips files it has no parser for** (shell hooks, dotfiles), so the hook scripts themselves never break the check. Errors only occur for _explicitly named_ unknown files, and CI passes a directory — harmless, but it is why the check stays green.
+- **`.claude/` is in `.prettierignore` on purpose** (GitNexus rewrites its skill files unformatted) — a staged-files hook inherits that exclusion; do not "fix" it by formatting `.claude/`.
+- **Never bypass with `--no-verify`.**
+- The guard fires on **commit**. If commits from external GUIs are a concern, mirror it as a `pre-push` hard gate running `npm run format:check`.
 
 ## Customization
 
-- Different formatter → change step 4, e.g. `"*": "biome format --write --no-errors-on-unmatched"`.
-- Want lint/typecheck on commit too → add targeted entries like `"*.{ts,tsx}": "tsc --noEmit"` is NOT per-file (TS checks the whole graph) — keep type-checking out of the hook and leave it to `npm run typecheck` in CI; keep pre-commit **fast**.
+- The formatter is whichever one this project configures — swap the runner's command, keep the contract.
+- Lint or typecheck on commit is allowed, scoped to the matching file globs — but keep pre-commit **fast**; a slow hook is a hook people bypass. `tsc --noEmit` is not per-file (it checks the whole graph) — leave type-checking to `npm run typecheck` in CI.
 
 ## CLAUDE.md pointer (one-liner)
 
-> **Formatting guard:** staged files are auto-formatted on commit (husky + lint-staged). Setup + pitfalls: `agent_docs/ci_formatting_guard.md`. Never bypass with `--no-verify`.
+> **Formatting guard:** staged files are auto-formatted on commit. Setup + pitfalls: `agent_docs/ci_formatting_guard.md`. Never bypass with `--no-verify`.
 
-<!-- Generated by claude-code-optimizer v1.37.0 -->
+<!-- Generated by claude-code-optimizer v1.42.0 -->

@@ -203,6 +203,24 @@ Three axes, in this priority order: **accessibility** → **responsiveness** →
 
 **The review itself is delegated, and to a different agent than wrote the code.** A fresh-context reviewer reads the diff without holding the author's intent, which is why it finds what self-critique does not; the author re-reading its own work verifies what it meant, not what it wrote. Where a change can fail in more than one way, seat _distinct_ lenses from the roster (`architect`, `domain`, `security`, `docs`) rather than a second reviewer with the same one — agreement between identical lenses is not evidence of correctness. The orchestrator still owns the process: it reads the returned diffs, decides what the findings mean, and holds the commit gate.
 
+**The role carries the lens.** The roster and the seat criterion per role are canonical in `CLAUDE.md → Subagents` (the wave report names the role, so the vocabulary is closed there); this table says what each lens looks at. A role is _how the assignment is framed_, not a separate mechanism: it goes to a `general-purpose` subagent whose brief names the lens, the standard it answers to, and what its return must contain:
+
+| Role          | Lens it applies                                                                        |
+| ------------- | -------------------------------------------------------------------------------------- |
+| `architect`   | Structural fit, boundaries, what this makes hard later                                 |
+| `implementer` | The change itself, in this repo's idiom                                                |
+| `reviewer`    | Correctness of the diff, against a fresh reading — a different agent than the author   |
+| `domain`      | Whether this matches how the subject actually works                                    |
+| `product`     | Is this what was asked, is the scope right, what is "done"                             |
+| `docs`        | What a reader needs that the diff does not say                                         |
+| `security`    | Trust boundaries, untrusted input, secrets → `.claude/skills/security-review/SKILL.md` |
+
+**Roles are lenses, not a standing panel.** Seat the ones the change actually calls for — a typo fix needs
+`implementer` and `reviewer`, a new integration may need five. Never seat two agents with the same lens hoping agreement
+means correctness; distinct lenses catch failure modes that redundancy cannot. Repo-local roles go in `.claude/agents/*.md` only for a role _this_ repo seats often enough to be worth a file; role-framed assignments cover the rest and cannot drift out of date.
+
+**The type carries the tool access:**
+
 | Task                                                      | Matching `subagent_type`                                                     |
 | --------------------------------------------------------- | ---------------------------------------------------------------------------- |
 | **Locate code / find symbols**                            | `Explore` (read-only, fast, doesn't pollute main context)                    |
@@ -210,28 +228,6 @@ Three axes, in this priority order: **accessibility** → **responsiveness** →
 | **Write tests · docs · refactoring chunks · boilerplate** | `general-purpose`                                                            |
 | **Independent code review**                               | `general-purpose`, or a project-specific reviewer subagent if one is defined |
 | **Q about Claude Code/SDK/API**                           | `claude-code-guide`                                                          |
-
-### The role roster — which change earns which seat
-
-Offloaded from `CLAUDE.md → Subagents` (2026-08-28) per `agent_docs/context_budget.md` ladder step 10. CLAUDE.md keeps
-the orchestrator default, the width and the role names; the seating conditions live here. The role is _how the
-assignment is framed_, not a separate mechanism: it goes to a `general-purpose` subagent whose brief names the lens, the
-standard it answers to, and what its return must contain. Closed vocabulary — the wave report names the role it used, so
-two runs over the same work stay comparable.
-
-| Role          | Lens it applies                                        | Earns a seat when                                   |
-| ------------- | ------------------------------------------------------ | --------------------------------------------------- |
-| `implementer` | the change itself, in this repo's idiom                | always, for any code change                         |
-| `reviewer`    | correctness of the diff, against a fresh reading       | any code change — **never the agent that wrote it** |
-| `architect`   | structural fit, boundaries, what this makes hard later | the change adds, moves or crosses a boundary        |
-| `domain`      | whether this matches how the subject actually works    | it encodes a domain or business rule                |
-| `product`     | is this what was asked, is the scope right             | the request is ambiguous or scope could drift       |
-| `docs`        | what a reader needs that the diff does not say         | a documented interface or contract changes          |
-| `security`    | trust boundaries, untrusted input, secrets             | it touches any of them → `security-review` skill    |
-
-**Roles are lenses, not a standing panel.** Seat the ones the change actually calls for — a typo fix needs
-`implementer` and `reviewer`, a new integration may need five. Never seat two agents with the same lens hoping agreement
-means correctness; distinct lenses catch failure modes that redundancy cannot.
 
 ## Subagent Selection Rules
 
@@ -259,4 +255,4 @@ Only commit when:
 - [ ] UI review done (if UI changed)
 - [ ] (If GitNexus available) `gitnexus_detect_changes()` confirmed scope
 
-<!-- Generated by claude-code-optimizer v1.37.0 -->
+<!-- Generated by claude-code-optimizer v1.42.0 -->
