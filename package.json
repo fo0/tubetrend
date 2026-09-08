@@ -23,6 +23,9 @@
   ],
   "type": "module",
   "main": "dist-electron/main.js",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
