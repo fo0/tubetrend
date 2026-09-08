@@ -2,7 +2,7 @@
  * Type-safe event bus for cross-component communication
  */
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 // Event type definitions
 export interface EventMap {
@@ -62,12 +62,30 @@ class EventBus {
 export const eventBus = new EventBus();
 
 /**
- * React hook for subscribing to event bus events
+ * React hook for subscribing to event bus events.
+ *
+ * The subscription is keyed on `event` alone: the callback is held in a ref and
+ * re-read on every emit, so a caller passing an inline arrow function no longer
+ * tears down and re-adds its listener on every render. Before this, an
+ * unmemoized callback churned a Set delete + add per render on hot events
+ * (`quota-updated` fires on every API call), and every one of the three call
+ * sites had to wrap its handler in `useCallback` purely to satisfy this hook.
+ * `useEventListener` already uses this exact latest-ref pattern — the two hooks
+ * now behave the same way, so neither pushes memoization onto its callers.
  */
 export function useEventBus<K extends EventKey>(event: K, callback: EventCallback<K>): void {
+  const savedCallback = useRef(callback);
+
   useEffect(() => {
-    return eventBus.on(event, callback);
-  }, [event, callback]);
+    savedCallback.current = callback;
+  }, [callback]);
+
+  useEffect(() => {
+    const listener: AnyEventCallback = (payload) => {
+      (savedCallback.current as AnyEventCallback)(payload);
+    };
+    return eventBus.on(event, listener as EventCallback<K>);
+  }, [event]);
 }
 
 /**

@@ -246,7 +246,7 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
         }
 
         setSearchState((prev) => ({ ...prev, step: "analyzing_ai" }));
-        const analyzedVideos = analyzeVideoStats(apiVideos, displayName, timeFrame);
+        const analyzedVideos = analyzeVideoStats(apiVideos);
 
         const savedAt = Date.now();
         setSearchState({
