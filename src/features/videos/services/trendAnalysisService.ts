@@ -23,13 +23,14 @@ const AGE_FRESH_HOURS = 6;
 const VIEWS_ESTABLISHED = 100000;
 
 /**
- * Pure math-based trend analysis (no AI API calls)
+ * Pure math-based trend analysis (no AI API calls).
+ *
+ * The score depends only on each video's own statistics and age, so the channel
+ * name and the time frame the videos were fetched under never entered the
+ * calculation. They used to be required parameters that the body discarded,
+ * which forced both call sites to supply values that went nowhere.
  */
-export function analyzeVideoStats(
-  videos: YouTubeVideoItem[],
-  _channelName: string,
-  _timeFrame: string,
-): VideoData[] {
+export function analyzeVideoStats(videos: YouTubeVideoItem[]): VideoData[] {
   const now = Date.now();
 
   return videos.map((video) => {
