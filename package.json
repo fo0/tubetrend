@@ -1,6 +1,7 @@
 {
   "name": "tubetrend",
   "version": "1.0.0",
+  "private": true,
   "description": "YouTube trend analysis tool - analyze video performance, track favorites, and discover trending content",
   "author": "fo0 <fo0@fo0.me>",
   "license": "MIT",
