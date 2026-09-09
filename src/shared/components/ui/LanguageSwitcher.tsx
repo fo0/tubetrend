@@ -133,17 +133,25 @@ export const LanguageSwitcher: React.FC = () => {
           }}
           title={`${t("language.label")} ${title}`}
         >
+          {/* `lang` on every option (WCAG 3.1.2 Language of Parts): each label is
+              an endonym — written in the language it names — while the document
+              is tagged `lang="en"` or `lang="de"` (see syncHtmlLang in
+              src/i18n/config.ts). Without the attribute a screen reader reads
+              "Français", "Русский" and "日本語" with the page's phonetics, which
+              is how a language picker becomes the one control a user cannot
+              navigate by ear. The "system" entry is a translated app string, not
+              an endonym, so it stays in the page language. */}
           <option value="system">{t("language.system")}</option>
           <optgroup label={t("language.groupTranslated")}>
             {LANGS.filter((lng) => TRANSLATED_LANGS.includes(lng.code)).map((lng) => (
-              <option key={lng.code} value={lng.code}>
+              <option key={lng.code} value={lng.code} lang={lng.code}>
                 {lng.label}
               </option>
             ))}
           </optgroup>
           <optgroup label={t("language.groupFallback")}>
             {LANGS.filter((lng) => !TRANSLATED_LANGS.includes(lng.code)).map((lng) => (
-              <option key={lng.code} value={lng.code}>
+              <option key={lng.code} value={lng.code} lang={lng.code}>
                 {lng.label}
               </option>
             ))}
