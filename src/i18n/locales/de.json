@@ -168,7 +168,7 @@
     "videosCount_one": "{{count}} Video",
     "videosCount_other": "{{count}} Videos",
     "totalViews": "{{count}} Aufrufe gesamt",
-    "totalViewsTitle": "Gesamtaufrufe über alle {{count}} Ergebnisse in diesem Zeitraum",
+    "totalViewsTitle": "Gesamtaufrufe über alle Ergebnisse in diesem Zeitraum: {{total}}",
     "sortedBy": "Sortiert nach",
     "sortModes": {
       "trend": "Trend Score (Velocity)",

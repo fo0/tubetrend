@@ -380,8 +380,12 @@ export function AnalyserPage({
                   className="bg-indigo-500/10 text-xs px-2 py-0.5 rounded-full text-indigo-600 dark:text-indigo-300 border border-indigo-500/20 whitespace-nowrap cursor-help"
                   tabIndex={0}
                   role="note"
+                  // `total`, not `count`: the number here is the view sum, and
+                  // `count` is i18next's reserved plural selector — it was both
+                  // reading as a result count in the sentence and asking for a
+                  // plural form this key does not define.
                   title={t("results.totalViewsTitle", {
-                    count: formatNumber(totalViews),
+                    total: formatNumber(totalViews),
                   })}
                   // The exact count, not the compact one the chip shows.
                   aria-label={t("results.totalViews", { count: formatNumber(totalViews) })}
