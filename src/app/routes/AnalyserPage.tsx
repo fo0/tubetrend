@@ -365,12 +365,30 @@ export function AnalyserPage({
               <span className="bg-slate-200 dark:bg-slate-700 text-xs px-2 py-0.5 rounded-full text-slate-600 dark:text-slate-300 border border-slate-300 dark:border-slate-600">
                 {t("results.videosCount", { count: sortedVideos.length })}
               </span>
+              {/* Both badges show a rounded value and keep the exact one in
+                  `title`, which only a mouse can reach: `title` on a <span> maps
+                  to role="generic", where it is neither a reliable accessible
+                  name nor reachable by keyboard or touch. So the precise figure
+                  — the whole point of the tooltip — was mouse-only.
+                  tabIndex={0} + role="note" + aria-label is the pattern
+                  VideoCard's score badge already uses for exactly this: "note"
+                  is the non-interactive role that permits an author-provided
+                  name (aria-label is PROHIBITED on role="generic", axe
+                  `aria-prohibited-attr`). Nothing renders differently. */}
               {totalViews > 0 && (
                 <span
                   className="bg-indigo-500/10 text-xs px-2 py-0.5 rounded-full text-indigo-600 dark:text-indigo-300 border border-indigo-500/20 whitespace-nowrap cursor-help"
+                  tabIndex={0}
+                  role="note"
+                  // `total`, not `count`: the number here is the view sum, and
+                  // `count` is i18next's reserved plural selector — it was both
+                  // reading as a result count in the sentence and asking for a
+                  // plural form this key does not define.
                   title={t("results.totalViewsTitle", {
-                    count: formatNumber(totalViews),
+                    total: formatNumber(totalViews),
                   })}
+                  // The exact count, not the compact one the chip shows.
+                  aria-label={t("results.totalViews", { count: formatNumber(totalViews) })}
                 >
                   {t("results.totalViews", { count: formatCompactNumber(totalViews) })}
                 </span>
@@ -378,7 +396,12 @@ export function AnalyserPage({
               {searchState.resultSavedAt != null && !searchState.isLoading && (
                 <span
                   className="text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap cursor-help"
+                  tabIndex={0}
+                  role="note"
                   title={new Date(searchState.resultSavedAt).toLocaleString(getLocale())}
+                  aria-label={`${t("results.analyzedAgo", {
+                    time: formatTimeAgo(searchState.resultSavedAt, t),
+                  })} — ${new Date(searchState.resultSavedAt).toLocaleString(getLocale())}`}
                 >
                   {t("results.analyzedAgo", {
                     time: formatTimeAgo(searchState.resultSavedAt, t),

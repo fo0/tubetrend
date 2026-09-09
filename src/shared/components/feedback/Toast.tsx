@@ -48,6 +48,34 @@ export function ToastHost() {
   );
   useEventBus("toast", handleToast);
 
+  // Hold one toast's countdown while the user is engaged with it (WCAG 2.2.1
+  // Timing Adjustable). Two concrete failures without this: a long error can
+  // expire mid-read, and a keyboard user who tabs onto the dismiss button has
+  // it unmount under the focus — dropping focus to <body>, so the next Tab
+  // restarts from the top of the page. Pointer and keyboard both count as
+  // engagement, so hover and focus drive the same pair.
+  const pauseToast = useCallback((id: string) => {
+    const timer = timersRef.current.get(id);
+    if (!timer) return;
+    clearTimeout(timer);
+    timersRef.current.delete(id);
+  }, []);
+
+  // Resume restarts the full interval rather than the remainder: the user has
+  // just looked away, so the countdown should start from there — a remainder
+  // can be a few milliseconds, i.e. a toast that vanishes the instant the
+  // pointer leaves it.
+  const resumeToast = useCallback(
+    (id: string) => {
+      if (timersRef.current.has(id)) return;
+      timersRef.current.set(
+        id,
+        setTimeout(() => dismiss(id), TOAST_TIMEOUT_MS),
+      );
+    },
+    [dismiss],
+  );
+
   // Drop every pending timer on unmount to avoid a setState after unmount.
   useEffect(() => {
     const timers = timersRef.current;
@@ -74,6 +102,13 @@ export function ToastHost() {
       {toasts.map((toast) => (
         <div
           key={toast.id}
+          // React's onFocus/onBlur are the delegated focusin/focusout pair, so
+          // they fire for the dismiss button inside too — which is the case
+          // that matters for keyboard users.
+          onMouseEnter={() => pauseToast(toast.id)}
+          onMouseLeave={() => resumeToast(toast.id)}
+          onFocus={() => pauseToast(toast.id)}
+          onBlur={() => resumeToast(toast.id)}
           className={`pointer-events-auto flex items-start gap-2 rounded-xl border p-3 text-sm shadow-xl backdrop-blur-sm animate-fade-in ${
             toast.tone === "error"
               ? "border-red-500/30 bg-red-50/95 text-red-700 dark:border-red-500/30 dark:bg-red-950/90 dark:text-red-200"

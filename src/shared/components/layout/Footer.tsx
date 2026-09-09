@@ -48,18 +48,29 @@ export function Footer() {
         </div>
 
         <div className="flex items-center gap-3">
+          {/* Each row is an icon plus a bare value; what the value *is* sat only
+              in `title`, and `title` on a <span> (role="generic") is not a
+              dependable accessible name — a screen reader announced "main",
+              "9641cc1", "Sep 9, 2026 02:07" with nothing to say which was which.
+              The mobile panel below already renders the label as text; sr-only
+              spans give this one the same information without changing the
+              layout (WCAG 1.3.1). The icons are decorative next to that label,
+              so they are hidden from the accessibility tree. */}
           {showDetails && (
             <div className="hidden md:flex items-center gap-3 text-xs">
               <span className="flex items-center gap-1" title={t("footer.branch")}>
-                <GitBranch className="w-3.5 h-3.5" />
+                <GitBranch className="w-3.5 h-3.5" aria-hidden="true" />
+                <span className="sr-only">{t("footer.branch")}: </span>
                 <span>{buildInfo.branch}</span>
               </span>
               <span className="flex items-center gap-1" title={t("footer.commitHash")}>
-                <GitCommitHorizontal className="w-3.5 h-3.5" />
+                <GitCommitHorizontal className="w-3.5 h-3.5" aria-hidden="true" />
+                <span className="sr-only">{t("footer.commit")}: </span>
                 <span>{buildInfo.commitHash.substring(0, 7)}</span>
               </span>
               <span className="flex items-center gap-1" title={t("footer.buildDate")}>
-                <Calendar className="w-3.5 h-3.5" />
+                <Calendar className="w-3.5 h-3.5" aria-hidden="true" />
+                <span className="sr-only">{t("footer.built")}: </span>
                 <span>
                   {formattedDate} {formattedTime}
                 </span>
@@ -84,17 +95,17 @@ export function Footer() {
         <div className="md:hidden border-t border-slate-200 dark:border-slate-800 px-4 py-2 bg-slate-50 dark:bg-slate-800">
           <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
             <span className="flex items-center gap-1">
-              <GitBranch className="w-3.5 h-3.5" />
+              <GitBranch className="w-3.5 h-3.5" aria-hidden="true" />
               <span>{t("footer.branch")}:</span>
               <span>{buildInfo.branch}</span>
             </span>
             <span className="flex items-center gap-1">
-              <GitCommitHorizontal className="w-3.5 h-3.5" />
+              <GitCommitHorizontal className="w-3.5 h-3.5" aria-hidden="true" />
               <span>{t("footer.commit")}:</span>
               <span>{buildInfo.commitHash.substring(0, 7)}</span>
             </span>
             <span className="flex items-center gap-1">
-              <Calendar className="w-3.5 h-3.5" />
+              <Calendar className="w-3.5 h-3.5" aria-hidden="true" />
               <span>{t("footer.built")}:</span>
               <span>
                 {formattedDate} {formattedTime}
