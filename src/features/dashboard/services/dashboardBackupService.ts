@@ -5,16 +5,23 @@ import type { FavoriteCacheEntry, FavoriteConfig } from "@/src/features/favorite
 
 const BACKUP_VERSION = 1;
 
+export interface DashboardSettings {
+  readonly sortMode: DashboardSortMode;
+  readonly sortOrder: SortOrder;
+}
+
 export interface DashboardBackupPayload {
   readonly version: number;
   readonly createdAt: number;
   readonly data: {
     readonly favorites: FavoriteConfig[];
     readonly favoritesCache: Record<string, FavoriteCacheEntry>;
-    readonly dashboard: {
-      readonly sortMode: DashboardSortMode;
-      readonly sortOrder: SortOrder;
-    };
+    /**
+     * Optional on the way *in* only: `createBackup` always writes it, but a
+     * hand-edited or foreign file need not carry it, and `parse` drops the
+     * field rather than inventing a sort order the file never stated.
+     */
+    readonly dashboard?: DashboardSettings;
   };
 }
 
@@ -87,6 +94,26 @@ function hasOnlySafeVideoUrls(favoritesCache: Record<string, unknown>): boolean 
   return true;
 }
 
+/**
+ * Read the dashboard settings out of a parsed backup, or `null` when the file
+ * carries none that make sense.
+ *
+ * The backup is untrusted on-disk input like the rest of the file, and these
+ * two values are written straight back into localStorage and into the sort
+ * comparator, so they are checked against their literal unions instead of being
+ * trusted from the `as` cast — the same treatment `coerceTimeFrame` /
+ * `coerceSearchType` give the persisted favorite configs. An absent or
+ * unrecognised pair yields `null`, which the caller reads as "this file says
+ * nothing about sorting", leaving the current preference untouched.
+ */
+function readDashboardSettings(value: unknown): DashboardSettings | null {
+  if (!value || typeof value !== "object") return null;
+  const v = value as Record<string, unknown>;
+  if (v.sortMode !== "alpha" && v.sortMode !== "velocity") return null;
+  if (v.sortOrder !== "asc" && v.sortOrder !== "desc") return null;
+  return { sortMode: v.sortMode, sortOrder: v.sortOrder };
+}
+
 export const dashboardBackupService = {
   createBackup(options: {
     dashboardSortMode: DashboardSortMode;
@@ -148,7 +175,21 @@ export const dashboardBackupService = {
         return { ok: false };
       }
 
-      return { ok: true, payload: parsed as DashboardBackupPayload };
+      // Normalize the settings half of the file at the boundary, so no consumer
+      // has to re-check what came off disk: the field is either a validated pair
+      // or `undefined`, and never the raw value the file carried.
+      const dashboard = readDashboardSettings(parsed.data.dashboard);
+
+      return {
+        ok: true,
+        payload: {
+          ...(parsed as DashboardBackupPayload),
+          data: {
+            ...(parsed as DashboardBackupPayload).data,
+            dashboard: dashboard ?? undefined,
+          },
+        },
+      };
     } catch {
       return { ok: false };
     }

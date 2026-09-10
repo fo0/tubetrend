@@ -16,6 +16,7 @@ import {
   EyeOff,
   FileJson,
   RefreshCw,
+  RotateCcw,
   Trash2,
   Upload,
 } from "lucide-react";
@@ -49,6 +50,13 @@ import type { DashboardSortMode } from "@/src/shared/types";
  * only add clutter (mirrors FILTER_MIN_ROWS in VideoListTable).
  */
 const FAVORITES_FILTER_MIN_ROWS = 5;
+
+/**
+ * How long the Undo for a hidden highlight stays offered. Longer than the 5s a
+ * toast lives, because the action it walks back is permanent and the card that
+ * vanished may not be what the eye was on.
+ */
+const UNDO_HIDE_WINDOW_MS = 10000;
 
 interface DashboardPageProps {
   favorites: FavoriteConfig[];
@@ -248,6 +256,51 @@ export function DashboardPage({
     if (copyAllFailedTimerRef.current) clearTimeout(copyAllFailedTimerRef.current);
     copyAllFailedTimerRef.current = setTimeout(() => setCopyAllHighlightsFailed(false), 2500);
   };
+
+  // Undo for the hide button on a highlight card.
+  //
+  // Hiding is one click on a card the pointer is already over, it takes effect
+  // immediately, and it is permanent — the only way back was to notice the
+  // "Hidden" button appear in this toolbar, open the modal behind it, find the
+  // entry among all the others and restore it. That is four steps to walk back
+  // a mis-click, so the card that just disappeared leaves an Undo behind it
+  // here instead, where the eye is already looking.
+  //
+  // It expires after UNDO_HIDE_WINDOW_MS: an Undo button with no time limit
+  // stays on screen pointing at an action from minutes ago, and the hidden list
+  // remains the way back for anything older. Only the newest hide is offered —
+  // a stack of undos in a toolbar is a worse control than the modal already is.
+  const [lastHidden, setLastHidden] = useState<{ videoId: string; title: string } | null>(null);
+  const undoHideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (undoHideTimerRef.current) clearTimeout(undoHideTimerRef.current);
+    };
+  }, []);
+
+  const handleHideHighlight = useCallback(
+    (
+      sourceId: string,
+      videoId: string,
+      meta: { videoTitle: string; thumbnailUrl: string; sourceLabel: string },
+    ) => {
+      hiddenHighlightsService.hide(sourceId, videoId, meta);
+      setLastHidden({ videoId, title: meta.videoTitle });
+      if (undoHideTimerRef.current) clearTimeout(undoHideTimerRef.current);
+      undoHideTimerRef.current = setTimeout(() => setLastHidden(null), UNDO_HIDE_WINDOW_MS);
+    },
+    [],
+  );
+
+  const handleUndoHide = useCallback(() => {
+    if (!lastHidden) return;
+    // show() drops the entry from the hidden list and raises
+    // "hidden-highlights-changed", which is what brings the card back.
+    hiddenHighlightsService.show(lastHidden.videoId);
+    if (undoHideTimerRef.current) clearTimeout(undoHideTimerRef.current);
+    setLastHidden(null);
+  }, [lastHidden]);
 
   // Jump from a highlight card (or an avatar in the quick-jump strip) to the
   // favorite row it belongs to.
@@ -455,7 +508,12 @@ export function DashboardPage({
           ? t("dashboard.highlights.copyAllFailed")
           : copiedAllHighlights
             ? t("dashboard.highlights.copyAllDone")
-            : ""}
+            : lastHidden
+              ? /* A hidden card simply stops being rendered, which is silent to
+                   assistive tech — so is the Undo button appearing in the
+                   toolbar. Say both. */
+                t("dashboard.highlights.hiddenAnnounce", { title: lastHidden.title })
+              : ""}
       </p>
 
       {favorites.length > 0 && (
@@ -486,6 +544,25 @@ export function DashboardPage({
               )}
 
               <div className="flex flex-wrap items-center justify-end gap-2 min-w-0">
+                {lastHidden && (
+                  <button
+                    type="button"
+                    onClick={handleUndoHide}
+                    className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-md border transition-colors
+                             border-indigo-500/40 text-indigo-600 hover:bg-indigo-500/10
+                             dark:border-indigo-500/30 dark:text-indigo-400"
+                    /* Reuses the hidden-list row's own label — "Show <title>
+                       again" is exactly what this button does, and one string
+                       for one action keeps the two from drifting apart. */
+                    title={t("dashboard.highlights.unhideAria", { title: lastHidden.title })}
+                    aria-label={t("dashboard.highlights.unhideAria", {
+                      title: lastHidden.title,
+                    })}
+                  >
+                    <RotateCcw className="w-3 h-3" aria-hidden="true" />
+                    <span className="whitespace-nowrap">{t("dashboard.highlights.undoHide")}</span>
+                  </button>
+                )}
                 {highlightVideos.length > 0 && (
                   <button
                     type="button"
@@ -631,9 +708,7 @@ export function DashboardPage({
                   sourceRank={item.sourceRank}
                   sourceId={item.sourceId}
                   isRefreshing={refreshingIds.has(item.sourceId)}
-                  onHide={(sourceId, videoId, meta) =>
-                    hiddenHighlightsService.hide(sourceId, videoId, meta)
-                  }
+                  onHide={handleHideHighlight}
                   onJumpToSource={handleJumpToSource}
                 />
               ))}

@@ -142,6 +142,20 @@ export function useDashboardSort() {
     return eventBus.on("favorites-cache-updated", () => setCacheTick((t) => t + 1));
   }, []);
 
+  /**
+   * Set both sort values at once, for a caller that already holds a complete
+   * pair — today the backup import, which restores the sorting the exported
+   * dashboard was in. Kept apart from `handleSortClick`, whose whole job is the
+   * toggle semantics of a click on a sort button (same mode = flip direction);
+   * feeding a restored pair through that would flip whatever it just set. The
+   * persist effects above pick the new values up, so the restored order also
+   * survives the next reload.
+   */
+  const applySort = useCallback((mode: DashboardSortMode, order: SortOrder) => {
+    setSortMode(mode);
+    setSortOrder(order);
+  }, []);
+
   const handleSortClick = useCallback(
     (mode: DashboardSortMode) => {
       if (mode === sortMode) {
@@ -212,6 +226,7 @@ export function useDashboardSort() {
     sortMode,
     sortOrder,
     cacheTick,
+    applySort,
     handleSortClick,
     sortFavorites,
   };

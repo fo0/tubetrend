@@ -1,4 +1,4 @@
-import { Activity, BarChart3, Keyboard, LayoutDashboard, Settings } from "lucide-react";
+import { Activity, BarChart3, Key, Keyboard, LayoutDashboard, Settings } from "lucide-react";
 import { useCallback, useRef, useState, useEffect } from "react";
 import { ThemeToggle } from "@/src/shared/components/ui/ThemeToggle";
 import { LanguageSwitcher } from "@/src/shared/components/ui/LanguageSwitcher";
@@ -15,6 +15,8 @@ interface HeaderProps {
   isLoading: boolean;
   loadingStep?: "fetching_youtube" | "analyzing_ai";
   onResetApiKey: () => void;
+  /** Reopen the API key dialog while no key is configured. */
+  onSetApiKey: () => void;
 }
 
 export function Header({
@@ -24,6 +26,7 @@ export function Header({
   isLoading,
   loadingStep,
   onResetApiKey,
+  onSetApiKey,
 }: HeaderProps) {
   const { t } = useTranslation();
 
@@ -118,7 +121,7 @@ export function Header({
             </div>
           ) : (
             <>
-              {apiKey && (
+              {apiKey ? (
                 <button
                   type="button"
                   onClick={onResetApiKey}
@@ -130,6 +133,25 @@ export function Header({
                 >
                   <Settings className="w-3 h-3" aria-hidden="true" />
                   <span className="hidden md:inline">{t("actions.resetApiKey")}</span>
+                </button>
+              ) : (
+                /* The way back into the API key dialog once it has been
+                   dismissed. Without it, closing that dialog with no key stored
+                   is a one-way door: the header offered nothing, and the only
+                   remaining route was an action that fails first and reopens it
+                   as a side effect. Amber, because "no key configured" is a
+                   state the user is meant to leave. */
+                <button
+                  type="button"
+                  onClick={onSetApiKey}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors
+                             border-amber-300 text-amber-700 hover:bg-amber-50
+                             dark:border-amber-600/50 dark:text-amber-400 dark:hover:bg-amber-900/20"
+                  title={t("actions.setApiKey")}
+                  aria-label={t("actions.setApiKey")}
+                >
+                  <Key className="w-3 h-3" aria-hidden="true" />
+                  <span className="hidden md:inline">{t("actions.setApiKey")}</span>
                 </button>
               )}
             </>

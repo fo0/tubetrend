@@ -90,7 +90,8 @@ const App: React.FC = () => {
   // Hooks
   const { favorites, refreshToken, refreshingIds, removeFavorite, refreshAll, loadFavorites } =
     useFavorites();
-  const { sortMode, sortOrder, cacheTick, handleSortClick, sortFavorites } = useDashboardSort();
+  const { sortMode, sortOrder, cacheTick, applySort, handleSortClick, sortFavorites } =
+    useDashboardSort();
   const { hiddenTick } = useHighlights(favorites);
 
   // Raise a toast when the daily YouTube quota is nearly spent or gone. Lives at
@@ -239,6 +240,16 @@ const App: React.FC = () => {
     }
   }, [t]);
 
+  // Open the API key dialog from the header while no key is configured — the
+  // counterpart of the dialog's own dismiss action.
+  const handleOpenApiKeyModal = useCallback(() => setIsApiKeyModalOpen(true), []);
+
+  // Dismiss the API key dialog without saving. The dashboard reads its
+  // favorites and highlights out of localStorage, so it stays usable with no
+  // key; anything that does need one reopens this dialog through
+  // onApiKeyInvalid, and the header keeps a button to open it by hand.
+  const handleCloseApiKeyModal = useCallback(() => setIsApiKeyModalOpen(false), []);
+
   /** Returns false when the download was blocked, so the caller never claims success. */
   const downloadTextFile = useCallback((filename: string, text: string): boolean => {
     try {
@@ -289,12 +300,24 @@ const App: React.FC = () => {
         return;
       }
 
+      // Restore the sorting the exported dashboard was in. `createBackup` has
+      // always written `data.dashboard`, but the import read only the two
+      // favorites keys and dropped that half of the file on the floor: someone
+      // restoring onto a new browser got their favorites back sorted A–Z
+      // whatever they had chosen, and nothing said why. `parse` has already
+      // validated the pair, and it is absent for a file that never carried one
+      // — in which case the current preference is the honest thing to keep.
+      const restoredSort = parsed.payload.data.dashboard;
+      if (restoredSort) {
+        applySort(restoredSort.sortMode, restoredSort.sortOrder);
+      }
+
       loadFavorites();
       dispatchEvent("favorites-cache-updated", { id: "*" });
 
       showToast(t("backup.importSuccess", { count }), "success");
     },
-    [loadFavorites, t],
+    [applySort, loadFavorites, t],
   );
 
   // Removing a favorite drops its config and its cached videos for good — there
@@ -379,7 +402,7 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100 font-sans selection:bg-indigo-500/30">
-      {isApiKeyModalOpen && <ApiKeyModal onSave={handleSaveKey} />}
+      {isApiKeyModalOpen && <ApiKeyModal onSave={handleSaveKey} onClose={handleCloseApiKeyModal} />}
       <HiddenHighlightsModal
         isOpen={isHiddenHighlightsModalOpen}
         onClose={() => setIsHiddenHighlightsModalOpen(false)}
@@ -407,6 +430,7 @@ const App: React.FC = () => {
         isLoading={searchState.isLoading}
         loadingStep={searchState.step === "fetching_youtube" ? "fetching_youtube" : "analyzing_ai"}
         onResetApiKey={handleResetKey}
+        onSetApiKey={handleOpenApiKeyModal}
       />
 
       <main
