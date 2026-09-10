@@ -10,6 +10,7 @@
     "search": "Suchen",
     "clearSearch": "Suche leeren",
     "resetApiKey": "API-Schlüssel löschen",
+    "setApiKey": "API-Schlüssel setzen",
     "refreshAll": "Alle aktualisieren (R)",
     "refreshProgress": "Aktualisiere… {{done}}/{{total}}",
     "remove": "Entfernen",

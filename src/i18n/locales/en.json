@@ -10,6 +10,7 @@
     "search": "Search",
     "clearSearch": "Clear search",
     "resetApiKey": "Delete API key",
+    "setApiKey": "Set API key",
     "refreshAll": "Refresh all (R)",
     "refreshProgress": "Refreshing… {{done}}/{{total}}",
     "remove": "Remove",

@@ -13,9 +13,14 @@ const MIN_API_KEY_LENGTH = 10;
 
 interface ApiKeyModalProps {
   onSave: (key: string) => void;
+  /**
+   * Dismiss the dialog without saving a key. Omit it and the dialog has no way
+   * out — see the Escape handler below for why every caller should pass one.
+   */
+  onClose?: () => void;
 }
 
-export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ onSave }) => {
+export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ onSave, onClose }) => {
   const [inputKey, setInputKey] = useState("");
   const [showHelp, setShowHelp] = useState(false);
   // The key is masked by default (privacy / shoulder-surfing); a toggle reveals it.
@@ -51,6 +56,42 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ onSave }) => {
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [handleKeyDown]);
+
+  // Escape closes the dialog.
+  //
+  // The Tab trap above is only half of WCAG 2.4.3 — the other half is a way
+  // back out, and this dialog had none: no Escape, no close button, no backdrop
+  // click. The single exit was submitting a key of at least MIN_API_KEY_LENGTH
+  // characters, so anyone who opened it (or landed in it on first run) with no
+  // key at hand was held in a trap the standard names outright, WCAG 2.1.2 "No
+  // Keyboard Trap". Every other dialog in the app — the hidden-highlights
+  // modal, the shortcuts popover, the quota panel — already closes on Escape.
+  //
+  // Dismissing is safe: the dashboard renders favorites and highlights straight
+  // out of localStorage and needs no API key at all, and any action that does
+  // need one routes back through App's onApiKeyInvalid, which reopens this
+  // dialog. The header keeps a button to open it again by hand.
+  useEffect(() => {
+    if (!onClose) return;
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      e.preventDefault();
+      onClose();
+    };
+    document.addEventListener("keydown", handleEsc);
+    return () => document.removeEventListener("keydown", handleEsc);
+  }, [onClose]);
+
+  // Remember what had focus and hand it back on close (WCAG 2.4.3). Without
+  // this, dismissing drops focus to <body> and a keyboard user resumes tabbing
+  // from the top of the page instead of the control they opened the dialog
+  // from. Mirrors HiddenHighlightsModal.
+  useEffect(() => {
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+    return () => {
+      previouslyFocused?.focus?.();
+    };
+  }, []);
 
   // Lock background scrolling while this blocking dialog is up, so the page
   // behind the backdrop cannot be scrolled out from under the user.
@@ -154,6 +195,20 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ onSave }) => {
               <Check className="w-5 h-5" />
               {t("modal.apiKey.save")}
             </button>
+
+            {/* The pointer counterpart of the Escape handler above — a keyboard
+                escape alone is not a visible affordance, and "modal.apiKey.cancel"
+                has shipped in both bundles all along with nothing rendering it.
+                type="button" so it never submits the form it sits in. */}
+            {onClose && (
+              <button
+                type="button"
+                onClick={onClose}
+                className="w-full py-2.5 px-4 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              >
+                {t("modal.apiKey.cancel")}
+              </button>
+            )}
           </form>
 
           <div className="pt-4 border-t border-slate-200 dark:border-slate-800">

@@ -239,6 +239,16 @@ const App: React.FC = () => {
     }
   }, [t]);
 
+  // Open the API key dialog from the header while no key is configured — the
+  // counterpart of the dialog's own dismiss action.
+  const handleOpenApiKeyModal = useCallback(() => setIsApiKeyModalOpen(true), []);
+
+  // Dismiss the API key dialog without saving. The dashboard reads its
+  // favorites and highlights out of localStorage, so it stays usable with no
+  // key; anything that does need one reopens this dialog through
+  // onApiKeyInvalid, and the header keeps a button to open it by hand.
+  const handleCloseApiKeyModal = useCallback(() => setIsApiKeyModalOpen(false), []);
+
   /** Returns false when the download was blocked, so the caller never claims success. */
   const downloadTextFile = useCallback((filename: string, text: string): boolean => {
     try {
@@ -379,7 +389,7 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100 font-sans selection:bg-indigo-500/30">
-      {isApiKeyModalOpen && <ApiKeyModal onSave={handleSaveKey} />}
+      {isApiKeyModalOpen && <ApiKeyModal onSave={handleSaveKey} onClose={handleCloseApiKeyModal} />}
       <HiddenHighlightsModal
         isOpen={isHiddenHighlightsModalOpen}
         onClose={() => setIsHiddenHighlightsModalOpen(false)}
@@ -407,6 +417,7 @@ const App: React.FC = () => {
         isLoading={searchState.isLoading}
         loadingStep={searchState.step === "fetching_youtube" ? "fetching_youtube" : "analyzing_ai"}
         onResetApiKey={handleResetKey}
+        onSetApiKey={handleOpenApiKeyModal}
       />
 
       <main
