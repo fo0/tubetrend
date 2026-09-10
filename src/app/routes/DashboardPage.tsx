@@ -551,8 +551,11 @@ export function DashboardPage({
                     className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-md border transition-colors
                              border-indigo-500/40 text-indigo-600 hover:bg-indigo-500/10
                              dark:border-indigo-500/30 dark:text-indigo-400"
-                    title={t("dashboard.highlights.undoHideTitle", { title: lastHidden.title })}
-                    aria-label={t("dashboard.highlights.undoHideTitle", {
+                    /* Reuses the hidden-list row's own label — "Show <title>
+                       again" is exactly what this button does, and one string
+                       for one action keeps the two from drifting apart. */
+                    title={t("dashboard.highlights.unhideAria", { title: lastHidden.title })}
+                    aria-label={t("dashboard.highlights.unhideAria", {
                       title: lastHidden.title,
                     })}
                   >

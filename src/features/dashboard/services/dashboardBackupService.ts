@@ -176,8 +176,8 @@ export const dashboardBackupService = {
       }
 
       // Normalize the settings half of the file at the boundary, so no consumer
-      // has to re-check what came off disk. `?? undefined` keeps the field off
-      // the object entirely when the file has nothing usable to say.
+      // has to re-check what came off disk: the field is either a validated pair
+      // or `undefined`, and never the raw value the file carried.
       const dashboard = readDashboardSettings(parsed.data.dashboard);
 
       return {

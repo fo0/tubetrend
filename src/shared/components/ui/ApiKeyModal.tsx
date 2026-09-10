@@ -27,6 +27,18 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ onSave, onClose }) => 
   const [showKey, setShowKey] = useState(false);
   const { t } = useTranslation();
   const dialogRef = useRef<HTMLDivElement>(null);
+  // What had focus before this dialog appeared, so closing can hand it back
+  // (WCAG 2.4.3) — otherwise focus falls to <body> and a keyboard user resumes
+  // tabbing from the top of the page instead of the control they came from.
+  //
+  // Captured during render, not in an effect: the key field carries `autoFocus`,
+  // which React applies while committing the DOM — i.e. before any effect of
+  // this component runs. Reading `document.activeElement` from an effect would
+  // therefore capture that very input and "restore" focus to a node that is
+  // being unmounted in the same breath.
+  const previouslyFocusedRef = useRef<HTMLElement | null>(
+    typeof document !== "undefined" ? (document.activeElement as HTMLElement | null) : null,
+  );
 
   const trimmedKey = inputKey.trim();
   const isKeyLongEnough = trimmedKey.length >= MIN_API_KEY_LENGTH;
@@ -57,6 +69,22 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ onSave, onClose }) => 
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [handleKeyDown]);
 
+  /**
+   * Close without saving, handing focus back to whatever opened the dialog.
+   *
+   * The focus move happens before `onClose`, i.e. while this component is still
+   * mounted: the caller unmounts it synchronously, and a `.focus()` afterwards
+   * would race the teardown. The target is outside the dialog, so it keeps the
+   * focus it is given. `isConnected` guards the case where the trigger itself is
+   * gone (the header swaps its API-key button when the key state changes).
+   */
+  const handleClose = useCallback(() => {
+    if (!onClose) return;
+    const previouslyFocused = previouslyFocusedRef.current;
+    if (previouslyFocused?.isConnected) previouslyFocused.focus?.();
+    onClose();
+  }, [onClose]);
+
   // Escape closes the dialog.
   //
   // The Tab trap above is only half of WCAG 2.4.3 — the other half is a way
@@ -76,22 +104,11 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ onSave, onClose }) => 
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
       e.preventDefault();
-      onClose();
+      handleClose();
     };
     document.addEventListener("keydown", handleEsc);
     return () => document.removeEventListener("keydown", handleEsc);
-  }, [onClose]);
-
-  // Remember what had focus and hand it back on close (WCAG 2.4.3). Without
-  // this, dismissing drops focus to <body> and a keyboard user resumes tabbing
-  // from the top of the page instead of the control they opened the dialog
-  // from. Mirrors HiddenHighlightsModal.
-  useEffect(() => {
-    const previouslyFocused = document.activeElement as HTMLElement | null;
-    return () => {
-      previouslyFocused?.focus?.();
-    };
-  }, []);
+  }, [onClose, handleClose]);
 
   // Lock background scrolling while this blocking dialog is up, so the page
   // behind the backdrop cannot be scrolled out from under the user.
@@ -203,7 +220,7 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ onSave, onClose }) => 
             {onClose && (
               <button
                 type="button"
-                onClick={onClose}
+                onClick={handleClose}
                 className="w-full py-2.5 px-4 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
               >
                 {t("modal.apiKey.cancel")}

@@ -133,7 +133,6 @@
       "unhide": "Show",
       "unhideAria": "Show \"{{title}}\" again",
       "undoHide": "Undo hide",
-      "undoHideTitle": "Show \"{{title}}\" again",
       "hiddenAnnounce": "\"{{title}}\" hidden. Undo is available in the highlights toolbar.",
       "delete": "Delete",
       "empty": "No highlights available yet. Highlights will appear once your favorites have loaded videos.",
