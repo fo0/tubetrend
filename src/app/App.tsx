@@ -90,7 +90,8 @@ const App: React.FC = () => {
   // Hooks
   const { favorites, refreshToken, refreshingIds, removeFavorite, refreshAll, loadFavorites } =
     useFavorites();
-  const { sortMode, sortOrder, cacheTick, handleSortClick, sortFavorites } = useDashboardSort();
+  const { sortMode, sortOrder, cacheTick, applySort, handleSortClick, sortFavorites } =
+    useDashboardSort();
   const { hiddenTick } = useHighlights(favorites);
 
   // Raise a toast when the daily YouTube quota is nearly spent or gone. Lives at
@@ -299,12 +300,24 @@ const App: React.FC = () => {
         return;
       }
 
+      // Restore the sorting the exported dashboard was in. `createBackup` has
+      // always written `data.dashboard`, but the import read only the two
+      // favorites keys and dropped that half of the file on the floor: someone
+      // restoring onto a new browser got their favorites back sorted A–Z
+      // whatever they had chosen, and nothing said why. `parse` has already
+      // validated the pair, and it is absent for a file that never carried one
+      // — in which case the current preference is the honest thing to keep.
+      const restoredSort = parsed.payload.data.dashboard;
+      if (restoredSort) {
+        applySort(restoredSort.sortMode, restoredSort.sortOrder);
+      }
+
       loadFavorites();
       dispatchEvent("favorites-cache-updated", { id: "*" });
 
       showToast(t("backup.importSuccess", { count }), "success");
     },
-    [loadFavorites, t],
+    [applySort, loadFavorites, t],
   );
 
   // Removing a favorite drops its config and its cached videos for good — there
