@@ -28,7 +28,6 @@ Verified against the tree on 2026-08-23. Line counts come from `find src -name '
 - **`FavoriteRow.tsx` (~755 lines)** — God component handling data fetching, caching, UI menus, state management and event handling, with 11 interdependent `useEffect` hooks plus refs for synchronization. Should be split into sub-components (`FavoriteRowHeader`, `FavoriteRowMenus`, `FavoriteRowVideos`) and a custom `useFavoriteRowData()` hook that absorbs the effect chain.
 - **`ApiQuotaIndicator.tsx` (~739 lines)** — quota badge, history panel and time-window selection in one file. The window/aggregation math is pure and extractable into a service, which would also make it the first easily testable target here.
 - **`AnalyserPage.tsx` (~599 lines)** — page shell plus sort/topN state, export handlers and clipboard handling. Extract the export + copy-all actions.
-- **`DashboardPage.tsx` (~642 lines)** — page shell plus favorites filtering, import/export picking, refresh-progress tracking and highlight aggregation. Newly over the 500-line bar. The `useMemo` filter/aggregation chain (`favoriteHaystacks`, `matchingFavoriteIds`, `highlightVideosData`) is the natural extraction into a `useDashboardFilters()` hook.
 - **No test coverage** — no test framework is configured. Critical services (`favoritesService`, `trendAnalysisService`, `quotaService`, `eventBus`, `storage`) would benefit from unit tests; priority order in `agent_docs/testing.md`.
 
 ### Resolved — do not re-open
@@ -39,6 +38,7 @@ These were listed as targets in earlier revisions and are fixed in the code. Re-
 - ~~**Hard-coded German strings in API client**~~ — `youtubeApiClient.ts` carries no German strings; user-facing text is i18n-keyed.
 - ~~**Magic numbers in trend analysis**~~ — `trendAnalysisService.ts` declares named constants (`VELOCITY_WEIGHT`, `ENGAGEMENT_WEIGHT`, `VELOCITY_EXTREME_VPH`, …) at module top.
 - ~~**Module-level API key state**~~ — `localStorage` is now the single source of truth; the module-level mirror is gone (see the comment above `setApiKey`).
+- ~~**`DashboardPage.tsx` (~932 lines)**~~ — split in #471 into six components under `src/features/dashboard/components/` and four hooks under `src/features/dashboard/hooks/` (`useDashboardFilters`, `useHighlightsCopyAll`, `useUndoHiddenHighlight`, `useQuickJumpFocus`). The page is the composition root at ~275 lines; every new file is under 300.
 
 ## GitNexus-Assisted Refactoring (read-only analysis)
 

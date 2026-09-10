@@ -19,6 +19,7 @@ flowchart TD
     subgraph "Features"
         subgraph "Dashboard Feature"
             USEDASH("useDashboard hooks"):::feature
+            DASHCOMP("dashboard components"):::feature
             DASHSVC("dashboardServices"):::service
             HIDDEN("hiddenHighlightsService"):::service
         end
@@ -73,6 +74,8 @@ flowchart TD
     APP --> ANALYSER
 
     DASHBOARD --> USEDASH
+    DASHBOARD --> DASHCOMP
+    DASHCOMP --> DASHSVC
     USEDASH --> DASHSVC
     USEDASH --> FAVSVC
     USEDASH --> HIDDEN
@@ -114,6 +117,7 @@ flowchart TD
     click I18N "src/i18n/config.ts"
     click ERRBND "src/shared/components/feedback"
     click USEDASH "src/features/dashboard/hooks/useDashboard.ts"
+    click DASHCOMP "src/features/dashboard/components"
     click DASHSVC "src/features/dashboard/services"
     click HIDDEN "src/features/dashboard/services"
     click FAVSVC "src/features/favorites/services/favoritesService.ts"

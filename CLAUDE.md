@@ -193,7 +193,7 @@ Toolchain gotchas that bite first (`noUnusedLocals` is a type error, an `eslint-
 
 ## Refactoring Notes
 
-Five files sit over the ~500-line bar (largest: `InputSection.tsx` ~775), no test coverage. List, split candidates, resolved list (do not re-open), principles: `agent_docs/refactoring_guidelines.md`
+Four files sit over the ~500-line bar (largest: `InputSection.tsx` ~824), no test coverage. List, split candidates, resolved list (do not re-open), principles: `agent_docs/refactoring_guidelines.md`
 
 ## Documentation Rules
 
