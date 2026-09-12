@@ -26,26 +26,71 @@ function isHttpUrl(value: unknown): boolean {
 }
 
 /**
+ * True for the `thumbnailUrl` values a genuine cache entry can carry: absent, or an
+ * absolute http(s) URL.
+ *
+ * The empty string must stay accepted — `analyzeVideoStats` (trendAnalysisService)
+ * falls back to `""` when a video carries no thumbnail at all, so real entries do
+ * contain it, and `<img src="">` is what the dashboard already renders for those rows
+ * today. Older entries may omit the field entirely. Rejecting either would refuse
+ * legitimate data, which is why this is deliberately laxer than `isHttpUrl` — the
+ * same split dashboardBackupService draws between its two URL guards.
+ */
+function isSafeThumbnailUrl(value: unknown): boolean {
+  if (value === undefined || value === null || value === "") return true;
+  return isHttpUrl(value);
+}
+
+/**
  * The favorites cache is localStorage content, i.e. untrusted on-disk input, and
  * `getCache()` is the single read boundary every consumer goes through
  * (FavoriteRow, FavoriteAvatar, DashboardPage, useDashboard, dashboardTopVideos).
- * Its videos are rendered straight into `<a href={video.url}>` (VideoCard,
- * VideoListTable, HighlightVideoCard), so a tampered entry carrying a
- * `javascript:` URL would put script execution one click away in the app origin —
- * the origin whose localStorage holds the YouTube API key. Dropping non-http(s)
- * entries here closes the third and last boundary this cached-video shape crosses;
- * the backup-import boundary (dashboardBackupService.parse) and the persisted
- * analyser snapshot (useSearch) already apply the identical guard.
- * Genuine entries only ever contain `https://www.youtube.com/watch?v=<id>` (built
- * in trendAnalysisService), so this is behavior-equivalent for real data and fails
- * closed. The original object is returned untouched when nothing is filtered, which
- * keeps referential identity for the memo/cache-buster call sites. CWE-79 / OWASP A03.
+ * Two sinks are fed from its videos, and each gets the treatment that keeps the
+ * dashboard usable:
+ *   - `<a href={video.url}>` (VideoCard, VideoListTable, HighlightVideoCard) — a
+ *     tampered entry carrying a `javascript:` URL would put script execution one
+ *     click away in the app origin, the origin whose localStorage holds the YouTube
+ *     API key. Such an entry is DROPPED: a link that cannot be navigated safely has
+ *     no usable remainder.
+ *   - `<img src={video.thumbnailUrl}>` (same three components) — an unvalidated value
+ *     here does not execute script, but it does make every dashboard render fire an
+ *     outbound GET to a host the entry's author chose, carrying the victim's IP and
+ *     User-Agent from inside the app origin. The nginx CSP (`img-src 'self' data:
+ *     https:`) allows any https host, so it does not close this on its own, and the
+ *     targets shipping without that nginx config — Capacitor, Chrome extension —
+ *     restrict `img-src` not at all. Such an entry is KEPT with its thumbnail blanked
+ *     to `""`: that is exactly the state a thumbnail-less video already renders in, so
+ *     the beacon dies without the row disappearing.
+ *
+ * This closes the third and last boundary this cached-video shape crosses; the
+ * backup-import boundary (dashboardBackupService.parse) and the persisted analyser
+ * snapshot (useSearch) apply the same two guards. Genuine entries only ever contain
+ * `https://www.youtube.com/watch?v=<id>` for `url` (built in trendAnalysisService) and
+ * an `https://i.ytimg.com/...` thumbnail or `""`, so this is behavior-equivalent for
+ * real data and fails closed. The original object is returned untouched when nothing
+ * was dropped or blanked, which keeps referential identity for the memo/cache-buster
+ * call sites. CWE-79 (url sink) / CWE-200 (thumbnail beacon) / OWASP A03.
  */
 function withSafeVideoUrls<T extends FavoriteCacheEntry>(entry: T): T {
   const videos = entry?.videos;
   if (!Array.isArray(videos)) return entry;
-  const safe = videos.filter((video) => isHttpUrl(video?.url));
-  return safe.length === videos.length ? entry : { ...entry, videos: safe };
+
+  let changed = false;
+  const safe: VideoData[] = [];
+  for (const video of videos) {
+    if (!isHttpUrl(video?.url)) {
+      changed = true;
+      continue;
+    }
+    if (isSafeThumbnailUrl(video?.thumbnailUrl)) {
+      safe.push(video);
+      continue;
+    }
+    changed = true;
+    safe.push({ ...video, thumbnailUrl: "" });
+  }
+
+  return changed ? { ...entry, videos: safe } : entry;
 }
 
 export const favoritesService = {

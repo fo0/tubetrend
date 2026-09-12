@@ -63,23 +63,52 @@ function isHttpUrl(value: unknown): boolean {
 }
 
 /**
- * The persisted snapshot is rehydrated straight into the analyser view, where every
- * entry's `url` becomes an `<a href={video.url}>` (VideoCard, VideoListTable). Treat
- * it like any other on-disk input and reject a snapshot carrying a non-http(s) URL,
- * so a `javascript:` URL can never reach a link in the app origin — the origin whose
- * localStorage holds the YouTube API key. dashboardBackupService.parse() applies the
- * identical guard to the backup-import boundary; this is the second boundary the same
- * cached-video shape crosses. Genuine snapshots only ever contain
- * `https://www.youtube.com/watch?v=<id>` (built in trendAnalysisService), so this is
+ * True for the `thumbnailUrl` values a genuine snapshot can carry: absent, or an
+ * absolute http(s) URL.
+ *
+ * The empty string must stay accepted — `analyzeVideoStats` (trendAnalysisService)
+ * falls back to `""` when a video carries no thumbnail at all, so real snapshots do
+ * contain it, and `<img src="">` is what the analyser already renders for those rows
+ * today. Older snapshots may omit the field entirely. Rejecting either would refuse
+ * legitimate data, which is why this is deliberately laxer than `isHttpUrl` —
+ * the same split dashboardBackupService draws between its two URL guards.
+ */
+function isSafeThumbnailUrl(value: unknown): boolean {
+  if (value === undefined || value === null || value === "") return true;
+  return isHttpUrl(value);
+}
+
+/**
+ * The persisted snapshot is rehydrated straight into the analyser view, so treat it
+ * like any other on-disk input. Two sinks are fed from every entry:
+ *   - `<a href={video.url}>` (VideoCard, VideoListTable) — rejecting a non-http(s)
+ *     URL keeps a `javascript:` URL out of a link in the app origin, the origin whose
+ *     localStorage holds the YouTube API key.
+ *   - `<img src={video.thumbnailUrl}>` (same two components) — an
+ *     unvalidated value here does not execute script, but it does make every analyser
+ *     render fire an outbound GET to a host the snapshot's author chose, carrying the
+ *     victim's IP and User-Agent from inside the app origin. The nginx CSP
+ *     (`img-src 'self' data: https:`) allows any https host, so it does not close this
+ *     on its own, and the targets shipping without that nginx config — Capacitor,
+ *     Chrome extension — restrict `img-src` not at all.
+ *
+ * dashboardBackupService.parse() applies both guards to the backup-import boundary;
+ * this is the second boundary the same cached-video shape crosses. Genuine snapshots
+ * only ever contain `https://www.youtube.com/watch?v=<id>` for `url` (built in
+ * trendAnalysisService) and an `https://i.ytimg.com/...` thumbnail or `""`, so this is
  * behavior-equivalent for real data and fails closed — a rejected snapshot simply
- * starts the analyser empty, exactly like an expired one. CWE-79 / OWASP A03.
+ * starts the analyser empty, exactly like an expired one.
+ * CWE-79 (url sink) / CWE-200 (thumbnail beacon) / OWASP A03.
  */
 function isPersistedAnalyserResult(value: unknown): value is PersistedAnalyserResult {
   if (!value || typeof value !== "object") return false;
   const v = value as Record<string, unknown>;
   return (
     Array.isArray(v.data) &&
-    v.data.every((entry) => isHttpUrl((entry as { url?: unknown } | null | undefined)?.url)) &&
+    v.data.every((entry) => {
+      const candidate = entry as { url?: unknown; thumbnailUrl?: unknown } | null | undefined;
+      return isHttpUrl(candidate?.url) && isSafeThumbnailUrl(candidate?.thumbnailUrl);
+    }) &&
     typeof v.channelName === "string" &&
     typeof v.savedAt === "number" &&
     (v.channelId === undefined || typeof v.channelId === "string")
