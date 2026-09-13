@@ -20,9 +20,9 @@ All `localStorage` access goes through the `StorageAdapter` interface. `safeRead
 
 ## Feature Module Pattern
 
-A `src/features/` module draws from `services/` (pure business logic), `hooks/` (React-state composition), `types.ts` and an `index.ts` barrel export, but takes only the parts it needs — none of the five modules carries all four. Where a barrel exists, cross-feature imports go through it and never deep-import that module's internals.
+A `src/features/` module draws from `services/` (pure business logic), `hooks/` (React-state composition), `types.ts` and an `index.ts` barrel export, but takes only the parts it needs — `youtube` is the only one of the five that carries all four. Where a barrel exists, cross-feature imports go through it and never deep-import that module's internals.
 
-Actual shape (verified 2026-08-09): `dashboard` = services + hooks + barrel · `favorites` / `videos` / `youtube` = services + `types.ts` + barrel · `search` = `hooks/useSearch.ts` only, with **no barrel**, so `App.tsx` and `AnalyserPage.tsx` import it deeply. Giving `search` a barrel is an open cleanup, not a rule that already holds.
+Actual shape (verified 2026-09-13): `dashboard` = services + hooks + barrel, plus a feature-local `components/` — six components extracted from `DashboardPage.tsx` in #471, and the only such directory in `src/features/` · `favorites` / `videos` = services + `types.ts` + barrel · `youtube` = services + hooks + `types.ts` + barrel · `search` = `hooks/useSearch.ts` only, with **no barrel**, so `App.tsx` and `AnalyserPage.tsx` import it deeply. Giving `search` a barrel is an open cleanup, not a rule that already holds.
 
 **Location:** `src/features/*/`
 
