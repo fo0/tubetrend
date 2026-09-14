@@ -254,6 +254,37 @@ export const favoritesService = {
     return updatedFav;
   },
 
+  /**
+   * Set (or clear) the user-defined display name of a favorite, in place.
+   *
+   * `update()` cannot do this. It rebuilds the id out of query/timeFrame/
+   * maxResults, bumps `createdAt` and drops the cache entry — correct for the two
+   * config changes it serves, ruinous for a rename: the label is not part of the
+   * id, so renaming would throw away up to two hours of cached videos and force a
+   * fresh fetch that costs YouTube quota (100 units for a channel search), all to
+   * change a string the fetch has no say in. Here nothing but the label moves.
+   *
+   * An empty or whitespace-only value removes the override, so the row falls back
+   * to the channel title again — the same "empty means unset" rule `add()` and
+   * `update()` already apply to this field.
+   *
+   * Returns the updated favorite, or `null` when no favorite carries that id.
+   */
+  setLabel(id: string, label: string): FavoriteConfig | null {
+    const list = this.list();
+    const idx = list.findIndex((f) => f.id === id);
+    if (idx < 0) return null;
+
+    const next: FavoriteConfig = { ...list[idx], label: label.trim() || undefined };
+    const nextList = [...list];
+    nextList[idx] = next;
+    safeWrite(STORAGE_KEYS.FAVORITES, nextList);
+
+    dispatchEvent("favorites-changed");
+
+    return next;
+  },
+
   remove(id: string): void {
     const list = this.list().filter((f) => f.id !== id);
     safeWrite(STORAGE_KEYS.FAVORITES, list);

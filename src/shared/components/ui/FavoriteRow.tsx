@@ -21,6 +21,7 @@ import {
   ChevronRight,
   Hash,
   Loader2,
+  Pencil,
   RefreshCw,
   Trash2,
 } from "lucide-react";
@@ -504,38 +505,141 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
     }
   };
 
+  // Rename: the favorite's own display name, independent of the channel title
+  // YouTube reports. `label` has been part of the stored favorite all along —
+  // the alphabetical sort, the dashboard filter and the highlight cards' "jump
+  // to favorite" label all read it — but nothing could ever set it, so a
+  // dashboard of a dozen @handles could not be organised into the names their
+  // owner thinks in ("Competitor A", "Client channel").
+  //
+  // Clearing the field removes the override and the row falls back to the
+  // channel title, so the rename is never a one-way door.
+  const [isRenaming, setIsRenaming] = useState<boolean>(false);
+  const [labelDraft, setLabelDraft] = useState<string>("");
+  const renameButtonRef = useRef<HTMLButtonElement | null>(null);
+  // Set by the Enter / Escape handlers: both unmount the input, which fires a
+  // blur that would otherwise run the commit a second time (and, after Escape,
+  // save the very draft that was just discarded).
+  const renameHandledRef = useRef<boolean>(false);
+
+  const displayName = favorite.label?.trim() || channelTitle;
+
+  const startRename = () => {
+    // Seed from what is stored, not from the `favorite` prop. Clicking the
+    // pencil while the field is already open commits on blur first, and the prop
+    // still carries the pre-commit label at that moment — seeding from it would
+    // reopen the editor on the old value and, one click elsewhere later, write
+    // that stale value back over the rename just made.
+    const stored = favoritesService.list().find((f) => f.id === currentFavId);
+    setLabelDraft(stored?.label ?? favorite.label ?? "");
+    setIsRenaming(true);
+  };
+
+  const commitRename = () => {
+    setIsRenaming(false);
+    const nextLabel = labelDraft.trim();
+    if (nextLabel !== (favorite.label ?? "")) {
+      favoritesService.setLabel(currentFavId, nextLabel);
+    }
+  };
+
+  const cancelRename = () => {
+    setIsRenaming(false);
+  };
+
+  const handleRenameKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      renameHandledRef.current = true;
+      commitRename();
+      renameButtonRef.current?.focus();
+      return;
+    }
+    if (e.key === "Escape") {
+      e.preventDefault();
+      // Stop here: the row sits inside no dialog, but a bare Escape is also the
+      // "clear the search box" gesture elsewhere — this one belongs to the field.
+      e.stopPropagation();
+      renameHandledRef.current = true;
+      cancelRename();
+      renameButtonRef.current?.focus();
+    }
+  };
+
+  const handleRenameBlur = () => {
+    if (renameHandledRef.current) {
+      renameHandledRef.current = false;
+      return;
+    }
+    commitRename();
+  };
+
   return (
     <section className="mb-10">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">
-            {isKeywordSearch ? (
-              // Keyword-Suche: Hash-Icon, kein Link
-              <span className="inline-flex items-center gap-1.5">
-                <Hash className="w-4 h-4 text-indigo-500" aria-hidden="true" />
-                {channelTitle}
-              </span>
-            ) : channelUrl ? (
-              // Kanal-Suche mit Link
-              <a
-                href={channelUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-red-500 dark:text-red-400 hover:text-red-400 dark:hover:text-red-300 hover:underline underline-offset-2"
-                title={t("results.openChannelTitle", { channel: channelTitle })}
-              >
-                <Youtube className="w-4 h-4" aria-hidden="true" />
-                {channelTitle}
-              </a>
-            ) : (
-              // Kanal-Suche ohne Link (noch kein channelId)
-              <span className="inline-flex items-center gap-1.5">
-                <Youtube className="w-4 h-4 text-red-500" aria-hidden="true" />
-                {channelTitle}
-              </span>
-            )}
-          </h3>
+          {isRenaming ? (
+            <input
+              type="text"
+              autoFocus
+              value={labelDraft}
+              onChange={(e) => setLabelDraft(e.target.value)}
+              onKeyDown={handleRenameKeyDown}
+              onBlur={handleRenameBlur}
+              maxLength={60}
+              // The channel title as placeholder: it is what an empty field
+              // falls back to, so the placeholder states the outcome instead of
+              // an instruction.
+              placeholder={channelTitle}
+              aria-label={t("favorites.renameLabel")}
+              title={t("favorites.renameHint")}
+              className="text-lg font-bold text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-md px-2 py-0.5 w-56 focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 outline-none"
+            />
+          ) : (
+            <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">
+              {isKeywordSearch ? (
+                // Keyword-Suche: Hash-Icon, kein Link
+                <span className="inline-flex items-center gap-1.5">
+                  <Hash className="w-4 h-4 text-indigo-500" aria-hidden="true" />
+                  {displayName}
+                </span>
+              ) : channelUrl ? (
+                // Kanal-Suche mit Link. The `title` keeps naming the channel
+                // itself — under a custom label it is the only place the real
+                // channel name still shows.
+                <a
+                  href={channelUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-red-500 dark:text-red-400 hover:text-red-400 dark:hover:text-red-300 hover:underline underline-offset-2"
+                  title={t("results.openChannelTitle", { channel: channelTitle })}
+                >
+                  <Youtube className="w-4 h-4" aria-hidden="true" />
+                  {displayName}
+                </a>
+              ) : (
+                // Kanal-Suche ohne Link (noch kein channelId)
+                <span className="inline-flex items-center gap-1.5">
+                  <Youtube className="w-4 h-4 text-red-500" aria-hidden="true" />
+                  {displayName}
+                </span>
+              )}
+            </h3>
+          )}
+          {/* Rename trigger. Stays mounted while the field is open so Enter and
+              Escape have somewhere to hand focus back to (WCAG 2.4.3) instead of
+              dropping it on <body> when the input unmounts. */}
+          <button
+            ref={renameButtonRef}
+            type="button"
+            onClick={startRename}
+            className="inline-flex items-center justify-center w-7 h-7 shrink-0 rounded-md text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            title={t("favorites.rename")}
+            aria-label={t("favorites.renameAria", { name: displayName })}
+          >
+            <Pencil className="w-3.5 h-3.5" aria-hidden="true" />
+          </button>
           <ChevronRight className="w-4 h-4 text-slate-400 dark:text-slate-500" />
           <div className="text-sm text-slate-500 dark:text-slate-400 flex items-center gap-2 relative z-40">
             {/* Timeframe Tag als Button */}
