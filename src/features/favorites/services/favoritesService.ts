@@ -167,6 +167,25 @@ export const favoritesService = {
     return list.some((f) => f.id === id);
   },
 
+  /**
+   * The favorite stored for exactly this configuration, or `null`.
+   *
+   * `exists()` answers the same question with a boolean, which is all the save
+   * button needed while it could only ever add. Removing one needs its id, and
+   * the id is derived from four fields by a rule (`makeId`) that lives in this
+   * module — a caller rebuilding that string itself would silently miss the next
+   * time the rule changes.
+   */
+  find(
+    query: string,
+    timeFrame: TimeFrame,
+    maxResults: number,
+    searchType: SearchType = SearchType.CHANNEL,
+  ): FavoriteConfig | null {
+    const id = makeId(query, timeFrame, maxResults, searchType);
+    return this.list().find((f) => f.id === id) ?? null;
+  },
+
   add(input: {
     query: string;
     timeFrame: TimeFrame;
@@ -252,6 +271,37 @@ export const favoritesService = {
     dispatchEvent("favorites-changed");
 
     return updatedFav;
+  },
+
+  /**
+   * Set (or clear) the user-defined display name of a favorite, in place.
+   *
+   * `update()` cannot do this. It rebuilds the id out of query/timeFrame/
+   * maxResults, bumps `createdAt` and drops the cache entry — correct for the two
+   * config changes it serves, ruinous for a rename: the label is not part of the
+   * id, so renaming would throw away up to two hours of cached videos and force a
+   * fresh fetch that costs YouTube quota (100 units for a channel search), all to
+   * change a string the fetch has no say in. Here nothing but the label moves.
+   *
+   * An empty or whitespace-only value removes the override, so the row falls back
+   * to the channel title again — the same "empty means unset" rule `add()` and
+   * `update()` already apply to this field.
+   *
+   * Returns the updated favorite, or `null` when no favorite carries that id.
+   */
+  setLabel(id: string, label: string): FavoriteConfig | null {
+    const list = this.list();
+    const idx = list.findIndex((f) => f.id === id);
+    if (idx < 0) return null;
+
+    const next: FavoriteConfig = { ...list[idx], label: label.trim() || undefined };
+    const nextList = [...list];
+    nextList[idx] = next;
+    safeWrite(STORAGE_KEYS.FAVORITES, nextList);
+
+    dispatchEvent("favorites-changed");
+
+    return next;
   },
 
   remove(id: string): void {

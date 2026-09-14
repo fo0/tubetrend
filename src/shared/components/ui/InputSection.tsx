@@ -357,11 +357,47 @@ export const InputSection: React.FC<InputSectionProps> = ({
     }
   };
 
-  const handleSaveFavorite = () => {
-    if (!inputValue.trim()) return;
+  /** The query as the favorite stores it — prefix stripped, channel URLs reduced to an identifier. */
+  const favoriteQuery = (): string => {
     const strippedInput = stripSearchPrefix(inputValue);
-    const query =
-      searchType === SearchType.CHANNEL ? extractChannelIdentifier(strippedInput) : strippedInput;
+    return searchType === SearchType.CHANNEL
+      ? extractChannelIdentifier(strippedInput)
+      : strippedInput;
+  };
+
+  /**
+   * Star button: saves the current search as a favorite, and removes it again
+   * once it is one.
+   *
+   * The filled star used to be inert — clicking it re-saved what was already
+   * saved. Undoing a favorite meant leaving the analyser for the dashboard and
+   * finding the row there, so the two halves of one decision lived on two pages.
+   * Removal confirms first, with the same wording and the same "the cached
+   * videos go too" warning the dashboard's own Remove button uses.
+   */
+  const handleToggleFavorite = () => {
+    if (!inputValue.trim()) return;
+    const query = favoriteQuery();
+
+    if (isFavorite) {
+      const existing = favoritesService.find(query, timeFrame, maxResults, searchType);
+      // Gone already (a second tab, a cleared dashboard): nothing to confirm,
+      // just correct the button.
+      if (!existing) {
+        setIsFavorite(false);
+        return;
+      }
+      if (!window.confirm(t("favorites.removeConfirm", { name: existing.label || query }))) return;
+      favoritesService.remove(existing.id);
+      setIsFavorite(false);
+      // Save, then remove again inside the 1.5s confirmation window: without
+      // this the button would sit there green and labelled "Saved" for the rest
+      // of it, describing a favorite that no longer exists.
+      if (justSavedTimerRef.current) clearTimeout(justSavedTimerRef.current);
+      setJustSaved(false);
+      return;
+    }
+
     favoritesService.add({ query, timeFrame, maxResults, searchType });
     // kurzes visuelles Feedback
     setJustSaved(true);
@@ -374,6 +410,30 @@ export const InputSection: React.FC<InputSectionProps> = ({
     } catch {
       // ignore storage errors (consistent with other localStorage call sites)
     }
+  };
+
+  /**
+   * Open (or close) the history dropdown whatever the input holds.
+   *
+   * `handleFocus` below opens it only while the box is empty — and the box is
+   * almost never empty, because the last query is restored from localStorage on
+   * every load. So the ten searches behind it could only be reached by first
+   * clearing the field that had just been filled in for you, and typing anything
+   * closes the list again. This button is the way back to them.
+   */
+  const toggleHistory = () => {
+    if (history.length === 0) return;
+    // The two dropdowns are mutually exclusive, and a suggestion lookup still in
+    // flight for the current value would reopen the other one on arrival.
+    cancelSuggestionLookup();
+    // Hide the channel suggestions, but keep the ones already fetched: each
+    // lookup is a YouTube search call (100 quota units, cached for 5 minutes),
+    // and they still match the text in the box once this list is closed again.
+    setShowSuggestions(false);
+    setShowHistory((v) => !v);
+    // Keep the caret in the input: the arrow keys, Home/End and Enter that drive
+    // the open list are the input's own key handler, not the button's.
+    refocusSearchInput();
   };
 
   const handleFocus = () => {
@@ -560,7 +620,10 @@ export const InputSection: React.FC<InputSectionProps> = ({
               onChange={handleInputChange}
               onFocus={handleFocus}
               onKeyDown={handleInputKeyDown}
-              className="block w-full pl-11 pr-10 py-4 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 transition-all shadow-inner text-lg"
+              // Right padding clears the icon cluster below: one icon by
+              // default, two once the history toggle joins it — without the
+              // wider reserve a long query runs underneath them.
+              className={`block w-full pl-11 ${history.length > 0 ? "pr-[4.5rem]" : "pr-10"} py-4 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 transition-all shadow-inner text-lg`}
               placeholder={t("input.searchPlaceholder")}
               disabled={isLoading}
               autoComplete="off"
@@ -579,8 +642,26 @@ export const InputSection: React.FC<InputSectionProps> = ({
               aria-haspopup="listbox"
             />
 
-            {/* Loading Indicator or Clear Button */}
-            <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+            {/* History toggle, loading indicator or clear button */}
+            <div className="absolute inset-y-0 right-0 pr-3 flex items-center gap-0.5">
+              {history.length > 0 && (
+                <button
+                  type="button"
+                  onClick={toggleHistory}
+                  disabled={isLoading}
+                  aria-label={t("history.toggle")}
+                  title={t("history.toggle")}
+                  aria-expanded={showHistory}
+                  aria-controls={showHistory ? "search-history-listbox" : undefined}
+                  // slate-500/400, not the 400/600 pair beside it: this is a
+                  // control's own graphic, which WCAG 1.4.11 asks 3:1 of, and
+                  // slate-400 on the white input is 2.6:1. Same shade correction
+                  // the history dropdown's remove button already carries.
+                  className="text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors p-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <History className="w-4 h-4" aria-hidden="true" />
+                </button>
+              )}
               {isSearchingSuggestions ? (
                 <Loader2 className="w-4 h-4 animate-spin text-slate-500" />
               ) : (
@@ -798,7 +879,12 @@ export const InputSection: React.FC<InputSectionProps> = ({
           <button
             type="button"
             disabled={isLoading || !inputValue.trim()}
-            onClick={handleSaveFavorite}
+            onClick={handleToggleFavorite}
+            // aria-pressed, because the button is now a toggle: the filled star
+            // is the only thing that said "saved", and a star is silent to
+            // assistive tech. The tooltip names the action a click performs, so
+            // it flips with the state instead of restating it.
+            aria-pressed={isFavorite}
             className={`px-4 xl:px-5 rounded-xl border font-semibold flex items-center gap-2 transition-colors ${
               isFavorite
                 ? "border-yellow-400/30 bg-yellow-500/10 text-yellow-500 dark:text-yellow-300"
@@ -806,7 +892,8 @@ export const InputSection: React.FC<InputSectionProps> = ({
                   ? "border-green-500/30 bg-green-500/10 text-green-500 dark:text-green-300"
                   : "border-slate-300 dark:border-slate-700 bg-slate-100/50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800"
             }`}
-            title={isFavorite ? t("favorites.alreadySaved") : t("favorites.saveTitle")}
+            title={isFavorite ? t("favorites.removeTitle") : t("favorites.saveTitle")}
+            aria-label={isFavorite ? t("favorites.removeTitle") : t("favorites.saveTitle")}
           >
             <Star className={`w-5 h-5 ${isFavorite ? "fill-current" : ""}`} />
             <span>

@@ -44,6 +44,7 @@
   },
   "history": {
     "recent": "Recently searched",
+    "toggle": "Show search history",
     "remove": "Remove from history",
     "removeAria": "Remove \"{{item}}\" from search history",
     "clearAll": "Clear all",
@@ -89,7 +90,7 @@
     "topN": "Top {{n}}"
   },
   "favorites": {
-    "alreadySaved": "Already saved as favorite",
+    "removeTitle": "Remove from favorites",
     "saveTitle": "Save as favorite",
     "saveButton": "Favorite",
     "saved": "Saved",
@@ -106,6 +107,10 @@
     },
     "refresh": "Refresh channel",
     "remove": "Remove favorite",
+    "rename": "Rename favorite",
+    "renameAria": "Rename favorite \"{{name}}\"",
+    "renameLabel": "Favorite name",
+    "renameHint": "Enter saves, Esc cancels. Leave empty to use the channel name.",
     "analyze": "Open in Analyzer (uses cached data)",
     "clearAll": "Clear all favorites",
     "clearAllConfirm": "Remove all {{count}} favorites? This cannot be undone.",

@@ -44,6 +44,7 @@
   },
   "history": {
     "recent": "Zuletzt gesucht",
+    "toggle": "Suchverlauf anzeigen",
     "remove": "Aus Verlauf entfernen",
     "removeAria": "\"{{item}}\" aus Suchverlauf entfernen",
     "clearAll": "Alle löschen",
@@ -89,7 +90,7 @@
     "topN": "Top {{n}}"
   },
   "favorites": {
-    "alreadySaved": "Bereits als Favorit gespeichert",
+    "removeTitle": "Aus Favoriten entfernen",
     "saveTitle": "Als Favorit speichern",
     "saveButton": "Als Favorit",
     "saved": "Gespeichert",
@@ -106,6 +107,10 @@
     },
     "refresh": "Kanal aktualisieren",
     "remove": "Favorit entfernen",
+    "rename": "Favorit umbenennen",
+    "renameAria": "Favorit \"{{name}}\" umbenennen",
+    "renameLabel": "Name des Favoriten",
+    "renameHint": "Enter speichert, Esc bricht ab. Leer lassen für den Kanalnamen.",
     "analyze": "Im Analyser öffnen (nutzt Cache-Daten)",
     "clearAll": "Alle Favoriten löschen",
     "clearAllConfirm": "Alle {{count}} Favoriten entfernen? Das kann nicht rückgängig gemacht werden.",

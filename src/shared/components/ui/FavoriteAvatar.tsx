@@ -79,7 +79,11 @@ export const FavoriteAvatar: React.FC<FavoriteAvatarProps> = ({
   onKeyDown,
 }) => {
   const cache = favoritesService.getCache(favorite.id);
-  const channelTitle = cache?.meta?.channelTitle || favorite.query;
+  // A user-set label wins over the channel title, the same order the row
+  // heading, the alphabetical sort and the dashboard filter use. Without it the
+  // quick-jump strip would be ordered by the label the user chose but still
+  // named and initialled after the channel — two different names for one row.
+  const channelTitle = favorite.label?.trim() || cache?.meta?.channelTitle || favorite.query;
 
   const isKeyword = favorite.searchType === SearchType.KEYWORD;
 
