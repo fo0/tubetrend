@@ -89,7 +89,7 @@
     "topN": "Top {{n}}"
   },
   "favorites": {
-    "alreadySaved": "Bereits als Favorit gespeichert",
+    "removeTitle": "Aus Favoriten entfernen",
     "saveTitle": "Als Favorit speichern",
     "saveButton": "Als Favorit",
     "saved": "Gespeichert",

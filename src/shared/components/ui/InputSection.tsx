@@ -357,11 +357,47 @@ export const InputSection: React.FC<InputSectionProps> = ({
     }
   };
 
-  const handleSaveFavorite = () => {
-    if (!inputValue.trim()) return;
+  /** The query as the favorite stores it — prefix stripped, channel URLs reduced to an identifier. */
+  const favoriteQuery = (): string => {
     const strippedInput = stripSearchPrefix(inputValue);
-    const query =
-      searchType === SearchType.CHANNEL ? extractChannelIdentifier(strippedInput) : strippedInput;
+    return searchType === SearchType.CHANNEL
+      ? extractChannelIdentifier(strippedInput)
+      : strippedInput;
+  };
+
+  /**
+   * Star button: saves the current search as a favorite, and removes it again
+   * once it is one.
+   *
+   * The filled star used to be inert — clicking it re-saved what was already
+   * saved. Undoing a favorite meant leaving the analyser for the dashboard and
+   * finding the row there, so the two halves of one decision lived on two pages.
+   * Removal confirms first, with the same wording and the same "the cached
+   * videos go too" warning the dashboard's own Remove button uses.
+   */
+  const handleToggleFavorite = () => {
+    if (!inputValue.trim()) return;
+    const query = favoriteQuery();
+
+    if (isFavorite) {
+      const existing = favoritesService.find(query, timeFrame, maxResults, searchType);
+      // Gone already (a second tab, a cleared dashboard): nothing to confirm,
+      // just correct the button.
+      if (!existing) {
+        setIsFavorite(false);
+        return;
+      }
+      if (!window.confirm(t("favorites.removeConfirm", { name: existing.label || query }))) return;
+      favoritesService.remove(existing.id);
+      setIsFavorite(false);
+      // Save, then remove again inside the 1.5s confirmation window: without
+      // this the button would sit there green and labelled "Saved" for the rest
+      // of it, describing a favorite that no longer exists.
+      if (justSavedTimerRef.current) clearTimeout(justSavedTimerRef.current);
+      setJustSaved(false);
+      return;
+    }
+
     favoritesService.add({ query, timeFrame, maxResults, searchType });
     // kurzes visuelles Feedback
     setJustSaved(true);
@@ -798,7 +834,12 @@ export const InputSection: React.FC<InputSectionProps> = ({
           <button
             type="button"
             disabled={isLoading || !inputValue.trim()}
-            onClick={handleSaveFavorite}
+            onClick={handleToggleFavorite}
+            // aria-pressed, because the button is now a toggle: the filled star
+            // is the only thing that said "saved", and a star is silent to
+            // assistive tech. The tooltip names the action a click performs, so
+            // it flips with the state instead of restating it.
+            aria-pressed={isFavorite}
             className={`px-4 xl:px-5 rounded-xl border font-semibold flex items-center gap-2 transition-colors ${
               isFavorite
                 ? "border-yellow-400/30 bg-yellow-500/10 text-yellow-500 dark:text-yellow-300"
@@ -806,7 +847,8 @@ export const InputSection: React.FC<InputSectionProps> = ({
                   ? "border-green-500/30 bg-green-500/10 text-green-500 dark:text-green-300"
                   : "border-slate-300 dark:border-slate-700 bg-slate-100/50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800"
             }`}
-            title={isFavorite ? t("favorites.alreadySaved") : t("favorites.saveTitle")}
+            title={isFavorite ? t("favorites.removeTitle") : t("favorites.saveTitle")}
+            aria-label={isFavorite ? t("favorites.removeTitle") : t("favorites.saveTitle")}
           >
             <Star className={`w-5 h-5 ${isFavorite ? "fill-current" : ""}`} />
             <span>

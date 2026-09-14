@@ -167,6 +167,25 @@ export const favoritesService = {
     return list.some((f) => f.id === id);
   },
 
+  /**
+   * The favorite stored for exactly this configuration, or `null`.
+   *
+   * `exists()` answers the same question with a boolean, which is all the save
+   * button needed while it could only ever add. Removing one needs its id, and
+   * the id is derived from four fields by a rule (`makeId`) that lives in this
+   * module — a caller rebuilding that string itself would silently miss the next
+   * time the rule changes.
+   */
+  find(
+    query: string,
+    timeFrame: TimeFrame,
+    maxResults: number,
+    searchType: SearchType = SearchType.CHANNEL,
+  ): FavoriteConfig | null {
+    const id = makeId(query, timeFrame, maxResults, searchType);
+    return this.list().find((f) => f.id === id) ?? null;
+  },
+
   add(input: {
     query: string;
     timeFrame: TimeFrame;
