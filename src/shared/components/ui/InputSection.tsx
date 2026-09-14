@@ -412,6 +412,30 @@ export const InputSection: React.FC<InputSectionProps> = ({
     }
   };
 
+  /**
+   * Open (or close) the history dropdown whatever the input holds.
+   *
+   * `handleFocus` below opens it only while the box is empty — and the box is
+   * almost never empty, because the last query is restored from localStorage on
+   * every load. So the ten searches behind it could only be reached by first
+   * clearing the field that had just been filled in for you, and typing anything
+   * closes the list again. This button is the way back to them.
+   */
+  const toggleHistory = () => {
+    if (history.length === 0) return;
+    // The two dropdowns are mutually exclusive, and a suggestion lookup still in
+    // flight for the current value would reopen the other one on arrival.
+    cancelSuggestionLookup();
+    // Hide the channel suggestions, but keep the ones already fetched: each
+    // lookup is a YouTube search call (100 quota units, cached for 5 minutes),
+    // and they still match the text in the box once this list is closed again.
+    setShowSuggestions(false);
+    setShowHistory((v) => !v);
+    // Keep the caret in the input: the arrow keys, Home/End and Enter that drive
+    // the open list are the input's own key handler, not the button's.
+    refocusSearchInput();
+  };
+
   const handleFocus = () => {
     // Focus was handed back after picking an entry — the dropdown closed on
     // purpose, so leave it closed.
@@ -596,7 +620,10 @@ export const InputSection: React.FC<InputSectionProps> = ({
               onChange={handleInputChange}
               onFocus={handleFocus}
               onKeyDown={handleInputKeyDown}
-              className="block w-full pl-11 pr-10 py-4 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 transition-all shadow-inner text-lg"
+              // Right padding clears the icon cluster below: one icon by
+              // default, two once the history toggle joins it — without the
+              // wider reserve a long query runs underneath them.
+              className={`block w-full pl-11 ${history.length > 0 ? "pr-[4.5rem]" : "pr-10"} py-4 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 transition-all shadow-inner text-lg`}
               placeholder={t("input.searchPlaceholder")}
               disabled={isLoading}
               autoComplete="off"
@@ -615,8 +642,26 @@ export const InputSection: React.FC<InputSectionProps> = ({
               aria-haspopup="listbox"
             />
 
-            {/* Loading Indicator or Clear Button */}
-            <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+            {/* History toggle, loading indicator or clear button */}
+            <div className="absolute inset-y-0 right-0 pr-3 flex items-center gap-0.5">
+              {history.length > 0 && (
+                <button
+                  type="button"
+                  onClick={toggleHistory}
+                  disabled={isLoading}
+                  aria-label={t("history.toggle")}
+                  title={t("history.toggle")}
+                  aria-expanded={showHistory}
+                  aria-controls={showHistory ? "search-history-listbox" : undefined}
+                  // slate-500/400, not the 400/600 pair beside it: this is a
+                  // control's own graphic, which WCAG 1.4.11 asks 3:1 of, and
+                  // slate-400 on the white input is 2.6:1. Same shade correction
+                  // the history dropdown's remove button already carries.
+                  className="text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors p-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <History className="w-4 h-4" aria-hidden="true" />
+                </button>
+              )}
               {isSearchingSuggestions ? (
                 <Loader2 className="w-4 h-4 animate-spin text-slate-500" />
               ) : (

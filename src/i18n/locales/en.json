@@ -44,6 +44,7 @@
   },
   "history": {
     "recent": "Recently searched",
+    "toggle": "Show search history",
     "remove": "Remove from history",
     "removeAria": "Remove \"{{item}}\" from search history",
     "clearAll": "Clear all",
