@@ -182,28 +182,33 @@ export function useDashboardSort() {
         });
       }
 
-      // Velocity sort
+      // Velocity sort.
+      //
+      // The velocity of a favorite is resolved once per favorite, before the
+      // sort, instead of inside the comparator. `favoritesService.getCache()`
+      // re-reads and re-JSON-parses the whole favorites-cache blob and
+      // re-validates every video URL in the entry on each call (the same cost
+      // useDashboardFilters precomputes around for its haystacks), and the
+      // comparator called it twice per comparison — O(n log n) full parses for a
+      // list of n favorites, on every sort-order click and every cache tick.
+      // localStorage cannot change while a synchronous sort runs, so reading
+      // each entry once yields exactly the values the comparator saw before.
+      const velocityById = new Map<string, number>();
+      for (const fav of arr) {
+        if (velocityById.has(fav.id)) continue;
+        const cache = favoritesService.getCache(fav.id);
+        const meta = Number(cache?.meta?.topVelocityVph);
+        const candidates = (cache?.videos ?? []).map((v) => {
+          const n = Number(v.viewsPerHour);
+          return Number.isFinite(n) ? n : -1;
+        });
+        const fallback = candidates.length ? Math.max(...candidates) : -1;
+        velocityById.set(fav.id, Number.isFinite(meta) ? meta : fallback);
+      }
+
       return arr.sort((a, b) => {
-        const ac = favoritesService.getCache(a.id);
-        const bc = favoritesService.getCache(b.id);
-
-        const avMeta = Number(ac?.meta?.topVelocityVph);
-        const bvMeta = Number(bc?.meta?.topVelocityVph);
-
-        const avCandidates = (ac?.videos ?? []).map((v) => {
-          const n = Number(v.viewsPerHour);
-          return Number.isFinite(n) ? n : -1;
-        });
-        const bvCandidates = (bc?.videos ?? []).map((v) => {
-          const n = Number(v.viewsPerHour);
-          return Number.isFinite(n) ? n : -1;
-        });
-
-        const avFallback = avCandidates.length ? Math.max(...avCandidates) : -1;
-        const bvFallback = bvCandidates.length ? Math.max(...bvCandidates) : -1;
-
-        const av = Number.isFinite(avMeta) ? avMeta : avFallback;
-        const bv = Number.isFinite(bvMeta) ? bvMeta : bvFallback;
+        const av = velocityById.get(a.id) ?? -1;
+        const bv = velocityById.get(b.id) ?? -1;
 
         if (av !== bv) {
           return sortOrder === "desc" ? bv - av : av - bv;
