@@ -78,24 +78,41 @@ function getAutocompleteCache(): Record<string, AutocompleteCacheEntry> {
   return safeRead<Record<string, AutocompleteCacheEntry>>(STORAGE_KEYS.AUTOCOMPLETE_CACHE, {});
 }
 
+// Same rule the channel cache applies through `isExpired`: an entry without a
+// usable timestamp makes the age NaN, and every NaN comparison is false — so a
+// non-finite age counts as expired rather than as fresh, which would pin a
+// malformed entry in the cache forever.
+function isAutocompleteExpired(age: number): boolean {
+  return !Number.isFinite(age) || age > CACHE_TTL.AUTOCOMPLETE;
+}
+
 function getAutocompleteFromCache(query: string): ChannelSuggestion[] | null {
   const cache = getAutocompleteCache();
   const entry = cache[query.toLowerCase()];
   if (!entry) return null;
 
-  const age = Date.now() - entry.timestamp;
-  if (age > CACHE_TTL.AUTOCOMPLETE) return null;
+  if (isAutocompleteExpired(Date.now() - entry.timestamp)) return null;
 
-  return entry.results;
+  // The cache is localStorage content, so `results` is only a `ChannelSuggestion[]`
+  // by declaration. A corrupt entry used to be handed straight to InputSection,
+  // whose `suggestions.map(...)` then threw during render — inside the suggestions
+  // dropdown, i.e. under no try/catch of its own. Treat a non-array as a miss: the
+  // lookup falls through to the API call it would have made anyway.
+  return Array.isArray(entry.results) ? entry.results : null;
 }
 
 function saveAutocompleteToCache(query: string, results: ChannelSuggestion[]): void {
   const cache = getAutocompleteCache();
   const now = Date.now();
 
-  // Clean expired entries
+  // Clean expired entries. The optional chain keeps a corrupt value (a bare
+  // `null` under a key) from throwing here: it yields NaN, which
+  // isAutocompleteExpired classifies as expired, so the junk entry is dropped
+  // instead of aborting the write. Without it the TypeError propagated into
+  // searchChannels' own catch, which swallowed the freshly fetched suggestions
+  // and returned [] — after the 100 quota units for the search had been spent.
   Object.keys(cache).forEach((key) => {
-    if (now - cache[key].timestamp > CACHE_TTL.AUTOCOMPLETE) {
+    if (isAutocompleteExpired(now - cache[key]?.timestamp)) {
       delete cache[key];
     }
   });
