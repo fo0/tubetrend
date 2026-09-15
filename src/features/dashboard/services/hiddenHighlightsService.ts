@@ -11,6 +11,33 @@ import { STORAGE_KEYS } from "@/src/shared/constants";
 
 const HIDDEN_HIGHLIGHTS_KEY = STORAGE_KEYS.HIDDEN_HIGHLIGHTS;
 
+/** True only for absolute http(s) URLs — the schemes a rendered subresource may safely come from. */
+function isHttpUrl(value: unknown): boolean {
+  if (typeof value !== "string") return false;
+  try {
+    const { protocol } = new URL(value);
+    return protocol === "http:" || protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * True for the `thumbnailUrl` values a genuine hidden-highlight entry can carry:
+ * absent, or an absolute http(s) URL.
+ *
+ * The empty string must stay accepted — `analyzeVideoStats` (trendAnalysisService)
+ * falls back to `""` when a video carries no thumbnail at all, and `hide()` copies
+ * that value straight through from the highlight card. Older entries may omit the
+ * field entirely. Rejecting either would refuse legitimate data, which is why this
+ * is deliberately laxer than `isHttpUrl` — the same split dashboardBackupService,
+ * favoritesService and useSearch already draw between their two URL guards.
+ */
+function isSafeThumbnailUrl(value: unknown): boolean {
+  if (value === undefined || value === null || value === "") return true;
+  return isHttpUrl(value);
+}
+
 export interface HiddenHighlight {
   videoId: string; // Unique video ID (primary key)
   sourceId: string; // Favorite/channel ID (for display/context)
@@ -24,6 +51,25 @@ export const hiddenHighlightsService = {
   /**
    * Returns all hidden highlights.
    * Legacy entries without hiddenAt get a default timestamp.
+   *
+   * The hidden list is localStorage content, i.e. untrusted on-disk input, and this
+   * is the single read boundary every consumer goes through (HiddenHighlightsModal,
+   * useDashboardFilters, useUndoHiddenHighlight). One sink is fed from it:
+   * `<img src={item.thumbnailUrl}>` in HiddenHighlightsModal. An unvalidated value
+   * there does not execute script, but it does make every render of the modal fire
+   * an outbound GET to a host the entry's author chose, carrying the victim's IP and
+   * User-Agent from inside the app origin — the origin whose localStorage holds the
+   * YouTube API key. The nginx CSP (`img-src 'self' data: https:`) allows any https
+   * host, so it does not close this on its own, and the targets shipping without that
+   * nginx config — Capacitor, Chrome extension — restrict `img-src` not at all.
+   *
+   * Such an entry is KEPT with its thumbnail dropped: the modal already renders the
+   * row without an image when the field is absent, so the beacon dies without the row
+   * (and its restore button) disappearing. This closes the fourth and last boundary
+   * the cached-video shape crosses — dashboardBackupService.parse, favoritesService
+   * .getCache and useSearch apply the same guard. Genuine entries only ever carry an
+   * `https://i.ytimg.com/...` thumbnail or `""`, so this is behavior-equivalent for
+   * real data and fails closed. CWE-200 (thumbnail beacon) / OWASP A03.
    */
   list(): HiddenHighlight[] {
     const raw = safeRead<unknown[]>(HIDDEN_HIGHLIGHTS_KEY, []);
@@ -42,7 +88,10 @@ export const hiddenHighlightsService = {
         videoId: item.videoId as string,
         hiddenAt: typeof item.hiddenAt === "number" ? item.hiddenAt : 0,
         videoTitle: typeof item.videoTitle === "string" ? item.videoTitle : undefined,
-        thumbnailUrl: typeof item.thumbnailUrl === "string" ? item.thumbnailUrl : undefined,
+        thumbnailUrl:
+          typeof item.thumbnailUrl === "string" && isSafeThumbnailUrl(item.thumbnailUrl)
+            ? item.thumbnailUrl
+            : undefined,
         sourceLabel: typeof item.sourceLabel === "string" ? item.sourceLabel : undefined,
       }));
   },
