@@ -574,6 +574,18 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
     commitRename();
   };
 
+  // Evaluated once per render instead of twice. The identical expression sat in
+  // both the `disabled` and the `className` of the Analyse button, and
+  // `favoritesService.getCache()` re-reads localStorage, re-JSON-parses the whole
+  // favorites-cache blob and re-validates every video URL in the entry on each
+  // call — so every render of every dashboard row paid for two of them, including
+  // on each keystroke in the favorites filter. Still guarded on `onAnalyze`, so a
+  // row rendered without the action performs no cache read at all, exactly as
+  // before.
+  const analyzeDisabled = onAnalyze
+    ? loading || (!videos && !favoritesService.getCache(currentFavId))
+    : false;
+
   return (
     <section className="mb-10">
       {/* Header */}
@@ -791,9 +803,9 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
                   channelId,
                 );
               }}
-              disabled={loading || (!videos && !favoritesService.getCache(currentFavId))}
+              disabled={analyzeDisabled}
               className={`inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-md border transition-colors ${
-                loading || (!videos && !favoritesService.getCache(currentFavId))
+                analyzeDisabled
                   ? "border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500 cursor-not-allowed"
                   : "border-indigo-500/30 text-indigo-500 dark:text-indigo-400 hover:bg-indigo-500/10"
               }`}
