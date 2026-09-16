@@ -154,6 +154,12 @@ export function HiddenHighlightsModal({ isOpen, onClose }: HiddenHighlightsModal
                 onClick={handleRestoreAll}
                 className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md border border-indigo-500/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/10 transition-colors"
                 title={t("dashboard.highlights.clearHidden")}
+                // The visible label is `hidden sm:inline` and the icon is
+                // aria-hidden, so below `sm` this button had no accessible name
+                // at all — `title` is not one for touch or screen-reader users
+                // (WCAG 4.1.2, axe `button-name`). Explicit aria-label, the same
+                // fix the header's collapsing nav buttons already document.
+                aria-label={t("dashboard.highlights.clearHidden")}
               >
                 <RotateCcw className="w-3 h-3" aria-hidden="true" />
                 <span className="hidden sm:inline">{t("dashboard.highlights.clearHidden")}</span>
@@ -183,11 +189,15 @@ export function HiddenHighlightsModal({ isOpen, onClose }: HiddenHighlightsModal
                   key={item.videoId}
                   className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
                 >
-                  {/* Thumbnail */}
+                  {/* Thumbnail. alt="" because the very next element is a <p>
+                      rendering `item.videoTitle` as visible text — an alt of the
+                      same string made every row announce its title twice (WCAG
+                      1.1.1). Nothing links this image, so no accessible name is
+                      lost by making it decorative. */}
                   {item.thumbnailUrl && (
                     <img
                       src={item.thumbnailUrl}
-                      alt={item.videoTitle}
+                      alt=""
                       className="w-20 h-12 rounded-lg object-cover shrink-0 border border-slate-200 dark:border-slate-700"
                       loading="lazy"
                     />

@@ -64,7 +64,11 @@ export const VideoListFilter: React.FC<VideoListFilterProps> = ({
             onClick={() => onChange("")}
             title={t("results.table.filterClear")}
             aria-label={t("results.table.filterClear")}
-            className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 dark:text-slate-600 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+            // slate-500/400, not 400/600: this is a control's own graphic, which
+            // WCAG 1.4.11 asks 3:1 of, and the old pair missed it in BOTH themes
+            // — slate-400 on the white field is 2.6:1, slate-600 on the dark
+            // slate-950 one 2.7:1. Matches the analyser search box's clear button.
+            className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
           >
             <X className="w-4 h-4" aria-hidden="true" />
           </button>

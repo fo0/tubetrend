@@ -670,9 +670,14 @@ export const InputSection: React.FC<InputSectionProps> = ({
                     type="button"
                     onClick={clearInput}
                     aria-label={t("actions.clearSearch")}
-                    className="text-slate-400 dark:text-slate-600 hover:text-slate-600 dark:hover:text-slate-300 transition-colors p-1"
+                    // slate-500/400, not 400/600: this is a control's own
+                    // graphic, which WCAG 1.4.11 asks 3:1 of, and the old pair
+                    // missed it in BOTH themes — slate-400 on the white input is
+                    // 2.6:1, slate-600 on the dark slate-950 one 2.7:1. Same
+                    // shade pair the history toggle beside it already carries.
+                    className="text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors p-1"
                   >
-                    <X className="w-4 h-4" />
+                    <X className="w-4 h-4" aria-hidden="true" />
                   </button>
                 )
               )}

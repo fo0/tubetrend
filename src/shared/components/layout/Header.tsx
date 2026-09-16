@@ -211,7 +211,14 @@ function KeyboardShortcutsHint({ activePage }: { activePage: PageType }) {
         ref={triggerRef}
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className="flex items-center gap-1 px-2 py-1 rounded-md text-xs text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border border-transparent hover:border-slate-200 dark:hover:border-slate-700"
+        // slate-500 in light mode, not slate-400: the Keyboard glyph is this
+        // button's only content, so WCAG 1.4.11 asks 3:1 of it, and slate-400 on
+        // the white header is 2.6:1. slate-500 clears it at 4.8:1.
+        // `dark:text-slate-500` repeats the base value on purpose rather than
+        // being dropped as redundant: the dark shade was measured separately
+        // (3.7:1 on slate-900) and is not free to follow the light one, so
+        // pinning it keeps a later change to `text-slate-*` from moving it.
+        className="flex items-center gap-1 px-2 py-1 rounded-md text-xs text-slate-500 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border border-transparent hover:border-slate-200 dark:hover:border-slate-700"
         title={t("keyboard.label")}
         aria-label={t("keyboard.label")}
         aria-expanded={isOpen}
