@@ -189,11 +189,15 @@ export function HiddenHighlightsModal({ isOpen, onClose }: HiddenHighlightsModal
                   key={item.videoId}
                   className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
                 >
-                  {/* Thumbnail */}
+                  {/* Thumbnail. alt="" because the very next element is a <p>
+                      rendering `item.videoTitle` as visible text — an alt of the
+                      same string made every row announce its title twice (WCAG
+                      1.1.1). Nothing links this image, so no accessible name is
+                      lost by making it decorative. */}
                   {item.thumbnailUrl && (
                     <img
                       src={item.thumbnailUrl}
-                      alt={item.videoTitle}
+                      alt=""
                       className="w-20 h-12 rounded-lg object-cover shrink-0 border border-slate-200 dark:border-slate-700"
                       loading="lazy"
                     />

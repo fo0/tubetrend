@@ -106,15 +106,25 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video }) => {
       </span>
       {/* Thumbnail Area */}
       <div className="relative h-40 overflow-hidden bg-slate-100 dark:bg-slate-900">
+        {/* The thumbnail and the <h3> below are two links to the same video, and
+            the thumbnail took its accessible name from `alt={video.title}` — so
+            every card announced the identical title twice, and a six-card grid
+            gave a screen reader's link list twelve entries where six are
+            distinct. The image carries no information the heading link does not,
+            which makes it decorative (`alt=""`, WCAG 1.1.1); the anchor keeps a
+            name of its own, distinct from the heading, via aria-label. Exactly
+            the pattern VideoListTable and HiddenHighlightsModal already use,
+            down to the shared key. */}
         <a
           href={video.url}
           target="_blank"
           rel="noopener noreferrer"
           className="block w-full h-full cursor-pointer"
+          aria-label={t("results.table.watchOnYoutubeAria", { title: video.title })}
         >
           <img
             src={video.thumbnailUrl}
-            alt={video.title}
+            alt=""
             className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
             loading="lazy"
           />

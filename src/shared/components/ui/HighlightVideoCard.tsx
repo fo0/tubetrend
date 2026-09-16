@@ -113,15 +113,20 @@ export const HighlightVideoCard: React.FC<HighlightVideoCardProps> = ({
 
       {/* Thumbnail Area */}
       <div className="relative h-40 overflow-hidden bg-slate-100 dark:bg-slate-900">
+        {/* Decorative thumbnail plus a named link, mirroring VideoCard: the <h3>
+            below links to the same video, so `alt={video.title}` made every card
+            announce its title twice over (WCAG 1.1.1 — the image adds nothing
+            the heading link does not). Shared key with VideoListTable. */}
         <a
           href={video.url}
           target="_blank"
           rel="noopener noreferrer"
           className="block w-full h-full cursor-pointer"
+          aria-label={t("results.table.watchOnYoutubeAria", { title: video.title })}
         >
           <img
             src={video.thumbnailUrl}
-            alt={video.title}
+            alt=""
             className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
             loading="lazy"
           />
