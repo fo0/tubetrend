@@ -70,7 +70,7 @@ export function FloatingScrollButton() {
   useEffect(() => {
     let ticking = false;
 
-    const handleScroll = () => {
+    const measureScroll = () => {
       if (!ticking) {
         window.requestAnimationFrame(() => {
           const currentScrollY = window.scrollY;
@@ -115,10 +115,40 @@ export function FloatingScrollButton() {
     };
 
     // Initial check
-    handleScroll();
+    measureScroll();
 
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", measureScroll, { passive: true });
+
+    // The measurement above depends on two things a scroll event does not
+    // report: how tall the document is, and how tall the viewport is.
+    //
+    // Document height. `maxScroll < 200` hides the button, and at mount both
+    // pages are short — the analyser shows the welcome screen until a search
+    // resolves seconds later, a favorite row fills in once its YouTube fetch
+    // returns. The page grows, but growing fires no scroll event, so the button
+    // stayed hidden on exactly the long pages it exists for; the only way to
+    // summon it was to scroll by hand first, which is the work it saves. The
+    // reverse case is just as wrong: clearing the results leaves a "jump to
+    // bottom" button pointing at a bottom that is gone.
+    //
+    // Viewport height. Rotating a phone or resizing a window changes
+    // `window.innerHeight`, and with it whether the document scrolls at all.
+    //
+    // A `fixed` element is out of flow, so toggling this button cannot change
+    // the document height that triggered the callback — no observer loop. The
+    // shared handler stays rAF-throttled, so a resize storm still costs one
+    // measurement per frame.
+    window.addEventListener("resize", measureScroll, { passive: true });
+
+    const observer =
+      typeof ResizeObserver !== "undefined" ? new ResizeObserver(measureScroll) : null;
+    observer?.observe(document.documentElement);
+
+    return () => {
+      window.removeEventListener("scroll", measureScroll);
+      window.removeEventListener("resize", measureScroll);
+      observer?.disconnect();
+    };
   }, []);
 
   const handleClick = useCallback(() => {

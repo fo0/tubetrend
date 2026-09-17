@@ -495,6 +495,25 @@ export const InputSection: React.FC<InputSectionProps> = ({
     setActiveIndex(-1);
   }, [openList, suggestions, history]);
 
+  // Keep the keyboard-highlighted entry in view.
+  //
+  // The history list holds up to ten entries at ~68px each, so the panel ran
+  // well past the fold on a laptop and on every phone: ArrowDown moved the
+  // highlight onto options nobody could see, and Enter then picked one of them
+  // sight unseen. The listbox now caps its height and scrolls (see `max-h-72
+  // overflow-y-auto` below), which makes this the other half of the fix — the
+  // WAI-ARIA combobox pattern requires the active option to be visible, and a
+  // scroll container does not follow `aria-activedescendant` by itself.
+  //
+  // `block: "nearest"` is what keeps this unobtrusive: an option already in
+  // view is left alone, and one just outside is brought to the edge instead of
+  // being centred. The default `behavior: "auto"` resolves to an instant jump,
+  // so there is no animation here for prefers-reduced-motion to sit out.
+  useEffect(() => {
+    if (!activeOptionId) return;
+    document.getElementById(activeOptionId)?.scrollIntoView({ block: "nearest" });
+  }, [activeOptionId]);
+
   // Keyboard navigation for the open dropdown: ArrowDown/ArrowUp cycle through
   // the entries, Home/End jump to the ends, Enter picks the highlighted one.
   // Without a highlight Enter falls through to the form's normal submit.
@@ -686,7 +705,16 @@ export const InputSection: React.FC<InputSectionProps> = ({
             {/* Suggestions Dropdown */}
             {showSuggestions && suggestions.length > 0 && (
               <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl overflow-hidden z-50 animate-fade-in">
-                <ul id="search-suggestions-listbox" role="listbox">
+                {/* max-h-72 + overflow-y-auto: the channel lookup can return
+                    more entries than fit between the search box and the bottom
+                    of the viewport, and the panel is anchored to the input, so
+                    the overflow ran off the screen rather than scrolling. The
+                    effect above keeps the arrow-key highlight inside this box. */}
+                <ul
+                  id="search-suggestions-listbox"
+                  role="listbox"
+                  className="max-h-72 overflow-y-auto"
+                >
                   {suggestions.map((sug, idx) => (
                     <li
                       key={sug.id}
@@ -727,7 +755,11 @@ export const InputSection: React.FC<InputSectionProps> = ({
             {/* History Dropdown (shown only on focus when input is empty) */}
             {showHistory && history.length > 0 && (
               <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl overflow-hidden z-50 animate-fade-in">
-                <ul id="search-history-listbox" role="listbox">
+                {/* Same height cap as the suggestions list. Ten entries at
+                    ~68px each overflowed the viewport, which also pushed the
+                    "Clear all" footer below it — the cap keeps that footer on
+                    screen whatever the list holds. */}
+                <ul id="search-history-listbox" role="listbox" className="max-h-72 overflow-y-auto">
                   {history.map((item, idx) => (
                     <li
                       key={`${item}-${idx}`}

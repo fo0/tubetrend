@@ -287,6 +287,21 @@ function KeyboardShortcutsHint({ activePage }: { activePage: PageType }) {
                 ?
               </kbd>
             </div>
+            {/* Escape is the one key this panel never named, although four
+                surfaces implement it: this popover and both dialogs close on
+                it, the analyser search box closes its dropdown or clears what
+                was typed, and the two filter bars reset themselves. Their own
+                `title` tooltips say so one by one — the list that is supposed
+                to be the app's keyboard model did not, so the key was
+                discoverable only by guessing. */}
+            <div className="flex items-center justify-between">
+              <span className="text-slate-500 dark:text-slate-400">
+                {t("keyboard.closeOrClear")}
+              </span>
+              <kbd className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono text-slate-600 dark:text-slate-300">
+                Esc
+              </kbd>
+            </div>
           </div>
         </div>
       )}
