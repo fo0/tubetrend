@@ -81,7 +81,7 @@
     "searchPlaceholder": "Kanalname, @handle oder #suchtext",
     "channelPlaceholder": "Kanalnamen oder @handle eingeben",
     "keywordPlaceholder": "Suchbegriff eingeben (z.B. \"React Tutorial\")",
-    "searchHint": "{{placeholder}} (Druecke / zum Fokussieren)"
+    "searchHint": "{{placeholder}} (Drücke / zum Fokussieren)"
   },
   "maxResults": {
     "all": "Alle",
@@ -371,13 +371,14 @@
     "window24h": "24 Std."
   },
   "keyboard": {
-    "label": "Tastaturkuerzel",
+    "label": "Tastaturkürzel",
     "focusSearch": "Suche fokussieren",
     "openDashboard": "Dashboard öffnen",
     "openAnalyser": "Analyser öffnen",
     "toggleTheme": "Theme wechseln",
     "refreshAll": "Alle Favoriten aktualisieren",
-    "toggleHint": "Kuerzel anzeigen"
+    "toggleHint": "Kürzel anzeigen",
+    "closeOrClear": "Schließen oder leeren"
   },
   "scroll": {
     "toTop": "Nach oben scrollen",

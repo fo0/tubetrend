@@ -377,7 +377,8 @@
     "openAnalyser": "Open Analyser",
     "toggleTheme": "Toggle theme",
     "refreshAll": "Refresh all favorites",
-    "toggleHint": "Show shortcuts"
+    "toggleHint": "Show shortcuts",
+    "closeOrClear": "Close or clear"
   },
   "scroll": {
     "toTop": "Scroll to top",
