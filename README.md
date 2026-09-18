@@ -142,6 +142,9 @@ signing keystore.
 
 **Install as a Chrome browser extension:**
 
+**Prerequisites:** Node.js v22+ (only for building from source — the pre-built ZIP linked below
+needs nothing installed)
+
 ```bash
 git clone https://github.com/fo0/tubetrend.git
 cd tubetrend
@@ -173,6 +176,17 @@ npm run dev
 ```
 
 Open http://localhost:3000
+
+> **The `cp` step is optional, and copying verbatim changes a default.** Every variable in
+> `.env.example` is build-time configuration with a working default, so skipping it is fine. If you
+> do copy it: the file ships `VITE_DEFAULT_SEARCH=` (empty), and Vite reads an empty assignment as
+> the empty string `""`, not as unset. The read site uses `??`, which only falls back on
+> `null`/`undefined` — so the dev-mode `TEDx` default is **suppressed** and you start with an
+> empty search input. Comment the line out to get it back. Full explanation:
+> [`agent_docs/env-vars.md`](agent_docs/env-vars.md).
+>
+> The YouTube Data API v3 key is **not** in that file and must never be added to it — you paste it
+> into the app's API-key modal at runtime.
 
 **Available scripts:**
 
