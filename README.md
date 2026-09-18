@@ -142,6 +142,9 @@ signing keystore.
 
 **Install as a Chrome browser extension:**
 
+**Prerequisites:** Node.js v22+ (only for building from source — the pre-built ZIP linked below
+needs nothing installed)
+
 ```bash
 git clone https://github.com/fo0/tubetrend.git
 cd tubetrend
