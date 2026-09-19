@@ -114,14 +114,24 @@ function isHttpUrl(value: unknown): boolean {
  *
  * Such an entry is KEPT with its thumbnail blanked to `""`: that is exactly the
  * state a suggestion without an avatar already renders in today
- * (`searchChannels` falls back to `""`), so the beacon dies without the row
- * disappearing from the dropdown. This is the same treatment the four other
- * boundaries the app's cached shapes cross already apply —
- * `dashboardBackupService.parse`, `favoritesService.getCache`,
- * `hiddenHighlightsService.list` and the persisted analyser snapshot in
- * `useSearch`. Genuine entries only ever carry an `https://yt3.ggpht.com/...`
- * avatar or `""`, so this is behavior-equivalent for real data and fails
- * closed. CWE-200 (thumbnail beacon) / OWASP A03.
+ * (`searchChannels` falls back to `""`), so the row survives without the load.
+ * This is the same treatment the four other boundaries the app's cached shapes
+ * cross already apply — `dashboardBackupService.parse`,
+ * `favoritesService.getCache`, `hiddenHighlightsService.list` and the persisted
+ * analyser snapshot in `useSearch`. Genuine entries only ever carry an
+ * `https://yt3.ggpht.com/...` avatar or `""`, so this is behavior-equivalent
+ * for real data and fails closed.
+ *
+ * SCOPE, precisely: `isHttpUrl` checks the SCHEME, not the host — like all four
+ * siblings. It removes `javascript:` / `data:` / protocol-relative / malformed
+ * values, and it is what stops a tampered entry from becoming a non-image sink;
+ * it does NOT stop a beacon pointed at an arbitrary `https://` host, and no
+ * `img-src` this app ships (`'self' data: https:` in nginx.conf and now in the
+ * extension manifest) stops one either. Closing that needs a host allowlist —
+ * `i.ytimg.com`, `yt3.ggpht.com`, `*.googleusercontent.com` — applied at all
+ * five boundaries and in both CSPs at once, which is a policy change, not a
+ * guard tweak. Do not claim here that the beacon is dead; it is narrowed.
+ * CWE-200 (thumbnail beacon) / OWASP A03.
  */
 function toSafeSuggestion(value: unknown): ChannelSuggestion | null {
   const item = value as Record<string, unknown> | null | undefined;

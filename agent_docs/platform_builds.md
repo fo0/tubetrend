@@ -104,8 +104,11 @@ docker-compose up         # Run production image at http://localhost:8889
   (the extension has no inline script). Manifest V3's implicit default only covers `script-src` /
   `object-src`; without this entry the extension page placed no limit on `connect-src` or `img-src`,
   so the outbound-request restrictions the web target enforces were simply absent here. Keep it in
-  step with `nginx.conf` — a new outbound host has to be added in both places or the extension build
-  breaks where the Docker build does not.
+  step with `nginx.conf` — a new outbound host added there but not here still builds and still
+  passes every check, and only fails at runtime in the loaded extension, where nothing in CI looks.
+  Verified against a real `npm run build:extension`: the patched `dist-extension/index.html` carries
+  no inline script (`theme-init.js` and the Vite bundle are both `'self'`), so `script-src 'self'`
+  needs no hash entry the way `nginx.conf` does.
 - **Declared permissions — exactly one: `tabs`** (`chrome-extension/manifest.json`). `background.js`
   calls `chrome.tabs.query({})` to find an already-open TubeTrend tab and focus it instead of opening
   a duplicate; without the permission that query returns tab objects with no `url`, so the lookup
