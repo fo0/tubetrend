@@ -86,6 +86,54 @@ function isAutocompleteExpired(age: number): boolean {
   return !Number.isFinite(age) || age > CACHE_TTL.AUTOCOMPLETE;
 }
 
+/** True only for absolute http(s) URLs — the schemes an `<img src>` may safely load from. */
+function isHttpUrl(value: unknown): boolean {
+  if (typeof value !== "string") return false;
+  try {
+    const { protocol } = new URL(value);
+    return protocol === "http:" || protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Normalize one cached suggestion into the shape `InputSection` renders.
+ *
+ * The autocomplete cache is localStorage content, i.e. untrusted on-disk input,
+ * and `getAutocompleteFromCache` is the single read boundary its consumer goes
+ * through. One sink is fed from it: `<img src={sug.thumbnailUrl}>` in the
+ * suggestions dropdown (InputSection). An unvalidated value there does not
+ * execute script, but it does make every keystroke that reopens the dropdown
+ * fire an outbound GET to a host the entry's author chose, carrying the
+ * victim's IP and User-Agent from inside the app origin — the origin whose
+ * localStorage holds the YouTube API key. The nginx CSP
+ * (`img-src 'self' data: https:`) allows any https host, so it does not close
+ * this on its own, and the targets shipping without that nginx config —
+ * Capacitor, Chrome extension — restrict `img-src` far less.
+ *
+ * Such an entry is KEPT with its thumbnail blanked to `""`: that is exactly the
+ * state a suggestion without an avatar already renders in today
+ * (`searchChannels` falls back to `""`), so the beacon dies without the row
+ * disappearing from the dropdown. This is the same treatment the four other
+ * boundaries the app's cached shapes cross already apply —
+ * `dashboardBackupService.parse`, `favoritesService.getCache`,
+ * `hiddenHighlightsService.list` and the persisted analyser snapshot in
+ * `useSearch`. Genuine entries only ever carry an `https://yt3.ggpht.com/...`
+ * avatar or `""`, so this is behavior-equivalent for real data and fails
+ * closed. CWE-200 (thumbnail beacon) / OWASP A03.
+ */
+function toSafeSuggestion(value: unknown): ChannelSuggestion | null {
+  const item = value as Record<string, unknown> | null | undefined;
+  if (typeof item?.id !== "string" || typeof item.title !== "string") return null;
+  return {
+    id: item.id,
+    title: item.title,
+    thumbnailUrl: isHttpUrl(item.thumbnailUrl) ? (item.thumbnailUrl as string) : "",
+    handle: typeof item.handle === "string" ? item.handle : undefined,
+  };
+}
+
 function getAutocompleteFromCache(query: string): ChannelSuggestion[] | null {
   const cache = getAutocompleteCache();
   const entry = cache[query.toLowerCase()];
@@ -97,8 +145,12 @@ function getAutocompleteFromCache(query: string): ChannelSuggestion[] | null {
   // by declaration. A corrupt entry used to be handed straight to InputSection,
   // whose `suggestions.map(...)` then threw during render — inside the suggestions
   // dropdown, i.e. under no try/catch of its own. Treat a non-array as a miss: the
-  // lookup falls through to the API call it would have made anyway.
-  return Array.isArray(entry.results) ? entry.results : null;
+  // lookup falls through to the API call it would have made anyway. Every surviving
+  // entry is normalized through `toSafeSuggestion` (see there for the sink).
+  if (!Array.isArray(entry.results)) return null;
+  return entry.results
+    .map(toSafeSuggestion)
+    .filter((suggestion): suggestion is ChannelSuggestion => suggestion !== null);
 }
 
 function saveAutocompleteToCache(query: string, results: ChannelSuggestion[]): void {
