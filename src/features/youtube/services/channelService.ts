@@ -109,8 +109,8 @@ function isHttpUrl(value: unknown): boolean {
  * victim's IP and User-Agent from inside the app origin — the origin whose
  * localStorage holds the YouTube API key. The nginx CSP
  * (`img-src 'self' data: https:`) allows any https host, so it does not close
- * this on its own, and the targets shipping without that nginx config —
- * Capacitor, Chrome extension — restrict `img-src` far less.
+ * this on its own, and the Capacitor target, which ships without that nginx
+ * config and without a CSP of its own, restricts `img-src` not at all.
  *
  * Such an entry is KEPT with its thumbnail blanked to `""`: that is exactly the
  * state a suggestion without an avatar already renders in today
