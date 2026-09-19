@@ -19,5 +19,8 @@
   "background": {
     "service_worker": "background.js"
   },
+  "content_security_policy": {
+    "extension_pages": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://www.googleapis.com; base-uri 'self'; form-action 'self'; object-src 'none'"
+  },
   "permissions": ["tabs"]
 }

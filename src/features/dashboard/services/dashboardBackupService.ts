@@ -71,8 +71,8 @@ function isSafeThumbnailUrl(value: unknown): boolean {
  *     outbound GET to a host the author of the backup file chose: a beacon confirming
  *     the import, with the victim's IP and User-Agent, from inside the app origin. The
  *     nginx CSP (`img-src 'self' data: https:`) allows any https host, so it does not
- *     close this on its own, and the targets that ship without that nginx config —
- *     Capacitor, Chrome extension — restrict `img-src` not at all.
+ *     close this on its own, and the Capacitor target, which ships without that nginx
+ *     config and without a CSP of its own, restricts `img-src` not at all.
  *
  * Genuine exports only ever contain `https://www.youtube.com/watch?v=<id>` for `url`
  * (built in trendAnalysisService) and an `https://i.ytimg.com/...` thumbnail or `""`,

@@ -57,8 +57,8 @@ function isSafeThumbnailUrl(value: unknown): boolean {
  *     outbound GET to a host the entry's author chose, carrying the victim's IP and
  *     User-Agent from inside the app origin. The nginx CSP (`img-src 'self' data:
  *     https:`) allows any https host, so it does not close this on its own, and the
- *     targets shipping without that nginx config — Capacitor, Chrome extension —
- *     restrict `img-src` not at all. Such an entry is KEPT with its thumbnail blanked
+ *     Capacitor target, which ships without that nginx config and without a CSP of
+ *     its own, restricts `img-src` not at all. Such an entry is KEPT with its thumbnail blanked
  *     to `""`: that is exactly the state a thumbnail-less video already renders in, so
  *     the beacon dies without the row disappearing.
  *
