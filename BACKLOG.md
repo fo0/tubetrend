@@ -4,10 +4,9 @@ Review findings not immediately fixed. **Only work on these upon explicit reques
 
 ## Open
 
-_None._
-
-| #   | Date | Category | Sev | Location | Finding | Status | Source |
-| --- | ---- | -------- | --- | -------- | ------- | ------ | ------ |
+| #   | Date       | Category    | Sev | Location                                                                                                                                                                                                                                | Finding                                                                                                                                                                                                                                                                                                                                                                                                              | Status   | Source                       |
+| --- | ---------- | ----------- | --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ---------------------------- |
+| 18  | 2026-09-20 | Code Smells | P2  | `shared/types/common.ts -> SortOption`, `favorites/types.ts -> isFavoriteConfig`, `shared/lib/dateUtils.ts -> isWithinTimeFrame`, `shared/lib/storage.ts -> localStorageAdapter`, `shared/hooks/useDebounce.ts -> useDebouncedCallback` | Each of the five occurs exactly once in the repo — its own declaration. Nothing in `src/`, `electron/`, `scripts/` or `chrome-extension/` consumes them; the only thing carrying them outward is an `export *` barrel. Same cleanup family as #439, but a disjoint set of symbols — fold into that issue rather than opening a second one. Deferred here: the removal spans 5 files, over the 3-file auto-fix limit. | Deferred | Quality & housekeeping sweep |
 
 ## Migrated to GitHub Issues
 
