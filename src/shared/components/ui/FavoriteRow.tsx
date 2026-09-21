@@ -855,14 +855,39 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
       {error && (
         <div
           role="alert"
-          className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex items-center gap-3 text-red-500 dark:text-red-200"
+          className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex flex-wrap items-center gap-3 text-red-500 dark:text-red-200"
         >
-          <AlertCircle className="w-5 h-5" aria-hidden="true" />
-          <span>{error}</span>
+          <AlertCircle className="w-5 h-5 shrink-0" aria-hidden="true" />
+          <span className="min-w-0 grow">{error}</span>
+          {/* One-click recovery, the counterpart of the analyser's error banner.
+              The row's own Refresh button does the same thing, but it sits in
+              the header among five other controls and reads as "fetch again",
+              not as "answer to this failure" — and on a dashboard of a dozen
+              rows the failing one is not necessarily the one under the cursor.
+              Bumping the local token re-runs exactly the load that failed.
+              Disabled while a run is in flight so a second fetch cannot be
+              queued behind the one already reporting. */}
+          <button
+            type="button"
+            onClick={() => setLocalRefreshToken((v) => v + 1)}
+            disabled={loading}
+            className="inline-flex shrink-0 items-center gap-1.5 px-3 py-1.5 rounded-lg border border-red-500/30 text-sm font-medium transition-colors hover:bg-red-500/10 disabled:opacity-50 disabled:cursor-not-allowed"
+            title={t("favorites.refresh")}
+          >
+            <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} aria-hidden="true" />
+            <span>{t("errors.tryAgain")}</span>
+          </button>
         </div>
       )}
 
-      {!loading && !error && videos && videos.length > 0 && (
+      {/* No `!error` guard: the cached videos are loaded before the request is
+          even sent and are still the last good data for this favorite, so a
+          transient failure (a 5xx, a dropped connection, a spent quota) used to
+          blank a row that had perfectly readable content a second earlier —
+          across every row at once on "Refresh all". The banner above now
+          explains the failure and the cards below stay, with the header's
+          "as of <time>" badge already stating how old they are. */}
+      {!loading && videos && videos.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3">
           {videos.map((video) => {
             const isFresh =
