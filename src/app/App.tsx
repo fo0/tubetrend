@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { WifiOff } from "lucide-react";
 import { useEventListener } from "@/src/shared/hooks";
 import { ApiKeyModal } from "@/src/shared/components/ui/ApiKeyModal";
 import { HiddenHighlightsModal } from "@/src/shared/components/ui/HiddenHighlightsModal";
@@ -77,6 +78,31 @@ const App: React.FC = () => {
     lastScrolledPageRef.current = activePage;
     window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
   }, [activePage]);
+
+  // Connection state. Every feature that reaches YouTube (search, favorite
+  // refresh, autocomplete, quota lookups) is dead while the browser has no
+  // network, and until now nothing said so before the attempt: the user pressed
+  // Search, waited out the spinner and got a failed fetch back. The banner below
+  // states the cause up front, so a dropped connection reads as a connection
+  // problem instead of a broken app — and it names what still works, because the
+  // dashboard renders favorites and highlights straight out of localStorage.
+  //
+  // `navigator.onLine === false` is the half of this API that is dependable: the
+  // browser only reports false when it knows there is no connectivity, whereas
+  // `true` merely means an interface is up. So the banner is driven by the
+  // negative and never claims the app *is* reachable — the request-level
+  // messages (errors.api.network / errors.api.offline) remain the authority on
+  // an actual failure.
+  const [isOffline, setIsOffline] = useState<boolean>(
+    () => typeof navigator !== "undefined" && navigator.onLine === false,
+  );
+  const handleOnline = useCallback(() => setIsOffline(false), []);
+  const handleOffline = useCallback(() => setIsOffline(true), []);
+  // No element argument: the hook defaults to `window`, which is where the
+  // online/offline events fire — and resolving it inside the effect keeps this
+  // render free of a global reference.
+  useEventListener("online", handleOnline);
+  useEventListener("offline", handleOffline);
 
   // External input values for analyzer
   const [externalInputValues, setExternalInputValues] = useState<{
@@ -432,6 +458,39 @@ const App: React.FC = () => {
         onResetApiKey={handleResetKey}
         onSetApiKey={handleOpenApiKeyModal}
       />
+
+      {/* Screen-reader-only live region for the offline state. It is mounted
+          permanently and only its text changes, which is the pattern a live
+          region actually needs — a container inserted into the DOM together
+          with its text is announced unreliably, and the connection dropping is
+          exactly the kind of change nobody is watching for. Same construction
+          as the analyser's result announcements. */}
+      <p className="sr-only" role="status" aria-live="polite">
+        {isOffline ? t("offline.banner") : ""}
+      </p>
+
+      {/* Offline notice, the visible half. `aria-hidden` because the live
+          region above already carries this text — without it a screen reader
+          reads the same sentence twice, once announced and once in document
+          order. Amber rather than red: nothing has failed yet, this is a state
+          the user is meant to leave, the same reading the header's "no API key"
+          button uses. Not sticky — the header above it is, and its height is not
+          fixed (it wraps on narrow viewports), so a `top-*` offset here would be
+          wrong at exactly the widths where it matters. */}
+      {isOffline && (
+        <div
+          aria-hidden="true"
+          className="border-b border-amber-300 bg-amber-50 text-amber-800 dark:border-amber-600/40 dark:bg-amber-900/20 dark:text-amber-300"
+        >
+          <div className="max-w-[101.2rem] mx-auto px-4 sm:px-6 lg:px-8 py-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
+            <WifiOff className="w-4 h-4 shrink-0" aria-hidden="true" />
+            <span className="font-medium">{t("offline.banner")}</span>
+            <span className="text-amber-700/80 dark:text-amber-400/80">
+              {t("offline.bannerHint")}
+            </span>
+          </div>
+        </div>
+      )}
 
       <main
         id="main-content"

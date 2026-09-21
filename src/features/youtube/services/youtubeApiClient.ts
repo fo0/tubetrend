@@ -73,7 +73,39 @@ export async function fetchFromApi<T>(
   Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
 
   const cost = API_COSTS[endpoint];
-  const response = await fetch(url.toString(), { signal });
+
+  // `fetch` REJECTS — it never resolves — when the request does not reach
+  // YouTube at all: no network, DNS failure, a captive portal, a blocked host.
+  // That rejection is a bare `TypeError("Failed to fetch")`, so it bypassed this
+  // whole typed-error layer and arrived at the UI as exactly that raw English
+  // browser string: both surfaces that render a failure fall back to
+  // `Error.message` when no `i18n` descriptor is attached (useSearch for the
+  // analyser banner, FavoriteRow for a dashboard row), so a German session read
+  // "Failed to fetch" and no message named the cause or the way out.
+  //
+  // Two descriptors, because the two states ask different things of the user:
+  // `navigator.onLine === false` is the browser stating there is no connection
+  // at all (the false value is the dependable one — `true` only means *some*
+  // interface is up), while everything else is "the request left but YouTube
+  // did not answer". Status 0: no HTTP response ever existed. No quota is
+  // tracked either — nothing reached the API to spend it.
+  let response: Response;
+  try {
+    response = await fetch(url.toString(), { signal });
+  } catch (error) {
+    // An abort is a caller decision, not a failure: rethrow it untouched so the
+    // `signal` parameter keeps its documented semantics.
+    if (signal?.aborted || (error instanceof Error && error.name === "AbortError")) {
+      throw error;
+    }
+    const offline = typeof navigator !== "undefined" && navigator.onLine === false;
+    throw new YouTubeApiError(
+      offline ? "Browser is offline." : "Network request to YouTube failed.",
+      0,
+      false,
+      { key: offline ? "errors.api.offline" : "errors.api.network" },
+    );
+  }
   // The YouTube API always answers with JSON; guard against non-JSON bodies
   // (proxy/HTML error pages, empty responses) so a parse failure surfaces as a
   // typed YouTubeApiError instead of a cryptic SyntaxError leaking to the UI.

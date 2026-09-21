@@ -111,6 +111,10 @@
     "renameAria": "Rename favorite \"{{name}}\"",
     "renameLabel": "Favorite name",
     "renameHint": "Enter saves, Esc cancels. Leave empty to use the channel name.",
+    "collapse": "Collapse videos",
+    "expand": "Show videos",
+    "collapseAria": "Collapse the videos of \"{{name}}\"",
+    "expandAria": "Show the videos of \"{{name}}\"",
     "analyze": "Open in Analyzer (uses cached data)",
     "clearAll": "Clear all favorites",
     "clearAllConfirm": "Remove all {{count}} favorites? This cannot be undone.",
@@ -312,8 +316,14 @@
       "invalidResponse": "YouTube returned an unreadable response. Please try again.",
       "http": "YouTube is not reachable right now (HTTP {{status}}). Check your connection and try again.",
       "generic": "YouTube API error: {{message}}",
-      "genericStatus": "YouTube API error (HTTP {{status}})."
+      "genericStatus": "YouTube API error (HTTP {{status}}).",
+      "network": "YouTube could not be reached. Check your internet connection and try again.",
+      "offline": "You are offline. Reconnect and try again."
     }
+  },
+  "offline": {
+    "banner": "No internet connection — searches and refreshes will fail until you are back online.",
+    "bannerHint": "Saved favorites and highlights stay readable from the local cache."
   },
   "loading": "Loading…",
   "loadingState": {

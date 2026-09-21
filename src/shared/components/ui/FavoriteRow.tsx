@@ -18,7 +18,9 @@ import {
   AlertCircle,
   AlertTriangle,
   BarChart3,
+  ChevronDown,
   ChevronRight,
+  ChevronUp,
   Hash,
   Loader2,
   Pencil,
@@ -26,12 +28,13 @@ import {
   Trash2,
 } from "lucide-react";
 import { Youtube } from "@/src/shared/components/ui/BrandIcons";
-import { MAX_RESULTS_OPTIONS, TIME_FRAMES } from "@/src/shared/constants";
+import { MAX_RESULTS_OPTIONS, STORAGE_KEYS, TIME_FRAMES } from "@/src/shared/constants";
 import { useTranslation } from "react-i18next";
 import { useListboxKeyboard } from "@/src/shared/hooks";
 import { dispatchEvent, eventBus } from "@/src/shared/lib/eventBus";
 import { formatTimeAgo } from "@/src/shared/lib/formatters";
 import { getLocale } from "@/src/shared/lib/locale";
+import { safeRead, safeWrite } from "@/src/shared/lib/storage";
 
 interface FavoriteRowProps {
   favorite: FavoriteConfig;
@@ -51,6 +54,37 @@ interface FavoriteRowProps {
 
 // Optimierung: Gestaffelter Refresh - Delay zwischen den Favorites (in ms)
 const STAGGER_DELAY_MS = 300;
+
+/**
+ * Ids of the favorites whose video grid is collapsed, straight from storage.
+ *
+ * Tampered or half-written content is treated as "nothing collapsed" rather
+ * than crashing the dashboard — the same fail-soft reading every other consumer
+ * of this store applies (favoritesService.list, hiddenHighlightsService.list).
+ */
+function readCollapsedFavoriteIds(): string[] {
+  const raw = safeRead<unknown>(STORAGE_KEYS.COLLAPSED_FAVORITES, []);
+  if (!Array.isArray(raw)) return [];
+  return raw.filter((entry): entry is string => typeof entry === "string" && entry.length > 0);
+}
+
+/**
+ * Persist the collapsed state of one favorite, pruning ids no favorite carries
+ * any more.
+ *
+ * A favorite's id is derived from query|timeFrame|maxResults|searchType
+ * (`favoritesService.update` mints a new one whenever the row's time frame or
+ * limit changes), so entries here go stale by ordinary use, not just by a
+ * removal. Pruning on every write keeps the list bounded by the number of
+ * favorites that actually exist — and it is why changing a row's time frame
+ * brings it back expanded on the next reload: that row is a different favorite
+ * by then, and its freshly fetched result is what the user just asked to see.
+ */
+function persistCollapsedFavorite(id: string, collapsed: boolean, knownIds: Set<string>): void {
+  const next = readCollapsedFavoriteIds().filter((entry) => entry !== id && knownIds.has(entry));
+  if (collapsed) next.push(id);
+  safeWrite(STORAGE_KEYS.COLLAPSED_FAVORITES, next);
+}
 
 export const FavoriteRow: React.FC<FavoriteRowProps> = ({
   favorite,
@@ -75,6 +109,19 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
   const [currentTimeFrame, setCurrentTimeFrame] = useState<TimeFrame>(favorite.timeFrame);
   const [currentMax, setCurrentMax] = useState<number>(favorite.maxResults);
   const [currentFavId, setCurrentFavId] = useState<string>(favorite.id);
+
+  // Collapsed rows keep their header — name, time frame, limit, "as of" badge,
+  // video count and every action — and drop only the six video cards below it.
+  // A dashboard of a dozen favorites is a dozen six-card grids, several screens
+  // of them, and the ones a user is not looking at today still cost all that
+  // scrolling; folding those away makes the rest reachable without hunting.
+  //
+  // Collapsing changes nothing about fetching: the row keeps refreshing on
+  // schedule because the highlights section above is built from exactly these
+  // caches, so a collapsed favorite must not silently stop contributing to it.
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(() =>
+    readCollapsedFavoriteIds().includes(favorite.id),
+  );
 
   // Popover-UI State
   const [showTfMenu, setShowTfMenu] = useState<boolean>(false);
@@ -586,11 +633,52 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
     ? loading || (!videos && !favoritesService.getCache(currentFavId))
     : false;
 
+  // The next value is computed outside the state updater on purpose: the write
+  // below is a side effect, and React may invoke an updater more than once.
+  const toggleCollapsed = () => {
+    const next = !isCollapsed;
+    setIsCollapsed(next);
+    persistCollapsedFavorite(
+      currentFavId,
+      next,
+      new Set(favoritesService.list().map((fav) => fav.id)),
+    );
+  };
+
   return (
     <section className="mb-10">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
+          {/* Collapse toggle — a disclosure button, so `aria-expanded` carries
+              the state and the chevron only mirrors it. Deliberately without
+              `aria-controls`: the grid is unmounted while collapsed (the point
+              is a shorter page, not a hidden one), and pointing the attribute
+              at an id that is not in the document is worse than leaving it off
+              — a disclosure is valid with `aria-expanded` alone.
+              Down / up rather than the usual right / down pair: a decorative
+              ChevronRight already sits a few pixels away as the separator
+              between the title and the config tags, and two identical
+              right-pointing chevrons in one header read as one control
+              repeated. Down = "unfold this", up = "fold it away". */}
+          <button
+            type="button"
+            onClick={toggleCollapsed}
+            aria-expanded={!isCollapsed}
+            className="inline-flex items-center justify-center w-7 h-7 shrink-0 rounded-md text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            title={isCollapsed ? t("favorites.expand") : t("favorites.collapse")}
+            aria-label={
+              isCollapsed
+                ? t("favorites.expandAria", { name: displayName })
+                : t("favorites.collapseAria", { name: displayName })
+            }
+          >
+            {isCollapsed ? (
+              <ChevronDown className="w-4 h-4" aria-hidden="true" />
+            ) : (
+              <ChevronUp className="w-4 h-4" aria-hidden="true" />
+            )}
+          </button>
           {isRenaming ? (
             <input
               type="text"
@@ -846,23 +934,53 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
       </div>
 
       {/* Content */}
-      {loading && (
+      {!isCollapsed && loading && (
         <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-sm">
           <Loader2 className="w-4 h-4 animate-spin" /> {t("loading")}
         </div>
       )}
 
+      {/* The error banner survives a collapse on purpose. Collapsing hides
+          results the user chose not to look at right now; it must not hide the
+          fact that this favorite stopped updating, because the only other cue
+          is the "as of <time>" badge quietly ageing in the header. It is one
+          line, and it carries the Retry that answers it. */}
       {error && (
         <div
           role="alert"
-          className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex items-center gap-3 text-red-500 dark:text-red-200"
+          className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex flex-wrap items-center gap-3 text-red-500 dark:text-red-200"
         >
-          <AlertCircle className="w-5 h-5" aria-hidden="true" />
-          <span>{error}</span>
+          <AlertCircle className="w-5 h-5 shrink-0" aria-hidden="true" />
+          <span className="min-w-0 grow">{error}</span>
+          {/* One-click recovery, the counterpart of the analyser's error banner.
+              The row's own Refresh button does the same thing, but it sits in
+              the header among five other controls and reads as "fetch again",
+              not as "answer to this failure" — and on a dashboard of a dozen
+              rows the failing one is not necessarily the one under the cursor.
+              Bumping the local token re-runs exactly the load that failed.
+              Disabled while a run is in flight so a second fetch cannot be
+              queued behind the one already reporting. */}
+          <button
+            type="button"
+            onClick={() => setLocalRefreshToken((v) => v + 1)}
+            disabled={loading}
+            className="inline-flex shrink-0 items-center gap-1.5 px-3 py-1.5 rounded-lg border border-red-500/30 text-sm font-medium transition-colors hover:bg-red-500/10 disabled:opacity-50 disabled:cursor-not-allowed"
+            title={t("favorites.refresh")}
+          >
+            <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} aria-hidden="true" />
+            <span>{t("errors.tryAgain")}</span>
+          </button>
         </div>
       )}
 
-      {!loading && !error && videos && videos.length > 0 && (
+      {/* No `!error` guard: the cached videos are loaded before the request is
+          even sent and are still the last good data for this favorite, so a
+          transient failure (a 5xx, a dropped connection, a spent quota) used to
+          blank a row that had perfectly readable content a second earlier —
+          across every row at once on "Refresh all". The banner above now
+          explains the failure and the cards below stay, with the header's
+          "as of <time>" badge already stating how old they are. */}
+      {!isCollapsed && !loading && videos && videos.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3">
           {videos.map((video) => {
             const isFresh =
@@ -880,7 +998,7 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
       {/* Empty state: favorite loaded successfully but has no videos in the
           selected time frame — previously this rendered a blank grid with no
           explanation. */}
-      {!loading && !error && videos && videos.length === 0 && (
+      {!isCollapsed && !loading && !error && videos && videos.length === 0 && (
         <div className="bg-slate-50 border border-slate-200 dark:bg-slate-900/50 dark:border-slate-800 rounded-xl p-4 text-sm text-slate-500 dark:text-slate-400">
           {t("favorites.noVideosInTimeFrame")}
         </div>
