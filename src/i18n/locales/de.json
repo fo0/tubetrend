@@ -312,8 +312,14 @@
       "invalidResponse": "YouTube hat eine unlesbare Antwort geliefert. Bitte versuche es erneut.",
       "http": "YouTube ist gerade nicht erreichbar (HTTP {{status}}). Prüfe deine Verbindung und versuche es erneut.",
       "generic": "YouTube-API-Fehler: {{message}}",
-      "genericStatus": "YouTube-API-Fehler (HTTP {{status}})."
+      "genericStatus": "YouTube-API-Fehler (HTTP {{status}}).",
+      "network": "YouTube konnte nicht erreicht werden. Prüfe deine Internetverbindung und versuche es erneut.",
+      "offline": "Du bist offline. Stelle die Verbindung wieder her und versuche es erneut."
     }
+  },
+  "offline": {
+    "banner": "Keine Internetverbindung — Suchen und Aktualisieren schlagen fehl, bis du wieder online bist.",
+    "bannerHint": "Gespeicherte Favoriten und Highlights bleiben aus dem lokalen Cache lesbar."
   },
   "loading": "Lädt…",
   "loadingState": {
