@@ -22,6 +22,8 @@ export const STORAGE_KEYS = {
   SEARCH_HISTORY: "tt.search.history",
   LANGUAGE: "tt.lang.explicit",
   HIDDEN_HIGHLIGHTS: "tt.dashboard.hiddenHighlights.v1",
+  // Ids of the favorites whose video grid is collapsed on the dashboard.
+  COLLAPSED_FAVORITES: "tt.dashboard.collapsedFavorites.v1",
   ANALYSER_SORT_MODE: "tt.analyser.sortMode",
   ANALYSER_TOP_N: "tt.analyser.topN",
   ANALYSER_TABLE_SORT: "tt.analyser.tableSort.v1",
