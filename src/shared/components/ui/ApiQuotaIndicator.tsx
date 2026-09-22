@@ -724,9 +724,9 @@ export const ApiQuotaIndicator: React.FC = () => {
               <div className="text-xs text-slate-400 italic py-2">{t("quota.noCalls")}</div>
             ) : (
               <div className="space-y-1.5">
-                {groupedCalls.map((group, index) => (
+                {groupedCalls.map((group) => (
                   <div
-                    key={index}
+                    key={`${group.displayType}:${group.name}`}
                     className="flex items-start justify-between text-[11px] py-1 px-2 rounded bg-slate-800/50 hover:bg-slate-800 transition-colors"
                   >
                     <div className="flex items-start gap-2 min-w-0 flex-1">
