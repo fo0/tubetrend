@@ -22,7 +22,7 @@ Refactoring does NOT happen automatically. Only when:
 
 ## Known Refactoring Targets
 
-Verified against the tree on 2026-09-23. Line counts come from `find src -name '*.ts*' | xargs wc -l | sort -rn`; re-run it before trusting a number here. The five file splits below are tracked in issue #512 (`FavoriteRow.tsx` in #126).
+Verified against the tree on 2026-09-23. Line counts come from `find src -name '*.ts*' | xargs wc -l | sort -rn`; re-run it before trusting a number here. The five file splits below are tracked in issue #512 (`FavoriteRow.tsx` in #126), the missing test coverage in #463.
 
 - **`InputSection.tsx` (~953 lines)** — the second-largest file in `src/`, after `FavoriteRow.tsx`. Search form, autocomplete, search history, timeframe/max-results controls and their `localStorage` persistence in one component. Split candidates: a `useSearchHistory()` hook and a separate autocomplete dropdown component.
 - **`FavoriteRow.tsx` (~1017 lines)** — the largest file in `src/`. God component handling data fetching, caching, UI menus, state management and event handling, with 6 interdependent `useEffect` hooks plus refs for synchronization. Should be split into sub-components (`FavoriteRowHeader`, `FavoriteRowMenus`, `FavoriteRowVideos`) and a custom `useFavoriteRowData()` hook that absorbs the effect chain.
