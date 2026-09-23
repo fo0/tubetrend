@@ -919,11 +919,13 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
             {t("actions.refresh")}
           </button>
 
+          {/* text-red-700 in light mode: red-400 on the white page is ~2.9:1,
+              under the 4.5:1 WCAG 1.4.3 asks of this 12px label. */}
           {onRemove && (
             <button
               type="button"
               onClick={() => onRemove?.(currentFavId)}
-              className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-md border border-red-500/30 text-red-400 dark:text-red-300 hover:bg-red-500/10 transition-colors"
+              className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-md border border-red-500/30 text-red-700 dark:text-red-300 hover:bg-red-500/10 transition-colors"
               title={t("favorites.remove")}
               aria-label={t("favorites.remove")}
             >
@@ -944,11 +946,13 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
           results the user chose not to look at right now; it must not hide the
           fact that this favorite stopped updating, because the only other cue
           is the "as of <time>" badge quietly ageing in the header. It is one
-          line, and it carries the Retry that answers it. */}
+          line, and it carries the Retry that answers it.
+          text-red-700 in light mode, as in the analyser's banner: red-500 on
+          this tinted surface is ~3.3:1, under WCAG 1.4.3's 4.5:1. */}
       {error && (
         <div
           role="alert"
-          className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex flex-wrap items-center gap-3 text-red-500 dark:text-red-200"
+          className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex flex-wrap items-center gap-3 text-red-700 dark:text-red-200"
         >
           <AlertCircle className="w-5 h-5 shrink-0" aria-hidden="true" />
           <span className="min-w-0 grow">{error}</span>
