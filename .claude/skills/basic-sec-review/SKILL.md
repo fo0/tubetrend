@@ -1,6 +1,6 @@
 ---
-name: security-review
-description: "Use when the user wants a focused security audit of the current diff or recent changes. Triggered by /security-review, 'security review', 'audit this for security', 'check for vulnerabilities', 'OWASP review'. Runs deeper checks than the generic review — OWASP Top 10, secrets scanning, injection vectors, auth/authz boundaries, crypto usage. Independent of the generic review skill."
+name: basic-sec-review
+description: "Use when the user wants a focused security audit of the current diff or recent changes. Triggered by /basic-sec-review, 'security review', 'audit this for security', 'check for vulnerabilities', 'OWASP review'. Runs deeper checks than the generic review — OWASP Top 10, secrets scanning, injection vectors, auth/authz boundaries, crypto usage. Independent of the generic review skill."
 disallowed-tools: AskUserQuestion
 metadata:
   origin: claude-code-optimizer
@@ -10,31 +10,30 @@ metadata:
 
 ## When to Use
 
-- User says "/security-review", "security review", "audit for security", "check for vulnerabilities", "OWASP review"
+- User says "/basic-sec-review", "security review", "audit for security", "check for vulnerabilities", "OWASP review"
 - After implementing auth, payment, file-upload, deserialization, dynamic-code, or external-integration code
 - Before merging high-risk PRs (auth, billing, admin endpoints, public APIs)
 
 ## Scope Boundaries
 
 **Owns:** the focused vulnerability audit of the current diff — the deeper pass the generic review's P0 Security category does not go into.
-**Does not own:** general code quality (`review`), dependency-bot PR handling (`pr`), and **not** live incident response or secret rotation — a leaked live credential is surfaced to the user immediately and is not this skill's to rotate.
+**Does not own:** general code quality (`basic-review`), dependency-bot PR handling (`pr`), and **not** live incident response or secret rotation — a leaked live credential is surfaced to the user immediately and is not this skill's to rotate.
 
 ## Scope
 
-Diff-based by default. Full-codebase only on explicit user request (`/security-review --full` or "audit the whole codebase").
+Diff-based by default. Full-codebase only on explicit user request (`/basic-sec-review --full` or "audit the whole codebase").
 
 ## Workflow
 
 ```
 1. git status + git diff                              → identify changed files
-2. Read CLAUDE.md "Environment Variables" + agent_docs/env-vars.md + agent_docs/coding_conventions.md → understand trust boundaries
-3. (If GitNexus available) gitnexus_impact on changed input/storage symbols — read-only
-4. Read every changed file completely
-5. Evaluate against the coverage rules below
-6. Run security-relevant automated checks (see Tooling)
-7. Fix findings inline (prefer over defer; security debt compounds)
-8. Output standard Security Review Results table
-9. For NOT-fixed findings → BACKLOG.md with explicit Sev: P0/P1
+2. Read CLAUDE.md "Coding Conventions" + "Environment Variables" (full lists: agent_docs/coding_conventions.md, agent_docs/env-vars.md) → understand trust boundaries
+3. Read every changed file completely
+4. Evaluate against the coverage rules below
+5. Run security-relevant automated checks (see Tooling)
+6. Fix findings inline (prefer over defer; security debt compounds)
+7. Output standard Security Review Results table
+8. For NOT-fixed findings → BACKLOG.md with explicit Sev: P0/P1
 ```
 
 ## Coverage — the current OWASP Top 10, category by category
@@ -74,7 +73,7 @@ If a class has no available tool → name the class as `not run` in the report a
 
 | # | OWASP / Area | Sev | Status | Finding | Action |
 |---|--------------|-----|--------|---------|--------|
-| 1 | A03 Injection | P0 | ⚠️ Fixed | Unescaped YouTube title rendered as HTML in X | Rendered as text |
+| 1 | Injection | P0 | ⚠️ Fixed | Unescaped YouTube title rendered as HTML in X | Rendered as text |
 | ... |
 
 OWASP Top 10 edition: <year> | Categories with a verdict: <n>/<n>
@@ -85,7 +84,7 @@ Summary: X findings | Y fixed | Z deferred (with explicit user override) → Bac
 Footer:
 
 ```
-🔐 security-review skill — independent of generic /review
+🔐 basic-sec-review skill — independent of generic /basic-review
 ```
 
 ## Rules

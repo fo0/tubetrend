@@ -15,8 +15,8 @@ metadata:
 - "orca mode", "orchestrator mode", "orca an/aus", "ab jetzt alles delegieren", "delegate everything"
 - Session start, when `SCRATCHPAD.md` still carries an Orca line from an earlier session or from before a compaction
 
-Not this skill: choosing a `subagent_type` for one assignment while already orchestrating. That is the type/role
-table in `CLAUDE.md → Subagents`, with the longer form in `agent_docs/review_process.md → Subagent Delegation`.
+Not this skill: choosing a `subagent_type` for one assignment while already orchestrating. That is the `subagent_type`
+table in `agent_docs/review_process.md → Subagent Delegation`; the roles and their seats are in `CLAUDE.md → Subagents`.
 
 ## Scope Boundaries
 
@@ -42,9 +42,9 @@ paginator` is an objective, because "off" is not the entire string. Same for `on
 genuinely starts with a bare control word gets rephrased, not guessed at.
 
 **An objective never starts with another slash command.** Claude Code expands stacked skills at the start of a
-message, so `/orca /review src/auth` loads _both_ skills and hands `src/auth` to each — orca never sees the `/review`
-as its objective. Write the objective as prose and name the skill inside it ("review src/auth against …"); the run
-delegates it either way.
+message, so `/orca /basic-review src/auth` loads _both_ skills and hands `src/auth` to each — orca never sees the
+`/basic-review` as its objective. Write the objective as prose and name the skill inside it ("review src/auth
+against …"); the run delegates it either way.
 
 **The width in `/orca <N> <objective>` is a session setting like any other** — it does not snap back when the run
 ends, and it follows the persistence rule below. `/orca 5` puts it back.
@@ -124,6 +124,8 @@ line — the whole briefing behind the command, within the character cap that se
 two — and stop, **at the start, not after a run that was going to end there anyway.**
 A user who typed `/orca` is asking for the work, not for this command; naming the better one costs them one line
 and saves the run. An objective that trips one of that section's three disqualifiers is an objective run, so continue.
+**Unattended** (`$CLAUDE_CODE_REMOTE=true`), nobody can paste a block: Step 0 does not apply, the objective runs, and a
+decision only the user can make lands in the report instead of a stop (CLAUDE.md → _Autonomy_).
 
 **What an objective run is not: `/goal`.** It carries the objective through the run it starts. Claude Code's `/goal`
 is a _cross-turn_ evaluator — a session-scoped prompt Stop hook that re-checks a condition after every turn — and no
