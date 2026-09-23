@@ -56,13 +56,14 @@ All storage access goes through the type-safe `StorageAdapter` in `src/shared/li
 
 ### Favorites & Dashboard
 
-| Key                                | Purpose                                       | Used by                      |
-| ---------------------------------- | --------------------------------------------- | ---------------------------- |
-| `tt.favorites.v1`                  | Favorites list (channels + keywords)          | `favoritesService.ts`        |
-| `tt.favorites.cache.v1`            | Cached video data per favorite (TTL: 2 hours) | `favoritesService.ts`        |
-| `tt.dashboard.sort.v1`             | Dashboard sort field                          | `useDashboard.ts`            |
-| `tt.dashboard.sortOrder.v1`        | Dashboard sort order (asc/desc)               | `useDashboard.ts`            |
-| `tt.dashboard.hiddenHighlights.v1` | Hidden highlight video IDs                    | `hiddenHighlightsService.ts` |
+| Key                                  | Purpose                                       | Used by                      |
+| ------------------------------------ | --------------------------------------------- | ---------------------------- |
+| `tt.favorites.v1`                    | Favorites list (channels + keywords)          | `favoritesService.ts`        |
+| `tt.favorites.cache.v1`              | Cached video data per favorite (TTL: 2 hours) | `favoritesService.ts`        |
+| `tt.dashboard.sort.v1`               | Dashboard sort field                          | `useDashboard.ts`            |
+| `tt.dashboard.sortOrder.v1`          | Dashboard sort order (asc/desc)               | `useDashboard.ts`            |
+| `tt.dashboard.hiddenHighlights.v1`   | Hidden highlight video IDs                    | `hiddenHighlightsService.ts` |
+| `tt.dashboard.collapsedFavorites.v1` | Favorite IDs with a collapsed video grid      | `FavoriteRow.tsx`            |
 
 ### Search & Preferences
 
