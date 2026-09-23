@@ -81,7 +81,7 @@ git push                                  # no force
 
 ## Phase D — Revert on main
 
-Always use `git revert` on the default branch. Never `git reset --hard` there without explicit user override. "Main" is whatever this repo's default branch is called — resolve the name, never assume it:
+Always use `git revert` on the default branch. Never `git reset --hard` there (_Hard Rules_). "Main" is whatever this repo's default branch is called — resolve the name, never assume it:
 
 ```bash
 BASE=$(gh repo view --json defaultBranchRef --jq .defaultBranchRef.name)   # MCP: the repo's default_branch
@@ -91,11 +91,11 @@ git push origin "$BASE"
 
 If revert produces a conflict → stop, ask user to resolve manually.
 
-**Unattended (`$CLAUDE_CODE_REMOTE=true`): never push to `$BASE`.** Run the revert as Phase E with `$PR` replaced by the bad SHA — branch `revert-pr-<sha>`, `git revert <bad-sha>` without `-m 1` for a non-merge commit — push that branch, open the revert PR, merge it only through `.claude/skills/pr/SKILL.md → /pr merge`. The direct push above is the interactive shortcut for a repo whose owner is at the keyboard; unattended, a direct push to the default branch is outside the branch rule in `agent_docs/autonomy.md → Branch rule` — and in this repo it would also publish a Docker image and cut releases (`agent_docs/deployment.md`).
+**Unattended (`$CLAUDE_CODE_REMOTE=true`): never push to `$BASE`.** Run the revert as Phase E with `$PR` replaced by the bad SHA — branch `claude/revert-<sha>` (unattended work starts on `claude/`), `git revert <bad-sha>` without `-m 1` for a non-merge commit — push that branch, open the revert PR, merge it only through `.claude/skills/pr/SKILL.md → /pr merge`. The direct push above is the interactive shortcut for a repo whose owner is at the keyboard; unattended, a direct push to the default branch is outside the branch rule in `agent_docs/autonomy.md → Branch rule` — and in this repo it would also publish a Docker image and cut releases (`agent_docs/deployment.md`).
 
 ## Phase E — Revert merged PR
 
-The `gh` CLI has no `pr revert` subcommand — build the revert PR manually (CLI equivalent of GitHub's web "Revert" button). A revert **PR** is preferred over a direct push to main: it survives branch protection and keeps the change reviewable. In this repo it also republishes the Docker image cleanly — `latest` follows `main` (`agent_docs/deployment.md`).
+The `gh` CLI has no `pr revert` subcommand — build the revert PR manually (CLI equivalent of GitHub's web "Revert" button). A revert **PR** is preferred over a direct push to main: it survives branch protection and keeps the change reviewable. In this repo it also republishes the Docker image cleanly — `latest` follows `main` (`agent_docs/deployment.md`). Unattended, the branch is `claude/revert-pr-$PR` instead (`agent_docs/autonomy.md → Branch rule`).
 
 ```bash
 PR=<number>
@@ -124,15 +124,14 @@ git push -u origin <name>                # if remote was also gone
 - **Never `git push --force` on main.** Default is revert + new commit.
 - **Never delete a branch** as part of rollback — only restore / revert.
 - **Always print a dry-run diff** of what the rollback will change before executing.
-- **Always confirm with the user before destructive ops** (`reset --hard`, `force-push`, branch delete). Unattended, the confirmation cannot happen, so the op is skipped and reported (_Unattended_ under Auto-Detect Target) — never assumed.
+- **Always confirm with the user before destructive ops** (`reset --hard`, `force-push`, branch delete). Unattended, the confirmation cannot happen: the op runs only when the invoking instruction ordered exactly that, otherwise it is skipped and reported (_Unattended_ under Auto-Detect Target) — never assumed.
 - **Test must pass after rollback.** If the rollback itself breaks the build, stop and surface.
 
 ## After Rollback
 
 1. Run the automated checks per CLAUDE.md → _Commands_, in the canonical order (`npm ci` on a fresh clone, then `format:check` → `typecheck` → `lint` → `build`).
-2. If GitNexus is enabled: `gitnexus_detect_changes()` to confirm scope (read-only, `agent_docs/gitnexus.md`).
-3. Comment on the original PR / issue explaining the rollback (English, short).
-4. Recommend a follow-up: open a new branch, fix the root cause, do not just re-apply.
+2. Comment on the original PR / issue explaining the rollback (English, short).
+3. Recommend a follow-up: open a new branch, fix the root cause, do not just re-apply.
 
 ## Report
 

@@ -15,7 +15,7 @@ metadata:
 ## Scope Boundaries
 
 **Owns:** closing a piece of work out — format, the automated-check chain, scope check, commit, push (on request), issue close.
-**Does not own:** the review itself (`review`), the PR object (`pr`), remote build state (`ci`). It _suggests_ those and never runs them — that fence is what keeps `/done` predictable enough to type without reading it first.
+**Does not own:** the review itself (`basic-review`), the PR object (`pr`), remote build state (`ci`). It _suggests_ those and never runs them — that fence is what keeps `/done` predictable enough to type without reading it first.
 
 ## Workflow
 
@@ -68,7 +68,7 @@ No test runner is configured (`agent_docs/testing.md`), so these are the whole g
 
 ### 5. Verify scope
 
-If GitNexus is available, `gitnexus_detect_changes({scope: "all"})` confirms the change scope matches expectations — surface any unexpected affected processes. Then run `git status` and verify no unexpected `.claude/**`, `CLAUDE.md`, `AGENTS.md`, or `agent_docs/**` changes are staged — if a tool (GitNexus or anything else) touched them and they weren't the point of the task, revert with `git checkout -- <paths>` before committing (`agent_docs/gitnexus.md`).
+Run `git status` and verify no unexpected `.claude/**`, `CLAUDE.md`, `AGENTS.md`, or `agent_docs/**` changes are staged — if a tool (or anything else) touched them and they weren't the point of the task, revert with `git checkout -- <paths>` before committing.
 
 ### 5b. Context budget check
 
@@ -121,5 +121,5 @@ Strict format, strict limits:
 - **Never push by default.** Project rule (CLAUDE.md): do NOT push unless the user asks.
 - **Never force-push** without explicit user request.
 - **Ambiguous state on main** (large uncommitted diff, unclear scope) → ask first; unattended → uncommitted plus a report line (step 6).
-- **The report is the two lines above and nothing else.** No preamble, no postamble, nothing the commit message already says; the `Next:` line only when something is open.
+- **The report is the two lines above and nothing else.** No preamble, no postamble, nothing the commit message already says; the `Next:` line only when something is open — and when it names a step, the one handoff line from `CLAUDE.md → Handoff Prompt` closes the report.
 - If nothing to commit AND nothing to push AND no open issue → single-line confirmation: `✅ <branch>: already clean, nothing to do.`

@@ -6,13 +6,13 @@
 
 ## Workflow Triggers
 
-Skills: `.claude/skills/<name>/SKILL.md`, trigger in each frontmatter `description` — `done` ("done" / "fertig") · `pr` · `review` · `security-review` · `rollback` · `ci` · `stuck` · `beacon` ("check dependencies") · `scheduler` (Routines, `/loop` + `Cron*`, Desktop tasks; bare `/loop`: `.claude/loop.md`) · `orca` (`/orca <objective>`) · `gitnexus/*` (read-only). Diagram → `agent_docs/diagram_prompt.md`. Findings → `BACKLOG.md`, knowledge → `MEMORY.md` / `SCRATCHPAD.md` (`agent_docs/backlog_process.md`, `agent_docs/memory_process.md`).
+Skills: `.claude/skills/<name>/SKILL.md`, trigger in each frontmatter `description` — `done` ("done" / "fertig") · `pr` · `basic-review` · `basic-sec-review` · `rollback` · `ci` · `stuck` · `beacon` ("check dependencies") · `scheduler` (Routines, `/loop` + `Cron*`, Desktop tasks; bare `/loop`: `.claude/loop.md`) · `orca` (`/orca <objective>`). Diagram → `agent_docs/diagram_prompt.md`. Findings → `BACKLOG.md`, knowledge → `MEMORY.md` / `SCRATCHPAD.md` (`agent_docs/backlog_process.md`, `agent_docs/memory_process.md`).
 
-**Project rules:** `done` never pushes unless asked and never auto-runs `review`; GitNexus is read-only (`AGENTS.md`, `agent_docs/gitnexus.md`).
+**Project rule:** `done` never pushes unless asked and never auto-runs `basic-review`.
 
 ## Output Languages
 
-Chat to the user: the user's language (default German), technical terms English and never translated („2 Bugs gefixt"), paths / commands / errors verbatim. **UI strings:** i18n keys (`t('key')`), bundles `en` + `de`, fallback `en`. **Everything else English** — code, comments, commits (Conventional Commits), PRs, issues, every generated file. Term list: `agent_docs/coding_conventions.md → Never-translate term list`.
+Chat to the user: the user's language (default German) — skill report shapes fix the structure, not the language — technical terms English and never translated („2 Bugs gefixt"), paths / commands / errors verbatim. **UI strings:** i18n keys (`t('key')`), bundles `en` + `de`, fallback `en`. **Everything else English** — code, comments, commits (Conventional Commits), PRs, issues, every generated file. Term list: `agent_docs/coding_conventions.md → Never-translate term list`.
 
 ## Performance / Modes
 
@@ -20,7 +20,7 @@ Model: the session's, never pinned here or in `.claude/settings.json`. Plan mode
 
 ## Caveman Mode — chat compression (default `full`)
 
-Chat, status and confirmations only — **never** files, code, commits, PR bodies, issue comments. Shorten by selection, not compression: cut what would not change the reader's next move; no abbreviations, arrow chains or invented shorthand; code and error strings verbatim. Never compressed: the closing summary, security warnings, irreversible-action confirmations, the _Handoff Prompt_. `caveman lite|full|ultra` switches, `stop caveman` turns it off for the session. Full wording: `agent_docs/autonomy.md → Caveman Mode`.
+Chat, status and confirmations only — **never** files, code, commits, PR bodies, issue comments. At `full`: drop filler, pleasantries, hedging and articles; fragments are fine for status lines. Shorten by selection, not compression: cut what would not change the reader's next move; no abbreviations, arrow chains or invented shorthand in any mode; code and error strings verbatim. Never compressed: the closing summary, security warnings, irreversible-action confirmations, the _Handoff Prompt_. `caveman lite|full|ultra` switches (`lite` keeps full sentences, `ultra` goes telegraphic), `stop caveman` turns it off for the session. Full wording: `agent_docs/autonomy.md → Caveman Mode`.
 
 ## Autonomy
 
@@ -38,7 +38,7 @@ Edge cases: `agent_docs/autonomy.md → Autonomy`.
 A turn that hands a decision back or names a next step / recommendation ends with **exactly one** ready-to-send prompt: your recommendation, not a menu, complete enough that pasting it is the whole instruction, placed last. **Never two** — no second command, no second block; alternatives go _above_ it as one-line prose (`A — <label>`). **One single line, no line breaks, ≤ 4000 characters**: a slash command takes the rest of the message as its argument, so a line break or the cap loses the goal after the paste. Join the parts with `. ` and `·`; too long → narrow _In scope_, never a second message.
 
 ```
-/goal <objective in one sentence> — <the recommended path>. In scope: <...>. Out of scope: <...>. Steps: <1 … n>. /review after every step, one overall review over the combined diff at the end by an agent that wrote none of it, then /done. Done when: <observable condition>.
+/goal <objective in one sentence> — <the recommended path>. In scope: <...>. Out of scope: <...>. Steps: <1 … n>. /basic-review after every step, one overall review over the combined diff at the end by an agent that wrote none of it, then /done. Done when: <observable condition>.
 ```
 
 | The work                                                    | The line starts with                              |
@@ -96,7 +96,7 @@ npm run format:check   # format-check (CI)
 npm run typecheck      # tsc --noEmit
 npm run lint           # eslint . — errors gate, warnings don't
 npm run build          # production build to dist/
-npx @mermaid-js/mermaid-cli mmdc -i docs/ARCHITECTURE.mmd -o docs/ARCHITECTURE.svg
+npx -y -p @mermaid-js/mermaid-cli mmdc -i docs/ARCHITECTURE.mmd -o docs/ARCHITECTURE.svg
 ```
 
 ## Key Patterns
@@ -130,7 +130,7 @@ Only `VITE_`-prefixed vars reach the client: `VITE_DEFAULT_SEARCH`, `VITE_GIT_CO
 
 ### Secrets Locations
 
-Never committed — local `.env.local` (gitignored; template `.env.example`), CI secret store, fixtures synthetic. **The YouTube API key is no build-time secret:** the user types it into the UI and it stays in that browser's `localStorage`. New secret: placeholder in `.env.example`, ask the user; never `gh secret set` unprompted. Scan: `security-review` skill.
+Never committed — local `.env.local` (gitignored; template `.env.example`), CI secret store, fixtures synthetic. **The YouTube API key is no build-time secret:** the user types it into the UI and it stays in that browser's `localStorage`. New secret: placeholder in `.env.example`, ask the user; never `gh secret set` unprompted. Scan: `basic-sec-review` skill.
 
 ## Deployment
 
@@ -150,7 +150,7 @@ Catalog: `agent_docs/mcp_catalog.md` — never auto-detected, never hard-require
 
 ## Architecture Decisions
 
-ADRs in `docs/adr/` (format: `agent_docs/adr_template.md`). Grep `docs/adr/` before contradicting one; reverse with a new ADR `Status: Supersedes ADR-NNNN`, never by editing an accepted one.
+ADRs in `docs/adr/` (format: `agent_docs/adr_template.md`). Grep `docs/adr/` before contradicting one; reverse with a new ADR that supersedes it — the old one changes only its status (`Superseded by ADR-NNNN`), never its body.
 
 ## Documentation Rules
 
@@ -160,4 +160,4 @@ After a code change, update only what it changed: `README.md` (user-facing) · `
 
 `CLAUDE.md` loads every turn: **12k** target, offload at **14k**, hard 16k. `MEMORY.md` / `SCRATCHPAD.md` load at session start: 8k / 4k target, offload at 16k / 8k. On-demand files (`agent_docs/`, skills, ADRs) are unbudgeted. Over → **move** content out and leave a one-line pointer, never delete to fit — ladder: `agent_docs/context_budget.md`. The Tier-1 guard flags it after any Edit/Write; act in the same session.
 
-<!-- Generated by claude-code-optimizer v1.48.0 -->
+<!-- Generated by claude-code-optimizer v1.49.0 -->

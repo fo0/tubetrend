@@ -4,11 +4,11 @@ Session-spanning project knowledge. **Read at session start, update during work.
 
 ## Architecture Decisions
 
-- **Review is on-demand only** — `/review` is the sole entry point; done-skill never triggers it. `review_process.md` says _how_ a review runs, not _when_. Do not reintroduce "every implementation triggers a full review". (2026-08-02)
+- **Review is on-demand only** — `/basic-review` is the sole entry point (renamed from `/review` on 2026-09-23 — that name is the alias of Claude Code's bundled `/code-review`); done-skill never triggers it. `review_process.md` says _how_ a review runs, not _when_. Do not reintroduce "every implementation triggers a full review". (2026-08-02)
 
 - **Commit style is Conventional Commits** — `type(scope): description`, per CLAUDE.md → Git Conventions and all of the git history. Do not reintroduce CONTRIBUTING.md's old prose style (`Add feature X`). (2026-08-02)
 
-- **GitNexus policy lives in `agent_docs/gitnexus.md` (mirrored in `AGENTS.md`)** — CLAUDE.md holds only a pointer. Do not write "see the Read-Only Analysis Policy in CLAUDE.md"; that section is gone. (2026-08-02)
+- **GitNexus is retired (owner decision, removed 2026-09-23 with optimizer v1.49.0)** — its skills, its policy doc under `agent_docs/` (offloaded from CLAUDE.md on 2026-07-26), the commit-time guard hook and the `AGENTS.md` policy mirror are gone; `AGENTS.md` is a pointer to CLAUDE.md. Do not re-add a GitNexus policy, skill or hook. The `.gitnexus` ignore entries left in `.dockerignore`, `.prettierignore` and `eslint.config.js` are inert; removing them is a quality-config edit for the owner. (2026-09-23)
 
 - **`.junie/` is removed and gitignored (owner decision)** — the JetBrains Junie guidelines had drifted (documented localStorage keys `tt.theme.explicit` / `tt.quota.tracking`, while `src/shared/constants/config.ts` defines `tt.theme` / `yt_quota_tracking`). Agent guidance lives in CLAUDE.md + `agent_docs/` only. Do not reintroduce `.junie/` or reference it in docs. (2026-08-02)
 

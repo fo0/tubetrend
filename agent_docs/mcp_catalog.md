@@ -11,11 +11,10 @@ This file documents:
 
 > Edit this list when adding/removing MCP integrations from the project. The optimizer preserves user edits on re-run.
 
-| MCP        | Purpose in this project                                                                           | Notes                                                                            |
-| ---------- | ------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| `gitnexus` | Code intelligence — symbol graph, impact analysis, safe refactor on the TypeScript/React codebase | Skills in `.claude/skills/gitnexus/`. Optional — workflows must work without it. |
-| `github`   | Issue / PR / repo metadata via API (alternative to `gh` CLI)                                      | Useful when running in environments without `gh` installed (CI, sandboxes).      |
-| `beacon`   | Dependency compatibility verdicts (`compat_*`) before a version bump; repo onboarded in #334      | Drives `.claude/skills/beacon/SKILL.md`. Optional — skip the skill when absent.  |
+| MCP      | Purpose in this project                                                                      | Notes                                                                           |
+| -------- | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| `github` | Issue / PR / repo metadata via API (alternative to `gh` CLI)                                 | Useful when running in environments without `gh` installed (CI, sandboxes).     |
+| `beacon` | Dependency compatibility verdicts (`compat_*`) before a version bump; repo onboarded in #334 | Drives `.claude/skills/beacon/SKILL.md`. Optional — skip the skill when absent. |
 
 ## Servers the agent will meet anyway
 
@@ -102,10 +101,10 @@ despite the glob. **The agent never writes a `deny` or `ask` block anywhere, pro
 
 Two more keys earn their place in that same user-level file:
 
-| Key                                             | Effect on unattended work                                                                                                                                                                                                                                                                                                                                             |
-| ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `"askUserQuestionTimeout": "5m"`                | An unanswered `AskUserQuestion` auto-continues after 5 minutes with whatever was preselected, instead of holding the session open. The default `"never"` waits forever — that is what turns one ambiguous moment into a dead overnight run. Values: `"60s"`, `"5m"`, `"10m"`, `"never"`. **Read from user settings only**, which is why the optimizer never writes it |
-| `"permissions": {"defaultMode": "acceptEdits"}` | Optional. File edits and common filesystem commands stop prompting; every other rule above still applies. Project settings _can_ carry this, but how much a machine may do unsupervised is the owner's call, not the repo's. `bypassPermissions` skips nearly all prompts and belongs only in a container or VM you are willing to lose                               |
+| Key                                             | Effect on unattended work                                                                                                                                                                                                                                                                                                                                                                            |
+| ----------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `"askUserQuestionTimeout": "5m"`                | An unanswered `AskUserQuestion` auto-continues after 5 minutes with whatever was preselected, instead of holding the session open. The default `"never"` waits forever — that is what turns one ambiguous moment into a dead overnight run. Values: `"60s"`, `"5m"`, `"10m"`, `"never"`. **Read from user settings only** — a repo cannot set it for you, which is why the optimizer never writes it |
+| `"permissions": {"defaultMode": "acceptEdits"}` | Optional. File edits and common filesystem commands stop prompting; every other rule above still applies. Project settings _can_ carry this, but how much a machine may do unsupervised is the owner's call, not the repo's — so the optimizer leaves it to you. `bypassPermissions` skips nearly all prompts and belongs only in a container or VM you are willing to lose                          |
 
 ## MCPs in cloud and routine runs
 
@@ -127,8 +126,8 @@ server reachable in an unattended run:
    stdio servers use `"command"` + `"args"` instead of `"type"`/`"url"`. `${VAR}` and `${VAR:-default}` expand in
    `command`, `args` and `env` — **use them for every credential**; a token committed in `.mcp.json` is a leaked token.
    Project servers need approval before they connect: `.claude/settings.json` → `enableAllProjectMcpServers: true`
-   grants it, and like every project-level allow rule it applies only after the workspace-trust dialog is accepted.
-   TubeTrend has **no `.mcp.json` today**, so that key is deliberately absent from `.claude/settings.json` — adding the
+   grants it, and like every project-level allow rule it applies only after the workspace-trust dialog is accepted, so
+   a repo cannot fully approve its own servers on a first local run. TubeTrend has **no `.mcp.json` today**, so that key is deliberately absent from `.claude/settings.json` — adding the
    file is what should add the key.
 
 2. **claude.ai connectors.** A routine includes the account's connectors, and its own form is where you narrow them to
@@ -148,7 +147,7 @@ says so once.
 ## Adding a New Project MCP
 
 1. Add a row to the **Project MCPs** table above with purpose + notes.
-2. If the MCP needs setup, document the install/auth steps in CLAUDE.md "External Integrations" section.
+2. If the MCP needs setup, put the install/auth steps in that row's Notes — `CLAUDE.md → External Integrations` stays a pointer to this file.
 3. If a workflow becomes MCP-dependent, add a fallback path that works without it.
 
-<!-- Generated by claude-code-optimizer v1.48.0 -->
+<!-- Generated by claude-code-optimizer v1.49.0 -->

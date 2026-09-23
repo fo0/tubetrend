@@ -1,6 +1,6 @@
 # Review Process
 
-This file defines the review process. **It runs on demand only**, via `.claude/skills/review/SKILL.md` (`/review`, "review this"). The done-skill does NOT auto-run it — see CLAUDE.md → Workflow Triggers. Everything below describes how a review executes once it has been invoked.
+This file defines the review process. **It runs on demand only**, via `.claude/skills/basic-review/SKILL.md` (`/basic-review`, "review this"). The done-skill does NOT auto-run it — see CLAUDE.md → Workflow Triggers. Everything below describes how a review executes once it has been invoked.
 
 ## Core Rules
 
@@ -68,7 +68,7 @@ Apps in this workspace are built and verified by AI agents end-to-end. Tests mus
 - **Deterministic** — fake clocks, fake random, in-memory storage adapters, mocked event bus, mocked YouTube API client.
 - **Self-contained** — runnable on every change as part of the standard test command.
 
-External boundaries (YouTube API, localStorage, event bus) → always mock or use ephemeral in-memory fakes. Real-service smoke/E2E tests only on explicit user request, never as default automated check.
+External boundaries (YouTube API, localStorage, event bus) → always mock or use ephemeral in-memory fakes. Real-service smoke/E2E tests only on explicit user request, never as default automated check. If a planned test would hit a paid or production resource, replace it with a mocked equivalent or move it to a manual checklist.
 
 ## Review Scope
 
@@ -76,12 +76,6 @@ External boundaries (YouTube API, localStorage, event bus) → always mock or us
 
 - Review is based on changed files (diff).
 - Only changed and directly affected files are read.
-
-### GitNexus-enhanced review (if available — read-only)
-
-- Use `gitnexus_impact` on changed functions to identify affected downstream code beyond the diff.
-- Use `gitnexus_detect_changes` after fixes to verify change scope matches expectations.
-- GitNexus is read-only here: never let it edit files or regenerate skills/docs (Read-Only Analysis Policy: `agent_docs/gitnexus.md`, mirrored in `AGENTS.md`).
 
 ### Full-read review (when needed)
 
@@ -94,7 +88,6 @@ External boundaries (YouTube API, localStorage, event bus) → always mock or us
 - Group by change type (refactoring, feature, config etc.).
 - P0 categories for all files.
 - P1/P2 only for feature-relevant files, rest by sampling.
-- If GitNexus available: use `gitnexus_impact` to prioritize files by downstream dependency count.
 
 ## Review Categories
 
@@ -104,10 +97,10 @@ Eight categories, fixed numbering — the report table indexes into them, so the
 
 ### P0 — Critical (always fix immediately)
 
-| #   | Category                | Scope — where this category starts and stops                                                                                                                                  |
-| --- | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | **Security**            | Anything an attacker could reach: untrusted input crossing a trust boundary, authn/authz, secrets, unsafe execution, crypto misuse. Deeper audit: the `security-review` skill |
-| 2   | **Bugs & Logic Errors** | Code that is wrong for inputs it is _meant_ to handle — control flow, state, concurrency, resource lifetime, unhandled failure at boundaries                                  |
+| #   | Category                | Scope — where this category starts and stops                                                                                                                                   |
+| --- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1   | **Security**            | Anything an attacker could reach: untrusted input crossing a trust boundary, authn/authz, secrets, unsafe execution, crypto misuse. Deeper audit: the `basic-sec-review` skill |
+| 2   | **Bugs & Logic Errors** | Code that is wrong for inputs it is _meant_ to handle — control flow, state, concurrency, resource lifetime, unhandled failure at boundaries                                   |
 
 ### P1 — Important (fix by default, defer only if disproportionate effort)
 
@@ -205,40 +198,38 @@ Three axes, in this priority order: **accessibility** → **responsiveness** →
 
 **The role carries the lens.** The roster and the seat criterion per role are canonical in `CLAUDE.md → Subagents` (the wave report names the role, so the vocabulary is closed there); this table says what each lens looks at. A role is _how the assignment is framed_, not a separate mechanism: it goes to a `general-purpose` subagent whose brief names the lens, the standard it answers to, and what its return must contain:
 
-| Role          | Lens it applies                                                                        |
-| ------------- | -------------------------------------------------------------------------------------- |
-| `architect`   | Structural fit, boundaries, what this makes hard later                                 |
-| `implementer` | The change itself, in this repo's idiom                                                |
-| `reviewer`    | Correctness of the diff, against a fresh reading — a different agent than the author   |
-| `domain`      | Whether this matches how the subject actually works                                    |
-| `product`     | Is this what was asked, is the scope right, what is "done"                             |
-| `docs`        | What a reader needs that the diff does not say                                         |
-| `security`    | Trust boundaries, untrusted input, secrets → `.claude/skills/security-review/SKILL.md` |
+| Role          | Lens it applies                                                                         |
+| ------------- | --------------------------------------------------------------------------------------- |
+| `architect`   | Structural fit, boundaries, what this makes hard later                                  |
+| `implementer` | The change itself, in this repo's idiom                                                 |
+| `reviewer`    | Correctness of the diff, against a fresh reading — a different agent than the author    |
+| `domain`      | Whether this matches how the subject actually works                                     |
+| `product`     | Is this what was asked, is the scope right, what is "done"                              |
+| `docs`        | What a reader needs that the diff does not say                                          |
+| `security`    | Trust boundaries, untrusted input, secrets → `.claude/skills/basic-sec-review/SKILL.md` |
 
-**Roles are lenses, not a standing panel.** Seat the ones the change actually calls for — a typo fix needs
-`implementer` and `reviewer`, a new integration may need five. Never seat two agents with the same lens hoping agreement
-means correctness; distinct lenses catch failure modes that redundancy cannot. Repo-local roles go in `.claude/agents/*.md` only for a role _this_ repo seats often enough to be worth a file; role-framed assignments cover the rest and cannot drift out of date.
+Roles are lenses, not a standing panel: a typo fix needs `implementer` and `reviewer`, a new integration may need five. Repo-local roles go in `.claude/agents/*.md` only for a role _this_ repo seats often enough to be worth a file; role-framed assignments cover the rest and cannot drift out of date.
 
 **The type carries the tool access:**
 
-| Task                                                      | Matching `subagent_type`                                                     |
-| --------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| **Locate code / find symbols**                            | `Explore` (read-only, fast, doesn't pollute main context)                    |
-| **Design an approach**                                    | `Plan`                                                                       |
-| **Write tests · docs · refactoring chunks · boilerplate** | `general-purpose`                                                            |
-| **Independent code review**                               | `general-purpose`, or a project-specific reviewer subagent if one is defined |
-| **Q about Claude Code/SDK/API**                           | `claude-code-guide`                                                          |
+| Task                                                             | Matching `subagent_type`                                                     |
+| ---------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| **Locate code / find symbols**                                   | `Explore` (read-only, fast, doesn't pollute main context)                    |
+| **Design an approach before building**                           | `Plan`                                                                       |
+| **Write tests · doc updates · refactoring chunks · boilerplate** | `general-purpose`                                                            |
+| **Independent code review** (second opinion on a diff)           | `general-purpose`, or a project-specific reviewer subagent if one is defined |
+| **Q about Claude Code / SDK / API**                              | `claude-code-guide`                                                          |
 
 ## Subagent Selection Rules
 
-- **Use `Explore` for read-only search.** Specify breadth: `quick` / `medium` / `very thorough`. Do NOT use for code review — it reads excerpts, will miss content past its window.
-- **Use `Plan` before non-trivial implementation.** Then act on the plan in main thread, or hand the plan to `general-purpose`.
+- **Use `Explore` for read-only search.** Specify breadth: `quick` (single targeted), `medium` (moderate), `very thorough` (multiple locations). Do NOT use for code review or open-ended analysis — it reads excerpts, will miss content past its window.
+- **Use `Plan` before non-trivial implementation.** Then hand the plan to `general-purpose` for execution — acting on it in the main thread is plain behavior, for `/orca off` only.
 - **Use `general-purpose` for write+execute** tasks. Default for "do this work" delegations.
-- **Use `claude-code-guide` for tooling questions** about Claude Code itself.
+- **Use `claude-code-guide` for tooling questions** about Claude Code itself (slash commands, hooks, MCP servers, SDK).
 - **Parallelize independent work** — multiple Agent calls in one message when no dependencies exist.
-- **Orchestrator mode changes what "known target" means.** Reading a file for its content is task work and goes to a subagent like anything else; the orchestrator's own reads are the _verification_ kind — `git status`, `git diff`, reading a returned change. `/orca off` is what restores direct-tool-first behavior, not a judgment per call.
-- **Pass full context** — subagents have no conversation history.
-- **Trust but verify** — inspect diffs after write-capable subagents finish.
+- **In orchestrator mode, reading for content is task work.** It goes to a subagent like anything else; the orchestrator's own reads are the _verification_ kind — `git status`, `git diff`, reading a returned change. `/orca off` restores plain behavior; it is not a judgment per call.
+- **Pass full context** — subagents have no conversation history. Include file paths, line numbers, what was already tried, and the goal.
+- **Trust but verify** — a subagent's summary describes intent, not necessarily the actual change. Inspect diffs after write-capable subagents finish.
 
 The main agent retains responsibility for the review process itself.
 
@@ -253,6 +244,5 @@ Only commit when:
 - [ ] Documentation updated if needed
 - [ ] Commit message follows Conventional Commits
 - [ ] UI review done (if UI changed)
-- [ ] (If GitNexus available) `gitnexus_detect_changes()` confirmed scope
 
-<!-- Generated by claude-code-optimizer v1.48.0 -->
+<!-- Generated by claude-code-optimizer v1.49.0 -->
