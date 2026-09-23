@@ -316,9 +316,16 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({
                   <td className="p-4 text-right font-mono text-slate-600 dark:text-slate-300">
                     {formatNumber(video.views)}
                   </td>
+                  {/* Velocity and engagement are content, so WCAG 1.4.3 asks 4.5:1
+                      of them, like the score beside them. Light mode had
+                      yellow-600/80 (~2.3:1) and pink-600/80 (~3.9:1) on the white
+                      table; now yellow-700 / pink-700 (~4.9:1 / ~5.9:1, and still
+                      ~4.8:1 / ~5.7:1 on the row hover tint). Dark engagement had
+                      pink-500/80 (~3.7:1), now pink-400 (~6.9:1, ~6.4:1 on
+                      hover); dark velocity already passed and is unchanged. */}
                   <td className="p-4 text-right font-mono text-slate-500 dark:text-slate-400 hidden md:table-cell">
                     {video.viewsPerHour ? (
-                      <span className="flex items-center justify-end gap-1 text-yellow-600/80 dark:text-yellow-500/80">
+                      <span className="flex items-center justify-end gap-1 text-yellow-700 dark:text-yellow-500/80">
                         {formatNumber(video.viewsPerHour)}/h
                       </span>
                     ) : (
@@ -327,7 +334,7 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({
                   </td>
                   <td className="p-4 text-right font-mono text-slate-500 dark:text-slate-400 hidden lg:table-cell">
                     {video.engagementRate != null ? (
-                      <span className="flex items-center justify-end gap-1 text-pink-600/80 dark:text-pink-500/80">
+                      <span className="flex items-center justify-end gap-1 text-pink-700 dark:text-pink-400">
                         <Heart className="w-3 h-3" aria-hidden="true" />
                         {video.engagementRate}%
                       </span>

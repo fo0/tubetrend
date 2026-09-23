@@ -922,11 +922,16 @@ export const InputSection: React.FC<InputSectionProps> = ({
             // assistive tech. The tooltip names the action a click performs, so
             // it flips with the state instead of restating it.
             aria-pressed={isFavorite}
+            // yellow-800 / green-800 in light mode: the "Favorite" and "Saved"
+            // labels are 16px body text, and yellow-500 / green-500 on the
+            // tinted light surface measure ~1.7:1 / ~2.0:1 against the 4.5:1
+            // of WCAG 1.4.3 (the 700 shades still miss it at ~4.4:1 / ~4.3:1).
+            // Both reach ~6.2:1; the dark shades are unchanged.
             className={`px-4 xl:px-5 rounded-xl border font-semibold flex items-center gap-2 transition-colors ${
               isFavorite
-                ? "border-yellow-400/30 bg-yellow-500/10 text-yellow-500 dark:text-yellow-300"
+                ? "border-yellow-400/30 bg-yellow-500/10 text-yellow-800 dark:text-yellow-300"
                 : justSaved
-                  ? "border-green-500/30 bg-green-500/10 text-green-500 dark:text-green-300"
+                  ? "border-green-500/30 bg-green-500/10 text-green-800 dark:text-green-300"
                   : "border-slate-300 dark:border-slate-700 bg-slate-100/50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800"
             }`}
             title={isFavorite ? t("favorites.removeTitle") : t("favorites.saveTitle")}
