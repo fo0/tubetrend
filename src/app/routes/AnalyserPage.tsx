@@ -302,11 +302,15 @@ export function AnalyserPage({
         {bulkActionAnnouncement}
       </p>
 
-      {/* Error Message */}
+      {/* Error Message. text-red-700 in light mode, not red-500: the message is
+          body text on a red-tinted surface over the white page, where red-500
+          reaches only ~3.3:1 — under the 4.5:1 WCAG 1.4.3 asks, on the one line
+          that explains why a search failed. red-700 clears it at ~5.6:1; the
+          Retry button inherits the colour, the dark shade is unchanged. */}
       {searchState.error && (
         <div
           role="alert"
-          className="mb-8 bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex flex-wrap items-center gap-3 text-red-500 dark:text-red-200 animate-fade-in shadow-lg shadow-red-900/10"
+          className="mb-8 bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex flex-wrap items-center gap-3 text-red-700 dark:text-red-200 animate-fade-in shadow-lg shadow-red-900/10"
         >
           <AlertCircle className="w-5 h-5 shrink-0" aria-hidden="true" />
           <p className="min-w-0 grow">{searchState.error}</p>
