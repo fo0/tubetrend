@@ -43,8 +43,8 @@ genuinely starts with a bare control word gets rephrased, not guessed at.
 
 **An objective never starts with another slash command.** Claude Code expands stacked skills at the start of a
 message, so `/orca /basic-review src/auth` loads _both_ skills and hands `src/auth` to each — orca never sees the
-`/basic-review` as its objective. Write the objective as prose and name the skill inside it ("review src/auth against …"); the run
-delegates it either way.
+`/basic-review` as its objective. Write the objective as prose and name the skill inside it ("review src/auth
+against …"); the run delegates it either way.
 
 **The width in `/orca <N> <objective>` is a session setting like any other** — it does not snap back when the run
 ends, and it follows the persistence rule below. `/orca 5` puts it back.

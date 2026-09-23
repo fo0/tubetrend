@@ -19,7 +19,7 @@ Analyze the repository and produce a single, valid Mermaid.js architecture diagr
 
 Gather context:
 
-1. Read the file tree. Exclude: `.git`, `node_modules` and the build output `.gitignore` lists — `dist`, `dist-ssr`, `dist-electron`, `dist-extension`, `electron/dist`, `release`, `release-chromebook`, `android/app/build`, `android/build`, `android/.gradle`. `build/` is **not** output here: it holds the committed app icon (`build/icon.png`).
+1. Read the file tree. Exclude: `.git`, `node_modules` and the build output and caches `.gitignore` lists — `dist`, `dist-ssr`, `dist-electron`, `dist-extension`, `electron/dist`, `release`, `release-chromebook`, `android/app/build`, `android/build`, `android/.gradle`. `build/` is **not** output here: it holds the committed app icon (`build/icon.png`).
 2. Read README and key config files to identify the tech stack.
 
 Determine:

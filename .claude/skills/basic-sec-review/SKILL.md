@@ -73,7 +73,7 @@ If a class has no available tool → name the class as `not run` in the report a
 
 | # | OWASP / Area | Sev | Status | Finding | Action |
 |---|--------------|-----|--------|---------|--------|
-| 1 | A03 Injection | P0 | ⚠️ Fixed | Unescaped YouTube title rendered as HTML in X | Rendered as text |
+| 1 | Injection | P0 | ⚠️ Fixed | Unescaped YouTube title rendered as HTML in X | Rendered as text |
 | ... |
 
 OWASP Top 10 edition: <year> | Categories with a verdict: <n>/<n>

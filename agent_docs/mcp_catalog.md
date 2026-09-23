@@ -127,8 +127,8 @@ server reachable in an unattended run:
    `command`, `args` and `env` — **use them for every credential**; a token committed in `.mcp.json` is a leaked token.
    Project servers need approval before they connect: `.claude/settings.json` → `enableAllProjectMcpServers: true`
    grants it, and like every project-level allow rule it applies only after the workspace-trust dialog is accepted, so
-   a repo cannot fully approve its own servers on a first local run. TubeTrend has **no `.mcp.json` today**, so that key is deliberately absent from `.claude/settings.json` — adding the
-   file is what should add the key.
+   a repo cannot fully approve its own servers on a first local run. TubeTrend has **no `.mcp.json` today**, so that
+   key is deliberately absent from `.claude/settings.json` — adding the file is what should add the key.
 
 2. **claude.ai connectors.** A routine includes the account's connectors, and its own form is where you narrow them to
    what the run needs. Connector traffic goes through Anthropic's servers, so it is unaffected by the environment's
