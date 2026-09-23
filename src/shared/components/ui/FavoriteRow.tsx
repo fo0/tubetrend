@@ -743,6 +743,11 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
           <ChevronRight className="w-4 h-4 text-slate-400 dark:text-slate-500" />
           <div className="text-sm text-slate-500 dark:text-slate-400 flex items-center gap-2 relative z-40">
             {/* Timeframe Tag als Button */}
+            {/* Accessible name is "<setting>: <value>": an aria-label of just
+                "Change time frame" replaced the visible text, so assistive tech
+                never announced the current value and voice control could not
+                target the chip by what it shows (WCAG 2.5.3). `title` keeps the
+                action as the description. Same for the max results chip below. */}
             <button
               ref={tfButtonRef}
               type="button"
@@ -752,7 +757,7 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
               }}
               aria-expanded={showTfMenu}
               aria-haspopup="listbox"
-              aria-label={t("favorites.changeTimeFrame")}
+              aria-label={`${t("labels.timeFrame")}: ${timeFrameLabel(currentTimeFrame)}`}
               className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-200/70 dark:hover:bg-slate-700/70"
               title={t("favorites.changeTimeFrame")}
             >
@@ -797,7 +802,7 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
               }}
               aria-expanded={showMaxMenu}
               aria-haspopup="listbox"
-              aria-label={t("favorites.changeMaxResults")}
+              aria-label={`${t("labels.maxResults")}: ${displayMax}`}
               className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-200/70 dark:hover:bg-slate-700/70"
               title={t("favorites.changeMaxResults")}
             >
