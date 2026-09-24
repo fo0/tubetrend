@@ -6,6 +6,7 @@ import {
   Download,
   Eye,
   FileJson,
+  Hash,
   List,
   Loader2,
   RefreshCw,
@@ -164,12 +165,18 @@ export function AnalyserPage({
     t,
   ]);
 
+  // A keyword search has no channel behind it: `channelName` holds the keyword.
+  const isKeywordSearch = searchState.searchType === SearchType.KEYWORD;
+
   const channelUrl = useMemo(() => {
+    // No channel link for a keyword — a keyword typed with a leading "@" would
+    // otherwise be linked as if it were a handle. Mirrors FavoriteRow.
+    if (isKeywordSearch) return null;
     if (searchState.channelId) return `https://www.youtube.com/channel/${searchState.channelId}`;
     const q = (searchState.channelName || "").trim();
     if (q.startsWith("@")) return `https://www.youtube.com/${q}`;
     return null;
-  }, [searchState.channelId, searchState.channelName]);
+  }, [isKeywordSearch, searchState.channelId, searchState.channelName]);
 
   // Comfort: export current (sorted) results as CSV + copy all URLs at once.
   // Both actions surface a short inline state so a failure (blocked clipboard /
@@ -350,7 +357,17 @@ export function AnalyserPage({
                   <h3> section titles below (WCAG 1.3.1 — no skipped heading levels). */}
               <h2 className="font-semibold text-slate-700 dark:text-slate-200">
                 {t("results.resultsFor")}{" "}
-                {channelUrl ? (
+                {/* A keyword search used to fall through to the channel branch
+                    below and read "Results for @React tutorial" beside the
+                    YouTube logo — a channel handle that does not exist. It gets
+                    the keyword treatment a keyword favorite's row header has:
+                    hash icon, no "@", no link. */}
+                {isKeywordSearch ? (
+                  <span className="inline-flex items-center gap-1.5">
+                    <Hash className="w-4 h-4 text-indigo-500" aria-hidden="true" />
+                    {searchState.channelName}
+                  </span>
+                ) : channelUrl ? (
                   <a
                     href={channelUrl}
                     target="_blank"

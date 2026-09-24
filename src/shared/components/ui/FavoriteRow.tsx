@@ -925,14 +925,19 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
           </button>
 
           {/* text-red-700 in light mode: red-400 on the white page is ~2.9:1,
-              under the 4.5:1 WCAG 1.4.3 asks of this 12px label. */}
+              under the 4.5:1 WCAG 1.4.3 asks of this 12px label.
+              The accessible name carries the favorite's name, like the rename
+              and collapse buttons of this row: a dashboard renders one Remove
+              per favorite, and a dozen identical "Remove favorite" entries in a
+              screen reader's button list gave no way to tell which one deletes
+              what (WCAG 2.4.6). */}
           {onRemove && (
             <button
               type="button"
               onClick={() => onRemove?.(currentFavId)}
               className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-md border border-red-500/30 text-red-700 dark:text-red-300 hover:bg-red-500/10 transition-colors"
               title={t("favorites.remove")}
-              aria-label={t("favorites.remove")}
+              aria-label={t("favorites.removeAria", { name: displayName })}
             >
               <Trash2 className="w-3 h-3" aria-hidden="true" /> {t("actions.remove")}
             </button>

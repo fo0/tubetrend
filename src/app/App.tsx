@@ -350,9 +350,19 @@ const App: React.FC = () => {
   // is no undo and no trash. "Clear all" already confirms; the per-row Remove
   // button sat directly beside Refresh and deleted on the first click, so a
   // mis-click cost the favorite silently. Same guard, same wording pattern.
+  //
+  // The dialog names the favorite the way its row does — custom label first,
+  // then the channel title YouTube reported, the raw query last (the order
+  // FavoriteAvatar and the row header use). It used to print the raw query, so
+  // a favorite shown as "Marques Brownlee" or renamed to "Competitor A" was
+  // confirmed as "mkbhd" or a channel id: the one question meant to catch a
+  // mis-click named something the user could not find on screen.
   const handleRemoveFavorite = useCallback(
     (id: string) => {
-      const label = favorites.find((fav) => fav.id === id)?.query ?? "";
+      const fav = favorites.find((f) => f.id === id);
+      const label = fav
+        ? fav.label?.trim() || favoritesService.getCache(id)?.meta?.channelTitle || fav.query
+        : "";
       if (!window.confirm(t("favorites.removeConfirm", { name: label }))) return;
       removeFavorite(id);
     },

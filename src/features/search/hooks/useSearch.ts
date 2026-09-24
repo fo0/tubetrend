@@ -21,6 +21,12 @@ export interface SearchState {
   data: VideoData[] | null;
   channelName: string;
   channelId?: string;
+  /**
+   * How the displayed analysis was searched. `channelName` holds a keyword for a
+   * keyword search, so the view needs this to tell the two apart. Undefined when
+   * nothing says (a snapshot written before its arguments were persisted).
+   */
+  searchType?: SearchType;
   /** Epoch ms when the currently displayed analysis was produced (undefined for cached favorite views). */
   resultSavedAt?: number;
 }
@@ -163,6 +169,7 @@ function clearPersistedResult(): void {
 function restoreInitialSession(): { state: SearchState; args: LastSearchArgs | null } {
   const persisted = readPersistedResult();
   if (!persisted) return { state: initialSearchState, args: null };
+  const args = readPersistedArgs(persisted.args);
   return {
     state: {
       isLoading: false,
@@ -171,9 +178,10 @@ function restoreInitialSession(): { state: SearchState; args: LastSearchArgs | n
       data: persisted.data,
       channelName: persisted.channelName,
       channelId: persisted.channelId,
+      searchType: args?.searchType,
       resultSavedAt: persisted.savedAt,
     },
-    args: readPersistedArgs(persisted.args),
+    args,
   };
 }
 
@@ -231,6 +239,7 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
         error: null,
         channelName: query,
         channelId: undefined,
+        searchType,
         data: null,
       }));
 
@@ -285,6 +294,7 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
           data: analyzedVideos,
           channelName: displayName,
           channelId,
+          searchType,
           resultSavedAt: savedAt,
         });
         // Persist the snapshot so a page reload keeps the results in view — with
@@ -352,6 +362,7 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
         data,
         channelName,
         channelId,
+        searchType: args?.searchType,
       });
     },
     [],

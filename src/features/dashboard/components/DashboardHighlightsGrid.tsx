@@ -1,9 +1,12 @@
+import { EyeOff } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { HighlightVideoCard } from "@/src/shared/components/ui/HighlightVideoCard";
 import type { HighlightItem } from "../services/dashboardTopVideos";
 
 interface DashboardHighlightsGridProps {
   highlightVideos: HighlightItem[];
+  /** Highlight candidates the user has hidden (see useDashboardFilters). */
+  hiddenHighlightsCount: number;
   refreshingIds: Set<string>;
   onHide: (
     sourceId: string,
@@ -11,15 +14,44 @@ interface DashboardHighlightsGridProps {
     meta: { videoTitle: string; thumbnailUrl: string; sourceLabel: string },
   ) => void;
   onJumpToSource: (sourceId: string) => void;
+  onOpenHiddenModal: () => void;
 }
 
 export function DashboardHighlightsGrid({
   highlightVideos,
+  hiddenHighlightsCount,
   refreshingIds,
   onHide,
   onJumpToSource,
+  onOpenHiddenModal,
 }: DashboardHighlightsGridProps) {
   const { t } = useTranslation();
+
+  // Every highlight there is has been hidden. Each favorite contributes only its
+  // single best video, so with a handful of favorites a few clicks on "hide"
+  // empty the section — and it then fell through to the placeholder below,
+  // which draws skeleton cards and says highlights will appear "once your
+  // favorites have loaded videos". They had loaded; the user had hidden them,
+  // and nothing on screen said so or pointed back. State the actual cause and
+  // offer the hidden list right here (the same modal as the toolbar's "Hidden"
+  // button), in the panel look the favorites filter's no-match state uses.
+  if (highlightVideos.length === 0 && hiddenHighlightsCount > 0) {
+    return (
+      <div className="bg-slate-50 border border-slate-200 dark:bg-slate-900/50 dark:border-slate-800 rounded-xl p-8 text-center flex flex-col items-center gap-3">
+        <p className="text-slate-600 dark:text-slate-400">
+          {t("dashboard.highlights.allHidden", { count: hiddenHighlightsCount })}
+        </p>
+        <button
+          type="button"
+          onClick={onOpenHiddenModal}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+        >
+          <EyeOff className="w-4 h-4" aria-hidden="true" />
+          {t("dashboard.highlights.showHiddenList")}
+        </button>
+      </div>
+    );
+  }
 
   return highlightVideos.length > 0 ? (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
