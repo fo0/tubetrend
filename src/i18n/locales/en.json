@@ -107,6 +107,7 @@
     },
     "refresh": "Refresh channel",
     "remove": "Remove favorite",
+    "removeAria": "Remove favorite \"{{name}}\"",
     "rename": "Rename favorite",
     "renameAria": "Rename favorite \"{{name}}\"",
     "renameLabel": "Favorite name",
