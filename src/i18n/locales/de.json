@@ -145,6 +145,8 @@
       "hiddenAnnounce": "\"{{title}}\" ausgeblendet. In der Highlights-Leiste kann das rückgängig gemacht werden.",
       "delete": "Löschen",
       "empty": "Noch keine Highlights verfügbar. Highlights erscheinen, sobald deine Favoriten Videos geladen haben.",
+      "allHidden_one": "Dein einziges Highlight ist ausgeblendet.",
+      "allHidden_other": "Alle {{count}} Highlights sind ausgeblendet.",
       "jumpToSource": "Zum Favoriten \"{{source}}\" springen",
       "copyAll": "Alle kopieren",
       "copyAllUrls": "Alle Highlight-URLs kopieren",

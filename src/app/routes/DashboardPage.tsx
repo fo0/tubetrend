@@ -230,9 +230,11 @@ export function DashboardPage({
 
           <DashboardHighlightsGrid
             highlightVideos={highlightVideos}
+            hiddenHighlightsCount={hiddenHighlightsCount}
             refreshingIds={refreshingIds}
             onHide={handleHideHighlight}
             onJumpToSource={handleJumpToSource}
+            onOpenHiddenModal={onOpenHiddenModal}
           />
         </section>
       )}
