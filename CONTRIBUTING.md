@@ -79,7 +79,7 @@ Before submitting a bug report:
   single feature or component folder. Use `import type` for type-only imports.
   - The `@features/`, `@shared/`, `@providers/` and `@i18n/` aliases are configured in
     `tsconfig.json` + `vite.config.ts` and still resolve, but the codebase settled on `@/src/…`
-    (~132 sites vs. 1). Don't introduce new usages — full table in
+    (~160 sites vs. none). Don't introduce new usages — full table in
     `agent_docs/coding_conventions.md`.
 - **Components**: Functional components with hooks
 - **Naming**:

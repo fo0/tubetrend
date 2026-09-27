@@ -32,15 +32,8 @@
   },
   "labels": {
     "search": "Search",
-    "channelName": "Channel name",
-    "keyword": "Keyword",
-    "searchType": "Search type",
     "timeFrame": "Time frame",
     "maxResults": "Max results"
-  },
-  "searchType": {
-    "channel": "Channel",
-    "keyword": "Keyword"
   },
   "history": {
     "recent": "Recently searched",
@@ -73,18 +66,11 @@
     "last5Months": "Last 5 months",
     "last6Months": "Last 6 months"
   },
-  "maxResultsText": {
-    "all": "All",
-    "topN": "Top {{n}}"
-  },
   "input": {
     "searchPlaceholder": "Channel name, @handle or #searchtext",
-    "channelPlaceholder": "Enter channel name or @handle",
-    "keywordPlaceholder": "Enter search keyword (e.g. \"React tutorial\")",
     "searchHint": "{{placeholder}} (Press / to focus)"
   },
   "maxResults": {
-    "all": "All",
     "auto": "Auto",
     "noLimit": "No limit",
     "topN": "Top {{n}}"
@@ -134,7 +120,6 @@
       "hide": "Hide this highlight",
       "hiddenCount_one": "{{count}} hidden",
       "hiddenCount_other": "{{count}} hidden",
-      "showHidden": "Show hidden",
       "clearHidden": "Show all hidden",
       "hiddenButton": "Hidden",
       "showHiddenList": "Show hidden videos",
@@ -144,7 +129,6 @@
       "unhideAria": "Show \"{{title}}\" again",
       "undoHide": "Undo hide",
       "hiddenAnnounce": "\"{{title}}\" hidden. Undo is available in the highlights toolbar.",
-      "delete": "Delete",
       "empty": "No highlights available yet. Highlights will appear once your favorites have loaded videos.",
       "allHidden_one": "Your only highlight is hidden.",
       "allHidden_other": "All {{count}} highlights are hidden.",
@@ -358,18 +342,14 @@
     "copied": "Quota summary copied",
     "copyFailed": "Clipboard unavailable",
     "calls": "Calls",
-    "last24Hours": "Last 24 hours",
     "lastTimeWindow": "Last {{time}}",
     "now": "Now",
-    "recentCalls": "Recent calls",
     "noCalls": "No API calls yet",
     "usageBySource": "Usage by source",
     "sourceChannel": "Channel",
     "sourceHandle": "Handle",
     "sourceKeyword": "Keyword",
     "sourceAutocomplete": "Autocomplete",
-    "sourceVideoStats": "Video stats",
-    "sourceChannelInfo": "Channel info",
     "sourceUnknown": "Other",
     "timeJustNow": "just now",
     "timeMinutesAgo": "{{count}} min ago",

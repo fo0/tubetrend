@@ -67,7 +67,7 @@ Contract: `.claude/skills/orca/SKILL.md`; type table: `agent_docs/review_process
 
 ## Tech Stack
 
-TypeScript ~6.0.3 (strict) · React ^19.2 · Vite ^8.2 · Tailwind CSS v4 (`@tailwindcss/vite`) · i18next ^26 · Node.js 22+ · npm (`package-lock.json`) · ESLint 9 flat config + Prettier 3.9.6 (pinned) · **no test framework**.
+TypeScript ~6.0.3 (strict) · React ^19.2 · Vite ^8.3 · Tailwind CSS v4 (`@tailwindcss/vite`) · i18next ^26 · Node.js 22+ · npm (`package-lock.json`) · ESLint 9 flat config + Prettier 3.9.6 (pinned) · **no test framework**.
 
 ## Project Overview
 

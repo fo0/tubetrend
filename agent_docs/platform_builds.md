@@ -10,7 +10,7 @@ TubeTrend ships one web build (`dist/`) that every other target wraps. Nothing u
 | --------------- | ---------------------------------- | --------- |
 | Language        | TypeScript (strict)                | ~6.0.3    |
 | UI Framework    | React                              | ^19.2.7   |
-| Build Tool      | Vite (+ `@vitejs/plugin-react`)    | ^8.2.2    |
+| Build Tool      | Vite (+ `@vitejs/plugin-react`)    | ^8.3.0    |
 | Styling         | Tailwind CSS (`@tailwindcss/vite`) | ^4.3.1    |
 | i18n            | i18next + react-i18next            | ^26 / ^17 |
 | Icons           | Lucide React                       | ^1.38.0   |
