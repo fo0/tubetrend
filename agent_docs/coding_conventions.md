@@ -37,16 +37,16 @@ Configured in **both** `tsconfig.json` and `vite.config.ts` — keep the two in 
 
 | Alias          | Maps to             | Actually used                    |
 | -------------- | ------------------- | -------------------------------- |
-| `@/*`          | `./` (project root) | **Yes — the convention** (~132×) |
+| `@/*`          | `./` (project root) | **Yes — the convention** (~160×) |
 | `@features/*`  | `./src/features/*`  | No                               |
-| `@shared/*`    | `./src/shared/*`    | Once (`ThemeProvider.tsx`)       |
+| `@shared/*`    | `./src/shared/*`    | No                               |
 | `@providers/*` | `./src/providers/*` | No                               |
 | `@i18n/*`      | `./src/i18n/*`      | No                               |
 
 **Write `@/src/shared/lib/storage`, not `@shared/lib/storage`.** Because `@/*` maps to the project root, the
 directory-specific aliases are redundant — and the codebase settled on the `@/src/…` form almost everywhere.
-The four short aliases still resolve, so existing code compiles, but new imports that use them read as
-inconsistent next to their ~132 neighbours. Relative imports (`./`, `../`) remain correct **within** a single
+The four short aliases still resolve, but no import uses them any more, and a new one that does reads as
+inconsistent next to its ~160 neighbours. Relative imports (`./`, `../`) remain correct **within** a single
 feature or component folder; only cross-module hops take the alias.
 
 ## TubeTrend-specific architecture notes
