@@ -32,15 +32,8 @@
   },
   "labels": {
     "search": "Suche",
-    "channelName": "Kanalname",
-    "keyword": "Schlagwort",
-    "searchType": "Suchtyp",
     "timeFrame": "Zeitraum",
     "maxResults": "Max. Ergebnisse"
-  },
-  "searchType": {
-    "channel": "Kanal",
-    "keyword": "Schlagwort"
   },
   "history": {
     "recent": "Zuletzt gesucht",
@@ -73,18 +66,11 @@
     "last5Months": "Letzte 5 Monate",
     "last6Months": "Letzte 6 Monate"
   },
-  "maxResultsText": {
-    "all": "Alle",
-    "topN": "Top {{n}}"
-  },
   "input": {
     "searchPlaceholder": "Kanalname, @handle oder #suchtext",
-    "channelPlaceholder": "Kanalnamen oder @handle eingeben",
-    "keywordPlaceholder": "Suchbegriff eingeben (z.B. \"React Tutorial\")",
     "searchHint": "{{placeholder}} (Drücke / zum Fokussieren)"
   },
   "maxResults": {
-    "all": "Alle",
     "auto": "Auto",
     "noLimit": "Ohne Limit",
     "topN": "Top {{n}}"
@@ -134,7 +120,6 @@
       "hide": "Dieses Highlight ausblenden",
       "hiddenCount_one": "{{count}} ausgeblendet",
       "hiddenCount_other": "{{count}} ausgeblendet",
-      "showHidden": "Ausgeblendete anzeigen",
       "clearHidden": "Alle wieder einblenden",
       "hiddenButton": "Ausgeblendet",
       "showHiddenList": "Ausgeblendete Videos anzeigen",
@@ -144,7 +129,6 @@
       "unhideAria": "\"{{title}}\" wieder einblenden",
       "undoHide": "Rückgängig",
       "hiddenAnnounce": "\"{{title}}\" ausgeblendet. In der Highlights-Leiste kann das rückgängig gemacht werden.",
-      "delete": "Löschen",
       "empty": "Noch keine Highlights verfügbar. Highlights erscheinen, sobald deine Favoriten Videos geladen haben.",
       "allHidden_one": "Dein einziges Highlight ist ausgeblendet.",
       "allHidden_other": "Alle {{count}} Highlights sind ausgeblendet.",
@@ -358,18 +342,14 @@
     "copied": "Kontingent-Übersicht kopiert",
     "copyFailed": "Zwischenablage nicht verfügbar",
     "calls": "Aufrufe",
-    "last24Hours": "Letzte 24 Stunden",
     "lastTimeWindow": "Letzte {{time}}",
     "now": "Jetzt",
-    "recentCalls": "Letzte Aufrufe",
     "noCalls": "Noch keine API-Aufrufe",
     "usageBySource": "Verbrauch nach Quelle",
     "sourceChannel": "Kanal",
     "sourceHandle": "Handle",
     "sourceKeyword": "Suchbegriff",
     "sourceAutocomplete": "Autovervollständigung",
-    "sourceVideoStats": "Video-Statistiken",
-    "sourceChannelInfo": "Kanal-Info",
     "sourceUnknown": "Sonstige",
     "timeJustNow": "gerade eben",
     "timeMinutesAgo": "vor {{count}} Min.",
