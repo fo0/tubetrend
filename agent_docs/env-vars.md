@@ -36,11 +36,16 @@ plain truthiness check, so an empty value behaves the same as unset for them.
 The last two rows are **not** client variables despite the `VITE_` prefix on one of them — both are read
 through `process.env` outside the browser bundle, so Vite never inlines them into `dist/`.
 
-- `ELECTRON` — read in `vite.config.ts` (`process.env.ELECTRON === "true"`). Set automatically by every
-  `electron:*` / `build:win` / `build:chromebook` npm script; it toggles `vite-plugin-electron`, which
-  compiles `electron/main.ts` + `electron/preload.ts` into `dist-electron/`. Do **not** put it in
-  `.env.local` — a stray `ELECTRON=true` makes plain web and Docker builds emit Electron artifacts.
-  Format: the literal string `true` (any other value counts as unset).
+- `ELECTRON` — read in `vite.config.ts` (`process.env.ELECTRON === "true"`). Set automatically by
+  every `electron:*` / `build:win` / `build:chromebook` npm script; it toggles `vite-plugin-electron`,
+  which compiles `electron/main.ts` + `electron/preload.ts` into `dist-electron/`. Setting it in
+  `.env.local` has no effect: `vite.config.ts` reads `process.env` while the config loads, before Vite
+  parses any `.env` file, and Vite never copies it from a `.env` file into `process.env` — the same
+  holds for `VITE_GIT_COMMIT_HASH` and `VITE_GIT_BRANCH`, which reach the footer only through
+  `__BUILD_INFO__` (Vite does expose a `.env.local` value for them on `import.meta.env`, but no client
+  code reads it). Only the build command's own environment counts (shell, CI step, Dockerfile `ENV`),
+  so do not export `ELECTRON=true` in a shell used for plain web builds — every Vite run there would
+  compile the Electron entries. Format: the literal string `true` (any other value counts as unset).
 - `VITE_DEV_SERVER_URL` — read in `electron/main.ts` (Electron main process, Node side). Injected by
   `vite-plugin-electron` during `npm run electron:dev` so the desktop shell loads the hot-reload dev
   server instead of the bundled `dist/index.html`. Never set it manually; production Electron builds
