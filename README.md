@@ -221,7 +221,8 @@ Enter your API key in the app when prompted.
 ## Features
 
 - **Dashboard** — Track favorite channels and keywords with cached video data; rename any favorite
-  to a label of your own, or clear the label to fall back to the channel title
+  to a label of your own, or clear the label to fall back to the channel title; fold a favorite's
+  videos away, or every favorite's at once, and the dashboard reopens that way
 - **Analyser** — Search and analyze videos with trend scoring; a failed search can be retried
   straight from the error banner, the star button saves the current search as a favorite and takes
   it back again, and the history button reopens the last ten searches whatever is in the box
