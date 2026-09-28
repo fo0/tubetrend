@@ -8,7 +8,7 @@ Cross-component communication without prop drilling. Events are typed via an `Ev
 
 **Location:** `src/shared/lib/eventBus.ts`
 
-**Events:** `favorites-changed`, `favorites-cache-updated`, `quota-updated`, `hidden-highlights-changed`, `favorite-refresh-start`, `favorite-refresh-end`, `toggle-shortcuts-hint`
+**Events:** `favorites-changed`, `favorites-cache-updated`, `quota-updated`, `hidden-highlights-changed`, `favorite-refresh-start`, `favorite-refresh-end`, `toggle-shortcuts-hint`, `favorites-collapse-all`
 
 Raw `window.addEventListener` is reserved for **native** browser events (`storage`, `scroll`, `mousemove`). Every `EventMap` key goes through `eventBus.on()` / `useEventBus()` — that is what keeps the emit/subscribe pair type-checked.
 

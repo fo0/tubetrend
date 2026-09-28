@@ -13,6 +13,7 @@ export interface EventMap {
   "favorite-refresh-start": { id: string };
   "favorite-refresh-end": { id: string };
   "toggle-shortcuts-hint": undefined;
+  "favorites-collapse-all": { collapsed: boolean };
   toast: { id: string; message: string; tone: "success" | "error" };
 }
 

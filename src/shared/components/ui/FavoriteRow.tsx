@@ -31,7 +31,7 @@ import { Youtube } from "@/src/shared/components/ui/BrandIcons";
 import { MAX_RESULTS_OPTIONS, STORAGE_KEYS, TIME_FRAMES } from "@/src/shared/constants";
 import { useTranslation } from "react-i18next";
 import { useListboxKeyboard } from "@/src/shared/hooks";
-import { dispatchEvent, eventBus } from "@/src/shared/lib/eventBus";
+import { dispatchEvent, eventBus, useEventBus } from "@/src/shared/lib/eventBus";
 import { formatTimeAgo } from "@/src/shared/lib/formatters";
 import { getLocale } from "@/src/shared/lib/locale";
 import { safeRead, safeWrite } from "@/src/shared/lib/storage";
@@ -122,6 +122,11 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
   const [isCollapsed, setIsCollapsed] = useState<boolean>(() =>
     readCollapsedFavoriteIds().includes(favorite.id),
   );
+
+  // "Collapse all" / "Expand all" in the dashboard's sorting bar. The sender has
+  // already written the stored list for every favorite in one go, so a row only
+  // mirrors the outcome into its own state — no per-row write here.
+  useEventBus("favorites-collapse-all", ({ collapsed }) => setIsCollapsed(collapsed));
 
   // Popover-UI State
   const [showTfMenu, setShowTfMenu] = useState<boolean>(false);

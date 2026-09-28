@@ -112,6 +112,8 @@
     "noFavorites": "No favorites yet. Create a favorite from the analyzer.",
     "openAnalyser": "Open Analyser",
     "quickJump": "Jump to favorite",
+    "collapseAll": "Collapse the videos of all favorites",
+    "expandAll": "Show the videos of all favorites",
     "highlights": {
       "title": "Highlights",
       "subtitle": "Top videos across all favorites (click to open)",

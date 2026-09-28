@@ -112,6 +112,8 @@
     "noFavorites": "Noch keine Favoriten. Lege im Analyser eine Suche als Favorit an.",
     "openAnalyser": "Analyser öffnen",
     "quickJump": "Zu Favorit springen",
+    "collapseAll": "Videos aller Favoriten einklappen",
+    "expandAll": "Videos aller Favoriten anzeigen",
     "highlights": {
       "title": "Highlights",
       "subtitle": "Top-Videos aus allen Favoriten (klickbar)",
