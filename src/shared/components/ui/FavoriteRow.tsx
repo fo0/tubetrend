@@ -626,16 +626,20 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
     commitRename();
   };
 
-  // Evaluated once per render instead of twice. The identical expression sat in
-  // both the `disabled` and the `className` of the Analyse button, and
-  // `favoritesService.getCache()` re-reads localStorage, re-JSON-parses the whole
-  // favorites-cache blob and re-validates every video URL in the entry on each
-  // call — so every render of every dashboard row paid for two of them, including
-  // on each keystroke in the favorites filter. Still guarded on `onAnalyze`, so a
-  // row rendered without the action performs no cache read at all, exactly as
-  // before.
-  const analyzeDisabled = onAnalyze
-    ? loading || (!videos && !favoritesService.getCache(currentFavId))
+  // The Analyse button is only blocked while this row is fetching. It used to be
+  // disabled whenever the row had no videos and no cache entry — which is
+  // exactly the state a failed first load leaves behind, so the favorite that
+  // most needed a closer look was the one that could not be opened. The
+  // analyser's handler already runs a fresh search when no cached videos come
+  // along, and its error banner reports a failure in full and offers Retry.
+  //
+  // Whether cached data exists now only picks the tooltip. Evaluated once per
+  // render: `favoritesService.getCache()` re-reads localStorage and re-parses
+  // the whole favorites-cache blob on each call, and it is skipped outright
+  // when the row already holds videos or has no Analyse action.
+  const analyzeDisabled = onAnalyze ? loading : false;
+  const analyzeUsesCache = onAnalyze
+    ? videos !== null || favoritesService.getCache(currentFavId) !== null
     : false;
 
   // The next value is computed outside the state updater on purpose: the write
@@ -907,7 +911,7 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
                   ? "border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500 cursor-not-allowed"
                   : "border-indigo-500/30 text-indigo-500 dark:text-indigo-400 hover:bg-indigo-500/10"
               }`}
-              title={t("favorites.analyze")}
+              title={analyzeUsesCache ? t("favorites.analyze") : t("favorites.analyzeFresh")}
             >
               <BarChart3 className="w-3 h-3" /> {t("actions.analyze")}
             </button>

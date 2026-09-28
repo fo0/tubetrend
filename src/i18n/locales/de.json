@@ -103,6 +103,7 @@
     "collapseAria": "Videos von \"{{name}}\" einklappen",
     "expandAria": "Videos von \"{{name}}\" anzeigen",
     "analyze": "Im Analyser öffnen (nutzt Cache-Daten)",
+    "analyzeFresh": "Im Analyser öffnen (startet eine neue Suche)",
     "clearAll": "Alle Favoriten löschen",
     "clearAllConfirm": "Alle {{count}} Favoriten entfernen? Das kann nicht rückgängig gemacht werden.",
     "removeConfirm": "Favorit \"{{name}}\" entfernen? Die zwischengespeicherten Videos werden mit gelöscht. Das kann nicht rückgängig gemacht werden.",

@@ -103,6 +103,7 @@
     "collapseAria": "Collapse the videos of \"{{name}}\"",
     "expandAria": "Show the videos of \"{{name}}\"",
     "analyze": "Open in Analyzer (uses cached data)",
+    "analyzeFresh": "Open in Analyzer (runs a fresh search)",
     "clearAll": "Clear all favorites",
     "clearAllConfirm": "Remove all {{count}} favorites? This cannot be undone.",
     "removeConfirm": "Remove the favorite \"{{name}}\"? Its cached videos are deleted too. This cannot be undone.",
