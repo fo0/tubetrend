@@ -633,13 +633,16 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
   // analyser's handler already runs a fresh search when no cached videos come
   // along, and its error banner reports a failure in full and offers Retry.
   //
-  // Whether cached data exists now only picks the tooltip. Evaluated once per
-  // render: `favoritesService.getCache()` re-reads localStorage and re-parses
-  // the whole favorites-cache blob on each call, and it is skipped outright
-  // when the row already holds videos or has no Analyse action.
+  // Whether cached videos exist now only picks the tooltip, and it mirrors the
+  // handler: the analyser opens the cache when it holds at least one video and
+  // runs a fresh search otherwise — an empty cache entry included. Evaluated
+  // once per render: `favoritesService.getCache()` re-reads localStorage and
+  // re-parses the whole favorites-cache blob on each call, so it is skipped
+  // outright when the row already shows videos or has no Analyse action.
   const analyzeDisabled = onAnalyze ? loading : false;
   const analyzeUsesCache = onAnalyze
-    ? videos !== null || favoritesService.getCache(currentFavId) !== null
+    ? (videos !== null && videos.length > 0) ||
+      (favoritesService.getCache(currentFavId)?.videos.length ?? 0) > 0
     : false;
 
   // The next value is computed outside the state updater on purpose: the write
