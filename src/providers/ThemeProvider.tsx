@@ -75,5 +75,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     [theme, resolvedTheme, setTheme],
   );
 
-  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
+  // React 19 renders the context itself as its provider; `<Context.Provider>`
+  // is the legacy spelling React has announced it will deprecate.
+  return <ThemeContext value={value}>{children}</ThemeContext>;
 }
