@@ -220,7 +220,11 @@ const getBucketTimeParts = (
 
 export const ApiQuotaIndicator: React.FC = () => {
   const { t } = useTranslation();
-  const [quota, setQuota] = useState(quotaService.getInfo());
+  // Lazy initializer: `getInfo()` re-reads and re-parses the whole quota record,
+  // history of up to 10,000 calls included, and as a bare argument it ran on
+  // every render of this indicator (each quota update, each re-render of the
+  // header) only for React to discard the result after the first.
+  const [quota, setQuota] = useState(() => quotaService.getInfo());
   const [history, setHistory] = useState<QuotaHistoryEntry[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [copied, setCopied] = useState(false);

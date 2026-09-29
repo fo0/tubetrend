@@ -73,7 +73,13 @@ export const hiddenHighlightsService = {
    * real data and fails closed. CWE-200 (thumbnail beacon) / OWASP A03.
    */
   list(): HiddenHighlight[] {
-    const raw = safeRead<unknown[]>(HIDDEN_HIGHLIGHTS_KEY, []);
+    // Only the entries were validated, not the container: a stored value that
+    // is not an array (`{}`, `null`, a number) threw on `.map` — and
+    // useDashboardFilters calls this while rendering, so the root ErrorBoundary
+    // replaced the whole app, and its "Try again" re-read the same value and
+    // crashed again. Read it as an empty list; the next `hide()` writes it clean.
+    const stored = safeRead<unknown>(HIDDEN_HIGHLIGHTS_KEY, []);
+    const raw: unknown[] = Array.isArray(stored) ? stored : [];
     // Validation: keep only valid entries and migrate legacy entries
     return raw
       .map((entry) => entry as Record<string, unknown> | null | undefined)

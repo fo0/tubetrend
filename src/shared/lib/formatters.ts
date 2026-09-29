@@ -6,22 +6,44 @@ import type { TFunction } from "i18next";
 import { getLocale } from "./locale";
 
 /**
+ * One formatter per locale, built on first use. Constructing an
+ * `Intl.NumberFormat` negotiates the locale on every call and costs more than
+ * ten times a `format()` on an existing instance, and these helpers run for
+ * every row of the result table and every video card on each render. A
+ * formatter is immutable, so reusing it yields identical output; keying by
+ * locale keeps a language switch correct. The keys are the resolved UI
+ * languages, so the maps stay tiny.
+ */
+const plainFormatters = new Map<string, Intl.NumberFormat>();
+const compactFormatters = new Map<string, Intl.NumberFormat>();
+
+/**
  * Format a number with locale-aware thousands separators.
  * Defaults to the active i18n language so output follows the user's
  * chosen UI language rather than a fixed locale.
  */
 export function formatNumber(value: number, locale: string = getLocale()): string {
-  return new Intl.NumberFormat(locale).format(value);
+  let formatter = plainFormatters.get(locale);
+  if (!formatter) {
+    formatter = new Intl.NumberFormat(locale);
+    plainFormatters.set(locale, formatter);
+  }
+  return formatter.format(value);
 }
 
 /**
  * Format a number in compact notation (e.g., 1.2K, 3.5M)
  */
 export function formatCompactNumber(value: number, locale: string = getLocale()): string {
-  return new Intl.NumberFormat(locale, {
-    notation: "compact",
-    maximumFractionDigits: 1,
-  }).format(value);
+  let formatter = compactFormatters.get(locale);
+  if (!formatter) {
+    formatter = new Intl.NumberFormat(locale, {
+      notation: "compact",
+      maximumFractionDigits: 1,
+    });
+    compactFormatters.set(locale, formatter);
+  }
+  return formatter.format(value);
 }
 
 /**
