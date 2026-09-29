@@ -97,11 +97,12 @@ export const favoritesService = {
   list(): FavoriteConfig[] {
     // The stored list is untrusted on-disk input, and only its entries were
     // validated: a value that is not an array at all (`{}`, `null`, a number)
-    // made the `for...of` below throw, so every caller not wrapped in a try —
-    // saving, removing, renaming or collapsing a favorite, changing its time
-    // frame or limit — failed with a TypeError instead of reading "no
-    // favorites". Such a value is now read as an empty list and, like any other
-    // migrated shape, rewritten clean.
+    // made the `for...of` below throw. The dashboard load catches that and shows
+    // no rows, but the analyser's save button does not — `add()` reads through
+    // here, so saving a search as a favorite failed with a TypeError, and only
+    // a backup import could overwrite the broken value ("Clear all" is hidden
+    // while no rows show). Such a value is now read as an empty list and, like
+    // any other migrated shape, rewritten clean.
     const stored = safeRead<unknown>(STORAGE_KEYS.FAVORITES, []);
     const raw: unknown[] = Array.isArray(stored) ? stored : [];
 
