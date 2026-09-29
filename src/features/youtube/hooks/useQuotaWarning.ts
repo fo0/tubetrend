@@ -1,4 +1,4 @@
-import { useCallback, useRef } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useEventBus } from "@/src/shared/lib/eventBus";
 import { showToast } from "@/src/shared/components/feedback";
@@ -31,8 +31,12 @@ export function useQuotaWarning(): void {
   const { t } = useTranslation();
   // Baseline: whatever the quota already was when the app started. Reading it
   // here rather than on the first event means a call that crosses the threshold
-  // is still recognised as a crossing.
-  const lastPercentageRef = useRef(quotaService.getInfo().percentage);
+  // is still recognised as a crossing. Read through a lazy initializer, once:
+  // `getInfo()` re-parses the whole stored quota record (history included), and
+  // as a bare `useRef` argument it ran on every render of App, only to be
+  // discarded after the first.
+  const [initialPercentage] = useState(() => quotaService.getInfo().percentage);
+  const lastPercentageRef = useRef(initialPercentage);
   const warnedRef = useRef(false);
   const exhaustedWarnedRef = useRef(false);
 
