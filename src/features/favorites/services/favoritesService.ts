@@ -95,9 +95,17 @@ function withSafeVideoUrls<T extends FavoriteCacheEntry>(entry: T): T {
 
 export const favoritesService = {
   list(): FavoriteConfig[] {
-    const raw = safeRead<unknown[]>(STORAGE_KEYS.FAVORITES, []);
+    // The stored list is untrusted on-disk input, and only its entries were
+    // validated: a value that is not an array at all (`{}`, `null`, a number)
+    // made the `for...of` below throw, so every caller not wrapped in a try —
+    // saving, removing, renaming or collapsing a favorite, changing its time
+    // frame or limit — failed with a TypeError instead of reading "no
+    // favorites". Such a value is now read as an empty list and, like any other
+    // migrated shape, rewritten clean.
+    const stored = safeRead<unknown>(STORAGE_KEYS.FAVORITES, []);
+    const raw: unknown[] = Array.isArray(stored) ? stored : [];
 
-    let migrated = false;
+    let migrated = raw !== stored;
     const byId = new Map<string, FavoriteConfig>();
 
     for (const entry of raw) {
