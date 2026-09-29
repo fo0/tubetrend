@@ -19,6 +19,7 @@ import { VideoCard } from "@/src/shared/components/ui/VideoCard";
 import { VideoListTable } from "@/src/shared/components/ui/VideoListTable";
 import { EmptyState, type EmptyStateExample } from "@/src/shared/components/ui/EmptyState";
 import { FloatingScrollButton } from "@/src/shared/components/ui/FloatingScrollButton";
+import { AnalyzedAgoBadge } from "@/src/shared/components/ui/AnalyzedAgoBadge";
 import { useTranslation } from "react-i18next";
 import { SearchType, type TimeFrame } from "@/src/shared/types";
 import type { SearchState } from "@/src/features/search/hooks/useSearch";
@@ -28,8 +29,7 @@ import {
   buildResultsJson,
   buildResultsJsonFilename,
 } from "@/src/features/videos";
-import { formatCompactNumber, formatNumber, formatTimeAgo } from "@/src/shared/lib/formatters";
-import { getLocale } from "@/src/shared/lib/locale";
+import { formatCompactNumber, formatNumber } from "@/src/shared/lib/formatters";
 import { downloadBlob } from "@/src/shared/lib/download";
 import { STORAGE_KEYS } from "@/src/shared/constants";
 
@@ -415,19 +415,7 @@ export function AnalyserPage({
                 </span>
               )}
               {searchState.resultSavedAt != null && !searchState.isLoading && (
-                <span
-                  className="text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap cursor-help"
-                  tabIndex={0}
-                  role="note"
-                  title={new Date(searchState.resultSavedAt).toLocaleString(getLocale())}
-                  aria-label={`${t("results.analyzedAgo", {
-                    time: formatTimeAgo(searchState.resultSavedAt, t),
-                  })} — ${new Date(searchState.resultSavedAt).toLocaleString(getLocale())}`}
-                >
-                  {t("results.analyzedAgo", {
-                    time: formatTimeAgo(searchState.resultSavedAt, t),
-                  })}
-                </span>
+                <AnalyzedAgoBadge savedAt={searchState.resultSavedAt} />
               )}
               {searchState.isLoading && (
                 <span

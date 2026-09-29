@@ -1,7 +1,10 @@
 import type { KeyboardEvent as ReactKeyboardEvent, RefObject } from "react";
-import { Activity, Upload } from "lucide-react";
+import { Activity, ChevronsDownUp, ChevronsUpDown, Upload } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { FavoriteAvatar } from "@/src/shared/components/ui/FavoriteAvatar";
+import { STORAGE_KEYS } from "@/src/shared/constants";
+import { dispatchEvent } from "@/src/shared/lib/eventBus";
+import { safeWrite } from "@/src/shared/lib/storage";
 import type { FavoriteConfig } from "@/src/features/favorites/types";
 import type { DashboardSortMode } from "@/src/shared/types";
 
@@ -35,6 +38,18 @@ export function DashboardSortingControls({
   onImportPick,
 }: DashboardSortingControlsProps) {
   const { t } = useTranslation();
+
+  // Fold or unfold every favorite row at once. Folding rows one by one meant a
+  // click per favorite — a dozen on a dozen-row dashboard — to get from "show
+  // me everything" to "just the headers". Written here in one go (every
+  // favorite's id, or none), in the shape FavoriteRow's own reader validates;
+  // the event then only mirrors the result into each mounted row's state.
+  // Rows hidden by the favorites filter are included on purpose: "all" means
+  // all, and a filter cleared later must not reveal rows in a mixed state.
+  const setAllCollapsed = (collapsed: boolean) => {
+    safeWrite(STORAGE_KEYS.COLLAPSED_FAVORITES, collapsed ? favorites.map((fav) => fav.id) : []);
+    dispatchEvent("favorites-collapse-all", { collapsed });
+  };
 
   return (
     <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-4">
@@ -83,6 +98,33 @@ export function DashboardSortingControls({
               </span>
             </button>
           </div>
+
+          {/* Collapse all / Expand all — same segmented look as the sort group,
+              icon-only with the full action as accessible name and tooltip.
+              Inward chevrons fold, outward ones unfold. Only offered from two
+              favorites up; with one, the row's own toggle is the same click. */}
+          {favorites.length > 1 && (
+            <div className="inline-flex items-center rounded-lg border border-slate-300 bg-white p-0.5 dark:border-slate-800 dark:bg-slate-900/60">
+              <button
+                type="button"
+                onClick={() => setAllCollapsed(true)}
+                className="inline-flex items-center justify-center p-1.5 rounded-md transition-colors text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-800"
+                title={t("dashboard.collapseAll")}
+                aria-label={t("dashboard.collapseAll")}
+              >
+                <ChevronsDownUp className="w-3.5 h-3.5" aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setAllCollapsed(false)}
+                className="inline-flex items-center justify-center p-1.5 rounded-md transition-colors text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-800"
+                title={t("dashboard.expandAll")}
+                aria-label={t("dashboard.expandAll")}
+              >
+                <ChevronsUpDown className="w-3.5 h-3.5" aria-hidden="true" />
+              </button>
+            </div>
+          )}
 
           {/* Favorite Avatars — filtered-out favorites are dropped here too,
               otherwise their quick-jump would scroll to a hidden row.
