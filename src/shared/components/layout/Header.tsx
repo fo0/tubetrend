@@ -104,7 +104,14 @@ export function Header({
           <KeyboardShortcutsHint activePage={activePage} />
           {isLoading ? (
             <div
-              className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border bg-indigo-500/10 border-indigo-500/20 text-indigo-400 animate-pulse"
+              // indigo-400 on the tinted pill over the white header was 2.7:1
+              // for this 12px status text (WCAG 1.4.3 asks 4.5:1). indigo-600
+              // is 5.7:1 at rest, the shade the Analyser's view-count chip uses
+              // on the same tint; dark mode keeps indigo-400 (5.2:1 on
+              // slate-900). `animate-pulse` still dims the pill to 50% opacity
+              // mid-cycle (about 2.4:1 there, 1.7:1 before) — whether the
+              // status text should pulse at all is a design call, left as is.
+              className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border bg-indigo-500/10 border-indigo-500/20 text-indigo-600 dark:text-indigo-400 animate-pulse"
               role="status"
               aria-live="polite"
             >
