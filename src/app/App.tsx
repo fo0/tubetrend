@@ -495,9 +495,11 @@ const App: React.FC = () => {
           <div className="max-w-[101.2rem] mx-auto px-4 sm:px-6 lg:px-8 py-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
             <WifiOff className="w-4 h-4 shrink-0" aria-hidden="true" />
             <span className="font-medium">{t("offline.banner")}</span>
-            <span className="text-amber-700/80 dark:text-amber-400/80">
-              {t("offline.bannerHint")}
-            </span>
+            {/* No alpha in light mode: amber-700/80 on amber-50 was 3.5:1, under
+                WCAG 1.4.3's 4.5:1 for the line saying what still works offline.
+                Solid amber-700 is 4.9:1 and still reads a step below the
+                amber-800 headline; dark mode is unchanged (7.3:1). */}
+            <span className="text-amber-700 dark:text-amber-400/80">{t("offline.bannerHint")}</span>
           </div>
         </div>
       )}
