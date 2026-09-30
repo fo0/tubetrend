@@ -820,9 +820,13 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
             >
               {displayMax}
             </button>
+            {/* The triangle is the only visible cue for this warning (the text is
+                sr-only), so WCAG 1.4.11 asks 3:1 of it. yellow-500 on the white
+                row was 1.9:1 and yellow-600 still 2.9:1; yellow-700 is 4.9:1.
+                Dark mode keeps yellow-400. */}
             {showOverflowWarning && (
               <span
-                className="inline-flex items-center gap-1 text-yellow-500 dark:text-yellow-400"
+                className="inline-flex items-center gap-1 text-yellow-700 dark:text-yellow-400"
                 title={t("favorites.overflowWarning", {
                   total: totalInTimeFrame,
                   shown: currentMax,
