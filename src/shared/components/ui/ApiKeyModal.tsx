@@ -197,7 +197,10 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ onSave, onClose }) => 
                 <p
                   id="apikey-too-short"
                   role="alert"
-                  className="mt-2 text-xs text-amber-600 dark:text-amber-400"
+                  // amber-600 on the white panel is 3.2:1, under WCAG 1.4.3's
+                  // 4.5:1 for this 12px text — the one line saying why Save is
+                  // disabled. amber-700 is 5.1:1; dark mode keeps amber-400.
+                  className="mt-2 text-xs text-amber-700 dark:text-amber-400"
                 >
                   {t("modal.apiKey.tooShort")}
                 </p>
@@ -276,7 +279,11 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ onSave, onClose }) => 
                   </ol>
                 </div>
 
-                <div className="pt-2 text-slate-400 dark:text-slate-500 text-[10px]">
+                {/* The key-format hint is content, not decoration: slate-400 /
+                    slate-500 measured 2.5:1 light and 4.0:1 dark on this panel,
+                    failing WCAG 1.4.3 in both themes. The swapped pair is the
+                    one the steps list above already uses (4.6:1 / 7.3:1). */}
+                <div className="pt-2 text-slate-500 dark:text-slate-400 text-[10px]">
                   {t("modal.apiKey.keyFormat")}
                 </div>
               </div>

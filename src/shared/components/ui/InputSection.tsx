@@ -614,9 +614,12 @@ export const InputSection: React.FC<InputSectionProps> = ({
       >
         {/* Search Input with Autocomplete (for Channel) or Keyword Search (with # prefix) */}
         <div className="flex-1 w-full space-y-2 relative">
+          {/* The three field labels (here, Time frame, Max results) carry
+              dark:text-slate-400: slate-500 alone on the dark panel is 4.0:1,
+              under WCAG 1.4.3's 4.5:1 for 12px text; slate-400 is 7.3:1. */}
           <label
             htmlFor="searchInput"
-            className="block text-xs font-semibold uppercase tracking-wider text-slate-500"
+            className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400"
           >
             {t("labels.search")}
           </label>
@@ -836,7 +839,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
           <div className="w-full sm:w-48 space-y-2">
             <label
               htmlFor="timeframe"
-              className="block text-xs font-semibold uppercase tracking-wider text-slate-500"
+              className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400"
             >
               {t("labels.timeFrame")}
             </label>
@@ -866,7 +869,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
           <div className="w-full sm:w-40 space-y-2">
             <label
               htmlFor="maxResults"
-              className="block text-xs font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-1"
+              className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1"
             >
               <ListFilter className="w-3 h-3" aria-hidden="true" /> {t("labels.maxResults")}
             </label>
