@@ -123,6 +123,7 @@
       "count_one": "{{count}} Highlight",
       "count_other": "{{count}} Highlights",
       "hide": "Dieses Highlight ausblenden",
+      "hideAria": "\"{{title}}\" ausblenden",
       "hiddenCount_one": "{{count}} ausgeblendet",
       "hiddenCount_other": "{{count}} ausgeblendet",
       "clearHidden": "Alle wieder einblenden",
