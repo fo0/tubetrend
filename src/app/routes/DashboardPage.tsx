@@ -122,6 +122,7 @@ export function DashboardPage({
     visibleFavorites,
     highlightVideos,
     hiddenHighlightsCount,
+    storedHiddenCount,
   } = useDashboardFilters({
     favorites,
     sortedFavorites,
@@ -215,7 +216,7 @@ export function DashboardPage({
             refreshingIds={refreshingIds}
             showRefreshProgress={showRefreshProgress}
             refreshProgressLabel={refreshProgressLabel}
-            hiddenHighlightsCount={hiddenHighlightsCount}
+            storedHiddenCount={storedHiddenCount}
             lastHidden={lastHidden}
             copiedAllHighlights={copiedAllHighlights}
             copyAllHighlightsFailed={copyAllHighlightsFailed}

@@ -29,7 +29,8 @@ interface DashboardHighlightsToolbarProps {
   refreshingIds: Set<string>;
   showRefreshProgress: boolean;
   refreshProgressLabel: string;
-  hiddenHighlightsCount: number;
+  /** Every entry in the hidden list, not only current highlight candidates. */
+  storedHiddenCount: number;
   lastHidden: LastHiddenHighlight | null;
   copiedAllHighlights: boolean;
   copyAllHighlightsFailed: boolean;
@@ -48,7 +49,7 @@ export function DashboardHighlightsToolbar({
   refreshingIds,
   showRefreshProgress,
   refreshProgressLabel,
-  hiddenHighlightsCount,
+  storedHiddenCount,
   lastHidden,
   copiedAllHighlights,
   copyAllHighlightsFailed,
@@ -268,7 +269,16 @@ export function DashboardHighlightsToolbar({
               <Trash2 className="w-3 h-3" /> {t("favorites.clearAll")}
             </button>
           )}
-          {hiddenHighlightsCount > 0 && (
+          {/* Keyed on the whole hidden list, not on the hidden *candidates*.
+              Each favorite offers only its current top video, and that video
+              changes with a refresh — so a video hidden last week usually stops
+              being a candidate while it stays in the list. Gating the button on
+              candidates made it vanish exactly then, and with it the only way
+              into the modal: entries stayed hidden (and would stay hidden if
+              the video climbed back to the top) with no way to see or restore
+              them. The count says how much is behind the button now that it
+              can show while every card on screen is visible. */}
+          {storedHiddenCount > 0 && (
             <button
               type="button"
               onClick={onOpenHiddenModal}
@@ -277,7 +287,13 @@ export function DashboardHighlightsToolbar({
                              dark:border-amber-600/50 dark:text-amber-400 dark:hover:bg-amber-900/20"
               title={t("dashboard.highlights.showHiddenList")}
             >
-              <EyeOff className="w-3 h-3" /> {t("dashboard.highlights.hiddenButton")}
+              <EyeOff className="w-3 h-3" aria-hidden="true" />{" "}
+              <span className="whitespace-nowrap">{t("dashboard.highlights.hiddenButton")}</span>
+              {/* Outline only, no fill: the count inherits the label's colour on
+                  the same surface, so it keeps the label's contrast. */}
+              <span className="rounded-full border border-amber-300 px-1.5 font-semibold tabular-nums dark:border-amber-600/50">
+                {storedHiddenCount}
+              </span>
             </button>
           )}
         </div>
