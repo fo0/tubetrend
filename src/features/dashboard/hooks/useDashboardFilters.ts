@@ -93,11 +93,12 @@ export function useDashboardFilters({
     // Read the hidden list once. `isHidden()` re-reads localStorage, JSON-parses
     // it and re-validates every entry on each call, so calling it inside the
     // filter did that work once per highlight item.
-    const hiddenIds = new Set(hiddenHighlightsService.list().map((h) => h.videoId));
+    const hiddenList = hiddenHighlightsService.list();
+    const hiddenIds = new Set(hiddenList.map((h) => h.videoId));
     const visible = sorted.filter((item) => !hiddenIds.has(item.video.id));
     const hiddenCount = sorted.length - visible.length;
 
-    return { visible, hiddenCount };
+    return { visible, hiddenCount, storedCount: hiddenList.length };
     // cacheTick / hiddenTick are cache-busters, not inputs: the memo reads the
     // favorites cache and the hidden-highlights list imperatively, so these
     // counters are the only signal that either store changed. Dropping them
@@ -106,7 +107,14 @@ export function useDashboardFilters({
   }, [sortedFavorites, cacheTick, hiddenTick]);
 
   const highlightVideos = highlightVideosData.visible;
+  // Hidden videos that are *current* highlight candidates — what the empty-state
+  // panel counts ("All 3 highlights are hidden").
   const hiddenHighlightsCount = highlightVideosData.hiddenCount;
+  // Every entry in the hidden list, current candidate or not. A favorite's top
+  // video changes with each refresh, so older hidden entries drop out of the
+  // candidate count while they stay in the list (and stay hidden should they
+  // climb back to the top). This is what the hidden-videos modal shows.
+  const storedHiddenCount = highlightVideosData.storedCount;
 
   return {
     showFavoriteFilter,
@@ -114,5 +122,6 @@ export function useDashboardFilters({
     visibleFavorites,
     highlightVideos,
     hiddenHighlightsCount,
+    storedHiddenCount,
   };
 }

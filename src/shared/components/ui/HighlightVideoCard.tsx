@@ -167,7 +167,12 @@ export const HighlightVideoCard: React.FC<HighlightVideoCardProps> = ({
             // the button permanently; hover devices keep the reveal-on-hover they had.
             className="absolute top-1.5 right-1.5 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white/70 hover:text-white backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 focus:opacity-100 pointer-coarse:opacity-100"
             title={t("dashboard.highlights.hide")}
-            aria-label={t("dashboard.highlights.hide")}
+            // Named after its video, like the copy buttons in this card's
+            // footer and the hidden list's "Show <title> again": the grid
+            // holds one of these per highlight, and a screen reader's button
+            // list read a row of identical "Hide this highlight" entries with
+            // no way to tell which card each one removes (WCAG 2.4.6).
+            aria-label={t("dashboard.highlights.hideAria", { title: video.title })}
           >
             <EyeOff className="w-4 h-4" aria-hidden="true" />
           </button>
