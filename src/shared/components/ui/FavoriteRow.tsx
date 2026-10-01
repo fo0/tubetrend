@@ -919,8 +919,9 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
                   : "border-indigo-500/30 text-indigo-500 dark:text-indigo-400 hover:bg-indigo-500/10"
               }`}
               title={analyzeUsesCache ? t("favorites.analyze") : t("favorites.analyzeFresh")}
+              aria-label={t("favorites.analyzeAria", { name: displayName })}
             >
-              <BarChart3 className="w-3 h-3" /> {t("actions.analyze")}
+              <BarChart3 className="w-3 h-3" aria-hidden="true" /> {t("actions.analyze")}
             </button>
           )}
 
@@ -934,7 +935,7 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
                 : "border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
             }`}
             title={t("favorites.refresh")}
-            aria-label={t("favorites.refresh")}
+            aria-label={t("favorites.refreshAria", { name: displayName })}
           >
             <RefreshCw className={`w-3 h-3 ${loading ? "animate-spin" : ""}`} aria-hidden="true" />{" "}
             {t("actions.refresh")}
@@ -946,7 +947,8 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
               and collapse buttons of this row: a dashboard renders one Remove
               per favorite, and a dozen identical "Remove favorite" entries in a
               screen reader's button list gave no way to tell which one deletes
-              what (WCAG 2.4.6). */}
+              what (WCAG 2.4.6). Analyze and Refresh above follow the same rule;
+              each name starts with or contains its visible label (WCAG 2.5.3). */}
           {onRemove && (
             <button
               type="button"

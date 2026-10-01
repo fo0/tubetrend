@@ -92,6 +92,7 @@
       "videoCount_other": "{{count}} videos"
     },
     "refresh": "Refresh channel",
+    "refreshAria": "Refresh \"{{name}}\"",
     "remove": "Remove favorite",
     "removeAria": "Remove favorite \"{{name}}\"",
     "rename": "Rename favorite",
@@ -104,6 +105,7 @@
     "expandAria": "Show the videos of \"{{name}}\"",
     "analyze": "Open in Analyzer (uses cached data)",
     "analyzeFresh": "Open in Analyzer (runs a fresh search)",
+    "analyzeAria": "Analyze \"{{name}}\"",
     "clearAll": "Clear all favorites",
     "clearAllConfirm": "Remove all {{count}} favorites? This cannot be undone.",
     "removeConfirm": "Remove the favorite \"{{name}}\"? Its cached videos are deleted too. This cannot be undone.",
