@@ -288,9 +288,11 @@ export function DashboardHighlightsToolbar({
               title={t("dashboard.highlights.showHiddenList")}
             >
               <EyeOff className="w-3 h-3" aria-hidden="true" />{" "}
-              <span className="whitespace-nowrap">{t("dashboard.highlights.hiddenButton")}</span>
+              <span className="whitespace-nowrap">{t("dashboard.highlights.hiddenButton")}</span>{" "}
               {/* Outline only, no fill: the count inherits the label's colour on
-                  the same surface, so it keeps the label's contrast. */}
+                  the same surface, so it keeps the label's contrast. The space
+                  above keeps the accessible name "Hidden 3", not "Hidden3" —
+                  the gap between the two is CSS only. */}
               <span className="rounded-full border border-amber-300 px-1.5 font-semibold tabular-nums dark:border-amber-600/50">
                 {storedHiddenCount}
               </span>
