@@ -6,21 +6,25 @@
 
 ## Workflow Triggers
 
-Skills: `.claude/skills/<name>/SKILL.md`, trigger in each frontmatter `description` — `done` ("done" / "fertig") · `pr` · `basic-review` · `basic-sec-review` · `rollback` · `ci` · `stuck` · `beacon` ("check dependencies") · `scheduler` (Routines, `/loop` + `Cron*`, Desktop tasks; bare `/loop`: `.claude/loop.md`) · `orca` (`/orca <objective>`). Diagram → `agent_docs/diagram_prompt.md`. Findings → `BACKLOG.md`, knowledge → `MEMORY.md` / `SCRATCHPAD.md` (`agent_docs/backlog_process.md`, `agent_docs/memory_process.md`).
+Skills (`.claude/skills/<name>/SKILL.md`): `done` ("done" / "fertig") · `pr` · `basic-review` · `basic-sec-review` · `rollback` · `ci` · `stuck` · `beacon` ("check dependencies") · `scheduler` (bare `/loop`: `.claude/loop.md`) · `orca` (`/orca <objective>`). Diagram → `agent_docs/diagram_prompt.md`. Findings → `BACKLOG.md`, knowledge → `MEMORY.md` / `SCRATCHPAD.md` (`agent_docs/backlog_process.md`, `agent_docs/memory_process.md`).
 
 **Project rule:** `done` never pushes unless asked and never auto-runs `basic-review`.
 
 ## Output Languages
 
-Chat to the user: the user's language (default German) — skill report shapes fix the structure, not the language — technical terms English and never translated („2 Bugs gefixt"), paths / commands / errors verbatim. **UI strings:** i18n keys (`t('key')`), bundles `en` + `de`, fallback `en`. **Everything else English** — code, comments, commits (Conventional Commits), PRs, issues, every generated file. Term list: `agent_docs/coding_conventions.md → Never-translate term list`.
+Chat to the user: the user's language (default German) — skill report shapes fix the structure, not the language — technical terms English and never translated („2 Bugs gefixt"). **UI strings:** i18n keys (`t('key')`), bundles `en` + `de`, fallback `en`. **Everything else English** — code, comments, commits (Conventional Commits), PRs, issues, every generated file. Term list: `agent_docs/coding_conventions.md → Never-translate term list`.
 
 ## Performance / Modes
 
-Model: the session's, never pinned here or in `.claude/settings.json`. Plan mode for non-trivial strategy only — a plan put up for approval ends the turn on the user and carries the _Handoff Prompt_. Reference: `agent_docs/autonomy.md → Mode reference`.
+Model: the session's, never pinned. Plan mode for non-trivial strategy only. Reference: `agent_docs/autonomy.md → Mode reference`.
 
 ## Caveman Mode — chat compression (default `full`)
 
-Chat, status and confirmations only — **never** files, code, commits, PR bodies, issue comments. At `full`: drop filler, pleasantries, hedging and articles; fragments are fine for status lines. Shorten by selection, not compression: cut what would not change the reader's next move; no abbreviations, arrow chains or invented shorthand in any mode; code and error strings verbatim. Never compressed: the closing summary, security warnings, irreversible-action confirmations, the _Handoff Prompt_. `caveman lite|full|ultra` switches (`lite` keeps full sentences, `ultra` goes telegraphic), `stop caveman` turns it off for the session. Full wording: `agent_docs/autonomy.md → Caveman Mode`.
+Chat, status and confirmations only — **never** files, code, commits, PR bodies, issue comments. At `full`: drop filler, pleasantries, hedging and articles; fragments are fine for status lines. Shorten by selection, not compression: cut what would not change the reader's next move; no abbreviations, arrow chains or invented shorthand in any mode; code and error strings verbatim. Never compressed: the closing summary, security warnings, irreversible-action confirmations, the _Handoff Prompt_. `caveman lite|full|ultra` switches, `stop caveman` turns it off for the session. Full wording: `agent_docs/autonomy.md → Caveman Mode`.
+
+## Chat Layout — lists to scan, links to click
+
+Status and summaries: one fact per line, `**Label:** value` (state, branch, target, PR, run, next step); a table once several items share those fields; prose only for reasoning — the closing summary still opens with its outcome sentence. Anything with a URL is a link named by what it is — `[#42 Fix login](url)`, the run, the deploy — never a bare URL or bare `#42`, never a URL no tool returned. Before a multi-step stretch, list the steps ahead; promise to report back only with a wake armed (background task, PR subscription). Full wording: `agent_docs/autonomy.md → Chat Layout`.
 
 ## Autonomy
 
@@ -51,7 +55,7 @@ A turn that hands a decision back or names a next step / recommendation ends wit
 
 ## Subagents — orchestrator mode is the default
 
-**Every session starts in orchestrator mode, width 5:** the main agent decomposes, verifies returned diffs, runs the gates and reports; subagents do the task work. `/orca <N>` sets the width, `/orca off` drops to plain behavior for this session; `/orca <objective>` / `/orca <N> <objective>` runs an objective — steps with an observable result each, a `reviewer` per step, one overall review by an agent that wrote none of it, `/done` to close. Seat only what the change calls for:
+**Every session starts in orchestrator mode, width 5:** the main agent decomposes, does units of about five tool calls and one file, verifies returned diffs, runs the gates and reports; long, context-heavy or parallel work goes to subagents. Code-judging seats inherit the session's model and effort; search, git status, CI, log reads keep the model at lower effort — `sonnet` only for a trivial lookup, effort `low`/`medium`, `high` at most. `/orca <N>` sets the width, `/orca off` drops to plain behavior for this session; `/orca <objective>` / `/orca <N> <objective>` runs an objective. Seat only what the change calls for:
 
 | Role          | Earns a seat when                                   |
 | ------------- | --------------------------------------------------- |
@@ -75,14 +79,7 @@ TypeScript ~6.0.3 (strict) · React ^19.2 · Vite ^8.3 · Tailwind CSS v4 (`@tai
 
 ## Project Structure
 
-```
-src/      # app/ (shell, routing) · features/ (dashboard, favorites, search, videos, youtube)
-          # shared/ · providers/ · i18n/ (en + de) · styles/
-android/ chrome-extension/ electron/ scripts/   # platform wrappers, build scripts
-docs/ (ARCHITECTURE.mmd + adr/) · agent_docs/ · .claude/
-```
-
-Full tree: `agent_docs/project_structure.md` · one `dist/`, five targets: `agent_docs/platform_builds.md`.
+`src/` (app, features, shared, providers, i18n, styles) plus platform wrappers; full tree: `agent_docs/project_structure.md` · build targets: `agent_docs/platform_builds.md`.
 
 ## Commands
 
@@ -101,40 +98,27 @@ npx -y -p @mermaid-js/mermaid-cli mmdc -i docs/ARCHITECTURE.mmd -o docs/ARCHITEC
 
 ## Key Patterns
 
-- **Type-Safe Event Bus** — typed pub/sub via `useEventBus()`, never raw listeners — `src/shared/lib/eventBus.ts`
-- **Type-Safe Storage Adapter** — `safeRead` / `safeWrite`, never bare `localStorage` — `src/shared/lib/storage.ts`
-- **Error handling** — storage falls back, API failures raise `YouTubeApiError`, fatal crashes hit `ErrorBoundary`
-
-Feature modules, trend scoring, quota tracking, theme: `agent_docs/key-patterns.md`.
+Type-safe event bus, storage adapter, error handling, feature modules, trend scoring, quota, theme: `agent_docs/key-patterns.md`.
 
 ## Coding Conventions
 
-- **Naming:** PascalCase components/types, camelCase functions/hooks, kebab-case CSS classes; files PascalCase for components, camelCase for services/hooks/utils
-- **Imports:** cross-module via `@/src/…`, relative only inside a module, `import type` for types; export through the feature barrel — never deep-import another feature
-- **Styling / state:** Tailwind v4 with `dark:`; hooks + `localStorage`, Context only for theme — no CSS modules, no state library
-- **Two toolchain traps:** path aliases live in `tsconfig.json` _and_ `vite.config.ts` (change both); `noUnusedLocals` makes an unused local a type error, and every `eslint-disable` carries its reason
-- Max file length: ~300 lines split, ~500 strongly recommended
-
-Full conventions + alias table: `agent_docs/coding_conventions.md` · toolchain: `agent_docs/development_notes.md`.
+Repo-wide bullets (naming, imports, styling / state, toolchain traps, max file length) + alias table: `agent_docs/coding_conventions.md` · toolchain: `agent_docs/development_notes.md`.
 
 ## Git Conventions
 
 - **Branches:** `feat/` · `fix/` · `refactor/` · `chore/` · `docs/` · `dependabot/**`, agent work on `claude/<topic>` · **Commits:** Conventional Commits `type(scope): description`, issues as `#42` · **Merge:** squash
 - **Cloud / routine runs** start on `claude/<topic>` unless the task names a branch (`agent_docs/autonomy.md → Branch rule`).
+- **Issues:** work off the default branch starts from an issue — an open one with the same goal, else a new one; routine runs and a task naming its issue keep their own. Commits, PR (`Closes #n`), a branch you name and chat reference it (`agent_docs/autonomy.md → Issue-based work`).
 - **Dependencies:** new runtime ones only after user approval with reasoning, dev / tooling ones without; always commit `package-lock.json`. Dependabot PRs route through `pr`.
 - **No formatting guard installed** — `npm run format` before every commit is it (`agent_docs/ci_formatting_guard.md`); never `--no-verify`.
 
 ## Environment Variables
 
-Only `VITE_`-prefixed vars reach the client: `VITE_DEFAULT_SEARCH`, `VITE_GIT_COMMIT_HASH`, `VITE_GIT_BRANCH`. Copy `.env.example` → `.env.local`, restart the dev server. Full list: `agent_docs/env-vars.md`.
-
-### Secrets Locations
-
-Never committed — local `.env.local` (gitignored; template `.env.example`), CI secret store, fixtures synthetic. **The YouTube API key is no build-time secret:** the user types it into the UI and it stays in that browser's `localStorage`. New secret: placeholder in `.env.example`, ask the user; never `gh secret set` unprompted. Scan: `basic-sec-review` skill.
+Only `VITE_`-prefixed vars reach the client. Full list and **Secrets Locations** (never committed; never `gh secret set` unprompted): `agent_docs/env-vars.md`.
 
 ## Deployment
 
-**Trigger:** every code push to `main`, docs-only paths excluded · **Pipeline:** four workflows — GHCR image, Electron release (also on a `v*` tag), APK, extension · **Environments:** single. Agent scope: branches and PRs, **no production deploy** without an explicit user command — merge gate: `.claude/skills/pr/SKILL.md → /pr merge`, rollback via revert-PR: `.claude/skills/rollback/SKILL.md`. Workflow table: `agent_docs/deployment.md`.
+**No production deploy** without an explicit user command; triggers, pipelines, merge gate, rollback: `agent_docs/deployment.md`.
 
 ## API / Interfaces
 
@@ -142,22 +126,22 @@ YouTube Data API v3 (REST, API-key auth), every call through `youtubeApiClient.t
 
 ## Testing
 
-**Not configured** (Vitest recommended — issue #463); the chain under _Commands_ is the whole gate, tests would live as `*.test.ts` beside their source. Constraints: `agent_docs/review_process.md → Test execution constraints`; targets: `agent_docs/testing.md`.
+**Not configured**; the chain under _Commands_ is the whole gate, tests would live as `*.test.ts` beside their source. Constraints: `agent_docs/review_process.md → Test execution constraints`; targets: `agent_docs/testing.md`.
 
 ## External Integrations / MCPs
 
-Catalog: `agent_docs/mcp_catalog.md` — never auto-detected, never hard-required; an unattended run reaches only a committed `.mcp.json` entry or a claude.ai connector. **Trigger tools** (`permissions.allow`) are prompt-free only in a trusted local workspace. **Self-heal, local only:** append the missing `mcp__<that server>__*` glob and commit it — additive, never `deny`/`ask`; web/cloud appends nothing and names the user-scope fix: `agent_docs/mcp_catalog.md → Prompt-free triggers everywhere`.
+Catalog, unattended reach, trigger-tool allowlist and its local-only, additive self-heal (never `deny`/`ask`): `agent_docs/mcp_catalog.md`.
 
 ## Architecture Decisions
 
-ADRs in `docs/adr/` (format: `agent_docs/adr_template.md`). Grep `docs/adr/` before contradicting one; reverse with a new ADR that supersedes it — the old one changes only its status (`Superseded by ADR-NNNN`), never its body.
+ADRs in `docs/adr/`: grep them before contradicting one; reverse one only by superseding it (`agent_docs/adr_template.md → Lifecycle`).
 
 ## Documentation Rules
 
-After a code change, update only what it changed: `README.md` (user-facing) · `BACKLOG.md` (findings, refactoring candidates) · `MEMORY.md` / `SCRATCHPAD.md` (stable knowledge / working context) · `docs/ARCHITECTURE.mmd` (structure) · `docs/adr/` (decisions) · `.env.example` (new env vars). **`CLAUDE.md` gets a line only when how-to-work changes** — a command, a top-level directory, a repo-wide convention; everything else has a home under `agent_docs/`.
+After a code change, update only what it changed: `README.md` · `BACKLOG.md` · `MEMORY.md` / `SCRATCHPAD.md` · `docs/ARCHITECTURE.mmd` · `docs/adr/` · `.env.example`. **`CLAUDE.md` gets a line only when how-to-work changes** — a command, a top-level directory, a repo-wide convention; everything else has a home under `agent_docs/`.
 
 ### Context budget
 
-`CLAUDE.md` loads every turn: **12k** target, offload at **14k**, hard 16k. `MEMORY.md` / `SCRATCHPAD.md` load at session start: 8k / 4k target, offload at 16k / 8k. On-demand files (`agent_docs/`, skills, ADRs) are unbudgeted. Over → **move** content out and leave a one-line pointer, never delete to fit — ladder: `agent_docs/context_budget.md`. The Tier-1 guard flags it after any Edit/Write; act in the same session.
+`CLAUDE.md` loads every turn: **12k** target, offload at **14k**, hard 16k. `MEMORY.md` / `SCRATCHPAD.md` load at session start: 8k / 4k target, offload at 16k / 8k. Over → **move** content out and leave a one-line pointer, never delete to fit — ladder: `agent_docs/context_budget.md`. The Tier-1 guard flags it after any Edit/Write; act in the same session.
 
-<!-- Generated by claude-code-optimizer v1.51.1 -->
+<!-- Generated by claude-code-optimizer v1.56.0 -->

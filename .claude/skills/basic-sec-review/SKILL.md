@@ -47,7 +47,7 @@ Work the **current** OWASP Top 10 systematically from your own knowledge of it �
 
 Checked on every run, because they sit outside the generic taxonomy:
 
-- [ ] **YouTube API key** stays in that browser's `localStorage` only — never logged, never sent to non-YouTube endpoints, never a build-time secret (CLAUDE.md → _Environment Variables_).
+- [ ] **YouTube API key** stays in that browser's `localStorage` only — never logged, never sent to non-YouTube endpoints, never a build-time secret (`agent_docs/env-vars.md → Secrets Locations`).
 - [ ] **`localStorage` access** goes through the typed `StorageAdapter` (`src/shared/lib/storage.ts`); no direct `localStorage.setItem` with user input that bypasses type validation.
 - [ ] **YouTube API content is untrusted** — titles and descriptions can contain HTML; never `dangerouslySetInnerHTML` with it.
 - [ ] **Electron wrapper** — `contextIsolation: true`, `nodeIntegration: false`, external links via `shell.openExternal`.
