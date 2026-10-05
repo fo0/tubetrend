@@ -13,6 +13,8 @@
     "setApiKey": "API-Schlüssel setzen",
     "refreshAll": "Alle aktualisieren (R)",
     "refreshProgress": "Aktualisiere… {{done}}/{{total}}",
+    "refreshFailed_one": "{{count}} von {{total}} Favoriten konnte nicht aktualisiert werden. Die Zeile nennt den Grund.",
+    "refreshFailed_other": "{{count}} von {{total}} Favoriten konnten nicht aktualisiert werden. Die Zeilen nennen den Grund.",
     "remove": "Entfernen",
     "refresh": "Aktualisieren",
     "analyze": "Analysieren",

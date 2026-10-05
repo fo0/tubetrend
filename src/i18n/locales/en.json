@@ -13,6 +13,8 @@
     "setApiKey": "Set API key",
     "refreshAll": "Refresh all (R)",
     "refreshProgress": "Refreshing… {{done}}/{{total}}",
+    "refreshFailed_one": "{{count}} of {{total}} favorites could not be refreshed. Its row says why.",
+    "refreshFailed_other": "{{count}} of {{total}} favorites could not be refreshed. Their rows say why.",
     "remove": "Remove",
     "refresh": "Refresh",
     "analyze": "Analyze",

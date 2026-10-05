@@ -283,6 +283,9 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
         });
         if (cancelled) return;
       }
+      // Reported with the end event, so the dashboard can sum up a batch refresh
+      // whose failing rows may sit far off screen.
+      let failed = false;
       try {
         let apiVideos: YouTubeVideoItem[];
         let displayName: string;
@@ -365,13 +368,14 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
                 ? e.message
                 : "";
           setError(message || t("errors.favoriteLoad"));
+          failed = true;
         }
       } finally {
         if (!cancelled) setLoading(false);
         // Globales Event: Ende des Refresh für diesen Favoriten (nur senden, wenn Start gesendet wurde)
         try {
           if (dispatchedStartRef.current) {
-            dispatchEvent("favorite-refresh-end", { id: currentFavId });
+            dispatchEvent("favorite-refresh-end", { id: currentFavId, failed });
             dispatchedStartRef.current = false;
           }
         } catch {

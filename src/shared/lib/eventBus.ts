@@ -11,7 +11,8 @@ export interface EventMap {
   "quota-updated": { used: number; limit: number; percentage: number; exhausted: boolean };
   "hidden-highlights-changed": undefined;
   "favorite-refresh-start": { id: string };
-  "favorite-refresh-end": { id: string };
+  /** `failed`: the load ended in an error. Absent when the load was cancelled. */
+  "favorite-refresh-end": { id: string; failed?: boolean };
   "toggle-shortcuts-hint": undefined;
   "favorites-collapse-all": { collapsed: boolean };
   toast: { id: string; message: string; tone: "success" | "error" };
