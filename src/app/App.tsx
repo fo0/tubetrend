@@ -155,7 +155,8 @@ const App: React.FC = () => {
 
   // Global hotkeys:
   // - "d" / "a" switch between Dashboard and Analyser
-  // - "r" on the dashboard refreshes all favorites
+  // - "r" refreshes all favorites on the dashboard, and re-runs the analysis
+  //   on screen in the analyser
   // - "t" cycles the theme (system → light → dark)
   // - "?" toggles the keyboard-shortcuts help popover
   const handleKeyDown = useCallback(
@@ -219,7 +220,17 @@ const App: React.FC = () => {
         return;
       }
       if (key === "r") {
-        if (activePage !== "dashboard") return;
+        if (activePage === "analyser") {
+          // Same action as the results bar's Refresh button and the error
+          // banner's Retry: run the analysis on screen again with the arguments
+          // that produced it. Only while such a run exists (the button is not
+          // rendered otherwise) and none is in flight (the button is disabled
+          // then), so the key never queues a second fetch behind the spinner.
+          if (!canRepeatSearch || searchState.isLoading) return;
+          e.preventDefault();
+          retrySearch();
+          return;
+        }
         if (favorites.length === 0) return;
         e.preventDefault();
         refreshAll();
@@ -229,6 +240,9 @@ const App: React.FC = () => {
       activePage,
       favorites.length,
       refreshAll,
+      canRepeatSearch,
+      searchState.isLoading,
+      retrySearch,
       theme,
       setTheme,
       isApiKeyModalOpen,

@@ -230,7 +230,7 @@
     "retry": "Retry",
     "retryTitle": "Run the last search again",
     "refresh": "Refresh",
-    "refreshTitle": "Run this analysis again with fresh data",
+    "refreshTitle": "Run this analysis again with fresh data (R)",
     "analyzedAgo": "Analyzed {{time}}",
     "announceLoading": "Loading results…",
     "announceResults_one": "{{count}} video found for {{channel}}.",
@@ -376,6 +376,7 @@
     "openAnalyser": "Open Analyser",
     "toggleTheme": "Toggle theme",
     "refreshAll": "Refresh all favorites",
+    "refreshAnalysis": "Refresh this analysis",
     "toggleHint": "Show shortcuts",
     "closeOrClear": "Close or clear"
   },
