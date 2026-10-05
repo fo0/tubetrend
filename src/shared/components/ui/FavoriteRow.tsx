@@ -249,16 +249,18 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
         if (!cancelled && cached.meta?.channelTitle) setChannelTitle(cached.meta.channelTitle);
       }
 
+      // The loading placeholder stands only for a favorite with nothing cached.
+      // Set both ways, before the early return below: a load cancelled while it
+      // showed the placeholder (time frame switched again mid-fetch) never
+      // clears it itself, and a following run served from a valid cache would
+      // otherwise leave the placeholder up and the cached cards hidden.
+      setLoading(!cached);
+
       // Cache verwenden, wenn frisch und kein erzwungener Refresh
       const cachedOk = favoritesService.isCacheValid(currentFavId);
       if (!forced && cachedOk && cached) {
         // Cache ist gültig, keine API-Calls nötig
         return;
-      }
-
-      // Nur "Lädt..." zeigen wenn keine gecachten Daten vorhanden
-      if (!cached) {
-        setLoading(true);
       }
 
       // Globales Event: Start des Refresh für diesen Favoriten
