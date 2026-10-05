@@ -22,7 +22,6 @@ import {
   ChevronRight,
   ChevronUp,
   Hash,
-  Loader2,
   Pencil,
   RefreshCw,
   Trash2,
@@ -250,16 +249,18 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
         if (!cancelled && cached.meta?.channelTitle) setChannelTitle(cached.meta.channelTitle);
       }
 
+      // The loading placeholder stands only for a favorite with nothing cached.
+      // Set both ways, before the early return below: a load cancelled while it
+      // showed the placeholder (time frame switched again mid-fetch) never
+      // clears it itself, and a following run served from a valid cache would
+      // otherwise leave the placeholder up and the cached cards hidden.
+      setLoading(!cached);
+
       // Cache verwenden, wenn frisch und kein erzwungener Refresh
       const cachedOk = favoritesService.isCacheValid(currentFavId);
       if (!forced && cachedOk && cached) {
         // Cache ist gültig, keine API-Calls nötig
         return;
-      }
-
-      // Nur "Lädt..." zeigen wenn keine gecachten Daten vorhanden
-      if (!cached) {
-        setLoading(true);
       }
 
       // Globales Event: Start des Refresh für diesen Favoriten
@@ -284,6 +285,9 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
         });
         if (cancelled) return;
       }
+      // Reported with the end event, so the dashboard can sum up a batch refresh
+      // whose failing rows may sit far off screen.
+      let failed = false;
       try {
         let apiVideos: YouTubeVideoItem[];
         let displayName: string;
@@ -366,13 +370,14 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
                 ? e.message
                 : "";
           setError(message || t("errors.favoriteLoad"));
+          failed = true;
         }
       } finally {
         if (!cancelled) setLoading(false);
         // Globales Event: Ende des Refresh für diesen Favoriten (nur senden, wenn Start gesendet wurde)
         try {
           if (dispatchedStartRef.current) {
-            dispatchEvent("favorite-refresh-end", { id: currentFavId });
+            dispatchEvent("favorite-refresh-end", { id: currentFavId, failed });
             dispatchedStartRef.current = false;
           }
         } catch {
@@ -963,10 +968,37 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
         </div>
       </div>
 
-      {/* Content */}
+      {/* Content. `loading` is only raised when this favorite has no cached
+          videos at all (first load, or a time frame / limit not fetched yet), so
+          what replaces it is always a fresh grid of cards. A one-line "Loading…"
+          stood in for that grid, and every row below jumped down by a card's
+          height when the videos arrived — on a dashboard of new favorites, row
+          after row. A placeholder grid in the cards' own shape (the analyser's
+          skeleton, one card per video the row will show) holds the space. */}
       {!isCollapsed && loading && (
-        <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-sm">
-          <Loader2 className="w-4 h-4 animate-spin" /> {t("loading")}
+        <div
+          className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3 animate-pulse"
+          role="status"
+          aria-label={t("loading")}
+        >
+          {Array.from({ length: currentMax > 0 ? Math.min(currentMax, 6) : 6 }).map((_, i) => (
+            <div
+              key={i}
+              className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 flex flex-col"
+              aria-hidden="true"
+            >
+              <div className="h-40 bg-slate-200 dark:bg-slate-700" />
+              <div className="p-4 space-y-2 flex-1">
+                <div className="h-3 w-3/4 rounded bg-slate-200 dark:bg-slate-700" />
+                <div className="h-3 w-1/2 rounded bg-slate-200 dark:bg-slate-700" />
+                <div className="grid grid-cols-3 gap-2 mt-3">
+                  {[0, 1, 2].map((j) => (
+                    <div key={j} className="h-12 rounded-lg bg-slate-100 dark:bg-slate-700" />
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       )}
 

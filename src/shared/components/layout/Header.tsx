@@ -278,16 +278,18 @@ function KeyboardShortcutsHint({ activePage }: { activePage: PageType }) {
                 T
               </kbd>
             </div>
-            {activePage === "dashboard" && (
-              <div className="flex items-center justify-between">
-                <span className="text-slate-500 dark:text-slate-400">
-                  {t("keyboard.refreshAll")}
-                </span>
-                <kbd className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono text-slate-600 dark:text-slate-300">
-                  R
-                </kbd>
-              </div>
-            )}
+            {/* "R" refreshes what the page shows: every favorite on the
+                dashboard, the analysis on screen in the analyser. */}
+            <div className="flex items-center justify-between">
+              <span className="text-slate-500 dark:text-slate-400">
+                {activePage === "dashboard"
+                  ? t("keyboard.refreshAll")
+                  : t("keyboard.refreshAnalysis")}
+              </span>
+              <kbd className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono text-slate-600 dark:text-slate-300">
+                R
+              </kbd>
+            </div>
             <div className="flex items-center justify-between">
               <span className="text-slate-500 dark:text-slate-400">{t("keyboard.toggleHint")}</span>
               <kbd className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono text-slate-600 dark:text-slate-300">

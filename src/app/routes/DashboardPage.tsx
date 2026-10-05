@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { FloatingScrollButton } from "@/src/shared/components/ui/FloatingScrollButton";
 import { showToast } from "@/src/shared/components/feedback";
 import { useFileDropZone } from "@/src/shared/hooks";
+import { useEventBus } from "@/src/shared/lib/eventBus";
 import { useTranslation } from "react-i18next";
 import type { FavoriteConfig } from "@/src/features/favorites/types";
 import type { VideoData } from "@/src/features/videos/types";
@@ -105,11 +106,37 @@ export function DashboardPage({
   // a long while and gave no clue how much was left. refreshingIds only holds
   // what is still in flight, so remember the highest value seen during the run
   // as the total; it resets to 0 once the last row reports back.
+  //
+  // The same run also collects which rows failed. Each failing row shows its own
+  // error banner, but on a dashboard of a dozen favorites most of those rows are
+  // off screen, and the batch ended like a successful one: the progress label
+  // simply disappeared. Once the last row reports back, a toast says how many
+  // could not be refreshed. A row that fails and then succeeds within the same
+  // run (its own Retry) is no longer counted.
   const refreshingCount = refreshingIds.size;
   const [refreshTotal, setRefreshTotal] = useState(0);
+  const refreshBatchRef = useRef({ total: 0, failedIds: new Set<string>() });
+  useEventBus("favorite-refresh-end", ({ id, failed }) => {
+    if (failed) refreshBatchRef.current.failedIds.add(id);
+    else refreshBatchRef.current.failedIds.delete(id);
+  });
   useEffect(() => {
-    setRefreshTotal((prev) => (refreshingCount === 0 ? 0 : Math.max(prev, refreshingCount)));
-  }, [refreshingCount]);
+    const batch = refreshBatchRef.current;
+    if (refreshingCount > 0) {
+      batch.total = Math.max(batch.total, refreshingCount);
+      setRefreshTotal(batch.total);
+      return;
+    }
+    refreshBatchRef.current = { total: 0, failedIds: new Set<string>() };
+    setRefreshTotal(0);
+    // A single row's refresh has its own spinner and error banner.
+    if (batch.total > 1 && batch.failedIds.size > 0) {
+      showToast(
+        t("actions.refreshFailed", { count: batch.failedIds.size, total: batch.total }),
+        "error",
+      );
+    }
+  }, [refreshingCount, t]);
   // Only meaningful for a batch — a single row refresh has its own spinner.
   const showRefreshProgress = refreshTotal > 1 && refreshingCount > 0;
   const refreshProgressLabel = showRefreshProgress
