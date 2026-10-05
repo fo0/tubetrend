@@ -22,7 +22,6 @@ import {
   ChevronRight,
   ChevronUp,
   Hash,
-  Loader2,
   Pencil,
   RefreshCw,
   Trash2,
@@ -963,10 +962,37 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
         </div>
       </div>
 
-      {/* Content */}
+      {/* Content. `loading` is only raised when this favorite has no cached
+          videos at all (first load, or a time frame / limit not fetched yet), so
+          what replaces it is always a fresh grid of cards. A one-line "Loading…"
+          stood in for that grid, and every row below jumped down by a card's
+          height when the videos arrived — on a dashboard of new favorites, row
+          after row. A placeholder grid in the cards' own shape (the analyser's
+          skeleton, one card per video the row will show) holds the space. */}
       {!isCollapsed && loading && (
-        <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-sm">
-          <Loader2 className="w-4 h-4 animate-spin" /> {t("loading")}
+        <div
+          className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3 animate-pulse"
+          role="status"
+          aria-label={t("loading")}
+        >
+          {Array.from({ length: currentMax > 0 ? Math.min(currentMax, 6) : 6 }).map((_, i) => (
+            <div
+              key={i}
+              className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 flex flex-col"
+              aria-hidden="true"
+            >
+              <div className="h-40 bg-slate-200 dark:bg-slate-700" />
+              <div className="p-4 space-y-2 flex-1">
+                <div className="h-3 w-3/4 rounded bg-slate-200 dark:bg-slate-700" />
+                <div className="h-3 w-1/2 rounded bg-slate-200 dark:bg-slate-700" />
+                <div className="grid grid-cols-3 gap-2 mt-3">
+                  {[0, 1, 2].map((j) => (
+                    <div key={j} className="h-12 rounded-lg bg-slate-100 dark:bg-slate-700" />
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       )}
 
