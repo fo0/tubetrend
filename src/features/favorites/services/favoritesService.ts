@@ -341,7 +341,15 @@ export const favoritesService = {
       {},
     );
     const entry = cache[id];
-    return entry ? withSafeVideoUrls(entry) : null;
+    // Consumers use `entry.videos` as an array without checking that it is one
+    // (`getCache(id)?.videos.length` in FavoriteRow's render, the spread in
+    // dashboardTopVideos), so an entry without one threw a TypeError during the
+    // dashboard render. `setCache` always writes the array, but a backup import
+    // accepts entries whose `videos` is absent, and localStorage is untrusted
+    // input. Such an entry is read as a cache miss: the row fetches fresh data,
+    // exactly as it does for a favorite that has no entry at all.
+    if (!entry || typeof entry !== "object" || !Array.isArray(entry.videos)) return null;
+    return withSafeVideoUrls(entry);
   },
 
   setCache(
