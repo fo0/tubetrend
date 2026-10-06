@@ -1,4 +1,4 @@
-import { safeRead } from "@/src/shared/lib/storage";
+import { safeRead, safeReadRecord } from "@/src/shared/lib/storage";
 import { STORAGE_KEYS } from "@/src/shared/constants";
 import type { DashboardSortMode, SortOrder } from "@/src/shared/types";
 import type { FavoriteCacheEntry, FavoriteConfig } from "@/src/features/favorites/types";
@@ -119,11 +119,14 @@ export const dashboardBackupService = {
     dashboardSortMode: DashboardSortMode;
     dashboardSortOrder: SortOrder;
   }): DashboardBackupPayload {
-    const favorites = safeRead<FavoriteConfig[]>(STORAGE_KEYS.FAVORITES, []);
-    const favoritesCache = safeRead<Record<string, FavoriteCacheEntry>>(
-      STORAGE_KEYS.FAVORITES_CACHE,
-      {},
-    );
+    // Exported raw, the store could produce a file this module's own `parse()`
+    // refuses: it requires `favorites` to be an array and `favoritesCache` to be
+    // a plain object, and a corrupt stored value (`null`, `{}` for the list)
+    // was copied through unchecked. Such a value is exported as the empty value
+    // the app already reads it as, instead of making the whole file unrestorable.
+    const storedFavorites = safeRead<unknown>(STORAGE_KEYS.FAVORITES, []);
+    const favorites = Array.isArray(storedFavorites) ? (storedFavorites as FavoriteConfig[]) : [];
+    const favoritesCache = safeReadRecord<FavoriteCacheEntry>(STORAGE_KEYS.FAVORITES_CACHE);
 
     return {
       version: BACKUP_VERSION,

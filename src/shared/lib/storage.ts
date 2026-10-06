@@ -63,6 +63,25 @@ export function safeRead<T>(key: string, fallback: T): T {
 }
 
 /**
+ * Safe read of a keyed record (a cache map) from localStorage.
+ *
+ * `safeRead` only guards the parse: a stored `null`, array or primitive comes
+ * back as-is under the declared type. On `null` the first `cache[key]` read
+ * throws a TypeError, on a number or string the first write does (strict
+ * mode), and on an array the write succeeds but `JSON.stringify` drops the
+ * string key, so nothing is ever cached. Anything that is not a plain object
+ * reads as an empty record — the same state a missing key yields — so the next
+ * write replaces it with a clean one. Records this app wrote read exactly as
+ * before.
+ */
+export function safeReadRecord<T>(key: string): Record<string, T> {
+  const value = safeRead<unknown>(key, {});
+  return value !== null && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, T>)
+    : {};
+}
+
+/**
  * Safe write to localStorage
  */
 export function safeWrite<T>(key: string, value: T): void {
