@@ -184,8 +184,16 @@ export const favoritesService = {
     searchType: SearchType = SearchType.CHANNEL,
   ): boolean {
     const id = makeId(query, timeFrame, maxResults, searchType);
-    const list = safeRead<FavoriteConfig[]>(STORAGE_KEYS.FAVORITES, []);
-    return list.some((f) => f.id === id);
+    // Kept a raw read: `list()` may rewrite the store while migrating, and
+    // this runs on every keystroke in the search field. The value is still
+    // untrusted, though — a non-array or a `null` entry threw here, and both
+    // callers in InputSection catch that and fall back to a stale or `false`
+    // favorite state until the next `list()` rewrites the store.
+    const list = safeRead<unknown>(STORAGE_KEYS.FAVORITES, []);
+    return (
+      Array.isArray(list) &&
+      list.some((f) => (f as Partial<FavoriteConfig> | null | undefined)?.id === id)
+    );
   },
 
   /**
