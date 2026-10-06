@@ -1,5 +1,5 @@
 import { coerceSearchType, coerceTimeFrame, SearchType, TimeFrame } from "@/src/shared/types";
-import { safeRead, safeWrite } from "@/src/shared/lib/storage";
+import { safeRead, safeReadRecord, safeWrite } from "@/src/shared/lib/storage";
 import { dispatchEvent } from "@/src/shared/lib/eventBus";
 import { CACHE_TTL, STORAGE_KEYS } from "@/src/shared/constants";
 import type { FavoriteCacheEntry, FavoriteConfig } from "../types";
@@ -91,6 +91,18 @@ function withSafeVideoUrls<T extends FavoriteCacheEntry>(entry: T): T {
   }
 
   return changed ? { ...entry, videos: safe } : entry;
+}
+
+/**
+ * The favorites cache map, shape-checked rather than only parsed. A stored
+ * `null` used to come back from `safeRead` as-is, so `getCache()` threw on its
+ * first lookup — during render in FavoriteAvatar and FavoriteRow, which took the
+ * whole app down to the root ErrorBoundary — and `setCache()`, `update()` and
+ * `remove()` threw on theirs. A value that is not a plain object now reads as
+ * an empty cache; the next write replaces it with a clean one.
+ */
+function readCache(): Record<string, FavoriteCacheEntry & { ttl?: number }> {
+  return safeReadRecord<FavoriteCacheEntry & { ttl?: number }>(STORAGE_KEYS.FAVORITES_CACHE);
 }
 
 export const favoritesService = {
@@ -269,10 +281,7 @@ export const favoritesService = {
     safeWrite(STORAGE_KEYS.FAVORITES, nextList);
 
     // Invalidate cache
-    const cache = safeRead<Record<string, FavoriteCacheEntry & { ttl?: number }>>(
-      STORAGE_KEYS.FAVORITES_CACHE,
-      {},
-    );
+    const cache = readCache();
     if (cache[id]) delete cache[id];
     if (cache[newId]) delete cache[newId];
     safeWrite(STORAGE_KEYS.FAVORITES_CACHE, cache);
@@ -317,10 +326,7 @@ export const favoritesService = {
     const list = this.list().filter((f) => f.id !== id);
     safeWrite(STORAGE_KEYS.FAVORITES, list);
 
-    const cache = safeRead<Record<string, FavoriteCacheEntry & { ttl?: number }>>(
-      STORAGE_KEYS.FAVORITES_CACHE,
-      {},
-    );
+    const cache = readCache();
     if (cache[id]) {
       delete cache[id];
       safeWrite(STORAGE_KEYS.FAVORITES_CACHE, cache);
@@ -336,10 +342,7 @@ export const favoritesService = {
   },
 
   getCache(id: string): FavoriteCacheEntry | null {
-    const cache = safeRead<Record<string, FavoriteCacheEntry & { ttl?: number }>>(
-      STORAGE_KEYS.FAVORITES_CACHE,
-      {},
-    );
+    const cache = readCache();
     const entry = cache[id];
     // Consumers use `entry.videos` as an array without checking that it is one
     // (`getCache(id)?.videos.length` in FavoriteRow's render, the spread in
@@ -364,10 +367,7 @@ export const favoritesService = {
   ): void {
     const top6 = [...videos].sort((a, b) => b.trendingScore - a.trendingScore).slice(0, 6);
 
-    const cache = safeRead<Record<string, FavoriteCacheEntry & { ttl?: number }>>(
-      STORAGE_KEYS.FAVORITES_CACHE,
-      {},
-    );
+    const cache = readCache();
 
     const entry: FavoriteCacheEntry & { ttl?: number } = {
       videos: top6,
