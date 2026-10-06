@@ -1,4 +1,4 @@
-import { safeRead, safeWrite } from "@/src/shared/lib/storage";
+import { safeReadRecord, safeWrite } from "@/src/shared/lib/storage";
 import {
   AUTO_LIMIT_CHANNEL,
   CACHE_TTL,
@@ -34,9 +34,13 @@ interface ChannelCacheEntry {
   timestamp: number;
 }
 
-// Channel cache helpers
+// Channel cache helpers. The stored map is shape-checked, not only parsed: a
+// stored `null` used to throw on the first lookup, so every channel search and
+// favorite refresh failed in findChannelInfo, and a stored number let the
+// lookup through but threw in saveChannelToCache — after the paid requests had
+// already spent their quota.
 function getChannelCache(): Record<string, ChannelCacheEntry> {
-  return safeRead<Record<string, ChannelCacheEntry>>(STORAGE_KEYS.CHANNEL_CACHE, {});
+  return safeReadRecord<ChannelCacheEntry>(STORAGE_KEYS.CHANNEL_CACHE);
 }
 
 // An entry without a usable timestamp makes the age NaN, and every NaN
@@ -75,7 +79,7 @@ function saveChannelToCache(key: string, data: ChannelInfo): void {
 
 // Autocomplete cache helpers
 function getAutocompleteCache(): Record<string, AutocompleteCacheEntry> {
-  return safeRead<Record<string, AutocompleteCacheEntry>>(STORAGE_KEYS.AUTOCOMPLETE_CACHE, {});
+  return safeReadRecord<AutocompleteCacheEntry>(STORAGE_KEYS.AUTOCOMPLETE_CACHE);
 }
 
 // Same rule the channel cache applies through `isExpired`: an entry without a
