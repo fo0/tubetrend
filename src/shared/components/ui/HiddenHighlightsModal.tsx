@@ -213,7 +213,11 @@ export function HiddenHighlightsModal({ isOpen, onClose }: HiddenHighlightsModal
                         {item.sourceLabel}
                       </span>
                       <span className="text-slate-300 dark:text-slate-600">•</span>
-                      <span className="text-xs text-slate-400 dark:text-slate-500 flex items-center gap-1 shrink-0">
+                      {/* Same pair as the source label beside it: slate-400 /
+                          slate-500 measured 2.5:1 on the light row and 3.1:1 on
+                          the dark one, failing WCAG 1.4.3 for this 12px date in
+                          both themes. Now 4.55:1 / 5.6:1. */}
+                      <span className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1 shrink-0">
                         <Clock className="w-3 h-3" />
                         {formatDate(item.hiddenAt)}
                       </span>
