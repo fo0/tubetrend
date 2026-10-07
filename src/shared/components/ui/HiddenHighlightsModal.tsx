@@ -213,7 +213,11 @@ export function HiddenHighlightsModal({ isOpen, onClose }: HiddenHighlightsModal
                         {item.sourceLabel}
                       </span>
                       <span className="text-slate-300 dark:text-slate-600">•</span>
-                      <span className="text-xs text-slate-400 dark:text-slate-500 flex items-center gap-1 shrink-0">
+                      {/* Same pair as the source label beside it: slate-400 /
+                          slate-500 measured 2.5:1 on the light row and 3.1:1 on
+                          the dark one, failing WCAG 1.4.3 for this 12px date in
+                          both themes. Now 4.55:1 / 5.6:1. */}
+                      <span className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1 shrink-0">
                         <Clock className="w-3 h-3" />
                         {formatDate(item.hiddenAt)}
                       </span>
@@ -239,10 +243,13 @@ export function HiddenHighlightsModal({ isOpen, onClose }: HiddenHighlightsModal
                         (show() = drop the entry from the hidden list), so the
                         row offered a destructive-looking second button for an
                         action that was already available and non-destructive. */}
+                    {/* text-indigo-600 in light mode: indigo-500 on the slate-50
+                        row is 4.4:1, under the 4.5:1 WCAG 1.4.3 asks of this
+                        12px label; indigo-600 is 6.2:1. Dark is unchanged. */}
                     <button
                       type="button"
                       onClick={() => handleUnhide(item.videoId)}
-                      className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md border border-indigo-500/30 text-indigo-500 dark:text-indigo-400 hover:bg-indigo-500/10 transition-colors"
+                      className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md border border-indigo-500/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/10 transition-colors"
                       aria-label={t("dashboard.highlights.unhideAria", {
                         title: item.videoTitle ?? "",
                       })}

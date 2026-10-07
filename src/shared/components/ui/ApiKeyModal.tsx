@@ -236,7 +236,7 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ onSave, onClose }) => 
               type="button"
               onClick={() => setShowHelp(!showHelp)}
               aria-expanded={showHelp}
-              className="flex items-center gap-2 text-indigo-500 dark:text-indigo-400 text-sm hover:text-indigo-400 dark:hover:text-indigo-300 transition-colors mx-auto"
+              className="flex items-center gap-2 text-indigo-500 dark:text-indigo-400 text-sm hover:text-indigo-600 dark:hover:text-indigo-300 transition-colors mx-auto"
             >
               <HelpCircle className="w-4 h-4" />
               <span>{t("modal.apiKey.helpToggle")}</span>
@@ -262,11 +262,17 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ onSave, onClose }) => 
                   </p>
                   <ol className="list-decimal list-inside space-y-1.5 text-slate-500 dark:text-slate-400">
                     <li>
+                      {/* Light shades only: indigo-500 on this slate-100/50 panel
+                          is 4.4:1 and the old hover:text-indigo-400 3.0:1, both
+                          under the 4.5:1 WCAG 1.4.3 asks of this 12px link. Now
+                          6.2:1 at rest and 7.7:1 on hover. The dark:hover pin keeps
+                          dark mode at indigo-400 as before, so the light hover
+                          shade can never reach the dark panel. */}
                       <a
                         href="https://console.cloud.google.com/marketplace/product/google/youtube.googleapis.com"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-indigo-500 dark:text-indigo-400 underline decoration-indigo-500/30 hover:text-indigo-400 inline-flex items-center gap-1"
+                        className="text-indigo-600 dark:text-indigo-400 underline decoration-indigo-500/30 hover:text-indigo-700 dark:hover:text-indigo-400 inline-flex items-center gap-1"
                       >
                         {t("modal.apiKey.step1")}
                         <ExternalLink className="w-3 h-3" />

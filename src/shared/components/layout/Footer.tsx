@@ -39,7 +39,13 @@ export function Footer() {
             onClick={() => setShowDetails(!showDetails)}
             className="flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
             title={t("footer.toggleDetails")}
-            aria-label={t("footer.toggleDetails")}
+            // The name is the visible "Build info" text, not the title: an
+            // aria-label of "Show/hide build details" did not contain the label
+            // on screen, so voice control could not target the button by what it
+            // says (WCAG 2.5.3 Label in Name). aria-expanded already conveys the
+            // show/hide state; the title remains the description. Below `sm` the
+            // label is hidden and the same name keeps the icon-only button named.
+            aria-label={t("footer.buildInfo")}
             aria-expanded={showDetails}
           >
             <Info className="w-3.5 h-3.5" aria-hidden="true" />
