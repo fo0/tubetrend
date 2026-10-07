@@ -417,9 +417,13 @@ export function AnalyserPage({
               {searchState.resultSavedAt != null && !searchState.isLoading && (
                 <AnalyzedAgoBadge savedAt={searchState.resultSavedAt} />
               )}
+              {/* text-indigo-600 in light mode: indigo-500 on this
+                  slate-100/50 bar is 4.4:1, under the 4.5:1 WCAG 1.4.3 asks of
+                  12px text; indigo-600 is 6.2:1, the shade of the view-count
+                  chip beside it. Dark is unchanged. */}
               {searchState.isLoading && (
                 <span
-                  className="inline-flex items-center gap-1 text-xs text-indigo-500 dark:text-indigo-400"
+                  className="inline-flex items-center gap-1 text-xs text-indigo-600 dark:text-indigo-400"
                   role="status"
                   aria-label={t("loading")}
                 >
