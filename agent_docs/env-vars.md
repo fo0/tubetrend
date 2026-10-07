@@ -28,8 +28,10 @@ import.meta.env.VITE_DEFAULT_SEARCH ?? (import.meta.env.DEV ? "TEDx" : "");
 
 `??` only falls back on `null`/`undefined`, so `""` wins and the dev-mode `TEDx` default is
 suppressed. Copying `.env.example` verbatim to `.env.local` therefore yields an empty search input in
-dev. Comment the line out to restore the fallback. The other four variables are read with `||` or a
-plain truthiness check, so an empty value behaves the same as unset for them.
+dev. Comment the line out to restore the fallback. For the other four variables an empty value behaves
+the same as unset: `ELECTRON` must equal `"true"` exactly (`vite.config.ts`), `VITE_GIT_COMMIT_HASH`
+and `VITE_GIT_BRANCH` go through `fromEnv()` (`vite.config.ts`; trimmed, empty or the literal
+`unknown` counts as unset), and `VITE_DEV_SERVER_URL` is a plain truthiness check (`electron/main.ts`).
 
 ### Build-time-only variables (never reach the client bundle)
 
