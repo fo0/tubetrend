@@ -468,6 +468,10 @@ export const InputSection: React.FC<InputSectionProps> = ({
     setHistory(updated);
     persistHistory(updated);
     if (updated.length === 0) setShowHistory(false);
+    // The clicked remove button unmounts with its entry (and the whole list
+    // with the last one), which dropped focus on <body>. Back to the input,
+    // where the arrow keys keep driving the list if entries remain.
+    refocusSearchInput();
   };
 
   const clearAllHistory = () => {
@@ -475,6 +479,9 @@ export const InputSection: React.FC<InputSectionProps> = ({
     setHistory([]);
     persistHistory([]);
     setShowHistory(false);
+    // "Clear all" sits in the list it just removed — hand focus back to the
+    // input instead of leaving it on <body>.
+    refocusSearchInput();
   };
 
   // Which dropdown is currently open (they are mutually exclusive) and how many
@@ -690,7 +697,15 @@ export const InputSection: React.FC<InputSectionProps> = ({
                 inputValue && (
                   <button
                     type="button"
-                    onClick={clearInput}
+                    // The button only renders while there is text, so clearing
+                    // unmounted it under the focus. Hand focus back to the now
+                    // empty input so the next query can be typed right away;
+                    // the suppress flag keeps the history list closed, as
+                    // clearInput intends.
+                    onClick={() => {
+                      clearInput();
+                      refocusSearchInput();
+                    }}
                     aria-label={t("actions.clearSearch")}
                     // slate-500/400, not 400/600: this is a control's own
                     // graphic, which WCAG 1.4.11 asks 3:1 of, and the old pair

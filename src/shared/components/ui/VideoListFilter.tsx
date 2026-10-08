@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef, type RefObject } from "react";
 import { Search, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
@@ -9,6 +9,12 @@ interface VideoListFilterProps {
   matchCount: number;
   /** Rows in the unfiltered list. */
   totalCount: number;
+  /**
+   * Optional handle on the input, for an owner that clears the filter from
+   * outside this bar (the table's "no matches" row) and has to hand focus back
+   * to the field the same way the bar's own clear button does.
+   */
+  inputRef?: RefObject<HTMLInputElement | null>;
 }
 
 /**
@@ -20,9 +26,12 @@ export const VideoListFilter: React.FC<VideoListFilterProps> = ({
   onChange,
   matchCount,
   totalCount,
+  inputRef: externalInputRef,
 }) => {
   const { t } = useTranslation();
   const isFiltering = value.trim().length > 0;
+  const ownInputRef = useRef<HTMLInputElement>(null);
+  const inputRef = externalInputRef ?? ownInputRef;
 
   // Escape clears an active filter and keeps the caret in the field (mirrors
   // FavoritesFilter). The `type="search"` input below hides its native clear
@@ -38,6 +47,14 @@ export const VideoListFilter: React.FC<VideoListFilterProps> = ({
     onChange("");
   };
 
+  // The clear button only exists while filtering, so clicking it unmounted the
+  // control that held focus and dropped the keyboard user on <body>. Focus goes
+  // back to the field it just emptied (mirrors FavoritesFilter).
+  const clearFilter = () => {
+    onChange("");
+    inputRef.current?.focus();
+  };
+
   return (
     <div className="flex flex-col sm:flex-row sm:items-center gap-2 px-4 py-3 border-b border-slate-200 dark:border-slate-800 bg-slate-100/60 dark:bg-slate-900/60">
       <div className="relative flex-1 min-w-0">
@@ -45,6 +62,7 @@ export const VideoListFilter: React.FC<VideoListFilterProps> = ({
           <Search className="w-4 h-4 text-slate-400 dark:text-slate-500" aria-hidden="true" />
         </div>
         <input
+          ref={inputRef}
           type="search"
           value={value}
           onChange={(e) => onChange(e.target.value)}
@@ -61,7 +79,7 @@ export const VideoListFilter: React.FC<VideoListFilterProps> = ({
         {isFiltering && (
           <button
             type="button"
-            onClick={() => onChange("")}
+            onClick={clearFilter}
             title={t("results.table.filterClear")}
             aria-label={t("results.table.filterClear")}
             // slate-500/400, not 400/600: this is a control's own graphic, which

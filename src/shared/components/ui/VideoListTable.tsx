@@ -38,6 +38,9 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({
 }) => {
   const { t } = useTranslation();
   const [filter, setFilter] = useState("");
+  // The "no matches" row's clear button unmounts with the row it sits in, so it
+  // hands focus back to the filter field instead of dropping it on <body>.
+  const filterInputRef = useRef<HTMLInputElement>(null);
 
   // The table is not remounted between analyses, so a filter typed for the
   // previous channel stayed active for the next one: the user ran a new search
@@ -187,6 +190,7 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({
           onChange={setFilter}
           matchCount={visibleVideos.length}
           totalCount={rankedVideos.length}
+          inputRef={filterInputRef}
         />
       )}
       {/* tabIndex + role/label: this wrapper scrolls horizontally on narrow
@@ -428,7 +432,10 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({
                   </p>
                   <button
                     type="button"
-                    onClick={() => setFilter("")}
+                    onClick={() => {
+                      setFilter("");
+                      filterInputRef.current?.focus();
+                    }}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                   >
                     {t("results.table.filterClear")}

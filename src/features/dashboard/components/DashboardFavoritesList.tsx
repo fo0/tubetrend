@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import { BarChart3 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { FavoriteRow } from "@/src/shared/components/ui/FavoriteRow";
@@ -38,6 +39,9 @@ export function DashboardFavoritesList({
   onOpenAnalyser,
 }: DashboardFavoritesListProps) {
   const { t } = useTranslation();
+  // The "no matches" panel's clear button unmounts with the panel, so it hands
+  // focus back to the filter field instead of dropping it on <body>.
+  const filterInputRef = useRef<HTMLInputElement>(null);
 
   return favorites.length === 0 ? (
     <div className="bg-slate-50 border border-slate-200 dark:bg-slate-900/50 dark:border-slate-800 rounded-xl p-8 text-center flex flex-col items-center gap-4">
@@ -59,6 +63,7 @@ export function DashboardFavoritesList({
           onChange={onFavoriteFilterChange}
           matchCount={visibleFavorites.length}
           totalCount={sortedFavorites.length}
+          inputRef={filterInputRef}
         />
       )}
 
@@ -69,7 +74,10 @@ export function DashboardFavoritesList({
           </p>
           <button
             type="button"
-            onClick={() => onFavoriteFilterChange("")}
+            onClick={() => {
+              onFavoriteFilterChange("");
+              filterInputRef.current?.focus();
+            }}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
           >
             {t("dashboard.filter.clear")}

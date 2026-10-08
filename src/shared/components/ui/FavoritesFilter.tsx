@@ -1,4 +1,4 @@
-import React, { useCallback, useRef } from "react";
+import React, { useCallback, useRef, type RefObject } from "react";
 import { Search, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useEventListener } from "@/src/shared/hooks";
@@ -10,6 +10,12 @@ interface FavoritesFilterProps {
   matchCount: number;
   /** Favorites in the unfiltered list. */
   totalCount: number;
+  /**
+   * Optional handle on the input, for an owner that clears the filter from
+   * outside this bar (the dashboard's "no matches" panel) and has to hand focus
+   * back to the field the same way the bar's own clear button does.
+   */
+  inputRef?: RefObject<HTMLInputElement | null>;
 }
 
 /**
@@ -22,10 +28,12 @@ export const FavoritesFilter: React.FC<FavoritesFilterProps> = ({
   onChange,
   matchCount,
   totalCount,
+  inputRef: externalInputRef,
 }) => {
   const { t } = useTranslation();
   const isFiltering = value.trim().length > 0;
-  const inputRef = useRef<HTMLInputElement>(null);
+  const ownInputRef = useRef<HTMLInputElement>(null);
+  const inputRef = externalInputRef ?? ownInputRef;
 
   // "/" focuses this filter — the dashboard counterpart to the analyser's search
   // box, which registers the same key. The shortcuts popover advertises "/" as a
@@ -36,20 +44,23 @@ export const FavoritesFilter: React.FC<FavoritesFilterProps> = ({
   // SELECT is on the skip list for the same reason as in App.tsx: a focused
   // <select> consumes printable keys for its native type-ahead, and the header's
   // language picker sits one Tab away on this page too.
-  const handleFocusHotkey = useCallback((e: KeyboardEvent) => {
-    if (e.key !== "/") return;
-    const target = e.target as HTMLElement | null;
-    if (
-      target?.tagName === "INPUT" ||
-      target?.tagName === "SELECT" ||
-      target?.tagName === "TEXTAREA" ||
-      target?.isContentEditable
-    ) {
-      return;
-    }
-    e.preventDefault();
-    inputRef.current?.focus();
-  }, []);
+  const handleFocusHotkey = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key !== "/") return;
+      const target = e.target as HTMLElement | null;
+      if (
+        target?.tagName === "INPUT" ||
+        target?.tagName === "SELECT" ||
+        target?.tagName === "TEXTAREA" ||
+        target?.isContentEditable
+      ) {
+        return;
+      }
+      e.preventDefault();
+      inputRef.current?.focus();
+    },
+    [inputRef],
+  );
   useEventListener("keydown", handleFocusHotkey, document);
 
   // Escape clears an active filter and keeps the caret in the field, so the way
@@ -66,6 +77,16 @@ export const FavoritesFilter: React.FC<FavoritesFilterProps> = ({
     e.preventDefault();
     e.stopPropagation();
     onChange("");
+  };
+
+  // The clear button only exists while filtering, so clicking it unmounted the
+  // control that held focus and dropped the keyboard user on <body> — the next
+  // Tab started over at the top of the page, and typing a new filter meant
+  // finding the field again. Focus goes back to the field it just emptied,
+  // the same place Escape leaves the caret.
+  const clearFilter = () => {
+    onChange("");
+    inputRef.current?.focus();
   };
 
   return (
@@ -92,7 +113,7 @@ export const FavoritesFilter: React.FC<FavoritesFilterProps> = ({
         {isFiltering ? (
           <button
             type="button"
-            onClick={() => onChange("")}
+            onClick={clearFilter}
             title={t("dashboard.filter.clear")}
             aria-label={t("dashboard.filter.clear")}
             // slate-500/400, not 400/600: this is a control's own graphic, which

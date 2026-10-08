@@ -16,6 +16,10 @@ export function HiddenHighlightsModal({ isOpen, onClose }: HiddenHighlightsModal
   const { t } = useTranslation();
   const [hiddenItems, setHiddenItems] = useState<HiddenHighlight[]>([]);
   const dialogRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  // Row index whose "Show" button was just used, so focus can follow the list
+  // once it re-renders without that row (see the effect below).
+  const pendingFocusIndexRef = useRef<number | null>(null);
 
   // Load the list when the modal opens
   useEffect(() => {
@@ -81,8 +85,28 @@ export function HiddenHighlightsModal({ isOpen, onClose }: HiddenHighlightsModal
     };
   }, [isOpen]);
 
-  const handleUnhide = (videoId: string) => {
+  // Restoring an entry removes its row, and with it the "Show" button that
+  // held focus; "Show all" disappears together with the list. Focus fell to
+  // <body> — outside the dialog — so the focus trap no longer had anything to
+  // hold, and the next Tab landed on the page behind the backdrop (WCAG 2.4.3).
+  // After the list re-renders, focus moves to the "Show" button now at the same
+  // position (the next entry), the previous one when the last row went, or the
+  // close button once the list is empty.
+  useEffect(() => {
+    const index = pendingFocusIndexRef.current;
+    if (index === null) return;
+    pendingFocusIndexRef.current = null;
+    const buttons = dialogRef.current?.querySelectorAll<HTMLElement>("[data-unhide-button]");
+    const target =
+      buttons && buttons.length > 0
+        ? buttons[Math.min(index, buttons.length - 1)]
+        : closeButtonRef.current;
+    target?.focus();
+  }, [hiddenItems]);
+
+  const handleUnhide = (videoId: string, index: number) => {
     hiddenHighlightsService.show(videoId);
+    pendingFocusIndexRef.current = index;
     setHiddenItems(hiddenHighlightsService.listChronological());
   };
 
@@ -94,6 +118,7 @@ export function HiddenHighlightsModal({ isOpen, onClose }: HiddenHighlightsModal
   const handleRestoreAll = () => {
     if (!window.confirm(t("confirm.restoreAllHidden", { count: hiddenItems.length }))) return;
     hiddenHighlightsService.clearAll();
+    pendingFocusIndexRef.current = 0;
     setHiddenItems(hiddenHighlightsService.listChronological());
   };
 
@@ -166,6 +191,7 @@ export function HiddenHighlightsModal({ isOpen, onClose }: HiddenHighlightsModal
               </button>
             )}
             <button
+              ref={closeButtonRef}
               type="button"
               onClick={onClose}
               className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors"
@@ -184,7 +210,7 @@ export function HiddenHighlightsModal({ isOpen, onClose }: HiddenHighlightsModal
             </div>
           ) : (
             <ul className="space-y-3">
-              {hiddenItems.map((item) => (
+              {hiddenItems.map((item, index) => (
                 <li
                   key={item.videoId}
                   className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
@@ -248,7 +274,8 @@ export function HiddenHighlightsModal({ isOpen, onClose }: HiddenHighlightsModal
                         12px label; indigo-600 is 6.2:1. Dark is unchanged. */}
                     <button
                       type="button"
-                      onClick={() => handleUnhide(item.videoId)}
+                      data-unhide-button
+                      onClick={() => handleUnhide(item.videoId, index)}
                       className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md border border-indigo-500/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/10 transition-colors"
                       aria-label={t("dashboard.highlights.unhideAria", {
                         title: item.videoTitle ?? "",
