@@ -4,17 +4,18 @@ Offloaded from `CLAUDE.md` (2026-07-26) per `agent_docs/context_budget.md` ladde
 
 ## Triggers
 
-All seven workflow files, with every trigger each one actually declares:
+All eight workflow files, with every trigger each one actually declares:
 
-| Workflow                | Triggers                                                             | Result                                                                                                       |
-| ----------------------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| `docker-publish.yml`    | push to `main`/`master` · `workflow_dispatch`                        | Checks code, then builds and pushes `ghcr.io/fo0/tubetrend:latest`                                           |
-| `electron-release.yml`  | push to `main`/`master` · tag push `v*` · `workflow_dispatch`        | Builds win/mac/linux + Chromebook `.deb` + Chrome Extension + Android APK, then **creates a GitHub Release** |
-| `android-release.yml`   | push to `main`/`master` · `workflow_dispatch`                        | Standalone APK build, uploaded as a workflow artifact (no release)                                           |
-| `extension-release.yml` | push to `main`/`master` · `workflow_dispatch`                        | Standalone `dist-extension/` zip, uploaded as a workflow artifact (no release)                               |
-| `pr-checks.yml`         | `pull_request` → `main`/`master` (opened / synchronize / reopened)   | `format:check` → `tsc --noEmit` → `lint` → `build`, plus an advisory `npm audit` job                         |
-| `docs-format.yml`       | `pull_request` → `main`/`master` · push to `main`, both `**.md` only | Prettier `--check "**/*.md"` via `npx` at the version pinned in `package.json` — no `npm ci`, no build       |
-| `cleanup-ghcr.yml`      | weekly cron (Sun 04:00 UTC) · `workflow_dispatch`                    | Prunes untagged GHCR image versions, keeps the newest 10                                                     |
+| Workflow                | Triggers                                                             | Result                                                                                                                            |
+| ----------------------- | -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `docker-publish.yml`    | push to `main`/`master` · `workflow_dispatch`                        | Checks code, then builds and pushes `ghcr.io/fo0/tubetrend:latest`                                                                |
+| `electron-release.yml`  | push to `main`/`master` · tag push `v*` · `workflow_dispatch`        | Builds win/mac/linux + Chromebook `.deb` + Chrome Extension + Android APK, then **creates a GitHub Release**                      |
+| `android-release.yml`   | push to `main`/`master` · `workflow_dispatch`                        | Standalone APK build, uploaded as a workflow artifact (no release)                                                                |
+| `extension-release.yml` | push to `main`/`master` · `workflow_dispatch`                        | Standalone `dist-extension/` zip, uploaded as a workflow artifact (no release)                                                    |
+| `pr-checks.yml`         | `pull_request` → `main`/`master` (opened / synchronize / reopened)   | `format:check` → `tsc --noEmit` → `lint` → `build`, plus an advisory `npm audit` job                                              |
+| `docs-format.yml`       | `pull_request` → `main`/`master` · push to `main`, both `**.md` only | Prettier `--check "**/*.md"` via `npx` at the version pinned in `package.json` — no `npm ci`, no build                            |
+| `cleanup-ghcr.yml`      | weekly cron (Sun 04:00 UTC) · `workflow_dispatch`                    | Prunes untagged GHCR image versions, keeps the newest 10                                                                          |
+| `branch-cleanup.yml`    | `workflow_dispatch` (inputs `branches`, `dry_run`)                   | Deletes branches merged ≥ 7 days ago; dry run by default; skips default, protected, open-PR and `release/*` / `hotfix/*` branches |
 
 Three consequences worth knowing before merging anything into `main`:
 
@@ -61,4 +62,4 @@ See `.claude/skills/rollback/SKILL.md`. For deployed regressions, prefer a rever
 
 **Trigger:** every code push to `main`, docs-only paths excluded · **Pipeline:** four workflows · **Environments:** single. Agent scope: branches and PRs, **no production deploy** without an explicit user command — merge gate: `.claude/skills/pr/SKILL.md → /pr merge`, rollback via revert-PR: `.claude/skills/rollback/SKILL.md`. Workflow table: _Triggers_ above.
 
-<!-- Generated by claude-code-optimizer v1.56.0 -->
+<!-- Generated by claude-code-optimizer v1.61.0 -->
