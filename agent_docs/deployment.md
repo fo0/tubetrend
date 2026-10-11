@@ -6,16 +6,16 @@ Offloaded from `CLAUDE.md` (2026-07-26) per `agent_docs/context_budget.md` ladde
 
 All eight workflow files, with every trigger each one actually declares:
 
-| Workflow                | Triggers                                                             | Result                                                                                                       |
-| ----------------------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| `docker-publish.yml`    | push to `main`/`master` · `workflow_dispatch`                        | Checks code, then builds and pushes `ghcr.io/fo0/tubetrend:latest`                                           |
-| `electron-release.yml`  | push to `main`/`master` · tag push `v*` · `workflow_dispatch`        | Builds win/mac/linux + Chromebook `.deb` + Chrome Extension + Android APK, then **creates a GitHub Release** |
-| `android-release.yml`   | push to `main`/`master` · `workflow_dispatch`                        | Standalone APK build, uploaded as a workflow artifact (no release)                                           |
-| `extension-release.yml` | push to `main`/`master` · `workflow_dispatch`                        | Standalone `dist-extension/` zip, uploaded as a workflow artifact (no release)                               |
-| `pr-checks.yml`         | `pull_request` → `main`/`master` (opened / synchronize / reopened)   | `format:check` → `tsc --noEmit` → `lint` → `build`, plus an advisory `npm audit` job                         |
-| `docs-format.yml`       | `pull_request` → `main`/`master` · push to `main`, both `**.md` only | Prettier `--check "**/*.md"` via `npx` at the version pinned in `package.json` — no `npm ci`, no build       |
-| `cleanup-ghcr.yml`      | weekly cron (Sun 04:00 UTC) · `workflow_dispatch`                    | Prunes untagged GHCR image versions, keeps the newest 10                                                     |
-| `branch-cleanup.yml`    | `workflow_dispatch` (inputs `branches`, `dry_run`)                   | Deletes branches merged ≥ 7 days ago; dry run by default, never default/protected/open-PR branches           |
+| Workflow                | Triggers                                                             | Result                                                                                                                            |
+| ----------------------- | -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `docker-publish.yml`    | push to `main`/`master` · `workflow_dispatch`                        | Checks code, then builds and pushes `ghcr.io/fo0/tubetrend:latest`                                                                |
+| `electron-release.yml`  | push to `main`/`master` · tag push `v*` · `workflow_dispatch`        | Builds win/mac/linux + Chromebook `.deb` + Chrome Extension + Android APK, then **creates a GitHub Release**                      |
+| `android-release.yml`   | push to `main`/`master` · `workflow_dispatch`                        | Standalone APK build, uploaded as a workflow artifact (no release)                                                                |
+| `extension-release.yml` | push to `main`/`master` · `workflow_dispatch`                        | Standalone `dist-extension/` zip, uploaded as a workflow artifact (no release)                                                    |
+| `pr-checks.yml`         | `pull_request` → `main`/`master` (opened / synchronize / reopened)   | `format:check` → `tsc --noEmit` → `lint` → `build`, plus an advisory `npm audit` job                                              |
+| `docs-format.yml`       | `pull_request` → `main`/`master` · push to `main`, both `**.md` only | Prettier `--check "**/*.md"` via `npx` at the version pinned in `package.json` — no `npm ci`, no build                            |
+| `cleanup-ghcr.yml`      | weekly cron (Sun 04:00 UTC) · `workflow_dispatch`                    | Prunes untagged GHCR image versions, keeps the newest 10                                                                          |
+| `branch-cleanup.yml`    | `workflow_dispatch` (inputs `branches`, `dry_run`)                   | Deletes branches merged ≥ 7 days ago; dry run by default; skips default, protected, open-PR and `release/*` / `hotfix/*` branches |
 
 Three consequences worth knowing before merging anything into `main`:
 
