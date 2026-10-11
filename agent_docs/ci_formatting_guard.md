@@ -6,7 +6,7 @@ Stops the recurring CI failure where the format check reports style issues on a 
 
 - **This file is generated for Node projects only** — a Node manifest plus a configured formatter. The idea carries to any stack (the `pre-commit` framework is the usual analogue), but nothing generates this doc there, so do not read it as coverage you have.
 - **Not installed in this repo** (no husky, no lint-staged) — `npm run format` before every commit is the guard (`CLAUDE.md → Git Conventions`). This file is the setup guide for the day the owner opts in.
-- Any formatter within that scope: only the runner and the command change, never the contract below. Commands are this project's own, as CLAUDE.md → _Commands_ names them — here Prettier 3.9.6 (pinned), `npm run format` / `npm run format:check`, checked by `.github/workflows/pr-checks.yml` (code) and `docs-format.yml` (`**.md`).
+- Any formatter within that scope: only the runner and the command change, never the contract below. Commands are this project's own, as CLAUDE.md → _Commands_ names them — here Prettier 3.9.9 (pinned), `npm run format` / `npm run format:check`, checked by `.github/workflows/pr-checks.yml` (code) and `docs-format.yml` (`**.md`).
 - **Idempotent:** if the hook and its staged-files runner already exist, reconcile the config; do not reinstall.
 
 ## Problem

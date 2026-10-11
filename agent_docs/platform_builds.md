@@ -16,7 +16,7 @@ TubeTrend ships one web build (`dist/`) that every other target wraps. Nothing u
 | Icons           | Lucide React                       | ^1.38.0   |
 | Runtime         | Node.js                            | 22+       |
 | Package Manager | npm (lockfile v3)                  | —         |
-| Formatter       | Prettier (pinned, no caret)        | 3.9.6     |
+| Formatter       | Prettier (pinned, no caret)        | 3.9.9     |
 | Linter          | ESLint 9 flat config               | ^9.39     |
 | Test Framework  | none (Vitest recommended)          | —         |
 
