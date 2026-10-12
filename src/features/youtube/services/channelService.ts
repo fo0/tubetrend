@@ -223,6 +223,35 @@ export function extractChannelIdentifier(input: string): string {
   return trimmed;
 }
 
+// YouTube video ids are 11 characters of the URL-safe base64 alphabet.
+const VIDEO_ID_PATTERN = /^[A-Za-z0-9_-]{11}$/;
+
+/**
+ * The video id from a YouTube *video* link — `watch?v=`, `youtu.be/`,
+ * `/shorts/`, `/live/` and `/embed/` — or null for anything else (channel
+ * links, handles, names, ids).
+ */
+export function extractVideoId(input: string): string | null {
+  const trimmed = input.trim();
+  if (!trimmed.includes("youtube.com/") && !trimmed.includes("youtu.be/")) return null;
+  let url: URL;
+  try {
+    url = new URL(trimmed.startsWith("http") ? trimmed : `https://${trimmed}`);
+  } catch {
+    return null;
+  }
+  const host = url.hostname.replace(/^(www|m|music)\./, "");
+  const segments = url.pathname.split("/").filter(Boolean);
+  let id: string | null | undefined = null;
+  if (host === "youtu.be") {
+    id = segments[0];
+  } else if (host === "youtube.com" || host === "youtube-nocookie.com") {
+    if (segments[0] === "watch") id = url.searchParams.get("v");
+    else if (["shorts", "live", "embed"].includes(segments[0])) id = segments[1];
+  }
+  return id && VIDEO_ID_PATTERN.test(id) ? id : null;
+}
+
 /**
  * Search for channels (autocomplete)
  *
@@ -316,6 +345,35 @@ export async function findChannelInfo(
   context?: Partial<QuotaCallContext>,
 ): Promise<ChannelInfo> {
   const query = channelName.trim();
+
+  // A pasted video link names its channel only indirectly. Passed on as a
+  // plain query it went to the channel *search* (100 units) with the whole URL
+  // as search text, which finds an unrelated channel or none. One `videos`
+  // lookup (1 unit) yields the uploader's channel id; the rest is the ordinary
+  // id path. The result is cached under the video id as well, so a favorite or a
+  // repeat search of the same video costs nothing. It runs before the
+  // lowercased cache lookup below on purpose: video ids are case-sensitive, so
+  // the entry is keyed by the id exactly as YouTube spells it.
+  const videoId = extractVideoId(query);
+  if (videoId) {
+    const cacheKey = `video:${videoId}`;
+    const cachedVideoChannel = getChannelFromCache(cacheKey);
+    if (cachedVideoChannel) return cachedVideoChannel;
+    const videoData = await fetchFromApi<YoutubeVideoListResponse>(
+      "videos",
+      { part: "snippet", id: videoId },
+      { source: "channel-info", name: query, favoriteType: "channel", ...context },
+    );
+    const uploaderId = videoData.items?.[0]?.snippet?.channelId;
+    if (!uploaderId) {
+      throw new YouTubeApiError(`Video "${videoId}" not found.`, 404, false, {
+        key: "errors.api.videoNotFound",
+      });
+    }
+    const result = await findChannelInfo(uploaderId, { name: query, ...context });
+    saveChannelToCache(cacheKey, result);
+    return result;
+  }
 
   // Check cache first
   const cached = getChannelFromCache(query.toLowerCase());
