@@ -344,13 +344,13 @@ export const ApiQuotaIndicator: React.FC = () => {
   }, [isOpen]);
 
   // Clock for the reset countdown. It only ticks while the panel is open — the
-  // closed trigger shows no time — and each tick re-reads the stored quota, so a
+  // closed trigger shows no time, and the trigger's click handler restarts it on
+  // open — and each tick re-reads the stored quota, so a
   // panel left open across midnight PT drops to the new, empty day instead of
   // showing yesterday's usage next to a countdown that has already run out.
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     if (!isOpen) return;
-    setNow(Date.now());
     const id = setInterval(() => {
       setNow(Date.now());
       setQuota(quotaService.getInfo());
@@ -501,7 +501,13 @@ export const ApiQuotaIndicator: React.FC = () => {
       <button
         ref={triggerRef}
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          // Restart the countdown clock on open, in the same render: it does
+          // not tick while the panel is closed, so the first frame would show a
+          // countdown as old as the last time the panel was open.
+          if (!isOpen) setNow(Date.now());
+          setIsOpen(!isOpen);
+        }}
         className="group flex items-center gap-1.5 px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors cursor-pointer"
         aria-label={t("quota.historyTitle")}
         aria-expanded={isOpen}
