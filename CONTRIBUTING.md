@@ -114,7 +114,7 @@ in the same PR, with a comment line naming the reason.
 
 ### Verification Before Submitting
 
-Formatting is only the first of four gates. `.github/workflows/pr-checks.yml` runs all of the
+Formatting is only the first of four gates. `.github/workflows/ci.yml` runs all of the
 following on every pull request, so run them locally in this order to catch failures before CI does:
 
 ```bash

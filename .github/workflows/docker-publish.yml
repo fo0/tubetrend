@@ -50,10 +50,10 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      # Format first, in the same order pr-checks.yml uses. This job guards the
+      # Format first, in the same order ci.yml uses. This job guards the
       # only workflow that publishes on its own (push to main ->
       # ghcr.io/fo0/tubetrend:latest), so it must not be weaker than the PR
-      # gate: a commit that reaches main without passing pr-checks — a direct
+      # gate: a commit that reaches main without passing ci.yml — a direct
       # push, an admin merge, or a PR whose paths-ignore skipped it — would
       # otherwise publish an image built from a tree the PR gate rejects.
       - name: Check Prettier formatting
@@ -65,7 +65,7 @@ jobs:
         run: npx tsc --noEmit
 
       - name: Run Linter
-        # Called directly, like pr-checks.yml. The previous
+        # Called directly, like ci.yml. The previous
         # `if npm run | grep -q "lint"` wrapper turned this gate into a silent
         # no-op whenever the grep missed (script renamed, `npm run` output
         # reformatted) — a quality gate that can quietly skip itself is not one.

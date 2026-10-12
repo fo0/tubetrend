@@ -56,7 +56,7 @@ Checked on every run, because they sit outside the generic taxonomy:
 
 ## Tooling (run if available, never gate on availability)
 
-Three classes, each run once with whatever this stack's current standard tool for it is — secret scanning, dependency audit (`npm audit` is what `pr-checks.yml` already runs), and static analysis (generic pattern-based plus the language's own SAST). Prefer a tool the repo already configures over introducing one.
+Three classes, each run once with whatever this stack's current standard tool for it is — secret scanning, dependency audit (`npm audit` is what `ci.yml` already runs), and static analysis (generic pattern-based plus the language's own SAST). Prefer a tool the repo already configures over introducing one.
 
 If a class has no available tool → name the class as `not run` in the report and carry on. **Never block or gate the review on tool availability** — the manual pass above is the audit; tools only widen it.
 

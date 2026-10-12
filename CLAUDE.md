@@ -83,7 +83,7 @@ TypeScript ~6.0.3 (strict) · React ^19.2 · Vite ^8.3 · Tailwind CSS v4 (`@tai
 
 ## Commands
 
-**Order override:** `typecheck` runs before `lint` here, mirroring `pr-checks.yml` — keep the two in step. No test stage (_Testing_).
+**Order override:** `typecheck` runs before `lint` here, mirroring `ci.yml` — keep the two in step. No test stage (_Testing_).
 
 ```bash
 npm ci                 # install from lockfile (`npm install` locally)

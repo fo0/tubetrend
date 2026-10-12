@@ -44,14 +44,14 @@ Run **this project's** format-write command, exactly as CLAUDE.md → _Commands_
 npm run format
 ```
 
-It MUST run before the rest of the chain — formatting drift introduced during the session otherwise reaches CI's `format:check` step (`.github/workflows/pr-checks.yml`, and `docs-format.yml` for Markdown) and turns it red.
+It MUST run before the rest of the chain — formatting drift introduced during the session otherwise reaches CI's `format:check` step (`.github/workflows/ci.yml`, and `docs-format.yml` for Markdown) and turns it red.
 
 - If formatting changed files, **stage them with `git add -u` so they go into the upcoming commit (step 6)** — do NOT split formatting into its own commit.
 - Re-run `git status --porcelain` after formatting to see what changed.
 
 ### 4. Run automated checks
 
-Execute the project's check chain from CLAUDE.md → _Commands_, in the order stated there (this repo runs `typecheck` before `lint`, mirroring `pr-checks.yml`):
+Execute the project's check chain from CLAUDE.md → _Commands_, in the order stated there (this repo runs `typecheck` before `lint`, mirroring `ci.yml`):
 
 ```bash
 npm ci                  # only if dependencies are missing or the lockfile changed
