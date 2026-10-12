@@ -19,6 +19,51 @@ export function getTodayDateString(): string {
   return parts; // en-CA produces YYYY-MM-DD
 }
 
+const pacificWallClock = new Intl.DateTimeFormat("en-US", {
+  timeZone: "America/Los_Angeles",
+  hourCycle: "h23",
+  year: "numeric",
+  month: "numeric",
+  day: "numeric",
+  hour: "numeric",
+  minute: "numeric",
+  second: "numeric",
+});
+
+/** Pacific wall-clock time at `timestamp`, as the UTC epoch value of the same digits. */
+function pacificWallClockAsUtc(timestamp: number): {
+  wall: number;
+  y: number;
+  m: number;
+  d: number;
+} {
+  const parts: Record<string, number> = {};
+  for (const p of pacificWallClock.formatToParts(new Date(timestamp))) {
+    if (p.type !== "literal") parts[p.type] = Number(p.value);
+  }
+  const { year: y, month: m, day: d } = parts;
+  return { wall: Date.UTC(y, m - 1, d, parts.hour, parts.minute, parts.second), y, m, d };
+}
+
+/**
+ * The instant of the next daily YouTube API quota reset — midnight in
+ * America/Los_Angeles, the same anchor `getTodayDateString` uses.
+ *
+ * The UTC offset is taken at the candidate instant itself, not at `now`: on a
+ * DST switch day the offset of "now" and of the coming midnight differ by an
+ * hour, and using the current one would put the reset an hour off. Midnight is
+ * never inside a Pacific DST gap (those happen at 02:00), so the second pass
+ * always lands on it.
+ */
+export function getNextQuotaResetTime(now: number = Date.now()): number {
+  const { wall, y, m, d } = pacificWallClockAsUtc(now);
+  const nextMidnightWall = Date.UTC(y, m - 1, d + 1);
+  const offsetNow = wall - Math.floor(now / 1000) * 1000;
+  const candidate = nextMidnightWall - offsetNow;
+  const offsetThen = pacificWallClockAsUtc(candidate).wall - candidate;
+  return nextMidnightWall - offsetThen;
+}
+
 /**
  * Get a date N months ago.
  *

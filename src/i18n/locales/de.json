@@ -369,7 +369,10 @@
     "window3h": "3 Std.",
     "window6h": "6 Std.",
     "window12h": "12 Std.",
-    "window24h": "24 Std."
+    "window24h": "24 Std.",
+    "resetsIn": "Reset in {{time}} (um {{at}} Ortszeit)",
+    "resetHoursMinutes": "{{hours}} Std. {{minutes}} Min.",
+    "resetMinutes": "{{minutes}} Min."
   },
   "keyboard": {
     "label": "Tastaturkürzel",

@@ -369,7 +369,10 @@
     "window3h": "3 hrs",
     "window6h": "6 hrs",
     "window12h": "12 hrs",
-    "window24h": "24 hrs"
+    "window24h": "24 hrs",
+    "resetsIn": "Resets in {{time}} (at {{at}} local time)",
+    "resetHoursMinutes": "{{hours}} h {{minutes}} min",
+    "resetMinutes": "{{minutes}} min"
   },
   "keyboard": {
     "label": "Keyboard shortcuts",
