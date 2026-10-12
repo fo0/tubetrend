@@ -19,8 +19,10 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: false
 
+# Least privilege: the job only uploads a workflow artifact, which needs no
+# GITHUB_TOKEN scope beyond reading the repository.
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   build-apk:

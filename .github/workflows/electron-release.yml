@@ -21,8 +21,11 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: false
 
+# Least privilege: only the `release` job creates the GitHub Release and
+# uploads assets; it declares `contents: write` itself. The build jobs only
+# upload workflow artifacts.
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   prepare:

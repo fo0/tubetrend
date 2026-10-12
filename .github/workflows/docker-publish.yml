@@ -24,9 +24,10 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: false
 
+# Least privilege: only `build-and-push` pushes to GHCR; it declares
+# `packages: write` itself. `check-code` only reads the repository.
 permissions:
   contents: read
-  packages: write
 
 env:
   REGISTRY: ghcr.io
