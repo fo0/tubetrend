@@ -27,6 +27,8 @@ permissions:
 jobs:
   build-apk:
     runs-on: ubuntu-latest
+    # Longest of the last 15 successful runs: ~2 min.
+    timeout-minutes: 20
 
     steps:
       - name: Checkout

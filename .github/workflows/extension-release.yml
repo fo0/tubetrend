@@ -27,6 +27,8 @@ permissions:
 jobs:
   build-extension:
     runs-on: ubuntu-latest
+    # Longest of the last 15 successful runs: ~30 s.
+    timeout-minutes: 10
 
     steps:
       - name: Checkout

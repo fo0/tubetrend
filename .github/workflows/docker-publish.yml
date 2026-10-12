@@ -37,6 +37,8 @@ jobs:
   # 1. Neuer Job: Code-Qualität prüfen bevor gebaut wird
   check-code:
     runs-on: ubuntu-latest
+    # Longest of the last 15 successful runs: ~30 s.
+    timeout-minutes: 10
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -75,6 +77,8 @@ jobs:
     # Startet erst, wenn check-code erfolgreich war
     needs: check-code
     runs-on: ubuntu-latest
+    # Longest of the last 15 successful runs: ~2 min.
+    timeout-minutes: 20
     permissions:
       contents: read
       packages: write

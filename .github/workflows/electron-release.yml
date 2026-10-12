@@ -30,6 +30,8 @@ permissions:
 jobs:
   prepare:
     runs-on: ubuntu-latest
+    # Longest of the last 15 successful runs: ~4 s.
+    timeout-minutes: 5
     outputs:
       build_version: ${{ steps.version.outputs.build_version }}
       release_tag: ${{ steps.version.outputs.release_tag }}
@@ -64,6 +66,8 @@ jobs:
             platform: mac
 
     runs-on: ${{ matrix.os }}
+    # Longest of the last 15 successful runs: ~4.5 min (win).
+    timeout-minutes: 30
     name: Build (${{ matrix.platform }})
 
     steps:
@@ -118,6 +122,8 @@ jobs:
         arch: [x64, arm64]
 
     runs-on: ubuntu-latest
+    # Longest of the last 15 successful runs: ~2 min.
+    timeout-minutes: 20
     name: Build Chromebook .deb (${{ matrix.arch }})
 
     steps:
@@ -161,6 +167,8 @@ jobs:
   build-extension:
     needs: prepare
     runs-on: ubuntu-latest
+    # Longest of the last 15 successful runs: ~25 s.
+    timeout-minutes: 10
     name: Build Chrome Extension
 
     steps:
@@ -192,6 +200,8 @@ jobs:
   build-android:
     needs: prepare
     runs-on: ubuntu-latest
+    # Longest of the last 15 successful runs: ~3 min.
+    timeout-minutes: 20
     name: Build Android APK
 
     steps:
@@ -244,6 +254,8 @@ jobs:
     needs: [prepare, build, build-chromebook, build-extension, build-android]
     if: always() && needs.build.result == 'success'
     runs-on: ubuntu-latest
+    # Longest of the last 15 successful runs: ~50 s.
+    timeout-minutes: 15
     permissions:
       contents: write
 
