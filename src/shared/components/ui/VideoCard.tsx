@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import type { VideoData } from "@/src/features/videos";
 import { AlertCircle, Check, Clock, Copy, Eye, Heart, TrendingUp, Type, Zap } from "lucide-react";
-import { formatNumber, formatTimeAgo } from "@/src/shared/lib/formatters";
+import { formatExactDateTime, formatNumber, formatTimeAgo } from "@/src/shared/lib/formatters";
 import { useTranslation } from "react-i18next";
 
 interface VideoCardProps {
@@ -129,7 +129,14 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video }) => {
             loading="lazy"
           />
         </a>
-        <div className="absolute bottom-3 left-3 bg-black/70 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded flex items-center gap-1 pointer-events-none">
+        {/* Hoverable (no pointer-events-none) so the exact upload date and time
+            show as a tooltip: "3 weeks ago" alone could not tell whether a
+            video went up before or after an event the user is checking against —
+            the same exact-value tooltip the "analyzed X ago" badge carries. */}
+        <div
+          className="absolute bottom-3 left-3 bg-black/70 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded flex items-center gap-1 cursor-help"
+          title={formatExactDateTime(video.publishedTimestamp) || undefined}
+        >
           <Clock className="w-3 h-3 text-slate-300" />
           {formatTimeAgo(video.publishedTimestamp, t)}
         </div>
