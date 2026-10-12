@@ -31,6 +31,8 @@ jobs:
   checks:
     name: Typecheck / Lint / Build
     runs-on: ubuntu-latest
+    # Longest of the last 30 runs: ~1 min.
+    timeout-minutes: 10
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -69,6 +71,8 @@ jobs:
   security:
     name: Security Audit
     runs-on: ubuntu-latest
+    # Longest of the last 30 runs: ~20 s.
+    timeout-minutes: 5
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
