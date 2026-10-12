@@ -1,4 +1,4 @@
-name: Build Android APK (ChromeOS)
+name: Android Release
 
 on:
   push:
