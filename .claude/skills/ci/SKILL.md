@@ -33,7 +33,7 @@ instructions and stop. CI providers other than GitHub Actions: see "Other CI Pro
 
 ## Project CI Workflows
 
-The workflow files and every trigger each one declares: `agent_docs/deployment.md → Triggers`. Two gate a PR: `pr-checks.yml` (format check → typecheck → lint → build, plus a non-blocking `npm audit`; skips `**.md` / `docs/**`) and `docs-format.yml` (Prettier on `**/*.md` — the Markdown paths the other one ignores).
+The workflow files and every trigger each one declares: `agent_docs/deployment.md → Triggers`. Two gate a PR: `ci.yml` (format check → typecheck → lint → build, plus a non-blocking `npm audit`; skips `**.md` / `docs/**`) and `docs-format.yml` (Prettier on `**/*.md` — the Markdown paths the other one ignores).
 
 ## Auto-Routing (default `/ci`)
 
@@ -56,7 +56,7 @@ Decision matrix:
 Print detected phase before acting:
 
 ```
-Detected: latest CI run failed (run #123, workflow "PR Checks"). Fetching failed-job logs.
+Detected: latest CI run failed (run #123, workflow "CI"). Fetching failed-job logs.
 ```
 
 ## Phase A — No runs

@@ -14,17 +14,20 @@ on:
     # Trigger auch bei Release-Tags (z.B. v20260214-1530)
   workflow_dispatch:
 
-# Same guard the other four push-triggered workflows already carry. Without it,
-# two pushes to main run two publishes in parallel and both race for the `latest`
-# tag in GHCR — whichever finishes last wins, which is not necessarily the newer
-# commit. Superseded runs are cancelled instead.
+# Without a concurrency group, two pushes to main run two publishes in parallel
+# and both race for the `latest` tag in GHCR — whichever finishes last wins,
+# which is not necessarily the newer commit. Runs are queued instead of
+# cancelled: a running publish always finishes, so a newer push can no longer
+# abort it halfway through a push to GHCR. The queue holds at most one pending
+# run (the newest), so `latest` still ends on the newest commit.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
+# Least privilege: only `build-and-push` pushes to GHCR; it declares
+# `packages: write` itself. `check-code` only reads the repository.
 permissions:
   contents: read
-  packages: write
 
 env:
   REGISTRY: ghcr.io
@@ -34,6 +37,8 @@ jobs:
   # 1. Neuer Job: Code-Qualität prüfen bevor gebaut wird
   check-code:
     runs-on: ubuntu-latest
+    # Longest of the last 15 successful runs: ~30 s.
+    timeout-minutes: 10
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -47,10 +52,10 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      # Format first, in the same order pr-checks.yml uses. This job guards the
+      # Format first, in the same order ci.yml uses. This job guards the
       # only workflow that publishes on its own (push to main ->
       # ghcr.io/fo0/tubetrend:latest), so it must not be weaker than the PR
-      # gate: a commit that reaches main without passing pr-checks — a direct
+      # gate: a commit that reaches main without passing ci.yml — a direct
       # push, an admin merge, or a PR whose paths-ignore skipped it — would
       # otherwise publish an image built from a tree the PR gate rejects.
       - name: Check Prettier formatting
@@ -62,7 +67,7 @@ jobs:
         run: npx tsc --noEmit
 
       - name: Run Linter
-        # Called directly, like pr-checks.yml. The previous
+        # Called directly, like ci.yml. The previous
         # `if npm run | grep -q "lint"` wrapper turned this gate into a silent
         # no-op whenever the grep missed (script renamed, `npm run` output
         # reformatted) — a quality gate that can quietly skip itself is not one.
@@ -72,6 +77,8 @@ jobs:
     # Startet erst, wenn check-code erfolgreich war
     needs: check-code
     runs-on: ubuntu-latest
+    # Longest of the last 15 successful runs: ~2 min.
+    timeout-minutes: 20
     permissions:
       contents: read
       packages: write

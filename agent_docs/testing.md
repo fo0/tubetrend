@@ -13,7 +13,7 @@ npm run lint           # ESLint 9 flat config (matches CI; errors gate, warnings
 npm run build          # production build must succeed
 ```
 
-A **linter** does exist — ESLint 9 landed in #376 and `pr-checks.yml` runs it as a hard step. Only the
+A **linter** does exist — ESLint 9 landed in #376 and `ci.yml` runs it as a hard step. Only the
 **test runner** is missing; do not read "no test framework" as "no static analysis".
 
 `package.json` has no `test` script. Do not invent one in generated docs or CI until a framework actually lands.
@@ -27,7 +27,7 @@ Tracked in issue #463 (moved from `CLAUDE.md → Testing`, 2026-10-04).
 When added:
 
 - Add a `test` script to `package.json` and extend the automated-checks block in `CLAUDE.md`.
-- Add the `Test` step to `.github/workflows/pr-checks.yml`.
+- Add the `Test` step to `.github/workflows/ci.yml`.
 
 ## Structure (once configured)
 

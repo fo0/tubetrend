@@ -1,17 +1,17 @@
 name: Docs Format
 
-# Counterpart to pr-checks.yml. That workflow carries `paths-ignore: "**.md"`
+# Counterpart to ci.yml. That workflow carries `paths-ignore: "**.md"`
 # so documentation-only PRs don't pay for the full typecheck/lint/build chain —
 # but `npm run format:check` is `prettier --check .`, which DOES cover
 # Markdown. That left a blind spot: Markdown formatting drift could never fail
 # a check, and a docs-only PR could merge a red `format:check` onto main.
 #
 # This workflow closes exactly that gap and nothing more: it runs on the paths
-# pr-checks.yml ignores, and checks only the files Prettier can parse there
+# ci.yml ignores, and checks only the files Prettier can parse there
 # (`*.md`). Deliberately no `npm ci` — Prettier is pinned to the version in
 # package.json and fetched standalone, so the gate stays cheap enough to
 # justify running on every docs change. It also runs on push to main, which
-# pr-checks.yml does not.
+# ci.yml does not.
 
 on:
   pull_request:
