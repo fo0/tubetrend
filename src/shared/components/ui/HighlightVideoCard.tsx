@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import type { VideoData } from "@/src/features/videos";
 import { AlertCircle, Check, Clock, Copy, Eye, EyeOff, Sparkles, Type, Zap } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { formatNumber, formatTimeAgo } from "@/src/shared/lib/formatters";
+import { formatExactDateTime, formatNumber, formatTimeAgo } from "@/src/shared/lib/formatters";
 
 /** Which of the card's two copy actions a success/failure state refers to. */
 type CopyKind = "url" | "title";
@@ -132,7 +132,14 @@ export const HighlightVideoCard: React.FC<HighlightVideoCardProps> = ({
           />
         </a>
 
-        <div className="absolute bottom-3 left-3 bg-black/70 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded flex items-center gap-1 pointer-events-none">
+        {/* Hoverable (no pointer-events-none) so the exact upload date and time
+            show as a tooltip: "3 weeks ago" alone could not tell whether a
+            video went up before or after an event the user is checking against —
+            the same exact-value tooltip the "analyzed X ago" badge carries. */}
+        <div
+          className="absolute bottom-3 left-3 bg-black/70 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded flex items-center gap-1 cursor-help"
+          title={formatExactDateTime(video.publishedTimestamp) || undefined}
+        >
           <Clock className="w-3 h-3 text-slate-300" aria-hidden="true" />
           {formatTimeAgo(video.publishedTimestamp, t)}
         </div>

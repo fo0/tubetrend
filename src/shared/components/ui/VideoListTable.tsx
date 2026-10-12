@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import type { VideoData } from "@/src/features/videos";
 import { AlertCircle, Check, Clock, Copy, ExternalLink, Heart, Type } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { formatNumber, formatTimeAgo } from "@/src/shared/lib/formatters";
+import { formatExactDateTime, formatNumber, formatTimeAgo } from "@/src/shared/lib/formatters";
 import { VideoListFilter } from "@/src/shared/components/ui/VideoListFilter";
 import { SortableHeader } from "@/src/shared/components/ui/VideoListSortHeader";
 import {
@@ -312,7 +312,11 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({
                     </div>
                   </td>
                   <td className="p-4 text-slate-500 dark:text-slate-400 whitespace-nowrap hidden sm:table-cell">
-                    <div className="flex items-center gap-1.5">
+                    {/* Exact upload date and time on hover, behind the relative value. */}
+                    <div
+                      className="flex items-center gap-1.5 cursor-help"
+                      title={formatExactDateTime(video.publishedTimestamp) || undefined}
+                    >
                       <Clock className="w-3.5 h-3.5 text-slate-400 dark:text-slate-600" />
                       {formatTimeAgo(video.publishedTimestamp, t)}
                     </div>

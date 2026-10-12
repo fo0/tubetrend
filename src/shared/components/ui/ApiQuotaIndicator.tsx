@@ -5,6 +5,7 @@ import {
   AlertTriangle,
   AtSign,
   Check,
+  Clock,
   Copy,
   Hash,
   Search,
@@ -16,6 +17,8 @@ import { quotaService } from "@/src/features/youtube";
 import type { QuotaHistoryEntry } from "@/src/shared/types";
 import { useTranslation } from "react-i18next";
 import { formatNumber } from "@/src/shared/lib/formatters";
+import { getLocale } from "@/src/shared/lib/locale";
+import { getNextQuotaResetTime } from "@/src/shared/lib/dateUtils";
 import { eventBus } from "@/src/shared/lib/eventBus";
 import { STORAGE_KEYS } from "@/src/shared/constants";
 
@@ -340,6 +343,33 @@ export const ApiQuotaIndicator: React.FC = () => {
     return () => document.removeEventListener("keydown", handleEsc);
   }, [isOpen]);
 
+  // Clock for the reset countdown. It only ticks while the panel is open — the
+  // closed trigger shows no time, and the trigger's click handler restarts it on
+  // open — and each tick re-reads the stored quota, so a
+  // panel left open across midnight PT drops to the new, empty day instead of
+  // showing yesterday's usage next to a countdown that has already run out.
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (!isOpen) return;
+    const id = setInterval(() => {
+      setNow(Date.now());
+      setQuota(quotaService.getInfo());
+      setHistory(quotaService.getHistory());
+    }, 30_000);
+    return () => clearInterval(id);
+  }, [isOpen]);
+  const resetAt = getNextQuotaResetTime(now);
+  const resetMinutes = Math.max(1, Math.ceil((resetAt - now) / 60_000));
+  const resetHours = Math.floor(resetMinutes / 60);
+  const resetIn =
+    resetHours > 0
+      ? t("quota.resetHoursMinutes", { hours: resetHours, minutes: resetMinutes % 60 })
+      : t("quota.resetMinutes", { minutes: resetMinutes });
+  const resetAtLabel = new Date(resetAt).toLocaleTimeString(getLocale(), {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
   // Determine optimal time window for chart
   const timeWindow = useMemo(() => getOptimalTimeWindow(history), [history]);
 
@@ -471,7 +501,13 @@ export const ApiQuotaIndicator: React.FC = () => {
       <button
         ref={triggerRef}
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          // Restart the countdown clock on open, in the same render: it does
+          // not tick while the panel is closed, so the first frame would show a
+          // countdown as old as the last time the panel was open.
+          if (!isOpen) setNow(Date.now());
+          setIsOpen(!isOpen);
+        }}
         className="group flex items-center gap-1.5 px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors cursor-pointer"
         aria-label={t("quota.historyTitle")}
         aria-expanded={isOpen}
@@ -574,6 +610,14 @@ export const ApiQuotaIndicator: React.FC = () => {
                 className={`h-full ${colors.bg} transition-all duration-300`}
                 style={{ width: `${quota.percentage}%` }}
               />
+            </div>
+            {/* When the quota comes back, as a countdown plus the reset in the
+                user's own clock. "Midnight PT" alone left everyone outside the
+                Pacific time zone to work out what that means for them — the one
+                question that decides whether a "Refresh all" can wait. */}
+            <div className="mt-2 flex items-center gap-1.5 text-[11px] text-slate-400">
+              <Clock className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+              <span>{t("quota.resetsIn", { time: resetIn, at: resetAtLabel })}</span>
             </div>
             {/* Exhausted notice: explains why searches fail and when the quota
                 resets (the button icon alone did not surface this). */}

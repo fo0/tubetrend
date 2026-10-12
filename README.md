@@ -225,8 +225,8 @@ Enter your API key in the app when prompted.
   videos away, or every favorite's at once, and the dashboard reopens that way
 - **Analyser** — Search and analyze videos with trend scoring; a failed search can be retried
   straight from the error banner and `R` re-runs the analysis on screen, the star button saves the
-  current search as a favorite and takes it back again, and the history button reopens the last ten
-  searches whatever is in the box
+  current search as a favorite and takes it back again, the history button reopens the last ten
+  searches whatever is in the box, and a pasted video link analyses the channel that uploaded it
 - **Highlights** — Auto-surface top-performing videos, copy their title or URL, or export them as CSV
 - **Backup** — Export the dashboard as JSON; import it back with the button or by dropping the file on the page
 - **Desktop App** — Portable Electron app for Windows, macOS, and Linux

@@ -46,6 +46,26 @@ export function formatCompactNumber(value: number, locale: string = getLocale())
   return formatter.format(value);
 }
 
+const dateTimeFormatters = new Map<string, Intl.DateTimeFormat>();
+
+/**
+ * Format a timestamp as an exact, localized date and time ("Oct 12, 2026,
+ * 3:04 PM" / "12.10.2026, 15:04") — the precise value behind a relative
+ * "x ago". Cached per locale like the number formatters above, because the
+ * result table calls it for every row. Returns "" for a timestamp that is not
+ * a finite number (cached data from an older build), where `format()` would
+ * throw a RangeError.
+ */
+export function formatExactDateTime(timestamp: number, locale: string = getLocale()): string {
+  if (!Number.isFinite(timestamp)) return "";
+  let formatter = dateTimeFormatters.get(locale);
+  if (!formatter) {
+    formatter = new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" });
+    dateTimeFormatters.set(locale, formatter);
+  }
+  return formatter.format(timestamp);
+}
+
 /**
  * Format a past timestamp as a localized relative time string.
  * Uses the timeAgo.* i18n keys present in all supported locales.

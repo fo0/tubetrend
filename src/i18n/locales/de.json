@@ -306,6 +306,7 @@
       "keyMissing": "Kein YouTube-API-Schlüssel hinterlegt. Trage deinen Schlüssel ein, um zu suchen.",
       "quotaExceeded": "Das tägliche YouTube-API-Kontingent ist aufgebraucht. Reset um Mitternacht Pacific Time.",
       "channelNotFound": "Kein YouTube-Kanal zu \"{{channel}}\" gefunden. Prüfe den Namen oder das @Handle.",
+      "videoNotFound": "Zu diesem Link wurde kein YouTube-Video gefunden. Prüfe die URL oder gib stattdessen den Kanalnamen ein.",
       "channelDetails": "Der Kanal wurde gefunden, aber YouTube hat keine Videoliste geliefert. Bitte versuche es erneut.",
       "noVideosInTimeFrame": "Im gewählten Zeitraum ({{timeFrame}}) wurden keine Videos veröffentlicht. Wähle einen längeren Zeitraum.",
       "invalidResponse": "YouTube hat eine unlesbare Antwort geliefert. Bitte versuche es erneut.",
@@ -369,7 +370,10 @@
     "window3h": "3 Std.",
     "window6h": "6 Std.",
     "window12h": "12 Std.",
-    "window24h": "24 Std."
+    "window24h": "24 Std.",
+    "resetsIn": "Reset in {{time}} (um {{at}} Ortszeit)",
+    "resetHoursMinutes": "{{hours}} Std. {{minutes}} Min.",
+    "resetMinutes": "{{minutes}} Min."
   },
   "keyboard": {
     "label": "Tastaturkürzel",
