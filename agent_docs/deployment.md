@@ -14,7 +14,7 @@ All nine workflow files, with every trigger each one actually declares:
 | `extension-release.yml` | `workflow_dispatch` only                                             | Runs `quality.yml`, then a one-off `dist-extension/` zip, uploaded as a workflow artifact (no release)                            |
 | `ci.yml`                | `pull_request` → `main`/`master` (opened / synchronize / reopened)   | Runs `quality.yml`, plus an advisory `npm audit` job                                                                              |
 | `quality.yml`           | `workflow_call` only — called by the five workflows above            | The one code chain: `format:check` → `typecheck` → `lint` → `build`                                                               |
-| `docs-format.yml`       | `pull_request` → `main`/`master` · push to `main`, both `**.md` only | Prettier `--check "**/*.md"` via `npx` at the version pinned in `package.json` — no `npm ci`, no build                            |
+| `docs-format.yml`       | `pull_request` → `main`/`master` · push to `main`, both `**.md` only | Prettier `--check "**/*.md"` via `npx` at the version pinned in `package.json` (fails if none is pinned) — no `npm ci`, no build  |
 | `cleanup-ghcr.yml`      | weekly cron (Sun 04:00 UTC) · `workflow_dispatch`                    | Prunes untagged GHCR image versions, keeps the newest 10                                                                          |
 | `branch-cleanup.yml`    | `workflow_dispatch` (inputs `branches`, `dry_run`)                   | Deletes branches merged ≥ 7 days ago; dry run by default; skips default, protected, open-PR and `release/*` / `hotfix/*` branches |
 
