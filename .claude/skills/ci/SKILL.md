@@ -33,7 +33,7 @@ instructions and stop. CI providers other than GitHub Actions: see "Other CI Pro
 
 ## Project CI Workflows
 
-The workflow files and every trigger each one declares: `agent_docs/deployment.md → Triggers`. Two gate a PR: `ci.yml` (format check → typecheck → lint → build, plus a non-blocking `npm audit`; skips `**.md` / `docs/**`) and `docs-format.yml` (Prettier on `**/*.md` — the Markdown paths the other one ignores).
+The workflow files and every trigger each one declares: `agent_docs/deployment.md → Triggers`. Two gate a PR: `ci.yml` (calls the reusable `quality.yml`: format check → typecheck → lint → build, plus a non-blocking `npm audit`; skips `**.md` / `docs/**`) and `docs-format.yml` (Prettier on `**/*.md` — the Markdown paths the other one ignores).
 
 ## Auto-Routing (default `/ci`)
 

@@ -25,7 +25,8 @@ concurrency:
   cancel-in-progress: false
 
 # Least privilege: only `build-and-push` pushes to GHCR; it declares
-# `packages: write` itself. `check-code` only reads the repository.
+# `packages: write` itself. `check-code` (the reusable `quality.yml`) only
+# reads the repository.
 permissions:
   contents: read
 
@@ -34,44 +35,14 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  # 1. Neuer Job: Code-Qualität prüfen bevor gebaut wird
+  # 1. Code quality gate before anything is built — the same reusable chain
+  # (`quality.yml`) `ci.yml` runs on PRs. This workflow publishes on its own
+  # (push to main -> ghcr.io/fo0/tubetrend:latest), so its gate must not be
+  # weaker than the PR gate: a commit that reaches main without passing ci.yml
+  # — a direct push, an admin merge, or a PR whose paths-ignore skipped it —
+  # would otherwise publish an image built from a tree the PR gate rejects.
   check-code:
-    runs-on: ubuntu-latest
-    # Longest of the last 15 successful runs: ~30 s.
-    timeout-minutes: 10
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v7
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v7
-        with:
-          node-version: "22"
-          cache: "npm"
-
-      - name: Install Dependencies
-        run: npm ci
-
-      # Format first, in the same order ci.yml uses. This job guards the
-      # only workflow that publishes on its own (push to main ->
-      # ghcr.io/fo0/tubetrend:latest), so it must not be weaker than the PR
-      # gate: a commit that reaches main without passing ci.yml — a direct
-      # push, an admin merge, or a PR whose paths-ignore skipped it — would
-      # otherwise publish an image built from a tree the PR gate rejects.
-      - name: Check Prettier formatting
-        run: npm run format:check
-
-      # Diese Skripte sollten in der package.json vorhanden sein
-      # (Vite Standard-Templates haben 'lint' und 'tsc' meist integriert)
-      - name: Run Type Check
-        run: npx tsc --noEmit
-
-      - name: Run Linter
-        # Called directly, like ci.yml. The previous
-        # `if npm run | grep -q "lint"` wrapper turned this gate into a silent
-        # no-op whenever the grep missed (script renamed, `npm run` output
-        # reformatted) — a quality gate that can quietly skip itself is not one.
-        run: npm run lint
+    uses: ./.github/workflows/quality.yml
 
   build-and-push:
     # Startet erst, wenn check-code erfolgreich war

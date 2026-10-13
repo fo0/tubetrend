@@ -1,31 +1,31 @@
 name: Extension Release
 
+# Dispatch-only. Every push to main already builds the Chrome Extension zip in
+# `electron-release.yml`, uploads it as the workflow artifact `tubetrend-chrome-extension`
+# and attaches it to the GitHub Release — a push trigger here only built the
+# same output a second time. This workflow stays as a manual one-off build of
+# the Chrome Extension zip as a workflow artifact, without cutting a release.
 on:
-  push:
-    branches: [main, master]
-    paths-ignore:
-      - "**.md"
-      - "docs/**"
-      - "agent_docs/**"
-      - ".claude/**"
-      - ".env.example"
-      - ".gitignore"
-      - ".editorconfig"
-      - "LICENSE*"
-      - ".vscode/**"
   workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: false
 
-# Least privilege: the job only uploads a workflow artifact, which needs no
-# GITHUB_TOKEN scope beyond reading the repository.
+# Least privilege: the build job only uploads a workflow artifact and the
+# `quality` gate only reads the checkout — neither needs a GITHUB_TOKEN scope
+# beyond reading the repository.
 permissions:
   contents: read
 
 jobs:
+  # Code quality gate — the same reusable chain (`quality.yml`) `ci.yml` runs on
+  # PRs, in place of the old inline `tsc --noEmit` step.
+  quality:
+    uses: ./.github/workflows/quality.yml
+
   build-extension:
+    needs: quality
     runs-on: ubuntu-latest
     # Longest of the last 15 successful runs: ~30 s.
     timeout-minutes: 10
@@ -42,9 +42,6 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-
-      - name: TypeScript check
-        run: npx tsc --noEmit
 
       - name: Build Chrome Extension
         run: npm run build:extension

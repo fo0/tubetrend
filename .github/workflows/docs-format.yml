@@ -24,10 +24,13 @@ on:
     paths:
       - "**.md"
 
-# Cancel in-progress runs for the same PR
+# Cancel only a superseded PR run. A push run on main gets a group of its own
+# (its sha): a shared group would let a newer Markdown push cancel the previous
+# push's run (and GitHub keeps at most one PENDING run per group, whatever
+# cancel-in-progress says), leaving that commit without a verdict.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  group: docs-format-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 # Least privilege: this job only checks out the code and runs Prettier. Without
 # this block the GITHUB_TOKEN inherits the repository default, which can be
@@ -51,9 +54,15 @@ jobs:
 
       # Read the pinned version out of package.json rather than hardcoding it,
       # so this job can never drift from the Prettier `npm run format` applies.
+      # The value is narrowed to a semver here: this workflow runs on
+      # `pull_request`, so `package.json` is the PR's (fork-authored) content,
+      # and an unconstrained string could inject further lines into
+      # `$GITHUB_OUTPUT` or flow on into the next step.
       - name: Resolve pinned Prettier version
         id: prettier
-        run: echo "version=$(node -p "require('./package.json').devDependencies.prettier.replace(/^[^0-9]*/,'')")" >> "$GITHUB_OUTPUT"
+        run: |
+          version=$(node -p "(/[0-9][0-9A-Za-z.+-]*/.exec(require('./package.json').devDependencies.prettier)||[''])[0]")
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
 
       # The version reaches the shell through `env`, never as `${{ }}` inline in
       # `run`: an inline expression is substituted before the shell parses the

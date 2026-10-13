@@ -1,0 +1,64 @@
+name: Quality Checks
+
+# The code chain, shared by `ci.yml` (pull requests) and every workflow that
+# publishes from `main`: `docker-publish.yml` (gate before the image push),
+# `electron-release.yml` (gate before the platform builds and the GitHub
+# Release) and the dispatch-only `android-release.yml` / `extension-release.yml`.
+# One definition, so the PR gate and the publish gates can never drift apart —
+# a commit that reaches `main` without passing `ci.yml` (a direct push, an admin
+# merge, or a PR whose `paths-ignore` skipped it) is still checked by exactly
+# the same steps before anything is published.
+#
+# Order follows CLAUDE.md -> Commands: format check, then typecheck before lint,
+# then build. There is no test stage (no test framework is configured).
+
+on:
+  workflow_call:
+
+# Least privilege: verification only needs to read the checkout.
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Format, typecheck, lint and build
+    runs-on: ubuntu-latest
+    # Longest of the last 30 CI runs: ~1 min.
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          # `npm ci` runs dependency lifecycle scripts: keep the job token out
+          # of the git config. Nothing here talks to the git remote.
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check Prettier formatting
+        run: npm run format:check
+
+      - name: Run TypeScript type check
+        run: npm run typecheck
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Build project
+        run: npm run build
+
+      - name: Check build output exists
+        run: |
+          if [ ! -d "dist" ]; then
+            echo "Build output directory 'dist' not found!"
+            exit 1
+          fi
+          echo "Build successful - dist/ contains:"
+          ls -la dist/

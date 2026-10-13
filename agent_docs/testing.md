@@ -27,7 +27,7 @@ Tracked in issue #463 (moved from `CLAUDE.md → Testing`, 2026-10-04).
 When added:
 
 - Add a `test` script to `package.json` and extend the automated-checks block in `CLAUDE.md`.
-- Add the `Test` step to `.github/workflows/ci.yml`.
+- Add the `Test` step to `.github/workflows/quality.yml` (the reusable chain `ci.yml` and every publish/release workflow call).
 
 ## Structure (once configured)
 

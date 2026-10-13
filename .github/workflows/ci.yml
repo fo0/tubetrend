@@ -18,56 +18,22 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
-# Least privilege: both jobs only check out the code and run npm. Without this
+# Least privilege: both jobs only check out the code and run npm (the reusable
+# `quality.yml` declares the same scope and cannot exceed this one). Without this
 # block the GITHUB_TOKEN inherits the repository default, which can be
 # read/write. Every other workflow here already declares its scope.
 permissions:
   contents: read
 
 jobs:
-  # Format, typecheck, lint and build in a single job so dependencies are
-  # installed once per run instead of once per check (previously 4 jobs each
-  # ran their own `npm ci`).
+  # Format, typecheck, lint and build. The chain itself lives in the reusable
+  # `quality.yml`, which the publish/release workflows call as their gate too,
+  # so a PR is checked by exactly the steps that gate a publish from `main`.
   checks:
-    name: Format, typecheck, lint and build
-    runs-on: ubuntu-latest
-    # Longest of the last 30 runs: ~1 min.
-    timeout-minutes: 10
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v7
+    uses: ./.github/workflows/quality.yml
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v7
-        with:
-          node-version: "22"
-          cache: "npm"
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Check Prettier formatting
-        run: npm run format:check
-
-      - name: Run TypeScript type check
-        run: npx tsc --noEmit
-
-      - name: Run ESLint
-        run: npm run lint
-
-      - name: Build project
-        run: npm run build
-
-      - name: Check build output exists
-        run: |
-          if [ ! -d "dist" ]; then
-            echo "Build output directory 'dist' not found!"
-            exit 1
-          fi
-          echo "Build successful - dist/ contains:"
-          ls -la dist/
-
-  # Dependency security audit (no install needed — runs off the lockfile)
+  # Dependency security audit (no install needed — runs off the lockfile, so
+  # setup-node carries no npm cache: there is nothing to restore or save)
   security:
     name: Security Audit
     runs-on: ubuntu-latest
@@ -81,7 +47,6 @@ jobs:
         uses: actions/setup-node@v7
         with:
           node-version: "22"
-          cache: "npm"
 
       - name: Run npm audit
         run: npm audit --audit-level=high
