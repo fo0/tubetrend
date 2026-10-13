@@ -55,5 +55,10 @@ jobs:
         id: prettier
         run: echo "version=$(node -p "require('./package.json').devDependencies.prettier.replace(/^[^0-9]*/,'')")" >> "$GITHUB_OUTPUT"
 
+      # The version reaches the shell through `env`, never as `${{ }}` inline in
+      # `run`: an inline expression is substituted before the shell parses the
+      # script, and on a fork PR `package.json` is PR-authored content.
       - name: Check Markdown formatting
-        run: npx --yes prettier@${{ steps.prettier.outputs.version }} --check "**/*.md"
+        run: npx --yes "prettier@${PRETTIER_VERSION}" --check "**/*.md"
+        env:
+          PRETTIER_VERSION: ${{ steps.prettier.outputs.version }}
