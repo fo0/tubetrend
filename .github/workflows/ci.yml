@@ -29,7 +29,7 @@ jobs:
   # installed once per run instead of once per check (previously 4 jobs each
   # ran their own `npm ci`).
   checks:
-    name: Typecheck / Lint / Build
+    name: Format, typecheck, lint and build
     runs-on: ubuntu-latest
     # Longest of the last 30 runs: ~1 min.
     timeout-minutes: 10
