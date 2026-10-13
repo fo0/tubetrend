@@ -59,7 +59,9 @@ export async function searchVideosByKeyword(
     const videoIds = searchData.items
       .map((item) => item.id?.videoId)
       .filter((id): id is string => typeof id === "string" && id.length > 0);
-    allVideoIds = [...allVideoIds, ...videoIds];
+    // Append in place: re-spreading the accumulator copied every id collected
+    // so far on each page, quadratic in the page count (up to 100 pages × 50).
+    allVideoIds.push(...videoIds);
 
     nextPageToken = searchData.nextPageToken ?? "";
     if (!nextPageToken) break;
