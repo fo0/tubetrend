@@ -161,7 +161,7 @@ Then load in Chrome:
 
 Click the TubeTrend extension icon to open the app in a new tab.
 
-Or download the pre-built ZIP from [Actions artifacts](https://github.com/fo0/tubetrend/actions/workflows/extension-release.yml), extract, and load unpacked.
+Or download the pre-built `tubetrend-chrome-extension.zip` from [Releases](https://github.com/fo0/tubetrend/releases), extract, and load unpacked.
 
 ### Option 6: Run from Source
 
