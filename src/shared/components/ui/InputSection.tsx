@@ -72,8 +72,33 @@ export const InputSection: React.FC<InputSectionProps> = ({
     }
     return DEFAULT_SEARCH_INPUT;
   });
-  const [timeFrame, setTimeFrame] = useState<TimeFrame>(TimeFrame.LAST_MONTH);
-  const [maxResults, setMaxResults] = useState<number>(-1);
+  // Lazy initializers, like the query above. These two used to be restored in a
+  // mount effect, which ran before the persist effect further down within the
+  // same commit: the persist effect wrote the defaults over the stored values
+  // first, and only the re-render put them back. Under React.StrictMode (dev)
+  // the effects run twice, so the second restore read those defaults and every
+  // reload dropped the saved time frame and max results.
+  const [timeFrame, setTimeFrame] = useState<TimeFrame>(() => {
+    try {
+      const tf = localStorage.getItem(STORAGE_KEYS.SEARCH_TIMEFRAME);
+      if (tf) return coerceTimeFrame(tf);
+    } catch {
+      // ignore storage errors
+    }
+    return TimeFrame.LAST_MONTH;
+  });
+  const [maxResults, setMaxResults] = useState<number>(() => {
+    try {
+      const mr = localStorage.getItem(STORAGE_KEYS.SEARCH_MAX_RESULTS);
+      if (mr) {
+        const n = parseInt(mr, 10);
+        if (!Number.isNaN(n)) return n;
+      }
+    } catch {
+      // ignore storage errors
+    }
+    return -1;
+  });
 
   // SearchType is derived dynamically from the input prefix
   const searchType = detectSearchType(inputValue);
@@ -159,25 +184,6 @@ export const InputSection: React.FC<InputSectionProps> = ({
     };
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, []);
-
-  // Load last selected timeframe and max results from localStorage once
-  useEffect(() => {
-    try {
-      const tf = localStorage.getItem(STORAGE_KEYS.SEARCH_TIMEFRAME);
-      if (tf) {
-        setTimeFrame(coerceTimeFrame(tf));
-      }
-      const mr = localStorage.getItem(STORAGE_KEYS.SEARCH_MAX_RESULTS);
-      if (mr) {
-        const n = parseInt(mr, 10);
-        if (!Number.isNaN(n)) {
-          setMaxResults(n);
-        }
-      }
-    } catch {
-      // ignore storage errors
-    }
   }, []);
 
   // Sync externally supplied values (e.g. from analysing a favorite).
