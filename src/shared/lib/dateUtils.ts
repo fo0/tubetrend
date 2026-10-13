@@ -4,19 +4,24 @@ import { TimeFrame } from "../types";
  * Date and time utilities
  */
 
+// Built once, like `pacificWallClock` below: the locale and time zone are
+// fixed, so a fresh instance per call only repeated the costly construction.
+// Every quota read calls it — track() on each API call, then getInfo() and
+// getHistory() again in the quota indicator when the update event lands.
+const pacificDate = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "America/Los_Angeles",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+
 /**
  * Get today's date as YYYY-MM-DD string in America/Los_Angeles timezone.
  * YouTube API quota resets at midnight Pacific Time, so daily tracking
  * must be anchored to that timezone — not UTC.
  */
 export function getTodayDateString(): string {
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "America/Los_Angeles",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(new Date());
-  return parts; // en-CA produces YYYY-MM-DD
+  return pacificDate.format(new Date()); // en-CA produces YYYY-MM-DD
 }
 
 const pacificWallClock = new Intl.DateTimeFormat("en-US", {
