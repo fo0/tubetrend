@@ -384,7 +384,10 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({
                         {copyFailed?.id === video.id && copyFailed.kind === "title" ? (
                           <AlertCircle className="w-4 h-4" aria-hidden="true" />
                         ) : copiedTitleId === video.id ? (
-                          <Check className="w-4 h-4 text-green-500" aria-hidden="true" />
+                          <Check
+                            className="w-4 h-4 text-green-700 dark:text-green-500"
+                            aria-hidden="true"
+                          />
                         ) : (
                           <Type className="w-4 h-4" aria-hidden="true" />
                         )}
@@ -411,7 +414,10 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({
                         {copyFailed?.id === video.id && copyFailed.kind === "url" ? (
                           <AlertCircle className="w-4 h-4" aria-hidden="true" />
                         ) : copiedId === video.id ? (
-                          <Check className="w-4 h-4 text-green-500" aria-hidden="true" />
+                          <Check
+                            className="w-4 h-4 text-green-700 dark:text-green-500"
+                            aria-hidden="true"
+                          />
                         ) : (
                           <Copy className="w-4 h-4" aria-hidden="true" />
                         )}
