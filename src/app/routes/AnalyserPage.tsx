@@ -441,7 +441,7 @@ export function AnalyserPage({
                   onClick={handleCopyAllUrls}
                   className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors ${
                     copyAllFailed
-                      ? "text-red-500 dark:text-red-400"
+                      ? "text-red-700 dark:text-red-400"
                       : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800"
                   }`}
                   title={copyAllFailed ? t("results.copyAllFailed") : t("results.copyAllUrls")}
@@ -450,7 +450,10 @@ export function AnalyserPage({
                   {copyAllFailed ? (
                     <AlertCircle className="w-4 h-4" aria-hidden="true" />
                   ) : copiedAll ? (
-                    <Check className="w-4 h-4 text-green-500" aria-hidden="true" />
+                    <Check
+                      className="w-4 h-4 text-green-700 dark:text-green-500"
+                      aria-hidden="true"
+                    />
                   ) : (
                     <Copy className="w-4 h-4" aria-hidden="true" />
                   )}
@@ -463,7 +466,7 @@ export function AnalyserPage({
                   onClick={handleExportCsv}
                   className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors ${
                     exportFailed
-                      ? "text-red-500 dark:text-red-400"
+                      ? "text-red-700 dark:text-red-400"
                       : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800"
                   }`}
                   title={exportFailed ? t("results.exportFailed") : t("results.exportCsv")}
@@ -472,7 +475,10 @@ export function AnalyserPage({
                   {exportFailed ? (
                     <AlertCircle className="w-4 h-4" aria-hidden="true" />
                   ) : exportDone ? (
-                    <Check className="w-4 h-4 text-green-500" aria-hidden="true" />
+                    <Check
+                      className="w-4 h-4 text-green-700 dark:text-green-500"
+                      aria-hidden="true"
+                    />
                   ) : (
                     <Download className="w-4 h-4" aria-hidden="true" />
                   )}
@@ -485,7 +491,7 @@ export function AnalyserPage({
                   onClick={handleExportJson}
                   className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors ${
                     exportJsonFailed
-                      ? "text-red-500 dark:text-red-400"
+                      ? "text-red-700 dark:text-red-400"
                       : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800"
                   }`}
                   title={exportJsonFailed ? t("results.exportFailed") : t("results.exportJson")}
@@ -496,7 +502,10 @@ export function AnalyserPage({
                   {exportJsonFailed ? (
                     <AlertCircle className="w-4 h-4" aria-hidden="true" />
                   ) : exportJsonDone ? (
-                    <Check className="w-4 h-4 text-green-500" aria-hidden="true" />
+                    <Check
+                      className="w-4 h-4 text-green-700 dark:text-green-500"
+                      aria-hidden="true"
+                    />
                   ) : (
                     <FileJson className="w-4 h-4" aria-hidden="true" />
                   )}
