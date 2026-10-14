@@ -178,7 +178,7 @@ export function DashboardHighlightsToolbar({
               {copyAllHighlightsFailed ? (
                 <AlertCircle className="w-3 h-3" aria-hidden="true" />
               ) : copiedAllHighlights ? (
-                <Check className="w-3 h-3 text-green-500" aria-hidden="true" />
+                <Check className="w-3 h-3 text-green-700 dark:text-green-500" aria-hidden="true" />
               ) : (
                 <Copy className="w-3 h-3" aria-hidden="true" />
               )}
