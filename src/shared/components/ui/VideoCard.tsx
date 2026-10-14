@@ -230,7 +230,10 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video }) => {
             {copyFailed === "title" ? (
               <AlertCircle className="w-3.5 h-3.5" aria-hidden="true" />
             ) : titleCopied ? (
-              <Check className="w-3.5 h-3.5 text-green-500" aria-hidden="true" />
+              <Check
+                className="w-3.5 h-3.5 text-green-700 dark:text-green-500"
+                aria-hidden="true"
+              />
             ) : (
               <Type className="w-3.5 h-3.5" aria-hidden="true" />
             )}
@@ -255,7 +258,10 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video }) => {
             {copyFailed === "url" ? (
               <AlertCircle className="w-3.5 h-3.5" aria-hidden="true" />
             ) : copied ? (
-              <Check className="w-3.5 h-3.5 text-green-500" aria-hidden="true" />
+              <Check
+                className="w-3.5 h-3.5 text-green-700 dark:text-green-500"
+                aria-hidden="true"
+              />
             ) : (
               <Copy className="w-3.5 h-3.5" aria-hidden="true" />
             )}

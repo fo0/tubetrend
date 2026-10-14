@@ -766,7 +766,9 @@ export const InputSection: React.FC<InputSectionProps> = ({
                             {sug.title}
                           </p>
                           {sug.handle && (
-                            <p className="text-xs text-slate-500 truncate">{sug.handle}</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                              {sug.handle}
+                            </p>
                           )}
                         </div>
                       </button>
@@ -806,7 +808,9 @@ export const InputSection: React.FC<InputSectionProps> = ({
                           <p className="text-slate-700 dark:text-slate-200 font-medium truncate group-hover/item:text-indigo-500 dark:group-hover/item:text-indigo-400 transition-colors">
                             {item}
                           </p>
-                          <p className="text-xs text-slate-500 truncate">{t("history.recent")}</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                            {t("history.recent")}
+                          </p>
                         </div>
                       </button>
                       <button
@@ -843,7 +847,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
                   <button
                     type="button"
                     onClick={clearAllHistory}
-                    className="inline-flex items-center gap-1.5 text-xs px-2 py-1 rounded-md text-slate-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                    className="inline-flex items-center gap-1.5 text-xs px-2 py-1 rounded-md text-slate-500 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-500/10 transition-colors"
                     title={t("history.clearAll")}
                   >
                     <Trash2 className="w-3 h-3" aria-hidden="true" />

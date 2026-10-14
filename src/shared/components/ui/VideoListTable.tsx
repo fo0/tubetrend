@@ -207,7 +207,7 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({
       >
         <table className="w-full text-left border-collapse" aria-label={t("results.moreVideos")}>
           <thead>
-            <tr className="bg-slate-100/80 dark:bg-slate-900/80 border-b border-slate-200 dark:border-slate-800 text-xs uppercase tracking-wider text-slate-500 font-semibold">
+            <tr className="bg-slate-100/80 dark:bg-slate-900/80 border-b border-slate-200 dark:border-slate-800 text-xs uppercase tracking-wider text-slate-600 dark:text-slate-400 font-semibold">
               <SortableHeader
                 sortKey="rank"
                 label={t("results.table.rank")}
@@ -275,7 +275,10 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({
                       each following cell without saying which video it belongs to.
                       font-medium + text-center keep the <th> default bold/centering
                       overridden, so the cell renders exactly as before. */}
-                  <th scope="row" className="p-4 text-center text-slate-500 font-mono font-medium">
+                  <th
+                    scope="row"
+                    className="p-4 text-center text-slate-500 dark:text-slate-400 font-mono font-medium"
+                  >
                     {rank}
                   </th>
                   <td className="p-4">
@@ -304,7 +307,7 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({
                         >
                           {video.title}
                         </a>
-                        <div className="text-xs text-slate-500 mt-1 sm:hidden">
+                        <div className="text-xs text-slate-500 dark:text-slate-400 mt-1 sm:hidden">
                           {formatTimeAgo(video.publishedTimestamp, t)} • {formatNumber(video.views)}{" "}
                           {t("results.table.views")}
                         </div>
@@ -381,7 +384,10 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({
                         {copyFailed?.id === video.id && copyFailed.kind === "title" ? (
                           <AlertCircle className="w-4 h-4" aria-hidden="true" />
                         ) : copiedTitleId === video.id ? (
-                          <Check className="w-4 h-4 text-green-500" aria-hidden="true" />
+                          <Check
+                            className="w-4 h-4 text-green-700 dark:text-green-500"
+                            aria-hidden="true"
+                          />
                         ) : (
                           <Type className="w-4 h-4" aria-hidden="true" />
                         )}
@@ -408,7 +414,10 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({
                         {copyFailed?.id === video.id && copyFailed.kind === "url" ? (
                           <AlertCircle className="w-4 h-4" aria-hidden="true" />
                         ) : copiedId === video.id ? (
-                          <Check className="w-4 h-4 text-green-500" aria-hidden="true" />
+                          <Check
+                            className="w-4 h-4 text-green-700 dark:text-green-500"
+                            aria-hidden="true"
+                          />
                         ) : (
                           <Copy className="w-4 h-4" aria-hidden="true" />
                         )}
