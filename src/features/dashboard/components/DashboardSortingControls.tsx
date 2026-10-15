@@ -1,4 +1,4 @@
-import type { KeyboardEvent as ReactKeyboardEvent, RefObject } from "react";
+import { useId, type KeyboardEvent as ReactKeyboardEvent, type RefObject } from "react";
 import { Activity, ChevronsDownUp, ChevronsUpDown, Upload } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { FavoriteAvatar } from "@/src/shared/components/ui/FavoriteAvatar";
@@ -38,6 +38,13 @@ export function DashboardSortingControls({
   onImportPick,
 }: DashboardSortingControlsProps) {
   const { t } = useTranslation();
+  const sortingLabelId = useId();
+  // Spoken after the active sort button's visible label ("Activity, descending").
+  const orderLabel = `, ${
+    dashboardSortOrder === "asc"
+      ? t("dashboard.sorting.ascending")
+      : t("dashboard.sorting.descending")
+  }`;
 
   // Fold or unfold every favorite row at once. Folding rows one by one meant a
   // click per favorite — a dozen on a dozen-row dashboard — to get from "show
@@ -55,8 +62,19 @@ export function DashboardSortingControls({
     <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-4">
       {favorites.length > 0 ? (
         <div className="flex flex-wrap items-center gap-3 text-xs font-medium min-w-0">
-          <span className="text-slate-600 dark:text-slate-400">{t("dashboard.sorting.label")}</span>
-          <div className="inline-flex items-center rounded-lg border border-slate-300 bg-white p-0.5 dark:border-slate-800 dark:bg-slate-900/60">
+          <span id={sortingLabelId} className="text-slate-600 dark:text-slate-400">
+            {t("dashboard.sorting.label")}
+          </span>
+          {/* role="group" + aria-labelledby: the "Sorting:" label sat beside the
+              two buttons without being tied to them, so a screen reader landing
+              on "Activity" never heard what it sorts. The direction was a bare
+              "Z–A" or an arrow glyph that is skipped or read as "downwards
+              arrow"; the active button now also says it in words. */}
+          <div
+            role="group"
+            aria-labelledby={sortingLabelId}
+            className="inline-flex items-center rounded-lg border border-slate-300 bg-white p-0.5 dark:border-slate-800 dark:bg-slate-900/60"
+          >
             <button
               type="button"
               onClick={() => onSortClick("alpha")}
@@ -75,6 +93,7 @@ export function DashboardSortingControls({
                     : "Z–A"
                   : "A–Z"}
               </span>
+              {dashboardSortMode === "alpha" && <span className="sr-only">{orderLabel}</span>}
             </button>
             <button
               type="button"
@@ -90,12 +109,11 @@ export function DashboardSortingControls({
               <Activity className="w-3 h-3" aria-hidden="true" />
               <span>
                 {t("dashboard.sorting.activity")}
-                {dashboardSortMode === "velocity"
-                  ? dashboardSortOrder === "desc"
-                    ? " ↓"
-                    : " ↑"
-                  : ""}
+                {dashboardSortMode === "velocity" && (
+                  <span aria-hidden="true">{dashboardSortOrder === "desc" ? " ↓" : " ↑"}</span>
+                )}
               </span>
+              {dashboardSortMode === "velocity" && <span className="sr-only">{orderLabel}</span>}
             </button>
           </div>
 

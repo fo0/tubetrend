@@ -166,7 +166,9 @@
       "label": "Sorting:",
       "alphaTitle": "Sort alphabetically (click again to reverse order)",
       "velocityTitle": "Sort by activity (velocity = views per hour, best video in time frame) – click again to reverse order",
-      "activity": "Activity"
+      "activity": "Activity",
+      "ascending": "ascending",
+      "descending": "descending"
     }
   },
   "results": {
