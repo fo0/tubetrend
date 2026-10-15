@@ -702,6 +702,12 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
               autoFocus
               value={labelDraft}
               onChange={(e) => setLabelDraft(e.target.value)}
+              // Select the current label when the field opens, so typing
+              // replaces it — the usual rename gesture. The caret used to land
+              // after the old label, and renaming meant deleting it by hand
+              // first. Only the opening focus counts: a blur commits and
+              // unmounts the field, so it cannot be refocused while open.
+              onFocus={(e) => e.currentTarget.select()}
               onKeyDown={handleRenameKeyDown}
               onBlur={handleRenameBlur}
               maxLength={60}
