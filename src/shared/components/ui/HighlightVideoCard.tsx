@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import type { VideoData } from "@/src/features/videos";
 import { AlertCircle, Check, Clock, Copy, Eye, EyeOff, Sparkles, Type, Zap } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { MetricUnavailable } from "@/src/shared/components/ui/MetricUnavailable";
 import { formatExactDateTime, formatNumber, formatTimeAgo } from "@/src/shared/lib/formatters";
 
 /** Which of the card's two copy actions a success/failure state refers to. */
@@ -244,7 +245,11 @@ export const HighlightVideoCard: React.FC<HighlightVideoCardProps> = ({
               {t("results.table.velocity")}
             </div>
             <span className="text-slate-700 dark:text-slate-200 font-mono text-sm">
-              {video.viewsPerHour ? `~${formatNumber(video.viewsPerHour)}/h` : "N/A"}
+              {video.viewsPerHour ? (
+                `~${formatNumber(video.viewsPerHour)}/h`
+              ) : (
+                <MetricUnavailable />
+              )}
             </span>
           </div>
         </div>

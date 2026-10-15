@@ -3,6 +3,7 @@ import type { VideoData } from "@/src/features/videos";
 import { AlertCircle, Check, Clock, Copy, Eye, Heart, TrendingUp, Type, Zap } from "lucide-react";
 import { formatExactDateTime, formatNumber, formatTimeAgo } from "@/src/shared/lib/formatters";
 import { useTranslation } from "react-i18next";
+import { MetricUnavailable } from "@/src/shared/components/ui/MetricUnavailable";
 
 interface VideoCardProps {
   video: VideoData;
@@ -181,7 +182,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video }) => {
         <div className="grid grid-cols-3 gap-2 mb-3">
           <div className="flex flex-col justify-center bg-slate-100/50 dark:bg-slate-900/50 p-2 rounded-lg border border-slate-200/50 dark:border-slate-700/50">
             <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 text-xs uppercase font-semibold mb-0.5">
-              <Eye className="w-3 h-3 text-indigo-500 dark:text-indigo-400" />{" "}
+              <Eye className="w-3 h-3 text-indigo-500 dark:text-indigo-400" aria-hidden="true" />{" "}
               {t("results.table.views")}
             </div>
             <span className="text-slate-700 dark:text-slate-200 font-mono text-sm">
@@ -190,20 +191,24 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video }) => {
           </div>
           <div className="flex flex-col justify-center bg-slate-100/50 dark:bg-slate-900/50 p-2 rounded-lg border border-slate-200/50 dark:border-slate-700/50">
             <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 text-xs uppercase font-semibold mb-0.5">
-              <Zap className="w-3 h-3 text-yellow-500 dark:text-yellow-400" />{" "}
+              <Zap className="w-3 h-3 text-yellow-500 dark:text-yellow-400" aria-hidden="true" />{" "}
               {t("results.table.velocity")}
             </div>
             <span className="text-slate-700 dark:text-slate-200 font-mono text-sm">
-              {video.viewsPerHour ? `~${formatNumber(video.viewsPerHour)}/h` : "N/A"}
+              {video.viewsPerHour ? (
+                `~${formatNumber(video.viewsPerHour)}/h`
+              ) : (
+                <MetricUnavailable />
+              )}
             </span>
           </div>
           <div className="flex flex-col justify-center bg-slate-100/50 dark:bg-slate-900/50 p-2 rounded-lg border border-slate-200/50 dark:border-slate-700/50">
             <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 text-xs uppercase font-semibold mb-0.5">
-              <Heart className="w-3 h-3 text-pink-500 dark:text-pink-400" />{" "}
+              <Heart className="w-3 h-3 text-pink-500 dark:text-pink-400" aria-hidden="true" />{" "}
               {t("results.table.engagement")}
             </div>
             <span className="text-slate-700 dark:text-slate-200 font-mono text-sm">
-              {video.engagementRate != null ? `${video.engagementRate}%` : "N/A"}
+              {video.engagementRate != null ? `${video.engagementRate}%` : <MetricUnavailable />}
             </span>
           </div>
         </div>
