@@ -4,6 +4,7 @@ import { AlertCircle, Check, Clock, Copy, ExternalLink, Heart, Type } from "luci
 import { useTranslation } from "react-i18next";
 import { formatExactDateTime, formatNumber, formatTimeAgo } from "@/src/shared/lib/formatters";
 import { VideoListFilter } from "@/src/shared/components/ui/VideoListFilter";
+import { MetricUnavailable } from "@/src/shared/components/ui/MetricUnavailable";
 import { SortableHeader } from "@/src/shared/components/ui/VideoListSortHeader";
 import {
   DEFAULT_TABLE_SORT,
@@ -340,7 +341,7 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({
                         {formatNumber(video.viewsPerHour)}/h
                       </span>
                     ) : (
-                      "-"
+                      <MetricUnavailable />
                     )}
                   </td>
                   <td className="p-4 text-right font-mono text-slate-500 dark:text-slate-400 hidden lg:table-cell">
@@ -350,7 +351,7 @@ export const VideoListTable: React.FC<VideoListTableProps> = ({
                         {video.engagementRate}%
                       </span>
                     ) : (
-                      "-"
+                      <MetricUnavailable />
                     )}
                   </td>
                   <td className="p-4 text-center">

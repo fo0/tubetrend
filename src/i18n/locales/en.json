@@ -217,7 +217,8 @@
       "filterClear": "Clear filter",
       "filterCount_one": "{{count}} of {{total}} shown",
       "filterCount_other": "{{count}} of {{total}} shown",
-      "filterNoMatches": "No video title matches \"{{query}}\"."
+      "filterNoMatches": "No video title matches \"{{query}}\".",
+      "notAvailable": "Not available"
     },
     "copyAll": "Copy all",
     "copyAllUrls": "Copy all video URLs",
