@@ -7,8 +7,9 @@ import { useTranslation } from "react-i18next";
  * The result cards printed a hard-coded English "N/A" — also in the German UI —
  * which screen readers spell out as "N slash A", while the result table showed a
  * bare "-" that is either skipped or read as "dash". One placeholder for all
- * three surfaces: the dash stays the visual cue, the translated wording is what
- * assistive tech reads and what the tooltip explains.
+ * three surfaces: a dash is the visual cue (the table's, so the cards switch from
+ * "N/A" to it), the translated wording is what assistive tech reads and what the
+ * tooltip explains.
  */
 export function MetricUnavailable() {
   const { t } = useTranslation();
