@@ -1,14 +1,11 @@
 node_modules
 dist
 dist-ssr
-dist-electron
 dist-extension
 build
 coverage
 .next
 out
-release
-release-chromebook
 package-lock.json
 pnpm-lock.yaml
 yarn.lock

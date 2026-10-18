@@ -22,15 +22,11 @@
 node_modules
 dist
 dist-ssr
-dist-electron
 dist-extension
-release
-release-chromebook
 *.tsbuildinfo
 
 # Other distribution targets (not part of the web/Docker build)
 android
-build
 
 # Local environment files — never bake secrets into an image layer
 .env

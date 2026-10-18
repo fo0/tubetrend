@@ -15,12 +15,6 @@ node_modules
 dist
 dist-ssr
 
-# Electron build output
-electron/dist
-dist-electron
-release
-release-chromebook
-
 # Chrome Extension build output
 dist-extension
 

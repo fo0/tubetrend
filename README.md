@@ -58,60 +58,7 @@ Invoke-WebRequest -Uri "https://raw.githubusercontent.com/fo0/tubetrend/main/doc
 
 Open http://localhost:8889
 
-### Option 3: Desktop App (Electron)
-
-**Prerequisites:** Node.js v22+
-
-```bash
-git clone https://github.com/fo0/tubetrend.git
-cd tubetrend
-npm install
-npm run electron:dist
-```
-
-The packaged app will be in the `release/` directory — portable, no Docker needed.
-
-For local development with hot reload:
-
-```bash
-npm run electron:dev
-```
-
-For a quick preview without packaging:
-
-```bash
-npm run electron:preview
-```
-
-For a Windows-specific portable build:
-
-```bash
-npm run build:win
-```
-
-The portable `TubeTrend-<version>-Portable.exe` will be in the `release/` directory.
-
-**Chromebook (ChromeOS / Crostini):** Download the matching `.deb` for your architecture from [Releases](https://github.com/fo0/tubetrend/releases):
-
-- `TubeTrend-*-Chromebook-x64.deb` — Intel/AMD Chromebooks (e.g., ASUS Chromebook CX1, Flip CX5)
-- `TubeTrend-*-Chromebook-arm64.deb` — ARM Chromebooks (e.g., ASUS Chromebook CM14, MediaTek models)
-
-These builds include `--no-sandbox` and Wayland auto-detection flags required for Crostini's Linux container. Install via:
-
-```bash
-sudo dpkg -i TubeTrend-*-Chromebook-*.deb
-```
-
-To build from source:
-
-```bash
-npm install
-npm run build:chromebook
-```
-
-The `.deb` packages will be in `release-chromebook/`.
-
-### Option 4: Android APK (Chromebook / ChromeOS)
+### Option 3: Android APK (Chromebook / ChromeOS)
 
 **No Linux (Crostini) required — runs natively on ChromeOS via ARCVM.**
 
@@ -138,7 +85,7 @@ For an unsigned release APK instead, use `npm run cap:build` (output:
 `android/app/build/outputs/apk/release/`). Play Store distribution additionally requires your own
 signing keystore.
 
-### Option 5: Chrome Extension
+### Option 4: Chrome Extension
 
 **Install as a Chrome browser extension:**
 
@@ -163,7 +110,7 @@ Click the TubeTrend extension icon to open the app in a new tab.
 
 Or download the pre-built `tubetrend-chrome-extension.zip` from [Releases](https://github.com/fo0/tubetrend/releases), extract, and load unpacked.
 
-### Option 6: Run from Source
+### Option 5: Run from Source
 
 **Prerequisites:** Node.js v22+
 
@@ -201,8 +148,8 @@ Open http://localhost:3000
 | `npm run format`       | Auto-format with Prettier         |
 | `npm run format:check` | Verify formatting (CI-equivalent) |
 
-> **Platform build scripts** (`electron:*`, `build:win`, `build:chromebook`, `cap:*`,
-> `build:extension`) are not listed above — they belong to Options 3–5. The complete list with
+> **Platform build scripts** (`cap:*`, `build:extension`) are not listed above — they belong to
+> Options 3–4. The complete list with
 > descriptions is in [`agent_docs/platform_builds.md`](agent_docs/platform_builds.md).
 
 > **Tests:** No test framework is configured yet. A Vitest setup is planned — see `agent_docs/testing.md`.
@@ -229,7 +176,6 @@ Enter your API key in the app when prompted.
   searches whatever is in the box, and a pasted video link analyses the channel that uploaded it
 - **Highlights** — Auto-surface top-performing videos, copy their title or URL, or export them as CSV
 - **Backup** — Export the dashboard as JSON; import it back with the button or by dropping the file on the page
-- **Desktop App** — Portable Electron app for Windows, macOS, and Linux
 - **Chrome Extension** — Install as browser extension, opens in a new tab
 - **Multi-language** — English and German translations; 11 further locales auto-detect and fall back to English
 - **Dark Mode** — System-aware with manual toggle
@@ -247,7 +193,7 @@ npm run preview  # Preview production build
 
 ## Tech Stack
 
-React 19 | TypeScript | Vite 8 | Tailwind CSS 4 | i18next | Electron | YouTube Data API v3
+React 19 | TypeScript | Vite 8 | Tailwind CSS 4 | i18next | YouTube Data API v3
 
 ## Contributing
 

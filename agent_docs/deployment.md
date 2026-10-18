@@ -6,34 +6,34 @@ Offloaded from `CLAUDE.md` (2026-07-26) per `agent_docs/context_budget.md` ladde
 
 All nine workflow files, with every trigger each one actually declares:
 
-| Workflow                | Triggers                                                             | Result                                                                                                                            |
-| ----------------------- | -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `docker-publish.yml`    | push to `main`/`master` · `workflow_dispatch`                        | Runs `quality.yml`, then builds and pushes `ghcr.io/fo0/tubetrend:latest`                                                         |
-| `electron-release.yml`  | push to `main`/`master` · tag push `v*` · `workflow_dispatch`        | Runs `quality.yml`, builds win/mac/linux + Chromebook `.deb` + Chrome Extension + Android APK, then **creates a GitHub Release**  |
-| `android-release.yml`   | `workflow_dispatch` only                                             | Runs `quality.yml`, then a one-off APK build, uploaded as a workflow artifact (no release)                                        |
-| `extension-release.yml` | `workflow_dispatch` only                                             | Runs `quality.yml`, then a one-off `dist-extension/` zip, uploaded as a workflow artifact (no release)                            |
-| `ci.yml`                | `pull_request` → `main`/`master` (opened / synchronize / reopened)   | Runs `quality.yml`, plus an advisory `npm audit` job                                                                              |
-| `quality.yml`           | `workflow_call` only — called by the five workflows above            | The one code chain: `format:check` → `typecheck` → `lint` → `build`                                                               |
-| `docs-format.yml`       | `pull_request` → `main`/`master` · push to `main`, both `**.md` only | Prettier `--check "**/*.md"` via `npx` at the version pinned in `package.json` (fails if none is pinned) — no `npm ci`, no build  |
-| `cleanup-ghcr.yml`      | weekly cron (Sun 04:00 UTC) · `workflow_dispatch`                    | Prunes untagged GHCR image versions, keeps the newest 10                                                                          |
-| `branch-cleanup.yml`    | `workflow_dispatch` (inputs `branches`, `dry_run`)                   | Deletes branches merged ≥ 7 days ago; dry run by default; skips default, protected, open-PR and `release/*` / `hotfix/*` branches |
+| Workflow                | Triggers                                                             | Result                                                                                                                               |
+| ----------------------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `docker-publish.yml`    | push to `main`/`master` · `workflow_dispatch`                        | Runs `quality.yml`, then builds and pushes `ghcr.io/fo0/tubetrend:latest`                                                            |
+| `release.yml`           | push to `main`/`master` · tag push `v*` · `workflow_dispatch`        | Runs `quality.yml`, builds the Chrome Extension zip + Android APK, then **creates a GitHub Release** with whichever of the two built |
+| `android-release.yml`   | `workflow_dispatch` only                                             | Runs `quality.yml`, then a one-off APK build, uploaded as a workflow artifact (no release)                                           |
+| `extension-release.yml` | `workflow_dispatch` only                                             | Runs `quality.yml`, then a one-off `dist-extension/` zip, uploaded as a workflow artifact (no release)                               |
+| `ci.yml`                | `pull_request` → `main`/`master` (opened / synchronize / reopened)   | Runs `quality.yml`, plus an advisory `npm audit` job                                                                                 |
+| `quality.yml`           | `workflow_call` only — called by the five workflows above            | The one code chain: `format:check` → `typecheck` → `lint` → `build`                                                                  |
+| `docs-format.yml`       | `pull_request` → `main`/`master` · push to `main`, both `**.md` only | Prettier `--check "**/*.md"` via `npx` at the version pinned in `package.json` (fails if none is pinned) — no `npm ci`, no build     |
+| `cleanup-ghcr.yml`      | weekly cron (Sun 04:00 UTC) · `workflow_dispatch`                    | Prunes untagged GHCR image versions, keeps the newest 10                                                                             |
+| `branch-cleanup.yml`    | `workflow_dispatch` (inputs `branches`, `dry_run`)                   | Deletes branches merged ≥ 7 days ago; dry run by default; skips default, protected, open-PR and `release/*` / `hotfix/*` branches    |
 
 Four consequences worth knowing before merging anything into `main`:
 
-- **A merge to `main` is a release, not just a container push.** `electron-release.yml` fires on the
+- **A merge to `main` is a release, not just a container push.** `release.yml` fires on the
   same push as `docker-publish.yml`; on a non-tag ref it synthesizes the tag `vYYYYMMDD.HHMM.0` and
-  publishes a full GitHub Release with every platform artifact. Tag pushes reuse the tag name instead.
+  publishes a full GitHub Release with the extension zip and the APK. Tag pushes reuse the tag name instead.
   `android-release.yml` and `extension-release.yml` no longer fire on that push (they only rebuilt
-  what `electron-release.yml` already builds and attaches); they stay as manual `workflow_dispatch`
+  what `release.yml` already builds and attaches); they stay as manual `workflow_dispatch`
   one-offs.
-- **Every publish runs the same gate as a PR.** `ci.yml`, `docker-publish.yml`, `electron-release.yml`
+- **Every publish runs the same gate as a PR.** `ci.yml`, `docker-publish.yml`, `release.yml`
   and the two dispatch-only workflows all call the reusable `quality.yml` first, so a commit that
   reaches `main` without passing the PR gate (a direct push, an admin merge, a PR whose
   `paths-ignore` skipped `ci.yml`) still cannot publish an image or cut a release. Change the chain
   in `quality.yml` only — never add a check step back into a single caller.
 - **A markdown-only change is still gated — it does not run "zero checks".** The three push/PR build
   workflows share the same `paths-ignore` list (`**.md`, `docs/**`, `.env.example`, `.gitignore`,
-  `.editorconfig`, `LICENSE*`, `.vscode/**`; `electron-release.yml` additionally ignores
+  `.editorconfig`, `LICENSE*`, `.vscode/**`; `release.yml` additionally ignores
   `agent_docs/**` and `.claude/**`, so an agent-config change never cuts a release), so none of
   them fires. `docs-format.yml` is their
   deliberate counterpart: it triggers on exactly `**.md` and Prettier-checks the Markdown, closing
@@ -53,9 +53,7 @@ Four consequences worth knowing before merging anything into `main`:
 Single environment. There is no staging. Distribution channels:
 
 - **Web / Docker** — public image `ghcr.io/fo0/tubetrend:latest`, container port `80` → host `8889`.
-- **Desktop** — Electron portable (Windows), DMG (macOS), AppImage (Linux) via GitHub Releases.
-- **Chromebook** — `.deb` packages (x64 + arm64) via `electron-builder.chromebook.json`.
-- **Android / ChromeOS** — Capacitor APK (currently unsigned / debug key).
+- **Android / ChromeOS** — Capacitor APK (currently unsigned / debug key) via GitHub Releases. The Electron desktop and Chromebook `.deb` targets were removed on 2026-10-18 (#591).
 - **Chrome Extension** — manual install from `dist-extension/` via `chrome://extensions/`.
 
 ## Agent Scope

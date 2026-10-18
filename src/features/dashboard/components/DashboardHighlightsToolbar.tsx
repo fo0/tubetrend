@@ -78,8 +78,8 @@ export function DashboardHighlightsToolbar({
       );
       showToast(t("dashboard.highlights.exportDone"), "success");
     } catch {
-      // The download can be blocked (sandboxed iframe, hardened Electron
-      // window) — never report a file the browser refused to write.
+      // The download can be blocked (sandboxed iframe, hardened WebView) —
+      // never report a file the browser refused to write.
       showToast(t("dashboard.highlights.exportFailed"), "error");
     }
   };
@@ -105,8 +105,8 @@ export function DashboardHighlightsToolbar({
       );
       showToast(t("dashboard.highlights.exportJsonDone"), "success");
     } catch {
-      // The download can be blocked (sandboxed iframe, hardened Electron
-      // window) — never report a file the browser refused to write.
+      // The download can be blocked (sandboxed iframe, hardened WebView) —
+      // never report a file the browser refused to write.
       showToast(t("dashboard.highlights.exportFailed"), "error");
     }
   };

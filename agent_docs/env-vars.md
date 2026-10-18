@@ -11,8 +11,6 @@ Vite exposes **only** `VITE_`-prefixed variables to the client bundle. Copy `.en
 | `VITE_DEFAULT_SEARCH`  | Default search input value on app load  | Dev: `TEDx`, Prod: `""` |
 | `VITE_GIT_COMMIT_HASH` | Full git commit hash (Docker build arg) | Auto-detected from git  |
 | `VITE_GIT_BRANCH`      | Git branch name (Docker build arg)      | Auto-detected from git  |
-| `ELECTRON`             | Activates the Electron build pipeline   | unset (web build)       |
-| `VITE_DEV_SERVER_URL`  | Dev-server URL the Electron shell loads | Auto-injected by Vite   |
 
 Authoritative template: `.env.example`.
 
@@ -28,30 +26,19 @@ import.meta.env.VITE_DEFAULT_SEARCH ?? (import.meta.env.DEV ? "TEDx" : "");
 
 `??` only falls back on `null`/`undefined`, so `""` wins and the dev-mode `TEDx` default is
 suppressed. Copying `.env.example` verbatim to `.env.local` therefore yields an empty search input in
-dev. Comment the line out to restore the fallback. For the other four variables an empty value behaves
-the same as unset: `ELECTRON` must equal `"true"` exactly (`vite.config.ts`), `VITE_GIT_COMMIT_HASH`
-and `VITE_GIT_BRANCH` go through `fromEnv()` (`vite.config.ts`; trimmed, empty or the literal
-`unknown` counts as unset), and `VITE_DEV_SERVER_URL` is a plain truthiness check (`electron/main.ts`).
+dev. Comment the line out to restore the fallback. For the other two variables an empty value behaves
+the same as unset: `VITE_GIT_COMMIT_HASH` and `VITE_GIT_BRANCH` go through `fromEnv()`
+(`vite.config.ts`; trimmed, empty or the literal `unknown` counts as unset).
 
 ### Build-time-only variables (never reach the client bundle)
 
-The last two rows are **not** client variables despite the `VITE_` prefix on one of them — both are read
-through `process.env` outside the browser bundle, so Vite never inlines them into `dist/`.
-
-- `ELECTRON` — read in `vite.config.ts` (`process.env.ELECTRON === "true"`). Set automatically by
-  every `electron:*` / `build:win` / `build:chromebook` npm script; it toggles `vite-plugin-electron`,
-  which compiles `electron/main.ts` + `electron/preload.ts` into `dist-electron/`. Setting it in
-  `.env.local` has no effect: `vite.config.ts` reads `process.env` while the config loads, before Vite
-  parses any `.env` file, and Vite never copies it from a `.env` file into `process.env` — the same
-  holds for `VITE_GIT_COMMIT_HASH` and `VITE_GIT_BRANCH`, which reach the footer only through
-  `__BUILD_INFO__` (Vite does expose a `.env.local` value for them on `import.meta.env`, but no client
-  code reads it). Only the build command's own environment counts (shell, CI step, Dockerfile `ENV`),
-  so do not export `ELECTRON=true` in a shell used for plain web builds — every Vite run there would
-  compile the Electron entries. Format: the literal string `true` (any other value counts as unset).
-- `VITE_DEV_SERVER_URL` — read in `electron/main.ts` (Electron main process, Node side). Injected by
-  `vite-plugin-electron` during `npm run electron:dev` so the desktop shell loads the hot-reload dev
-  server instead of the bundled `dist/index.html`. Never set it manually; production Electron builds
-  must leave it unset. Format: absolute http URL, e.g. `http://localhost:3000`.
+`VITE_GIT_COMMIT_HASH` and `VITE_GIT_BRANCH` are **not** client variables despite their `VITE_`
+prefix — `vite.config.ts` reads them through `process.env` while the config loads, before Vite parses
+any `.env` file, and they reach the footer only through `__BUILD_INFO__` (Vite does expose a
+`.env.local` value for them on `import.meta.env`, but no client code reads it). Setting them in
+`.env.local` therefore has no effect; only the build command's own environment counts (shell, CI step,
+Dockerfile `ENV`). The `ELECTRON` and `VITE_DEV_SERVER_URL` variables went with the Electron target
+(removed 2026-10-18, #591).
 
 ## Docker build arguments
 

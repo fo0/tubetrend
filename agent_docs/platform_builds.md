@@ -20,27 +20,17 @@ TubeTrend ships one web build (`dist/`) that every other target wraps. Nothing u
 | Linter          | ESLint 9 flat config               | ^9.39     |
 | Test Framework  | none (Vitest recommended)          | —         |
 
-Distribution wrappers: Electron ^41 (+ electron-builder ^26), Capacitor ^8 (Android / ChromeOS), a Manifest-V3 Chrome
-extension and a multi-stage Docker image — all wrapping the same `dist/`.
+Distribution wrappers: Capacitor ^8 (Android / ChromeOS), a Manifest-V3 Chrome extension and a multi-stage
+Docker image — all wrapping the same `dist/`. The Electron desktop target was removed on 2026-10-18 (#591).
 
 ## Commands
 
 ```bash
-# Electron (Desktop) — requires ELECTRON=true (set automatically by these scripts)
-npm run electron:dev      # Vite dev + auto-launch Electron window
-npm run electron:preview  # Build + run Electron
-npm run electron:dist     # Build + package as portable app (release/)
-npm run build:chromebook  # Build Chromebook .deb (release-chromebook/)
-npm run build:win         # Build + package Windows portable
-
 # Capacitor (Android APK for ChromeOS)
 npm run cap:sync          # Build + sync to Android project
 npm run cap:open          # Open android/ in Android Studio (no build)
 npm run cap:build         # Build + sync + assemble release APK
 npm run cap:build:debug   # Build + sync + assemble debug APK
-
-# Electron icon generation (invoked by electron:dist / build:chromebook)
-npm run electron:icon     # Regenerate build/icon.png via scripts/generate-icon.mjs
 
 # Chrome Extension
 npm run build:extension   # Build to dist-extension/
@@ -70,27 +60,18 @@ docker-compose up         # Run production image at http://localhost:8889
 - Published image: `ghcr.io/fo0/tubetrend:latest`.
 - Port mapping: container `80` → host `8889`.
 
-## Electron
-
-- **Conditionally integrated via `vite-plugin-electron`** — only active when the `ELECTRON=true` env var is set.
-- **Two build modes** — `npm run build` produces only `dist/` (web). `ELECTRON=true npm run build` additionally compiles `electron/main.ts` and `electron/preload.ts` to `dist-electron/`.
-- **Security defaults** — `nodeIntegration: false`, `contextIsolation: true`. External links open via `shell.openExternal`.
-- **Packaging** — `electron-builder` produces Windows portable, macOS DMG and Linux AppImage in `release/`.
-- **Chromebook** — a separate `electron-builder.chromebook.json` builds `.deb` packages for x64 + arm64.
-- **CI/CD** — `electron-release.yml` builds all platforms + Chromebook + Chrome Extension + Android APK in one pipeline on tag pushes.
-
 ## Capacitor (Android / ChromeOS)
 
-- **Alternative to the Electron Chromebook `.deb`** — a native Android APK that runs on ChromeOS via ARCVM.
+- **The ChromeOS target** — a native Android APK that runs on ChromeOS via ARCVM.
 - **Zero changes to `src/`** — wraps the same `dist/` web build output.
 - **Toolchain prerequisites** — unlike every other target, the `cap:build*` scripts need more than Node:
   **JDK 21 (Temurin)** and the **Android SDK** (`ANDROID_HOME`), because the last step is a Gradle
   build inside `android/`. `.github/workflows/android-release.yml` sets both up via
   `actions/setup-java@v5` (`java-version: "21"`) and `android-actions/setup-android@v4`; the same
-  requirement applies to the `build-android` job in `electron-release.yml`. Without them
+  requirement applies to the `build-android` job in `release.yml`. Without them
   `npm run cap:build:debug` fails at `./gradlew`, not at the Vite build.
 - **ChromeOS-optimized `AndroidManifest.xml`** — resizable activity, freeform window support.
-- **Icon** — uses the same `build/icon.png` as Electron.
+- **Icon** — the launcher icons are the committed `mipmap-*` resources under `android/app/src/main/res/`.
 - **Signing** — currently unsigned (debug key). Production Play Store distribution requires a signing keystore.
 
 ## Chrome Extension

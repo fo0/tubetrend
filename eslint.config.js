@@ -17,12 +17,9 @@ export default tseslint.config(
     ignores: [
       "dist/**",
       "dist-ssr/**",
-      "dist-electron/**",
       "dist-extension/**",
       "build/**",
       "coverage/**",
-      "release/**",
-      "release-chromebook/**",
       "android/**",
       "node_modules/**",
       ".gitnexus/**",
@@ -54,15 +51,9 @@ export default tseslint.config(
     },
   },
 
-  // Node-side sources: Electron main/preload, build scripts, tool configs.
+  // Node-side sources: build scripts, tool configs.
   {
-    files: [
-      "electron/**/*.ts",
-      "scripts/**/*.mjs",
-      "*.config.{js,ts,mjs}",
-      "capacitor.config.ts",
-      "eslint.config.js",
-    ],
+    files: ["scripts/**/*.mjs", "*.config.{js,ts,mjs}", "capacitor.config.ts", "eslint.config.js"],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: "module",

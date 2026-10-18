@@ -311,7 +311,7 @@ const App: React.FC = () => {
       dashboardSortOrder: sortOrder,
     });
     const json = dashboardBackupService.stringify(payload);
-    // The download can be blocked (sandboxed iframe, hardened Electron window).
+    // The download can be blocked (sandboxed iframe, hardened WebView).
     // Reporting "Backup downloaded." regardless left the user believing a file
     // existed that was never written.
     const ok = downloadTextFile(filename, json);

@@ -1,4 +1,8 @@
-name: Electron Release
+name: Release
+
+# Builds the Chrome Extension zip and the Android APK and attaches both to a
+# GitHub Release. The web app ships separately as a Docker image
+# (`docker-publish.yml`).
 
 on:
   push:
@@ -59,112 +63,6 @@ jobs:
           BUILD_VERSION="${RELEASE_TAG#v}"
           echo "build_version=$BUILD_VERSION" >> "$GITHUB_OUTPUT"
           echo "release_tag=$RELEASE_TAG" >> "$GITHUB_OUTPUT"
-
-  build:
-    needs: prepare
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: ubuntu-latest
-            platform: linux
-          - os: windows-latest
-            platform: win
-          - os: macos-latest
-            platform: mac
-
-    runs-on: ${{ matrix.os }}
-    # Longest of the last 15 successful runs: ~4.5 min (win).
-    timeout-minutes: 30
-    name: Build (${{ matrix.platform }})
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v7
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v7
-        with:
-          node-version: "22"
-          cache: "npm"
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build web app + Electron sources
-        run: npm run build
-        env:
-          ELECTRON: "true"
-
-      - name: Generate app icon
-        run: npm run electron:icon
-
-      - name: Build Electron app
-        shell: bash
-        run: npx electron-builder --config electron-builder.json --${{ matrix.platform }} --publish never -c.extraMetadata.version="$BUILD_VERSION"
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BUILD_VERSION: ${{ needs.prepare.outputs.build_version }}
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v7
-        with:
-          name: tubetrend-${{ matrix.platform }}
-          path: |
-            release/*.exe
-            release/*.deb
-            release/*.dmg
-            release/*.AppImage
-            release/*.zip
-            release/latest*.yml
-          if-no-files-found: warn
-
-  build-chromebook:
-    needs: prepare
-    strategy:
-      fail-fast: false
-      matrix:
-        arch: [x64, arm64]
-
-    runs-on: ubuntu-latest
-    # Longest of the last 15 successful runs: ~2 min.
-    timeout-minutes: 20
-    name: Build Chromebook .deb (${{ matrix.arch }})
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v7
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v7
-        with:
-          node-version: "22"
-          cache: "npm"
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build web app + Electron sources
-        run: npm run build
-        env:
-          ELECTRON: "true"
-
-      - name: Generate app icon
-        run: npm run electron:icon
-
-      - name: Build Chromebook .deb (${{ matrix.arch }})
-        shell: bash
-        run: npx electron-builder --config electron-builder.chromebook.json --linux --${{ matrix.arch }} --publish never -c.extraMetadata.version="$BUILD_VERSION"
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BUILD_VERSION: ${{ needs.prepare.outputs.build_version }}
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v7
-        with:
-          name: tubetrend-chromebook-${{ matrix.arch }}
-          path: release-chromebook/*.deb
-          if-no-files-found: error
 
   build-extension:
     needs: prepare
@@ -253,8 +151,11 @@ jobs:
           if-no-files-found: error
 
   release:
-    needs: [prepare, build, build-chromebook, build-extension, build-android]
-    if: always() && needs.build.result == 'success'
+    needs: [prepare, build-extension, build-android]
+    # Publish whatever built: one failed target must not withhold the other.
+    if: >-
+      always() && needs.prepare.result == 'success' &&
+      (needs.build-extension.result == 'success' || needs.build-android.result == 'success')
     runs-on: ubuntu-latest
     # Longest of the last 15 successful runs: ~50 s.
     timeout-minutes: 15
@@ -307,6 +208,5 @@ jobs:
         run: |
           REPO="${{ github.repository }}"
           sleep 3
-          # Upload all artifacts except auto-updater metadata (latest*.yml)
-          find artifacts -type f ! -name "latest*.yml" \
+          find artifacts -type f \
             -exec gh release upload "$TAG" --repo "$REPO" --clobber {} +

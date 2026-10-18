@@ -22,7 +22,6 @@
     "typescript"
   ],
   "type": "module",
-  "main": "dist-electron/main.js",
   "engines": {
     "node": ">=22"
   },
@@ -30,12 +29,6 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite build && vite preview",
-    "electron:dev": "ELECTRON=true vite",
-    "electron:preview": "ELECTRON=true vite build && electron .",
-    "electron:dist": "ELECTRON=true vite build && npm run electron:icon && electron-builder --config electron-builder.json",
-    "electron:icon": "node scripts/generate-icon.mjs",
-    "build:chromebook": "ELECTRON=true vite build && npm run electron:icon && electron-builder --config electron-builder.chromebook.json --linux",
-    "build:win": "ELECTRON=true vite build && electron-builder --config electron-builder.json --win portable",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -72,8 +65,6 @@
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.1",
-    "electron": "^41.10.7",
-    "electron-builder": "^26.15.3",
     "eslint": "^9.39.5",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.7",
@@ -82,7 +73,6 @@
     "tailwindcss": "^4.3.1",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.71.1",
-    "vite": "^8.3.0",
-    "vite-plugin-electron": "^0.29.1"
+    "vite": "^8.3.0"
   }
 }

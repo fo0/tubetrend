@@ -1,7 +1,7 @@
 name: Android Release
 
 # Dispatch-only. Every push to main already builds the Android APK in
-# `electron-release.yml`, uploads it as the workflow artifact `tubetrend-android`
+# `release.yml`, uploads it as the workflow artifact `tubetrend-android`
 # and attaches it to the GitHub Release — a push trigger here only built the
 # same output a second time. This workflow stays as a manual one-off build of
 # the Android APK as a workflow artifact, without cutting a release.

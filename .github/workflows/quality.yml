@@ -2,7 +2,7 @@ name: Quality Checks
 
 # The code chain, shared by `ci.yml` (pull requests) and every workflow that
 # publishes from `main`: `docker-publish.yml` (gate before the image push),
-# `electron-release.yml` (gate before the platform builds and the GitHub
+# `release.yml` (gate before the platform builds and the GitHub
 # Release) and the dispatch-only `android-release.yml` / `extension-release.yml`.
 # One definition, so the PR gate and the publish gates can never drift apart —
 # a commit that reaches `main` without passing `ci.yml` (a direct push, an admin
