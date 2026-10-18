@@ -75,7 +75,7 @@ TypeScript ~6.0.3 (strict) · React ^19.2 · Vite ^8.3 · Tailwind CSS v4 (`@tai
 
 ## Project Overview
 
-**TubeTrend** (`github.com/fo0/tubetrend`) is a YouTube trend analysis SPA: favorite channels and keywords on a dashboard, video performance scored by pure math (view velocity + engagement rate), API quota usage visualized. One `dist/` build ships as web app, Docker image, Electron app, Android/ChromeOS APK and Chrome extension.
+**TubeTrend** (`github.com/fo0/tubetrend`) is a YouTube trend analysis SPA: favorite channels and keywords on a dashboard, video performance scored by pure math (view velocity + engagement rate), API quota usage visualized. One `dist/` build ships as web app, Docker image, Android/ChromeOS APK and Chrome extension.
 
 ## Project Structure
 

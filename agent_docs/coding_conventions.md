@@ -57,7 +57,6 @@ These are deliberate choices, not oversights. Grep `docs/adr/` before contradict
 - **Tailwind via `@tailwindcss/vite`** — Tailwind CSS v4 as a Vite plugin, not PostCSS. Gives tree-shaking, offline capability and custom font bundling. Both `tailwind.config.js` and `postcss.config.js` were deleted in the v4 migration.
 - **No external state library** — distributed hooks + event bus. Works well at the app's current complexity.
 - **Trend scoring is pure math** — no external AI API. A comment in `trendAnalysisService.ts` confirms this is intentional.
-- **Electron as an optional wrapper** — `vite-plugin-electron` is only active when `ELECTRON=true`. Web/Docker is the primary delivery method; desktop is additive.
 
 ## Moved from `CLAUDE.md → Coding Conventions` (2026-10-04, offload ladder step 10)
 

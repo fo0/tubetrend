@@ -59,7 +59,6 @@ flowchart TD
     end
 
     subgraph "Distribution"
-        ELECTRON["Electron Desktop"]:::infra
         CAPACITOR["Capacitor Android"]:::infra
         CHROMEEXT["Chrome Extension"]:::infra
         DOCKER["Docker / Nginx"]:::infra
@@ -103,7 +102,6 @@ flowchart TD
 
     APP --> UICOMPS
 
-    ELECTRON -->|"wraps dist/"| APP
     CAPACITOR -->|"wraps dist/"| APP
     CHROMEEXT -->|"wraps dist/"| APP
     DOCKER -->|"serves dist/"| APP
@@ -132,7 +130,6 @@ flowchart TD
     click UICOMPS "src/shared/components/ui"
     click HOOKS "src/shared/hooks"
     click CONSTANTS "src/shared/constants"
-    click ELECTRON "electron/main.ts"
     click CAPACITOR "capacitor.config.ts"
     click CHROMEEXT "chrome-extension/manifest.json"
     click DOCKER "Dockerfile"
