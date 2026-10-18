@@ -12,7 +12,7 @@ import { deflateSync } from "zlib";
 // leading slash on Windows ("/C:/src/tubetrend") and leaves percent-encoding
 // undecoded, so a checkout under a path containing a space resolves to a "%20"
 // directory that does not exist. fileURLToPath() is the conversion Node
-// documents for exactly this — electron/main.ts already uses it.
+// documents for exactly this.
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const DIST = join(ROOT, "dist");
 const SRC = join(ROOT, "chrome-extension");
@@ -84,7 +84,7 @@ console.log("\nChrome Extension built successfully!");
 console.log(`Output: dist-extension/`);
 console.log("Load via: chrome://extensions/ -> Developer mode -> Load unpacked");
 
-// --- Icon generation (matches scripts/generate-icon.mjs — purple gradient + trend line) ---
+// --- Icon generation (purple gradient + trend line) ---
 
 function lerp(a, b, t) {
   return a + (b - a) * t;

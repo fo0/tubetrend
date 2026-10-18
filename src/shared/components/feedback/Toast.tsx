@@ -17,7 +17,7 @@ interface ToastEntry {
  * Renders the stack of active toasts. Mount once, near the app root.
  *
  * Replaces `window.alert()` for informational feedback: the native dialog
- * blocks the whole page (and steals focus in the Electron / Android wrappers)
+ * blocks the whole page (and steals focus in the Android wrapper)
  * for a message the user only has to read. Destructive confirmations keep
  * using `window.confirm()` — there the interruption is the point.
  */

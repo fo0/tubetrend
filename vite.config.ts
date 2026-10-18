@@ -2,12 +2,7 @@ import path from "path";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
-import electron from "vite-plugin-electron";
 import { execSync } from "child_process";
-
-// Electron plugins are only active when ELECTRON=true is set.
-// This keeps the web app (dev server, Docker build) completely unaffected.
-const isElectron = process.env.ELECTRON === "true";
 
 // Explicitly provided build info wins over local git detection. The Dockerfile
 // passes the CI-supplied GIT_COMMIT_HASH / GIT_BRANCH build args through as
@@ -64,41 +59,7 @@ export default defineConfig(() => {
       port: 3000,
       host: "0.0.0.0",
     },
-    plugins: [
-      react(),
-      tailwindcss(),
-      ...(isElectron
-        ? [
-            electron([
-              {
-                entry: "electron/main.ts",
-                vite: {
-                  build: {
-                    outDir: "dist-electron",
-                    rollupOptions: {
-                      external: ["electron"],
-                    },
-                  },
-                },
-              },
-              {
-                entry: "electron/preload.ts",
-                onstart(args) {
-                  args.reload();
-                },
-                vite: {
-                  build: {
-                    outDir: "dist-electron",
-                    rollupOptions: {
-                      external: ["electron"],
-                    },
-                  },
-                },
-              },
-            ]),
-          ]
-        : []),
-    ],
+    plugins: [react(), tailwindcss()],
     define: {
       __BUILD_INFO__: JSON.stringify(buildInfo),
     },
