@@ -74,6 +74,12 @@ export function formatExactDateTime(timestamp: number, locale: string = getLocal
  * @param t         - i18next TFunction from useTranslation()
  */
 export function formatTimeAgo(timestamp: number, t: TFunction): string {
+  // Same guard as formatExactDateTime above, for the same inputs: a video whose
+  // `publishedAt` did not parse carries `NaN` (analyzeVideoStats forwards it),
+  // and `NaN` comes back as `null` from the persisted snapshot or a backup.
+  // `NaN` fails every comparison below and rendered "NaNy ago"; `null` counts
+  // as 0 in the subtraction and rendered the age of the Unix epoch ("56y ago").
+  if (!Number.isFinite(timestamp)) return "";
   const diffMs = Date.now() - timestamp;
   if (diffMs < 0) return t("timeAgo.justNow");
   const sec = Math.floor(diffMs / 1000);
@@ -88,7 +94,10 @@ export function formatTimeAgo(timestamp: number, t: TFunction): string {
   const weeks = Math.floor(days / 7);
   if (weeks < 5) return t("timeAgo.weeks", { count: weeks });
   const months = Math.floor(days / 30);
-  if (months < 12) return t("timeAgo.months", { count: months });
+  // Bounded by days, not by months: 360–364 days are 12 thirty-day months but
+  // not yet a 365-day year, so `months < 12` let them through to the year
+  // branch, which floored them to "0y ago".
+  if (days < 365) return t("timeAgo.months", { count: months });
   const years = Math.floor(days / 365);
   return t("timeAgo.years", { count: years });
 }

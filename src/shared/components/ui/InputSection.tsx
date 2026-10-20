@@ -108,8 +108,21 @@ export const InputSection: React.FC<InputSectionProps> = ({
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isSearchingSuggestions, setIsSearchingSuggestions] = useState(false);
 
-  // Local history state (last 10 entries)
-  const [history, setHistory] = useState<string[]>([]);
+  // Local history state (last 10 entries). Read in a lazy initializer like the
+  // three values above, instead of a mount effect that rendered an empty list
+  // first and then set the stored one in a second render.
+  const [history, setHistory] = useState<string[]>(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEYS.SEARCH_HISTORY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) return parsed.filter((x) => typeof x === "string");
+      }
+    } catch {
+      // ignore
+    }
+    return [];
+  });
   const [showHistory, setShowHistory] = useState(false);
 
   // Index of the keyboard-highlighted entry in whichever dropdown is open
@@ -230,19 +243,6 @@ export const InputSection: React.FC<InputSectionProps> = ({
       // ignore storage errors
     }
   }, [inputValue]);
-
-  // Load history from storage once
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEYS.SEARCH_HISTORY);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) setHistory(parsed.filter((x) => typeof x === "string"));
-      }
-    } catch {
-      // ignore
-    }
-  }, []);
 
   // Close dropdowns when clicking outside
   useEffect(() => {

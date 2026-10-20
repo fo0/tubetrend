@@ -172,12 +172,17 @@ export function useDashboardSort() {
   const sortFavorites = useCallback(
     (favorites: FavoriteConfig[]): FavoriteConfig[] => {
       const arr = [...favorites];
+      // One collator per sort instead of `localeCompare(b, locale, options)` in
+      // the comparator, which resolves the locale and options again on every
+      // comparison. Same ordering: `localeCompare` is specified as this
+      // collator's `compare`, and the locale cannot change during a sync sort.
+      const collator = new Intl.Collator(getLocale(), { sensitivity: "base" });
 
       if (sortMode === "alpha") {
         return arr.sort((a, b) => {
           const an = (a.label || a.query || "").toString();
           const bn = (b.label || b.query || "").toString();
-          const cmp = an.localeCompare(bn, getLocale(), { sensitivity: "base" });
+          const cmp = collator.compare(an, bn);
           return sortOrder === "asc" ? cmp : -cmp;
         });
       }
@@ -216,7 +221,7 @@ export function useDashboardSort() {
 
         const an = (a.label || a.query || "").toString();
         const bn = (b.label || b.query || "").toString();
-        return an.localeCompare(bn, getLocale(), { sensitivity: "base" });
+        return collator.compare(an, bn);
       });
     },
     // cacheTick is a cache-buster, not an input: the velocity branch reads the
