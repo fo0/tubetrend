@@ -77,7 +77,10 @@ export function useDashboardFilters({
       { perFavorite: 1, maxTotal: sortedFavorites.length },
     );
 
-    // Sort by velocity
+    // Sort by velocity. The name tie-break uses one collator for the whole sort,
+    // like sortFavorites in useDashboard — same order as `localeCompare` with
+    // these options, without resolving locale and options per comparison.
+    const collator = new Intl.Collator(getLocale(), { sensitivity: "base" });
     const sorted = [...raw].sort((a, b) => {
       const av = Number(a.video?.viewsPerHour);
       const bv = Number(b.video?.viewsPerHour);
@@ -87,7 +90,7 @@ export function useDashboardFilters({
       const aTs = typeof a.video?.trendingScore === "number" ? a.video.trendingScore : -1;
       const bTs = typeof b.video?.trendingScore === "number" ? b.video.trendingScore : -1;
       if (aTs !== bTs) return bTs - aTs;
-      return a.sourceLabel.localeCompare(b.sourceLabel, getLocale(), { sensitivity: "base" });
+      return collator.compare(a.sourceLabel, b.sourceLabel);
     });
 
     // Read the hidden list once. `isHidden()` re-reads localStorage, JSON-parses
