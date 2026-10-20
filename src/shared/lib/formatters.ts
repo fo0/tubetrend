@@ -74,6 +74,12 @@ export function formatExactDateTime(timestamp: number, locale: string = getLocal
  * @param t         - i18next TFunction from useTranslation()
  */
 export function formatTimeAgo(timestamp: number, t: TFunction): string {
+  // Same guard as formatExactDateTime above, for the same inputs: a video whose
+  // `publishedAt` did not parse carries `NaN` (analyzeVideoStats forwards it),
+  // and `NaN` comes back as `null` from the persisted snapshot or a backup.
+  // `NaN` fails every comparison below and rendered "NaNy ago"; `null` counts
+  // as 0 in the subtraction and rendered the age of the Unix epoch ("56y ago").
+  if (!Number.isFinite(timestamp)) return "";
   const diffMs = Date.now() - timestamp;
   if (diffMs < 0) return t("timeAgo.justNow");
   const sec = Math.floor(diffMs / 1000);
