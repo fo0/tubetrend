@@ -88,7 +88,10 @@ export function formatTimeAgo(timestamp: number, t: TFunction): string {
   const weeks = Math.floor(days / 7);
   if (weeks < 5) return t("timeAgo.weeks", { count: weeks });
   const months = Math.floor(days / 30);
-  if (months < 12) return t("timeAgo.months", { count: months });
+  // Bounded by days, not by months: 360–364 days are 12 thirty-day months but
+  // not yet a 365-day year, so `months < 12` let them through to the year
+  // branch, which floored them to "0y ago".
+  if (days < 365) return t("timeAgo.months", { count: months });
   const years = Math.floor(days / 365);
   return t("timeAgo.years", { count: years });
 }
