@@ -599,6 +599,13 @@ export async function getVideosFromChannel(
 
     if (!statsData.items) return [];
 
+    // Index the batch once instead of a linear `batch.find` per returned video.
+    // The first occurrence wins, exactly as `find` picked it.
+    const batchById = new Map<string, YoutubePlaylistItemResource>();
+    for (const b of batch) {
+      if (!batchById.has(b.contentDetails.videoId)) batchById.set(b.contentDetails.videoId, b);
+    }
+
     return statsData.items
       .filter((item) => {
         const seconds = parseISO8601DurationToSeconds(item.contentDetails?.duration);
@@ -607,7 +614,7 @@ export async function getVideosFromChannel(
         return seconds >= SHORTS_DURATION_THRESHOLD_SECONDS;
       })
       .map((item): YouTubeVideoItem => {
-        const originalItem = batch.find((b) => b.contentDetails.videoId === item.id);
+        const originalItem = batchById.get(item.id);
         // Snippet comes from the original /playlistItems response (typed
         // YoutubeVideoSnippet); cast bridges to the consumer type which has
         // narrower thumbnail optionality. Empty-object fallback preserves
