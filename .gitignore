@@ -28,6 +28,19 @@ android/local.properties
 .env
 .env.local
 .env.*.local
+.env.*
+!.env.example
+
+# Android signing keystores
+*.jks
+*.keystore
+
+# Chrome extension packing output
+*.pem
+*.crx
+
+# Claude Code local settings
+.claude/settings.local.json
 
 # Editor directories and files
 .vscode/*
