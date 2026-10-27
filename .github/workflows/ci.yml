@@ -13,10 +13,11 @@ on:
       - "LICENSE*"
       - ".vscode/**"
 
-# Cancel in-progress runs for the same PR
+# Cancel only a superseded PR run (this workflow runs on pull_request only, so
+# today every run is a PR run; the condition keeps any other event uncancelled).
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 # Least privilege: both jobs only check out the code and run npm (the reusable
 # `quality.yml` declares the same scope and cannot exceed this one). Without this
