@@ -189,16 +189,13 @@ jobs:
             gh release delete "$TAG" --repo "$REPO" --yes --cleanup-tag
           fi
 
-          # Create release with auto-generated notes, fall back to simple notes
+          # Create the release with GitHub's generated notes (changes since the
+          # previous release). No fallback: a release without a changelog must
+          # fail the run instead of shipping placeholder notes.
           gh release create "$TAG" \
             --repo "$REPO" \
             --target "${{ github.sha }}" \
-            --generate-release-notes \
-            --title "TubeTrend $TAG" \
-          || gh release create "$TAG" \
-            --repo "$REPO" \
-            --target "${{ github.sha }}" \
-            --notes "Release $TAG" \
+            --generate-notes \
             --title "TubeTrend $TAG"
 
       - name: Upload release assets
