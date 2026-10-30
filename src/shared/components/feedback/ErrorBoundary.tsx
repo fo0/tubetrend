@@ -65,7 +65,10 @@ function DefaultErrorFallback({ error, onRetry }: DefaultErrorFallbackProps) {
         <h3 className="text-lg font-semibold text-red-800 dark:text-red-200 mb-2">
           {t("errors.somethingWentWrong")}
         </h3>
-        <p className="text-sm text-red-600 dark:text-red-300 mb-4">
+        {/* red-700, not red-600: red-600 on the red-50 card is 4.4:1, under
+            the 4.5:1 WCAG 1.4.3 asks of this 14px error message; red-700 is
+            5.9:1. Dark mode is unchanged. */}
+        <p className="text-sm text-red-700 dark:text-red-300 mb-4">
           {error.message || t("errors.somethingWentWrong")}
         </p>
         <button
