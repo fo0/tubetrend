@@ -161,7 +161,9 @@ Open http://localhost:3000
 The app requires a YouTube Data API v3 key. Get one free at:
 https://console.cloud.google.com/apis/credentials
 
-Enter your API key in the app when prompted.
+Enter your API key in the app when prompted. Before saving it, the app checks the key with one
+API call (1 quota unit) and says whether YouTube rejected it — unknown key, API not enabled for its
+project, or a key restriction that blocks the site.
 
 ---
 

@@ -141,17 +141,30 @@ const App: React.FC = () => {
   // Reflect the active page (and any active analysis) in the browser tab title so
   // multiple open tabs, history entries, and bookmarks stay distinguishable.
   // Reuses existing nav labels — no new strings.
+  //
+  // While the page on screen is working — an analysis in flight, or favorites
+  // refreshing on the dashboard — the title leads with "Loading…". A "no limit"
+  // analysis over a long time frame or a "Refresh all" over a dozen favorites
+  // takes long enough that people switch to another tab meanwhile, and the tab
+  // strip was the one place that could not tell them when it was done: the
+  // title only changed once results had already landed. Leading with the state
+  // keeps it visible when the browser truncates the title of a narrow tab.
+  const isPageBusy = activePage === "analyser" ? searchState.isLoading : refreshingIds.size > 0;
   useEffect(() => {
     const appTitle = t("appTitle");
+    const channel = searchState.channelName.trim();
+    // During a run `channelName` holds the query being analysed — name it
+    // already, so two tabs analysing different channels stay apart.
     const activeChannel =
-      activePage === "analyser" && searchState.data && searchState.channelName.trim()
-        ? searchState.channelName.trim()
+      activePage === "analyser" && (searchState.data || searchState.isLoading) && channel
+        ? channel
         : null;
     const pageLabel = activePage === "analyser" ? t("nav.analyser") : t("nav.dashboard");
-    document.title = activeChannel
-      ? `${activeChannel} · ${appTitle}`
-      : `${pageLabel} · ${appTitle}`;
-  }, [activePage, searchState.data, searchState.channelName, t]);
+    const subject = activeChannel ?? pageLabel;
+    document.title = isPageBusy
+      ? `${t("loading")} ${subject} · ${appTitle}`
+      : `${subject} · ${appTitle}`;
+  }, [activePage, isPageBusy, searchState.data, searchState.isLoading, searchState.channelName, t]);
 
   // Global hotkeys:
   // - "d" / "a" switch between Dashboard and Analyser
