@@ -279,7 +279,13 @@
       "step4": "Gehe zu \"Anmeldedaten\" → \"Anmeldedaten erstellen\" → \"API-Schlüssel\"",
       "step5": "Kopiere den erstellten Schlüssel und füge ihn hier ein",
       "keyFormat": "Der Schlüssel beginnt mit \"AIza\" und hat ca. 39 Zeichen.",
-      "tooShort": "Dieser Schlüssel scheint zu kurz — bitte den vollständigen Schlüssel einfügen."
+      "tooShort": "Dieser Schlüssel scheint zu kurz — bitte den vollständigen Schlüssel einfügen.",
+      "checking": "Schlüssel wird geprüft…",
+      "saveAnyway": "Trotzdem speichern",
+      "checkInvalid": "YouTube kennt diesen Schlüssel nicht. Prüfe, ob er vollständig kopiert wurde.",
+      "checkRejected": "YouTube hat diesen Schlüssel abgelehnt. Prüfe, ob die YouTube Data API v3 für sein Projekt aktiviert ist und keine Schlüssel-Einschränkung diese Seite blockiert.",
+      "checkRejectedDetail": "YouTube hat diesen Schlüssel abgelehnt: {{message}}",
+      "checkUnreachable": "YouTube war für die Prüfung nicht erreichbar. Versuche es erneut oder speichere ihn ungeprüft."
     }
   },
   "confirm": {

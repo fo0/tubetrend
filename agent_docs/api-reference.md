@@ -23,7 +23,9 @@ channel-listing code on this path — swapping in a paginated `search` silently 
 
 ### Authentication
 
-- **API Key**: User-provided via modal dialog in the UI
+- **API Key**: User-provided via modal dialog in the UI; `verifyApiKey()` checks it with one `videos?part=id`
+  lookup (1 unit) before it is stored — unknown or rejected keys keep the dialog open, an unreachable API
+  offers "Save anyway"
 - **Storage**: `localStorage` key `yt_api_key`
 - **Daily quota limit**: 10,000 units (free tier)
 - **Quota reset**: Daily at midnight Pacific Time

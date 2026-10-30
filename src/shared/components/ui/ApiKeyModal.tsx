@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Check, Eye, EyeOff, HelpCircle, Key, ExternalLink, Zap } from "lucide-react";
+import { Check, Eye, EyeOff, HelpCircle, Key, ExternalLink, Loader2, Zap } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { verifyApiKey } from "@/src/features/youtube/services/youtubeApiClient";
 
 const FOCUSABLE_SELECTOR =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -18,6 +19,14 @@ interface ApiKeyModalProps {
    * out — see the Escape handler below for why every caller should pass one.
    */
   onClose?: () => void;
+}
+
+/** Why the last check did not save the key — tied to the key it was made for. */
+interface KeyCheckFailure {
+  key: string;
+  message: string;
+  /** YouTube could not be reached: the same key may be saved unchecked on the next submit. */
+  allowUnchecked: boolean;
 }
 
 export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ onSave, onClose }) => {
@@ -44,6 +53,20 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ onSave, onClose }) => 
   const isKeyLongEnough = trimmedKey.length >= MIN_API_KEY_LENGTH;
   // Show the "too short" hint only once the user has typed something.
   const showTooShortHint = inputKey.length > 0 && !isKeyLongEnough;
+
+  // Save checks the key against YouTube first (1 quota unit) instead of storing
+  // whatever was pasted. A typo, a key whose project never enabled the YouTube
+  // Data API, or one restricted to another site used to close this dialog as if
+  // all was well — the failure only surfaced at the first search, as an error
+  // banner, or with the dialog popping up again for no visible reason.
+  const [isChecking, setIsChecking] = useState(false);
+  const [checkFailure, setCheckFailure] = useState<KeyCheckFailure | null>(null);
+  const checkAbortRef = useRef<AbortController | null>(null);
+  // A failure describes the key it was made for; editing the field retires it.
+  const activeFailure = checkFailure && checkFailure.key === trimmedKey ? checkFailure : null;
+
+  // Closing the dialog mid-check drops the request instead of saving behind it.
+  useEffect(() => () => checkAbortRef.current?.abort(), []);
 
   // Focus trap: keep focus inside the modal while it is open (WCAG 2.4.3)
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
@@ -120,12 +143,61 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ onSave, onClose }) => 
     };
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isKeyLongEnough) {
-      onSave(trimmedKey);
+    if (!isKeyLongEnough || isChecking) return;
+    const key = trimmedKey;
+
+    // Second submit after "could not reach YouTube": the user chose to keep the
+    // key unchecked — offline setups and blocked networks must not lock them out.
+    if (activeFailure?.allowUnchecked) {
+      onSave(key);
+      return;
+    }
+
+    checkAbortRef.current?.abort();
+    const controller = new AbortController();
+    checkAbortRef.current = controller;
+    setIsChecking(true);
+    setCheckFailure(null);
+
+    let result: Awaited<ReturnType<typeof verifyApiKey>>;
+    try {
+      result = await verifyApiKey(key, controller.signal);
+    } catch {
+      // Only an abort lands here — the dialog was closed, nothing left to update.
+      return;
+    }
+    if (controller.signal.aborted) return;
+    setIsChecking(false);
+
+    switch (result.status) {
+      case "ok":
+        onSave(key);
+        return;
+      case "invalid":
+        setCheckFailure({ key, message: t("modal.apiKey.checkInvalid"), allowUnchecked: false });
+        return;
+      case "rejected":
+        setCheckFailure({
+          key,
+          message: result.message
+            ? t("modal.apiKey.checkRejectedDetail", { message: result.message })
+            : t("modal.apiKey.checkRejected"),
+          allowUnchecked: false,
+        });
+        return;
+      case "unreachable":
+        setCheckFailure({ key, message: t("modal.apiKey.checkUnreachable"), allowUnchecked: true });
+        return;
     }
   };
+
+  // The ids the field's description points at: the length hint and the check result.
+  const describedBy =
+    [showTooShortHint ? "apikey-too-short" : "", activeFailure ? "apikey-check-result" : ""]
+      .filter(Boolean)
+      .join(" ") || undefined;
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-white/80 dark:bg-slate-950/80 backdrop-blur-sm animate-fade-in">
@@ -164,6 +236,7 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ onSave, onClose }) => 
                   id="apiKey"
                   value={inputKey}
                   onChange={(e) => setInputKey(e.target.value)}
+                  readOnly={isChecking}
                   placeholder="AIzaSy..."
                   className="w-full pl-4 pr-11 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 outline-none transition-all font-mono text-sm"
                   autoFocus
@@ -172,8 +245,10 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ onSave, onClose }) => 
                   autoCorrect="off"
                   spellCheck={false}
                   enterKeyHint="done"
-                  aria-invalid={showTooShortHint}
-                  aria-describedby={showTooShortHint ? "apikey-too-short" : undefined}
+                  aria-invalid={
+                    showTooShortHint || (activeFailure !== null && !activeFailure.allowUnchecked)
+                  }
+                  aria-describedby={describedBy}
                 />
                 <button
                   type="button"
@@ -205,15 +280,40 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ onSave, onClose }) => 
                   {t("modal.apiKey.tooShort")}
                 </p>
               )}
+              {activeFailure && (
+                <p
+                  id="apikey-check-result"
+                  role="alert"
+                  // Red for a key YouTube refused; amber for "could not check",
+                  // where nothing is known to be wrong — the same reading as the
+                  // length hint above. Shades as there (WCAG 1.4.3).
+                  className={`mt-2 text-xs break-words ${
+                    activeFailure.allowUnchecked
+                      ? "text-amber-700 dark:text-amber-400"
+                      : "text-red-700 dark:text-red-400"
+                  }`}
+                >
+                  {activeFailure.message}
+                </p>
+              )}
             </div>
 
             <button
               type="submit"
-              disabled={!isKeyLongEnough}
+              disabled={!isKeyLongEnough || isChecking}
+              aria-busy={isChecking}
               className="w-full py-3 px-4 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 text-white font-bold rounded-xl transition-all shadow-lg shadow-red-900/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Check className="w-5 h-5" />
-              {t("modal.apiKey.save")}
+              {isChecking ? (
+                <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" />
+              ) : (
+                <Check className="w-5 h-5" aria-hidden="true" />
+              )}
+              {isChecking
+                ? t("modal.apiKey.checking")
+                : activeFailure?.allowUnchecked
+                  ? t("modal.apiKey.saveAnyway")
+                  : t("modal.apiKey.save")}
             </button>
 
             {/* The pointer counterpart of the Escape handler above — a keyboard

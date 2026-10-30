@@ -279,7 +279,13 @@
       "step4": "Go to \"Credentials\" → \"Create credentials\" → \"API key\"",
       "step5": "Copy the generated key and paste it here",
       "keyFormat": "The key starts with \"AIza\" and is about 39 characters long.",
-      "tooShort": "This key looks too short — please paste the full key."
+      "tooShort": "This key looks too short — please paste the full key.",
+      "checking": "Checking key…",
+      "saveAnyway": "Save anyway",
+      "checkInvalid": "YouTube does not recognize this key. Check that it was copied completely.",
+      "checkRejected": "YouTube rejected this key. Check that the YouTube Data API v3 is enabled for its project and that no key restriction blocks this site.",
+      "checkRejectedDetail": "YouTube rejected this key: {{message}}",
+      "checkUnreachable": "YouTube could not be reached to check the key. Try again, or save it unchecked."
     }
   },
   "confirm": {

@@ -55,6 +55,70 @@ export class YouTubeApiError extends Error {
   }
 }
 
+/**
+ * Outcome of checking a candidate API key before it is stored.
+ * - `ok`: YouTube accepted the key (an exhausted quota counts — the key itself works).
+ * - `invalid`: YouTube does not know the key ("API key not valid").
+ * - `rejected`: the key exists but cannot be used from here — the YouTube Data API
+ *   is not enabled for its project, or a referrer / IP restriction blocks this
+ *   origin. `message` carries YouTube's own explanation when it sent one.
+ * - `unreachable`: no answer from YouTube at all, so nothing is known about the key.
+ */
+export type ApiKeyCheckResult =
+  | { readonly status: "ok" }
+  | { readonly status: "invalid" }
+  | { readonly status: "rejected"; readonly message: string }
+  | { readonly status: "unreachable" };
+
+// A long-lived public video ("Me at the zoo"). `videos?part=id` costs 1 unit and
+// answers 200 even if the id were ever removed (with an empty `items` list), so
+// the check depends on the key alone.
+const KEY_CHECK_VIDEO_ID = "jNQXAC9IVRw";
+
+/**
+ * Check a key against the API before it is saved, without touching the stored
+ * key. Saving used to accept any string of ten characters or more: a typo, a
+ * key whose project never enabled the YouTube Data API, or one restricted to
+ * another site was only found out by the first search, after the dialog had
+ * closed. One `videos` lookup (1 quota unit) answers the question up front.
+ */
+export async function verifyApiKey(key: string, signal?: AbortSignal): Promise<ApiKeyCheckResult> {
+  const url = new URL("https://www.googleapis.com/youtube/v3/videos");
+  url.searchParams.set("key", key);
+  url.searchParams.set("part", "id");
+  url.searchParams.set("id", KEY_CHECK_VIDEO_ID);
+
+  let response: Response;
+  try {
+    response = await fetch(url.toString(), { signal });
+  } catch (error) {
+    if (signal?.aborted || (error instanceof Error && error.name === "AbortError")) {
+      throw error;
+    }
+    return { status: "unreachable" };
+  }
+  const data = await response.json().catch(() => null);
+
+  if (response.ok) {
+    quotaService.track(API_COSTS.videos, "videos", { source: "unknown", name: "API key check" });
+    return { status: "ok" };
+  }
+
+  // A server-side failure says nothing about the key either way.
+  if (response.status >= 500) return { status: "unreachable" };
+
+  const msg: string = typeof data?.error?.message === "string" ? data.error.message : "";
+  const lower = msg.toLowerCase();
+  if (lower.includes("api key not valid")) return { status: "invalid" };
+  // A spent daily quota is a state of the project, not a fault of the key: it
+  // works again after the reset, so it is saved like a working one.
+  if (lower.includes("quota")) {
+    quotaService.markExhausted();
+    return { status: "ok" };
+  }
+  return { status: "rejected", message: msg };
+}
+
 export async function fetchFromApi<T>(
   endpoint: Endpoint,
   params: Record<string, string>,
