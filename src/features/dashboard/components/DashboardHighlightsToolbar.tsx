@@ -145,11 +145,12 @@ export function DashboardHighlightsToolbar({
                              dark:border-indigo-500/30 dark:text-indigo-400"
               /* Reuses the hidden-list row's own label — "Show <title>
                        again" is exactly what this button does, and one string
-                       for one action keeps the two from drifting apart. */
+                       for one action keeps the two from drifting apart. It is
+                       the description, not the name: as an aria-label it
+                       replaced the visible "Undo hide" / "Rückgängig", which
+                       WCAG 2.5.3 (Label in Name) asks the name to contain.
+                       Same for "Copy all" below. */
               title={t("dashboard.highlights.unhideAria", { title: lastHidden.title })}
-              aria-label={t("dashboard.highlights.unhideAria", {
-                title: lastHidden.title,
-              })}
             >
               <RotateCcw className="w-3 h-3" aria-hidden="true" />
               <span className="whitespace-nowrap">{t("dashboard.highlights.undoHide")}</span>
@@ -165,11 +166,6 @@ export function DashboardHighlightsToolbar({
                   : "border-slate-300 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
               }`}
               title={
-                copyAllHighlightsFailed
-                  ? t("dashboard.highlights.copyAllFailed")
-                  : t("dashboard.highlights.copyAllUrls")
-              }
-              aria-label={
                 copyAllHighlightsFailed
                   ? t("dashboard.highlights.copyAllFailed")
                   : t("dashboard.highlights.copyAllUrls")

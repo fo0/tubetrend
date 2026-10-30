@@ -368,17 +368,20 @@ export function AnalyserPage({
                     {searchState.channelName}
                   </span>
                 ) : channelUrl ? (
+                  // red-600 / hover red-700 in light mode (WCAG 1.4.3): red-500
+                  // on this slate-100/50 bar is 3.6:1 for 16px text; red-600 is
+                  // 4.55:1, red-700 6.1:1. Dark shades unchanged.
                   <a
                     href={channelUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-red-500 dark:text-red-400 hover:text-red-400 dark:hover:text-red-300 hover:underline underline-offset-2"
+                    className="inline-flex items-center gap-1.5 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:underline underline-offset-2"
                     title={t("results.openChannelTitle", { channel: searchState.channelName })}
                   >
                     <Youtube className="w-4 h-4" aria-hidden="true" />@{searchState.channelName}
                   </a>
                 ) : (
-                  <span className="inline-flex items-center gap-1.5 text-red-500 dark:text-red-400">
+                  <span className="inline-flex items-center gap-1.5 text-red-600 dark:text-red-400">
                     <Youtube className="w-4 h-4" aria-hidden="true" />@{searchState.channelName}
                   </span>
                 )}
@@ -445,7 +448,6 @@ export function AnalyserPage({
                       : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800"
                   }`}
                   title={copyAllFailed ? t("results.copyAllFailed") : t("results.copyAllUrls")}
-                  aria-label={copyAllFailed ? t("results.copyAllFailed") : t("results.copyAllUrls")}
                 >
                   {copyAllFailed ? (
                     <AlertCircle className="w-4 h-4" aria-hidden="true" />
@@ -457,7 +459,12 @@ export function AnalyserPage({
                   ) : (
                     <Copy className="w-4 h-4" aria-hidden="true" />
                   )}
-                  <span className="hidden lg:inline">
+                  {/* sr-only below `lg`, not `hidden`, and no aria-label: the
+                      name is the visible text at every width (WCAG 2.5.3 Label
+                      in Name). The aria-label "Alle Video-URLs kopieren" did not
+                      contain the visible "Alle kopieren"; `title` keeps the
+                      longer wording as the description. Same for Refresh. */}
+                  <span className="sr-only lg:not-sr-only">
                     {copyAllFailed ? t("results.copyAllFailed") : t("results.copyAll")}
                   </span>
                 </button>
@@ -599,13 +606,12 @@ export function AnalyserPage({
                   disabled={searchState.isLoading}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-100/60 dark:bg-slate-900/60 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   title={t("results.refreshTitle")}
-                  aria-label={t("results.refreshTitle")}
                 >
                   <RefreshCw
                     className={`w-4 h-4 ${searchState.isLoading ? "animate-spin" : ""}`}
                     aria-hidden="true"
                   />
-                  <span className="hidden lg:inline">{t("results.refresh")}</span>
+                  <span className="sr-only lg:not-sr-only">{t("results.refresh")}</span>
                 </button>
               )}
 
