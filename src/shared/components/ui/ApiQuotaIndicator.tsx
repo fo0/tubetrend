@@ -537,10 +537,12 @@ export const ApiQuotaIndicator: React.FC = () => {
           />
         </div>
 
-        {/* Percentage text */}
-        <span
-          className={`text-[10px] font-mono ${colors.trigger} opacity-100 dark:opacity-60 dark:group-hover:opacity-100 transition-opacity min-w-[2rem]`}
-        >
+        {/* Percentage text. Full opacity in both themes: the dark-mode dim to
+            60% put this 10px reading at 2.9:1 (red-400), 4.1:1 (emerald-400)
+            and 4.4:1 (amber-400) on the dark header — under the 4.5:1 WCAG
+            1.4.3 asks of small text, and it is the only visible figure for how
+            much quota is left. */}
+        <span className={`text-[10px] font-mono ${colors.trigger} min-w-[2rem]`}>
           {quota.percentage}%
         </span>
       </button>
