@@ -123,6 +123,18 @@ export const quotaService = {
     return data.history || [];
   },
 
+  /**
+   * `getInfo()` and `getHistory()` from a single read. Each of the two re-reads
+   * and re-parses the whole stored record (history of up to
+   * MAX_HISTORY_ENTRIES calls included), and the quota indicator needs both on
+   * every `quota-updated` event, i.e. after every API call. localStorage cannot
+   * change between two synchronous calls, so one read yields the same values.
+   */
+  getSnapshot(): { info: QuotaInfo; history: QuotaHistoryEntry[] } {
+    const data = getQuotaData();
+    return { info: toQuotaInfo(data), history: data.history || [] };
+  },
+
   getCost(endpoint: keyof typeof API_COSTS): number {
     return API_COSTS[endpoint];
   },
