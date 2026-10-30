@@ -300,9 +300,15 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ onSave, onClose }) => 
 
             <button
               type="submit"
-              disabled={!isKeyLongEnough || isChecking}
+              disabled={!isKeyLongEnough}
+              // Not `disabled` while the check runs: disabling the button that was
+              // just clicked drops focus to <body>, outside this dialog's Tab trap.
+              // handleSubmit ignores a second submit during the check instead.
+              aria-disabled={isChecking || undefined}
               aria-busy={isChecking}
-              className="w-full py-3 px-4 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 text-white font-bold rounded-xl transition-all shadow-lg shadow-red-900/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className={`w-full py-3 px-4 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 text-white font-bold rounded-xl transition-all shadow-lg shadow-red-900/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                isChecking ? "opacity-50 cursor-wait" : ""
+              }`}
             >
               {isChecking ? (
                 <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" />

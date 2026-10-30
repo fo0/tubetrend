@@ -66,14 +66,17 @@ function isAbort(error: unknown, signal?: AbortSignal): boolean {
 
 /** Resolves after the retry delay; rejects at once when `signal` aborts in between. */
 function waitBeforeRetry(signal?: AbortSignal): Promise<void> {
+  // `reason` is missing in browsers older than 2022; reject with an AbortError
+  // there, so callers still recognise the abort by its name.
+  const abortError = () => signal?.reason ?? new DOMException("Aborted", "AbortError");
   return new Promise((resolve, reject) => {
     if (signal?.aborted) {
-      reject(signal.reason);
+      reject(abortError());
       return;
     }
     const onAbort = () => {
       clearTimeout(timer);
-      reject(signal?.reason);
+      reject(abortError());
     };
     const timer = setTimeout(() => {
       signal?.removeEventListener("abort", onAbort);
@@ -122,7 +125,7 @@ async function fetchWithRetry(url: string, signal?: AbortSignal): Promise<Respon
  *   origin. `message` carries YouTube's own explanation when it sent one.
  * - `unreachable`: no answer from YouTube at all, so nothing is known about the key.
  */
-export type ApiKeyCheckResult =
+type ApiKeyCheckResult =
   | { readonly status: "ok" }
   | { readonly status: "invalid" }
   | { readonly status: "rejected"; readonly message: string }
@@ -160,8 +163,10 @@ export async function verifyApiKey(key: string, signal?: AbortSignal): Promise<A
     return { status: "ok" };
   }
 
-  // A server-side failure says nothing about the key either way.
-  if (response.status >= 500) return { status: "unreachable" };
+  // A server-side failure says nothing about the key either way, and an answer
+  // without YouTube's JSON error body came from something in between (a proxy or
+  // firewall page), not from YouTube judging the key.
+  if (response.status >= 500 || !data?.error) return { status: "unreachable" };
 
   const msg: string = typeof data?.error?.message === "string" ? data.error.message : "";
   const lower = msg.toLowerCase();
