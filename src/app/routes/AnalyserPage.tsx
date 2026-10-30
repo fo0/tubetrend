@@ -368,17 +368,20 @@ export function AnalyserPage({
                     {searchState.channelName}
                   </span>
                 ) : channelUrl ? (
+                  // red-600 / hover red-700 in light mode (WCAG 1.4.3): red-500
+                  // on this slate-100/50 bar is 3.6:1 for 16px text; red-600 is
+                  // 4.55:1, red-700 6.1:1. Dark shades unchanged.
                   <a
                     href={channelUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-red-500 dark:text-red-400 hover:text-red-400 dark:hover:text-red-300 hover:underline underline-offset-2"
+                    className="inline-flex items-center gap-1.5 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:underline underline-offset-2"
                     title={t("results.openChannelTitle", { channel: searchState.channelName })}
                   >
                     <Youtube className="w-4 h-4" aria-hidden="true" />@{searchState.channelName}
                   </a>
                 ) : (
-                  <span className="inline-flex items-center gap-1.5 text-red-500 dark:text-red-400">
+                  <span className="inline-flex items-center gap-1.5 text-red-600 dark:text-red-400">
                     <Youtube className="w-4 h-4" aria-hidden="true" />@{searchState.channelName}
                   </span>
                 )}

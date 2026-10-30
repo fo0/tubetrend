@@ -731,11 +731,15 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
                 // Kanal-Suche mit Link. The `title` keeps naming the channel
                 // itself — under a custom label it is the only place the real
                 // channel name still shows.
+                // red-600 / hover red-700 in light mode: red-500 on the white
+                // page is 3.8:1 and the old hover red-400 lower still, under
+                // the 4.5:1 WCAG 1.4.3 asks of this 18px bold (not "large")
+                // text. Now 4.8:1 / 6.4:1; dark mode is unchanged.
                 <a
                   href={channelUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-red-500 dark:text-red-400 hover:text-red-400 dark:hover:text-red-300 hover:underline underline-offset-2"
+                  className="inline-flex items-center gap-1.5 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:underline underline-offset-2"
                   title={t("results.openChannelTitle", { channel: channelTitle })}
                 >
                   <Youtube className="w-4 h-4" aria-hidden="true" />
