@@ -55,6 +55,64 @@ export class YouTubeApiError extends Error {
   }
 }
 
+// Answers that mean "YouTube had a hiccup", not "this request is wrong". They are
+// not billed (only 4xx answers are), so one repeat costs no quota.
+const TRANSIENT_STATUSES = new Set([500, 502, 503, 504]);
+const RETRY_DELAY_MS = 1000;
+
+function isAbort(error: unknown, signal?: AbortSignal): boolean {
+  return !!signal?.aborted || (error instanceof Error && error.name === "AbortError");
+}
+
+/** Resolves after the retry delay; rejects at once when `signal` aborts in between. */
+function waitBeforeRetry(signal?: AbortSignal): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (signal?.aborted) {
+      reject(signal.reason);
+      return;
+    }
+    const onAbort = () => {
+      clearTimeout(timer);
+      reject(signal?.reason);
+    };
+    const timer = setTimeout(() => {
+      signal?.removeEventListener("abort", onAbort);
+      resolve();
+    }, RETRY_DELAY_MS);
+    signal?.addEventListener("abort", onAbort, { once: true });
+  });
+}
+
+/**
+ * `fetch` with one automatic repeat for a transient failure: a 5xx answer, or a
+ * request that never got an answer while the browser still reports a network.
+ *
+ * Without it a single dropped request or a passing `503 backendError` failed the
+ * whole operation — an analysis walking dozens of `playlistItems` pages died on
+ * the one that hiccupped, and every favorite of a "Refresh all" run that hit one
+ * showed an error banner the user then cleared by hand with Retry. A second
+ * attempt a second later usually goes through. Only one: a real outage still
+ * surfaces quickly. Offline (`navigator.onLine === false`) is not retried —
+ * nothing changes within a second, and the caller names that state itself.
+ * Aborts are never retried and are rethrown untouched.
+ */
+async function fetchWithRetry(url: string, signal?: AbortSignal): Promise<Response> {
+  for (let attempt = 0; ; attempt++) {
+    const isLastAttempt = attempt >= 1;
+    let response: Response;
+    try {
+      response = await fetch(url, { signal });
+    } catch (error) {
+      const offline = typeof navigator !== "undefined" && navigator.onLine === false;
+      if (isAbort(error, signal) || offline || isLastAttempt) throw error;
+      await waitBeforeRetry(signal);
+      continue;
+    }
+    if (isLastAttempt || !TRANSIENT_STATUSES.has(response.status)) return response;
+    await waitBeforeRetry(signal);
+  }
+}
+
 /**
  * Outcome of checking a candidate API key before it is stored.
  * - `ok`: YouTube accepted the key (an exhausted quota counts — the key itself works).
@@ -90,11 +148,9 @@ export async function verifyApiKey(key: string, signal?: AbortSignal): Promise<A
 
   let response: Response;
   try {
-    response = await fetch(url.toString(), { signal });
+    response = await fetchWithRetry(url.toString(), signal);
   } catch (error) {
-    if (signal?.aborted || (error instanceof Error && error.name === "AbortError")) {
-      throw error;
-    }
+    if (isAbort(error, signal)) throw error;
     return { status: "unreachable" };
   }
   const data = await response.json().catch(() => null);
@@ -155,11 +211,11 @@ export async function fetchFromApi<T>(
   // tracked either — nothing reached the API to spend it.
   let response: Response;
   try {
-    response = await fetch(url.toString(), { signal });
+    response = await fetchWithRetry(url.toString(), signal);
   } catch (error) {
     // An abort is a caller decision, not a failure: rethrow it untouched so the
     // `signal` parameter keeps its documented semantics.
-    if (signal?.aborted || (error instanceof Error && error.name === "AbortError")) {
+    if (isAbort(error, signal)) {
       throw error;
     }
     const offline = typeof navigator !== "undefined" && navigator.onLine === false;
