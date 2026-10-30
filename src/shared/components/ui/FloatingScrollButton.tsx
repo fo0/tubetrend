@@ -31,6 +31,9 @@ export function FloatingScrollButton() {
   // pointer position, so the proximity result is unchanged.
   useEffect(() => {
     let ticking = false;
+    // The pending frame, so unmounting cancels it instead of letting it measure
+    // a button that is gone and set state on an unmounted component.
+    let frame = 0;
     let pointerX = 0;
     let pointerY = 0;
 
@@ -59,20 +62,26 @@ export function FloatingScrollButton() {
       pointerY = e.clientY;
       if (ticking) return;
       ticking = true;
-      window.requestAnimationFrame(measure);
+      frame = window.requestAnimationFrame(measure);
     };
 
     window.addEventListener("mousemove", handleMouseMove, { passive: true });
-    return () => window.removeEventListener("mousemove", handleMouseMove);
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.cancelAnimationFrame(frame);
+    };
   }, []);
 
   // Track scroll direction and position
   useEffect(() => {
     let ticking = false;
+    // Same as above: this button is mounted per page, so a page switch unmounts
+    // it, possibly with a measurement still queued for the next frame.
+    let frame = 0;
 
     const measureScroll = () => {
       if (!ticking) {
-        window.requestAnimationFrame(() => {
+        frame = window.requestAnimationFrame(() => {
           const currentScrollY = window.scrollY;
           const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
 
@@ -148,6 +157,7 @@ export function FloatingScrollButton() {
       window.removeEventListener("scroll", measureScroll);
       window.removeEventListener("resize", measureScroll);
       observer?.disconnect();
+      window.cancelAnimationFrame(frame);
     };
   }, []);
 

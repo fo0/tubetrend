@@ -62,17 +62,26 @@ function getQuotaData(): QuotaData {
   };
 }
 
+/**
+ * The used / limit / percentage view of a quota record. The `quota-updated`
+ * payload and `getInfo()` report the same four values; computing them in one
+ * place keeps the event and a fresh read from ever disagreeing (the formula
+ * used to be written out twice).
+ */
+function toQuotaInfo(data: QuotaData): QuotaInfo {
+  const limit = data.detectedLimit ?? DEFAULT_DAILY_QUOTA;
+  return {
+    used: data.used,
+    limit,
+    percentage: data.exhausted ? 100 : Math.min(100, Math.round((data.used / limit) * 100)),
+    exhausted: data.exhausted,
+  };
+}
+
 function saveQuotaData(data: QuotaData): void {
   if (typeof window === "undefined") return;
   safeWrite(STORAGE_KEYS.QUOTA_TRACKING, data);
-  dispatchEvent("quota-updated", {
-    used: data.used,
-    limit: data.detectedLimit ?? DEFAULT_DAILY_QUOTA,
-    percentage: data.exhausted
-      ? 100
-      : Math.min(100, Math.round((data.used / (data.detectedLimit ?? DEFAULT_DAILY_QUOTA)) * 100)),
-    exhausted: data.exhausted,
-  });
+  dispatchEvent("quota-updated", toQuotaInfo(data));
 }
 
 export const quotaService = {
@@ -106,19 +115,24 @@ export const quotaService = {
   },
 
   getInfo(): QuotaInfo {
-    const data = getQuotaData();
-    const limit = data.detectedLimit ?? DEFAULT_DAILY_QUOTA;
-    return {
-      used: data.used,
-      limit,
-      percentage: data.exhausted ? 100 : Math.min(100, Math.round((data.used / limit) * 100)),
-      exhausted: data.exhausted,
-    };
+    return toQuotaInfo(getQuotaData());
   },
 
   getHistory(): QuotaHistoryEntry[] {
     const data = getQuotaData();
     return data.history || [];
+  },
+
+  /**
+   * `getInfo()` and `getHistory()` from a single read. Each of the two re-reads
+   * and re-parses the whole stored record (history of up to
+   * MAX_HISTORY_ENTRIES calls included), and the quota indicator needs both on
+   * every `quota-updated` event, i.e. after every API call. localStorage cannot
+   * change between two synchronous calls, so one read yields the same values.
+   */
+  getSnapshot(): { info: QuotaInfo; history: QuotaHistoryEntry[] } {
+    const data = getQuotaData();
+    return { info: toQuotaInfo(data), history: data.history || [] };
   },
 
   getCost(endpoint: keyof typeof API_COSTS): number {

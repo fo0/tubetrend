@@ -282,15 +282,16 @@ export const ApiQuotaIndicator: React.FC = () => {
   };
 
   useEffect(() => {
-    // Initial load
-    setQuota(quotaService.getInfo());
-    setHistory(quotaService.getHistory());
-
-    // Listen for quota updates
+    // Listen for quota updates. One snapshot read instead of `getInfo()` plus
+    // `getHistory()`, which parsed the whole stored record twice per API call.
     const handleQuotaUpdate = () => {
-      setQuota(quotaService.getInfo());
-      setHistory(quotaService.getHistory());
+      const snapshot = quotaService.getSnapshot();
+      setQuota(snapshot.info);
+      setHistory(snapshot.history);
     };
+
+    // Initial load
+    handleQuotaUpdate();
 
     // Typed event bus for in-app quota updates
     const offQuota = eventBus.on("quota-updated", handleQuotaUpdate);
@@ -353,8 +354,9 @@ export const ApiQuotaIndicator: React.FC = () => {
     if (!isOpen) return;
     const id = setInterval(() => {
       setNow(Date.now());
-      setQuota(quotaService.getInfo());
-      setHistory(quotaService.getHistory());
+      const snapshot = quotaService.getSnapshot();
+      setQuota(snapshot.info);
+      setHistory(snapshot.history);
     }, 30_000);
     return () => clearInterval(id);
   }, [isOpen]);
