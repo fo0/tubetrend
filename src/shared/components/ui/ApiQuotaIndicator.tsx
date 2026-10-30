@@ -509,7 +509,9 @@ export const ApiQuotaIndicator: React.FC = () => {
           setIsOpen(!isOpen);
         }}
         className="group flex items-center gap-1.5 px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors cursor-pointer"
-        aria-label={t("quota.historyTitle")}
+        // The visible percentage is part of the name (WCAG 2.5.3 Label in
+        // Name): "API Usage" alone did not contain the "42%" the button shows.
+        aria-label={`${t("quota.historyTitle")} ${quota.percentage}%`}
         aria-expanded={isOpen}
         aria-haspopup="dialog"
         aria-controls="quota-history-panel"
