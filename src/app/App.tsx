@@ -138,6 +138,7 @@ const App: React.FC = () => {
     setSearchResult,
     resetSearch,
     retrySearch,
+    retrySearchWithTimeFrame,
     cancelSearch,
     canRepeatSearch,
   } = useSearch(apiKey, searchOptions);
@@ -468,6 +469,17 @@ const App: React.FC = () => {
     mainRef.current?.focus();
   }, [cancelSearch]);
 
+  // "No videos in this time frame" offers the next longer one. The run's own
+  // arguments go back into the search form too, so the time frame picker shows
+  // what produced the results instead of the frame that came up empty.
+  const handleTryLongerTimeFrame = useCallback(
+    (timeFrame: TimeFrame) => {
+      const args = retrySearchWithTimeFrame(timeFrame);
+      if (args) setExternalInputValues({ ...args, syncToken: Date.now() });
+    },
+    [retrySearchWithTimeFrame],
+  );
+
   // Quick-start example from the welcome empty state: pre-fill the search box
   // (via the external-sync channel) with sensible defaults and run the search.
   const handlePickExample = useCallback(
@@ -583,6 +595,7 @@ const App: React.FC = () => {
             onClearResults={handleClearResults}
             onRetrySearch={retrySearch}
             onCancelSearch={handleCancelSearch}
+            onTryLongerTimeFrame={handleTryLongerTimeFrame}
             // Only offered when a repeat is actually possible: results restored
             // from a pre-existing snapshot carry no arguments, and a refresh
             // button that does nothing is worse than no button at all.

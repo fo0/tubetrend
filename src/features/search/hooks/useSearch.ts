@@ -13,6 +13,7 @@ import {
 } from "@/src/features/youtube";
 import { CACHE_TTL, STORAGE_KEYS, TIME_FRAMES } from "@/src/shared/constants";
 import { safeRead, safeRemove, safeWrite } from "@/src/shared/lib/storage";
+import { getCutoffTime } from "@/src/shared/lib/dateUtils";
 
 export interface SearchState {
   isLoading: boolean;
@@ -29,6 +30,12 @@ export interface SearchState {
   searchType?: SearchType;
   /** Epoch ms when the currently displayed analysis was produced (undefined for cached favorite views). */
   resultSavedAt?: number;
+  /**
+   * Set only when the last run failed because nothing was published in its time
+   * frame: the next time frame that reaches further back, offered as the
+   * one-click way out the error message suggests. Undefined at the longest one.
+   */
+  longerTimeFrame?: TimeFrame;
 }
 
 const initialSearchState: SearchState = {
@@ -55,6 +62,17 @@ interface PersistedAnalyserResult {
   savedAt: number;
   /** Arguments that produced this snapshot, so it can be re-run after a reload. Absent in snapshots written before this existed. */
   args?: LastSearchArgs;
+}
+
+/**
+ * The shortest time frame that reaches further back than `timeFrame`. Compared
+ * by cutoff rather than list position: "Today" sits after "Last 24 hours" in the
+ * picker but shares its cutoff, and "Last month" can equal "Last 4 weeks" in
+ * February — offering either would repeat the same empty search.
+ */
+function nextLongerTimeFrame(timeFrame: TimeFrame): TimeFrame | undefined {
+  const cutoff = getCutoffTime(timeFrame);
+  return TIME_FRAMES.find((option) => getCutoffTime(option.value) < cutoff)?.value;
 }
 
 /** True only for absolute http(s) URLs — the schemes an `<a href>` may safely navigate to. */
@@ -185,6 +203,9 @@ function restoreInitialSession(): { state: SearchState; args: LastSearchArgs | n
   };
 }
 
+/** i18n key of the "nothing published in this time frame" failure. */
+const NO_VIDEOS_IN_TIME_FRAME_KEY = "errors.api.noVideosInTimeFrame";
+
 interface UseSearchOptions {
   onApiKeyInvalid?: () => void;
 }
@@ -258,6 +279,7 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
         channelId: undefined,
         searchType,
         data: null,
+        longerTimeFrame: undefined,
       }));
 
       try {
@@ -295,7 +317,7 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
           // error, and the raw enum value ("last_month") is not user-facing text.
           const timeFrameLabelKey = TIME_FRAMES.find((tf) => tf.value === timeFrame)?.labelKey;
           throw new YouTubeApiError(`No videos found in time frame "${timeFrame}".`, 404, false, {
-            key: "errors.api.noVideosInTimeFrame",
+            key: NO_VIDEOS_IN_TIME_FRAME_KEY,
             params: { timeFrame: timeFrameLabelKey ? t(timeFrameLabelKey) : String(timeFrame) },
           });
         }
@@ -339,6 +361,11 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
               ? err.message
               : t("errors.analysisFailed");
 
+        const longerTimeFrame =
+          err instanceof YouTubeApiError && err.i18n?.key === NO_VIDEOS_IN_TIME_FRAME_KEY
+            ? nextLongerTimeFrame(timeFrame)
+            : undefined;
+
         const isApiKeyInvalid =
           err instanceof YouTubeApiError && err.status === 403 && !err.isQuotaError;
 
@@ -356,6 +383,7 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
             isLoading: false,
             step: "idle",
             error: errorMessage,
+            longerTimeFrame,
           }));
         }
       }
@@ -441,12 +469,29 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
     setSearchState(preRun.state.isLoading ? initialSearchState : preRun.state);
   }, []);
 
+  /**
+   * Repeat the last run over another time frame and hand back the arguments it
+   * ran with, so the caller can show them in the search form (null when no run
+   * stands behind the view).
+   */
+  const retrySearchWithTimeFrame = useCallback(
+    (timeFrame: TimeFrame): LastSearchArgs | null => {
+      const args = lastSearchArgsRef.current;
+      if (!args) return null;
+      const next = { ...args, timeFrame };
+      void handleSearch(next.query, next.timeFrame, next.maxResults, next.searchType);
+      return next;
+    },
+    [handleSearch],
+  );
+
   return {
     searchState,
     handleSearch,
     setSearchResult,
     resetSearch,
     retrySearch,
+    retrySearchWithTimeFrame,
     cancelSearch,
     canRepeatSearch,
   };

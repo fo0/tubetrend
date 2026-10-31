@@ -236,6 +236,8 @@
     "retryTitle": "Die letzte Suche erneut ausführen",
     "cancel": "Abbrechen",
     "cancelTitle": "Diese Analyse abbrechen und zur vorherigen Ansicht zurückkehren",
+    "tryLongerTimeFrame": "„{{timeFrame}}“ versuchen",
+    "tryLongerTimeFrameTitle": "Dieselbe Suche über einen längeren Zeitraum ausführen",
     "refresh": "Aktualisieren",
     "refreshTitle": "Diese Analyse mit frischen Daten erneut ausführen (R)",
     "analyzedAgo": "Analysiert {{time}}",

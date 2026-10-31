@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   AlertCircle,
+  CalendarRange,
   Check,
   Copy,
   Download,
@@ -32,7 +33,7 @@ import {
 } from "@/src/features/videos";
 import { formatCompactNumber, formatNumber } from "@/src/shared/lib/formatters";
 import { downloadBlob } from "@/src/shared/lib/download";
-import { STORAGE_KEYS } from "@/src/shared/constants";
+import { STORAGE_KEYS, TIME_FRAMES } from "@/src/shared/constants";
 
 interface AnalyserPageProps {
   searchState: SearchState;
@@ -57,6 +58,8 @@ interface AnalyserPageProps {
   onRetrySearch?: () => void;
   /** Abandon the analysis in flight and return to the view it replaced. */
   onCancelSearch?: () => void;
+  /** Re-run a search that found nothing, over the given longer time frame. */
+  onTryLongerTimeFrame?: (timeFrame: TimeFrame) => void;
   /** Re-run the analysis currently on screen. Omitted when no repeatable search stands behind it. */
   onRefreshResults?: () => void;
 }
@@ -69,6 +72,7 @@ export function AnalyserPage({
   onClearResults,
   onRetrySearch,
   onCancelSearch,
+  onTryLongerTimeFrame,
   onRefreshResults,
 }: AnalyserPageProps) {
   const { t } = useTranslation();
@@ -168,6 +172,11 @@ export function AnalyserPage({
     sortedVideos.length,
     t,
   ]);
+
+  // The picker entry of the longer time frame a "no videos" error offers.
+  const longerTimeFrameOption = searchState.longerTimeFrame
+    ? TIME_FRAMES.find((option) => option.value === searchState.longerTimeFrame)
+    : undefined;
 
   // A keyword search has no channel behind it: `channelName` holds the keyword.
   const isKeywordSearch = searchState.searchType === SearchType.KEYWORD;
@@ -325,6 +334,24 @@ export function AnalyserPage({
         >
           <AlertCircle className="w-5 h-5 shrink-0" aria-hidden="true" />
           <p className="min-w-0 grow">{searchState.error}</p>
+          {/* "No videos in the selected time frame — try a longer one" named
+              the fix but left it to the user: open the time frame picker,
+              guess a frame, press Search. One click now runs the same search
+              over the next frame that reaches further back, named on the
+              button. Absent at the longest frame, where there is none. */}
+          {longerTimeFrameOption && onTryLongerTimeFrame && (
+            <button
+              type="button"
+              onClick={() => onTryLongerTimeFrame(longerTimeFrameOption.value)}
+              className="inline-flex shrink-0 items-center gap-1.5 px-3 py-1.5 rounded-lg border border-red-500/30 text-sm font-medium transition-colors hover:bg-red-500/10"
+              title={t("results.tryLongerTimeFrameTitle")}
+            >
+              <CalendarRange className="w-4 h-4" aria-hidden="true" />
+              <span>
+                {t("results.tryLongerTimeFrame", { timeFrame: t(longerTimeFrameOption.labelKey) })}
+              </span>
+            </button>
+          )}
           {/* One-click recovery for the transient half of these errors (dropped
               connection, HTTP 5xx, an empty video list from a channel that does
               have uploads). Without it the only way back was scrolling up to the
