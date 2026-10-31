@@ -234,6 +234,8 @@
     "clearTitle": "Clear results",
     "retry": "Retry",
     "retryTitle": "Run the last search again",
+    "cancel": "Cancel",
+    "cancelTitle": "Stop this analysis and return to the previous view",
     "refresh": "Refresh",
     "refreshTitle": "Run this analysis again with fresh data (R)",
     "analyzedAgo": "Analyzed {{time}}",

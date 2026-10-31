@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { SearchType, TimeFrame, YouTubeVideoItem } from "@/src/shared/types";
 import { coerceSearchType, coerceTimeFrame, SearchType as ST } from "@/src/shared/types";
@@ -213,6 +213,20 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
   // snapshot, or handed over from a favorite's cache, are on screen without any
   // run behind them, and a button that silently does nothing is worse than none.
   const [canRepeatSearch, setCanRepeatSearch] = useState(initialSession.args !== null);
+  // The view a run replaced, so `cancelSearch` can put it back. A run wipes the
+  // results the moment it starts and locks the whole search form until it
+  // settles; with no request timeout, a stalled connection left the analyser
+  // stuck on a skeleton with no way out short of a page reload. Non-null exactly
+  // while a run is in flight: set when the first run of a burst starts (a run
+  // replacing another keeps the view from before the first), cleared once one
+  // settles, is cancelled, or is superseded by a cached favorite or a reset.
+  const preRunViewRef = useRef<{ state: SearchState; args: LastSearchArgs | null } | null>(null);
+  // Latest rendered state, read by `handleSearch` when it captures the view
+  // above (the callback itself would otherwise close over a stale render).
+  const searchStateRef = useRef(searchState);
+  useEffect(() => {
+    searchStateRef.current = searchState;
+  }, [searchState]);
 
   const handleSearch = useCallback(
     async (
@@ -229,6 +243,9 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
       const requestId = ++searchRequestRef.current;
       const isStale = () => requestId !== searchRequestRef.current;
       const args: LastSearchArgs = { query, timeFrame, maxResults, searchType };
+      if (!preRunViewRef.current) {
+        preRunViewRef.current = { state: searchStateRef.current, args: lastSearchArgsRef.current };
+      }
       lastSearchArgsRef.current = args;
       setCanRepeatSearch(true);
 
@@ -286,6 +303,7 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
         setSearchState((prev) => ({ ...prev, step: "analyzing_ai" }));
         const analyzedVideos = analyzeVideoStats(apiVideos);
 
+        preRunViewRef.current = null;
         const savedAt = Date.now();
         setSearchState({
           isLoading: false,
@@ -310,6 +328,7 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
       } catch (err: unknown) {
         if (import.meta.env.DEV) console.error(err);
         if (isStale()) return;
+        preRunViewRef.current = null;
         // Services carry an i18n descriptor instead of a ready-made sentence —
         // resolve it here so the alert speaks the user's language. The raw
         // message stays the fallback for errors from outside our own layer.
@@ -348,6 +367,7 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
     (data: VideoData[], channelName: string, channelId?: string, args?: LastSearchArgs) => {
       // Showing a cached favorite supersedes any run still in flight.
       searchRequestRef.current += 1;
+      preRunViewRef.current = null;
       // The caller hands over the arguments that would reproduce these videos
       // (a favorite carries its own query, time frame, max results and search
       // type). Without them the repeat arguments of the *previous* analysis
@@ -390,6 +410,7 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
     // Clearing supersedes any run still in flight, otherwise its late response
     // would repopulate the view the user just emptied.
     searchRequestRef.current += 1;
+    preRunViewRef.current = null;
     // The cleared view has no search behind it any more — a Retry or Refresh
     // offered after this would silently resurrect a query the user just
     // dismissed.
@@ -399,12 +420,34 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
     setSearchState(initialSearchState);
   }, []);
 
+  /**
+   * Abandon the run in flight and put back the view it replaced — the previous
+   * results (or error, or welcome screen) together with the arguments that
+   * produced them, so Refresh and Retry act on what is on screen again. The
+   * requests already sent are not aborted (the YouTube services take no
+   * signal); bumping the generation counter discards whatever they return, the
+   * same way a newer run or a reset does. A no-op when nothing is running.
+   */
+  const cancelSearch = useCallback(() => {
+    const preRun = preRunViewRef.current;
+    if (!preRun) return;
+    preRunViewRef.current = null;
+    searchRequestRef.current += 1;
+    lastSearchArgsRef.current = preRun.args;
+    setCanRepeatSearch(preRun.args !== null);
+    // Captured from the last committed render, which is a settled view in every
+    // real sequence; should it ever be a loading one, fall back to the empty
+    // analyser rather than a "no results" screen for a search that never ended.
+    setSearchState(preRun.state.isLoading ? initialSearchState : preRun.state);
+  }, []);
+
   return {
     searchState,
     handleSearch,
     setSearchResult,
     resetSearch,
     retrySearch,
+    cancelSearch,
     canRepeatSearch,
   };
 }

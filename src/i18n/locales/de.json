@@ -234,6 +234,8 @@
     "clearTitle": "Ergebnisse zurücksetzen",
     "retry": "Erneut versuchen",
     "retryTitle": "Die letzte Suche erneut ausführen",
+    "cancel": "Abbrechen",
+    "cancelTitle": "Diese Analyse abbrechen und zur vorherigen Ansicht zurückkehren",
     "refresh": "Aktualisieren",
     "refreshTitle": "Diese Analyse mit frischen Daten erneut ausführen (R)",
     "analyzedAgo": "Analysiert {{time}}",
