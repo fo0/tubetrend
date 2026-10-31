@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   AlertCircle,
+  CalendarRange,
   Check,
   Copy,
   Download,
@@ -12,6 +13,7 @@ import {
   RefreshCw,
   RotateCcw,
   Trophy,
+  X,
 } from "lucide-react";
 import { Youtube } from "@/src/shared/components/ui/BrandIcons";
 import { InputSection } from "@/src/shared/components/ui/InputSection";
@@ -31,7 +33,7 @@ import {
 } from "@/src/features/videos";
 import { formatCompactNumber, formatNumber } from "@/src/shared/lib/formatters";
 import { downloadBlob } from "@/src/shared/lib/download";
-import { STORAGE_KEYS } from "@/src/shared/constants";
+import { STORAGE_KEYS, TIME_FRAMES } from "@/src/shared/constants";
 
 interface AnalyserPageProps {
   searchState: SearchState;
@@ -54,6 +56,10 @@ interface AnalyserPageProps {
   onClearResults?: () => void;
   /** Run the failed search again with the arguments it used. */
   onRetrySearch?: () => void;
+  /** Abandon the analysis in flight and return to the view it replaced. */
+  onCancelSearch?: () => void;
+  /** Re-run a search that found nothing, over the given longer time frame. */
+  onTryLongerTimeFrame?: (timeFrame: TimeFrame) => void;
   /** Re-run the analysis currently on screen. Omitted when no repeatable search stands behind it. */
   onRefreshResults?: () => void;
 }
@@ -65,6 +71,8 @@ export function AnalyserPage({
   onPickExample,
   onClearResults,
   onRetrySearch,
+  onCancelSearch,
+  onTryLongerTimeFrame,
   onRefreshResults,
 }: AnalyserPageProps) {
   const { t } = useTranslation();
@@ -164,6 +172,11 @@ export function AnalyserPage({
     sortedVideos.length,
     t,
   ]);
+
+  // The picker entry of the longer time frame a "no videos" error offers.
+  const longerTimeFrameOption = searchState.longerTimeFrame
+    ? TIME_FRAMES.find((option) => option.value === searchState.longerTimeFrame)
+    : undefined;
 
   // A keyword search has no channel behind it: `channelName` holds the keyword.
   const isKeywordSearch = searchState.searchType === SearchType.KEYWORD;
@@ -321,6 +334,24 @@ export function AnalyserPage({
         >
           <AlertCircle className="w-5 h-5 shrink-0" aria-hidden="true" />
           <p className="min-w-0 grow">{searchState.error}</p>
+          {/* "No videos in the selected time frame — try a longer one" named
+              the fix but left it to the user: open the time frame picker,
+              guess a frame, press Search. One click now runs the same search
+              over the next frame that reaches further back, named on the
+              button. Absent at the longest frame, where there is none. */}
+          {longerTimeFrameOption && onTryLongerTimeFrame && (
+            <button
+              type="button"
+              onClick={() => onTryLongerTimeFrame(longerTimeFrameOption.value)}
+              className="inline-flex shrink-0 items-center gap-1.5 px-3 py-1.5 rounded-lg border border-red-500/30 text-sm font-medium transition-colors hover:bg-red-500/10"
+              title={t("results.tryLongerTimeFrameTitle")}
+            >
+              <CalendarRange className="w-4 h-4" aria-hidden="true" />
+              <span>
+                {t("results.tryLongerTimeFrame", { timeFrame: t(longerTimeFrameOption.labelKey) })}
+              </span>
+            </button>
+          )}
           {/* One-click recovery for the transient half of these errors (dropped
               connection, HTTP 5xx, an empty video list from a channel that does
               have uploads). Without it the only way back was scrolling up to the
@@ -671,19 +702,36 @@ export function AnalyserPage({
 
       {/* Loading skeleton: shown while fetching when there are no prior results yet */}
       {searchState.isLoading && !searchState.data && (
-        <div
-          className="space-y-8 animate-pulse"
-          role="status"
-          aria-label={t(
-            searchState.step === "analyzing_ai"
-              ? "loadingState.analyzing"
-              : "loadingState.fetchingYoutube",
-          )}
-        >
-          {/* Skeleton control bar */}
-          <div className="h-14 rounded-xl bg-slate-200 dark:bg-slate-800" />
+        <div className="space-y-8">
+          {/* Control bar, at the skeleton bar's size and place, carrying the
+              way out of a run: the search form stays locked until the run
+              settles and the app sets no request timeout, so a stalled connection
+              used to leave this skeleton up for good. Not pulsing — it is a
+              live control, not a placeholder, and it sits outside the status
+              region below so the button's label is not read as status text. */}
+          <div className="h-14 rounded-xl bg-slate-200 dark:bg-slate-800 flex items-center justify-end px-3">
+            {onCancelSearch && (
+              <button
+                type="button"
+                onClick={onCancelSearch}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white/70 dark:bg-slate-900/60 text-sm text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-900 transition-colors"
+                title={t("results.cancelTitle")}
+              >
+                <X className="w-4 h-4" aria-hidden="true" />
+                <span>{t("results.cancel")}</span>
+              </button>
+            )}
+          </div>
           {/* Skeleton card grid (topN=6 placeholder cards) */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3">
+          <div
+            className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3 animate-pulse"
+            role="status"
+            aria-label={t(
+              searchState.step === "analyzing_ai"
+                ? "loadingState.analyzing"
+                : "loadingState.fetchingYoutube",
+            )}
+          >
             {Array.from({ length: 6 }).map((_, i) => (
               <div
                 key={i}

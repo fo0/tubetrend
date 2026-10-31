@@ -132,8 +132,16 @@ const App: React.FC = () => {
   }, []);
 
   const searchOptions = useMemo(() => ({ onApiKeyInvalid }), [onApiKeyInvalid]);
-  const { searchState, handleSearch, setSearchResult, resetSearch, retrySearch, canRepeatSearch } =
-    useSearch(apiKey, searchOptions);
+  const {
+    searchState,
+    handleSearch,
+    setSearchResult,
+    resetSearch,
+    retrySearch,
+    retrySearchWithTimeFrame,
+    cancelSearch,
+    canRepeatSearch,
+  } = useSearch(apiKey, searchOptions);
 
   // Sorted favorites
   const sortedFavorites = useMemo(() => sortFavorites(favorites), [favorites, sortFavorites]);
@@ -451,6 +459,27 @@ const App: React.FC = () => {
     [handleSearch, setSearchResult],
   );
 
+  // The Cancel button sits in the loading view and unmounts with it, which
+  // would drop keyboard focus on <body>. <main> is already a focus target (the
+  // skip link lands there), and the next Tab from it reaches the search box the
+  // cancel just re-enabled.
+  const mainRef = useRef<HTMLElement>(null);
+  const handleCancelSearch = useCallback(() => {
+    cancelSearch();
+    mainRef.current?.focus();
+  }, [cancelSearch]);
+
+  // "No videos in this time frame" offers the next longer one. The run's own
+  // arguments go back into the search form too, so the time frame picker shows
+  // what produced the results instead of the frame that came up empty.
+  const handleTryLongerTimeFrame = useCallback(
+    (timeFrame: TimeFrame) => {
+      const args = retrySearchWithTimeFrame(timeFrame);
+      if (args) setExternalInputValues({ ...args, syncToken: Date.now() });
+    },
+    [retrySearchWithTimeFrame],
+  );
+
   // Quick-start example from the welcome empty state: pre-fill the search box
   // (via the external-sync channel) with sensible defaults and run the search.
   const handlePickExample = useCallback(
@@ -532,6 +561,7 @@ const App: React.FC = () => {
       )}
 
       <main
+        ref={mainRef}
         id="main-content"
         tabIndex={-1}
         className="flex-1 max-w-[101.2rem] mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full outline-none"
@@ -564,6 +594,8 @@ const App: React.FC = () => {
             onPickExample={handlePickExample}
             onClearResults={handleClearResults}
             onRetrySearch={retrySearch}
+            onCancelSearch={handleCancelSearch}
+            onTryLongerTimeFrame={handleTryLongerTimeFrame}
             // Only offered when a repeat is actually possible: results restored
             // from a pre-existing snapshot carry no arguments, and a refresh
             // button that does nothing is worse than no button at all.

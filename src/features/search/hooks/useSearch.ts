@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { SearchType, TimeFrame, YouTubeVideoItem } from "@/src/shared/types";
 import { coerceSearchType, coerceTimeFrame, SearchType as ST } from "@/src/shared/types";
@@ -13,6 +13,7 @@ import {
 } from "@/src/features/youtube";
 import { CACHE_TTL, STORAGE_KEYS, TIME_FRAMES } from "@/src/shared/constants";
 import { safeRead, safeRemove, safeWrite } from "@/src/shared/lib/storage";
+import { getCutoffTime } from "@/src/shared/lib/dateUtils";
 
 export interface SearchState {
   isLoading: boolean;
@@ -29,6 +30,12 @@ export interface SearchState {
   searchType?: SearchType;
   /** Epoch ms when the currently displayed analysis was produced (undefined for cached favorite views). */
   resultSavedAt?: number;
+  /**
+   * Set only when the last run failed because nothing was published in its time
+   * frame: the next time frame that reaches further back, offered as the
+   * one-click way out the error message suggests. Undefined at the longest one.
+   */
+  longerTimeFrame?: TimeFrame;
 }
 
 const initialSearchState: SearchState = {
@@ -55,6 +62,17 @@ interface PersistedAnalyserResult {
   savedAt: number;
   /** Arguments that produced this snapshot, so it can be re-run after a reload. Absent in snapshots written before this existed. */
   args?: LastSearchArgs;
+}
+
+/**
+ * The shortest time frame that reaches further back than `timeFrame`. Compared
+ * by cutoff rather than list position: "Today" sits after "Last 24 hours" in the
+ * picker but shares its cutoff, and "Last month" can equal "Last 4 weeks" in
+ * February — offering either would repeat the same empty search.
+ */
+function nextLongerTimeFrame(timeFrame: TimeFrame): TimeFrame | undefined {
+  const cutoff = getCutoffTime(timeFrame);
+  return TIME_FRAMES.find((option) => getCutoffTime(option.value) < cutoff)?.value;
 }
 
 /** True only for absolute http(s) URLs — the schemes an `<a href>` may safely navigate to. */
@@ -185,6 +203,9 @@ function restoreInitialSession(): { state: SearchState; args: LastSearchArgs | n
   };
 }
 
+/** i18n key of the "nothing published in this time frame" failure. */
+const NO_VIDEOS_IN_TIME_FRAME_KEY = "errors.api.noVideosInTimeFrame";
+
 interface UseSearchOptions {
   onApiKeyInvalid?: () => void;
 }
@@ -213,6 +234,20 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
   // snapshot, or handed over from a favorite's cache, are on screen without any
   // run behind them, and a button that silently does nothing is worse than none.
   const [canRepeatSearch, setCanRepeatSearch] = useState(initialSession.args !== null);
+  // The view a run replaced, so `cancelSearch` can put it back. A run wipes the
+  // results the moment it starts and locks the whole search form until it
+  // settles; with no request timeout, a stalled connection left the analyser
+  // stuck on a skeleton with no way out short of a page reload. Non-null exactly
+  // while a run is in flight: set when the first run of a burst starts (a run
+  // replacing another keeps the view from before the first), cleared once one
+  // settles, is cancelled, or is superseded by a cached favorite or a reset.
+  const preRunViewRef = useRef<{ state: SearchState; args: LastSearchArgs | null } | null>(null);
+  // Latest rendered state, read by `handleSearch` when it captures the view
+  // above (the callback itself would otherwise close over a stale render).
+  const searchStateRef = useRef(searchState);
+  useEffect(() => {
+    searchStateRef.current = searchState;
+  }, [searchState]);
 
   const handleSearch = useCallback(
     async (
@@ -229,6 +264,9 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
       const requestId = ++searchRequestRef.current;
       const isStale = () => requestId !== searchRequestRef.current;
       const args: LastSearchArgs = { query, timeFrame, maxResults, searchType };
+      if (!preRunViewRef.current) {
+        preRunViewRef.current = { state: searchStateRef.current, args: lastSearchArgsRef.current };
+      }
       lastSearchArgsRef.current = args;
       setCanRepeatSearch(true);
 
@@ -241,6 +279,7 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
         channelId: undefined,
         searchType,
         data: null,
+        longerTimeFrame: undefined,
       }));
 
       try {
@@ -278,7 +317,7 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
           // error, and the raw enum value ("last_month") is not user-facing text.
           const timeFrameLabelKey = TIME_FRAMES.find((tf) => tf.value === timeFrame)?.labelKey;
           throw new YouTubeApiError(`No videos found in time frame "${timeFrame}".`, 404, false, {
-            key: "errors.api.noVideosInTimeFrame",
+            key: NO_VIDEOS_IN_TIME_FRAME_KEY,
             params: { timeFrame: timeFrameLabelKey ? t(timeFrameLabelKey) : String(timeFrame) },
           });
         }
@@ -286,6 +325,7 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
         setSearchState((prev) => ({ ...prev, step: "analyzing_ai" }));
         const analyzedVideos = analyzeVideoStats(apiVideos);
 
+        preRunViewRef.current = null;
         const savedAt = Date.now();
         setSearchState({
           isLoading: false,
@@ -310,6 +350,7 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
       } catch (err: unknown) {
         if (import.meta.env.DEV) console.error(err);
         if (isStale()) return;
+        preRunViewRef.current = null;
         // Services carry an i18n descriptor instead of a ready-made sentence —
         // resolve it here so the alert speaks the user's language. The raw
         // message stays the fallback for errors from outside our own layer.
@@ -319,6 +360,11 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
             : err instanceof Error
               ? err.message
               : t("errors.analysisFailed");
+
+        const longerTimeFrame =
+          err instanceof YouTubeApiError && err.i18n?.key === NO_VIDEOS_IN_TIME_FRAME_KEY
+            ? nextLongerTimeFrame(timeFrame)
+            : undefined;
 
         const isApiKeyInvalid =
           err instanceof YouTubeApiError && err.status === 403 && !err.isQuotaError;
@@ -337,6 +383,7 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
             isLoading: false,
             step: "idle",
             error: errorMessage,
+            longerTimeFrame,
           }));
         }
       }
@@ -348,6 +395,7 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
     (data: VideoData[], channelName: string, channelId?: string, args?: LastSearchArgs) => {
       // Showing a cached favorite supersedes any run still in flight.
       searchRequestRef.current += 1;
+      preRunViewRef.current = null;
       // The caller hands over the arguments that would reproduce these videos
       // (a favorite carries its own query, time frame, max results and search
       // type). Without them the repeat arguments of the *previous* analysis
@@ -390,6 +438,7 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
     // Clearing supersedes any run still in flight, otherwise its late response
     // would repopulate the view the user just emptied.
     searchRequestRef.current += 1;
+    preRunViewRef.current = null;
     // The cleared view has no search behind it any more — a Retry or Refresh
     // offered after this would silently resurrect a query the user just
     // dismissed.
@@ -399,12 +448,51 @@ export function useSearch(apiKey: string | null, options?: UseSearchOptions) {
     setSearchState(initialSearchState);
   }, []);
 
+  /**
+   * Abandon the run in flight and put back the view it replaced — the previous
+   * results (or error, or welcome screen) together with the arguments that
+   * produced them, so Refresh and Retry act on what is on screen again. The
+   * requests already sent are not aborted (the YouTube services take no
+   * signal); bumping the generation counter discards whatever they return, the
+   * same way a newer run or a reset does. A no-op when nothing is running.
+   */
+  const cancelSearch = useCallback(() => {
+    const preRun = preRunViewRef.current;
+    if (!preRun) return;
+    preRunViewRef.current = null;
+    searchRequestRef.current += 1;
+    lastSearchArgsRef.current = preRun.args;
+    setCanRepeatSearch(preRun.args !== null);
+    // Captured from the last committed render, which is a settled view in every
+    // real sequence; should it ever be a loading one, fall back to the empty
+    // analyser rather than a "no results" screen for a search that never ended.
+    setSearchState(preRun.state.isLoading ? initialSearchState : preRun.state);
+  }, []);
+
+  /**
+   * Repeat the last run over another time frame and hand back the arguments it
+   * ran with, so the caller can show them in the search form (null when no run
+   * stands behind the view).
+   */
+  const retrySearchWithTimeFrame = useCallback(
+    (timeFrame: TimeFrame): LastSearchArgs | null => {
+      const args = lastSearchArgsRef.current;
+      if (!args) return null;
+      const next = { ...args, timeFrame };
+      void handleSearch(next.query, next.timeFrame, next.maxResults, next.searchType);
+      return next;
+    },
+    [handleSearch],
+  );
+
   return {
     searchState,
     handleSearch,
     setSearchResult,
     resetSearch,
     retrySearch,
+    retrySearchWithTimeFrame,
+    cancelSearch,
     canRepeatSearch,
   };
 }
