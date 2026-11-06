@@ -235,7 +235,7 @@
     "retry": "Erneut versuchen",
     "retryTitle": "Die letzte Suche erneut ausführen",
     "cancel": "Abbrechen",
-    "cancelTitle": "Diese Analyse abbrechen und zur vorherigen Ansicht zurückkehren",
+    "cancelTitle": "Diese Analyse abbrechen und zur vorherigen Ansicht zurückkehren (Esc)",
     "tryLongerTimeFrame": "„{{timeFrame}}“ versuchen",
     "tryLongerTimeFrameTitle": "Dieselbe Suche über einen längeren Zeitraum ausführen",
     "refresh": "Aktualisieren",
@@ -397,7 +397,7 @@
     "refreshAll": "Alle Favoriten aktualisieren",
     "refreshAnalysis": "Diese Analyse aktualisieren",
     "toggleHint": "Kürzel anzeigen",
-    "closeOrClear": "Schließen oder leeren"
+    "closeOrClear": "Schließen, leeren, abbrechen"
   },
   "scroll": {
     "toTop": "Nach oben scrollen",

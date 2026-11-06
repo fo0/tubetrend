@@ -235,7 +235,7 @@
     "retry": "Retry",
     "retryTitle": "Run the last search again",
     "cancel": "Cancel",
-    "cancelTitle": "Stop this analysis and return to the previous view",
+    "cancelTitle": "Stop this analysis and return to the previous view (Esc)",
     "tryLongerTimeFrame": "Try “{{timeFrame}}”",
     "tryLongerTimeFrameTitle": "Run the same search over a longer time frame",
     "refresh": "Refresh",
@@ -397,7 +397,7 @@
     "refreshAll": "Refresh all favorites",
     "refreshAnalysis": "Refresh this analysis",
     "toggleHint": "Show shortcuts",
-    "closeOrClear": "Close or clear"
+    "closeOrClear": "Close, clear or cancel"
   },
   "scroll": {
     "toTop": "Scroll to top",

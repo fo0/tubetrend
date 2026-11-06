@@ -174,12 +174,24 @@ const App: React.FC = () => {
       : `${subject} · ${appTitle}`;
   }, [activePage, isPageBusy, searchState.data, searchState.isLoading, searchState.channelName, t]);
 
+  // The Cancel button sits in the loading view and unmounts with it, which
+  // would drop keyboard focus on <body>. <main> is already a focus target (the
+  // skip link lands there), and the next Tab from it reaches the search box the
+  // cancel just re-enabled. Declared ahead of the hotkey handler below, whose
+  // Escape key runs the same cancel.
+  const mainRef = useRef<HTMLElement>(null);
+  const handleCancelSearch = useCallback(() => {
+    cancelSearch();
+    mainRef.current?.focus();
+  }, [cancelSearch]);
+
   // Global hotkeys:
   // - "d" / "a" switch between Dashboard and Analyser
   // - "r" refreshes all favorites on the dashboard, and re-runs the analysis
   //   on screen in the analyser
   // - "t" cycles the theme (system → light → dark)
   // - "?" toggles the keyboard-shortcuts help popover
+  // - Escape cancels a running analysis in the analyser
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       // Skip while a modal dialog owns the screen. Both dialogs trap Tab, so a
@@ -207,6 +219,21 @@ const App: React.FC = () => {
         target.tagName === "TEXTAREA" ||
         target.isContentEditable
       ) {
+        return;
+      }
+
+      // Escape stops a running analysis, like the loading view's Cancel button:
+      // the run is dropped and the view from before it comes back. The search
+      // form is disabled for the whole run, so the key cannot be meant for the
+      // search box, and a long "no limit" analysis no longer needs the mouse to
+      // abort. While the shortcuts popover is open, Escape belongs to the
+      // popover, which closes on it — closing a help panel must not also throw
+      // away the run it was opened during.
+      if (e.key === "Escape") {
+        if (activePage !== "analyser" || !searchState.isLoading) return;
+        if (document.getElementById("keyboard-shortcuts-panel")) return;
+        e.preventDefault();
+        handleCancelSearch();
         return;
       }
 
@@ -264,6 +291,7 @@ const App: React.FC = () => {
       canRepeatSearch,
       searchState.isLoading,
       retrySearch,
+      handleCancelSearch,
       theme,
       setTheme,
       isApiKeyModalOpen,
@@ -458,16 +486,6 @@ const App: React.FC = () => {
     },
     [handleSearch, setSearchResult],
   );
-
-  // The Cancel button sits in the loading view and unmounts with it, which
-  // would drop keyboard focus on <body>. <main> is already a focus target (the
-  // skip link lands there), and the next Tab from it reaches the search box the
-  // cancel just re-enabled.
-  const mainRef = useRef<HTMLElement>(null);
-  const handleCancelSearch = useCallback(() => {
-    cancelSearch();
-    mainRef.current?.focus();
-  }, [cancelSearch]);
 
   // "No videos in this time frame" offers the next longer one. The run's own
   // arguments go back into the search form too, so the time frame picker shows

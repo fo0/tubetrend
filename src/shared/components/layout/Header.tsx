@@ -296,13 +296,13 @@ function KeyboardShortcutsHint({ activePage }: { activePage: PageType }) {
                 ?
               </kbd>
             </div>
-            {/* Escape is the one key this panel never named, although four
+            {/* Escape is the one key this panel never named, although five
                 surfaces implement it: this popover and both dialogs close on
                 it, the analyser search box closes its dropdown or clears what
-                was typed, and the two filter bars reset themselves. Their own
-                `title` tooltips say so one by one — the list that is supposed
-                to be the app's keyboard model did not, so the key was
-                discoverable only by guessing. */}
+                was typed, the two filter bars reset themselves, and a running
+                analysis is cancelled. Their own `title` tooltips say so one by
+                one — the list that is supposed to be the app's keyboard model
+                did not, so the key was discoverable only by guessing. */}
             <div className="flex items-center justify-between">
               <span className="text-slate-500 dark:text-slate-400">
                 {t("keyboard.closeOrClear")}

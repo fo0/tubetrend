@@ -71,17 +71,26 @@ export function useDashboardFilters({
     : sortedFavorites;
 
   const highlightVideosData = useMemo(() => {
-    const raw = selectHighlightVideosFromFavorites(
+    // Read the hidden list once. `isHidden()` re-reads localStorage, JSON-parses
+    // it and re-validates every entry on each call, so calling it per video
+    // would do that work once per candidate.
+    const hiddenList = hiddenHighlightsService.list();
+    const hiddenIds = new Set(hiddenList.map((h) => h.videoId));
+
+    // Hidden videos are skipped during selection, so a favorite whose top video
+    // is hidden contributes its next best one instead of vanishing from the
+    // highlights. Only a favorite with every cached video hidden drops out.
+    const { items: raw, fullyHiddenCount } = selectHighlightVideosFromFavorites(
       sortedFavorites,
       (id) => favoritesService.getCache(id),
-      { perFavorite: 1, maxTotal: sortedFavorites.length },
+      { perFavorite: 1, maxTotal: sortedFavorites.length, excludeVideoIds: hiddenIds },
     );
 
     // Sort by velocity. The name tie-break uses one collator for the whole sort,
     // like sortFavorites in useDashboard — same order as `localeCompare` with
     // these options, without resolving locale and options per comparison.
     const collator = new Intl.Collator(getLocale(), { sensitivity: "base" });
-    const sorted = [...raw].sort((a, b) => {
+    const visible = [...raw].sort((a, b) => {
       const av = Number(a.video?.viewsPerHour);
       const bv = Number(b.video?.viewsPerHour);
       const aVph = Number.isFinite(av) ? av : -1;
@@ -93,15 +102,7 @@ export function useDashboardFilters({
       return collator.compare(a.sourceLabel, b.sourceLabel);
     });
 
-    // Read the hidden list once. `isHidden()` re-reads localStorage, JSON-parses
-    // it and re-validates every entry on each call, so calling it inside the
-    // filter did that work once per highlight item.
-    const hiddenList = hiddenHighlightsService.list();
-    const hiddenIds = new Set(hiddenList.map((h) => h.videoId));
-    const visible = sorted.filter((item) => !hiddenIds.has(item.video.id));
-    const hiddenCount = sorted.length - visible.length;
-
-    return { visible, hiddenCount, storedCount: hiddenList.length };
+    return { visible, hiddenCount: fullyHiddenCount, storedCount: hiddenList.length };
     // cacheTick / hiddenTick are cache-busters, not inputs: the memo reads the
     // favorites cache and the hidden-highlights list imperatively, so these
     // counters are the only signal that either store changed. Dropping them
@@ -110,13 +111,13 @@ export function useDashboardFilters({
   }, [sortedFavorites, cacheTick, hiddenTick]);
 
   const highlightVideos = highlightVideosData.visible;
-  // Hidden videos that are *current* highlight candidates — what the empty-state
-  // panel counts ("All 3 highlights are hidden").
+  // Favorites whose every cached video is hidden, so they contribute no card —
+  // what the empty-state panel counts ("All 3 highlights are hidden").
   const hiddenHighlightsCount = highlightVideosData.hiddenCount;
-  // Every entry in the hidden list, current candidate or not. A favorite's top
-  // video changes with each refresh, so older hidden entries drop out of the
-  // candidate count while they stay in the list (and stay hidden should they
-  // climb back to the top). This is what the hidden-videos modal shows.
+  // Every entry in the hidden list, current candidate or not. A favorite's
+  // videos change with each refresh, so older hidden entries stay in the list
+  // (and stay hidden should they come back). This is what the hidden-videos
+  // modal shows.
   const storedHiddenCount = highlightVideosData.storedCount;
 
   return {
