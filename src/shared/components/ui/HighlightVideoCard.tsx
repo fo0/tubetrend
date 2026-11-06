@@ -41,6 +41,8 @@ export const HighlightVideoCard: React.FC<HighlightVideoCardProps> = ({
   onJumpToSource,
 }) => {
   const { t } = useTranslation();
+  const publishedAgo = formatTimeAgo(video.publishedTimestamp, t);
+  const exactPublished = formatExactDateTime(video.publishedTimestamp);
   // Which action last succeeded / failed, or null. Two buttons share one pair of
   // states because only one of them can be in a transient state at a time — the
   // second copy supersedes the first, exactly as in VideoListTable.
@@ -139,10 +141,17 @@ export const HighlightVideoCard: React.FC<HighlightVideoCardProps> = ({
             the same exact-value tooltip the "analyzed X ago" badge carries. */}
         <div
           className="absolute bottom-3 left-3 bg-black/70 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded flex items-center gap-1 cursor-help"
-          title={formatExactDateTime(video.publishedTimestamp) || undefined}
+          // Focusable note, like the score badge and the "analyzed X ago" badge:
+          // the exact upload time sat in `title` alone on a non-focusable <div>,
+          // out of reach for keyboard and screen-reader users. The name carries
+          // both values, the tooltip stays for the mouse.
+          tabIndex={exactPublished ? 0 : undefined}
+          role={exactPublished ? "note" : undefined}
+          title={exactPublished || undefined}
+          aria-label={exactPublished ? `${publishedAgo} — ${exactPublished}` : undefined}
         >
           <Clock className="w-3 h-3 text-slate-300" aria-hidden="true" />
-          {formatTimeAgo(video.publishedTimestamp, t)}
+          {publishedAgo}
         </div>
 
         <div
