@@ -200,8 +200,12 @@ export const HighlightVideoCard: React.FC<HighlightVideoCardProps> = ({
               type="button"
               onClick={() => onJumpToSource(sourceId)}
               className="block max-w-full text-left text-xs font-semibold text-slate-500 dark:text-slate-400 truncate hover:text-indigo-500 dark:hover:text-indigo-400 hover:underline underline-offset-2 transition-colors"
+              // No aria-label: "Jump to favorite <name>" replaced the visible
+              // "<name> • Top 2" as the accessible name, so the rank on screen
+              // was missing from it and voice control could not target the
+              // button by what it shows (WCAG 2.5.3 Label in Name). The visible
+              // text is the name now, the title stays as its description.
               title={t("dashboard.highlights.jumpToSource", { source: sourceLabel })}
-              aria-label={t("dashboard.highlights.jumpToSource", { source: sourceLabel })}
             >
               {sourceLabel} <span className="text-slate-400 dark:text-slate-500">•</span> Top{" "}
               {sourceRank}
