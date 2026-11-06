@@ -129,27 +129,23 @@ export const favoritesService = {
         continue;
       }
       const timeFrame = coerceTimeFrame(item?.timeFrame);
-      const maxResults =
+      const storedMax =
         typeof item?.maxResults === "number"
           ? item.maxResults
           : typeof item?.maxResults === "string"
             ? parseInt(item.maxResults, 10)
             : 1000;
+      const maxResults = Number.isFinite(storedMax) ? storedMax : 1000;
       const createdAt = typeof item?.createdAt === "number" ? item.createdAt : Date.now();
       const label = typeof item?.label === "string" ? item.label.trim() || undefined : undefined;
       const searchType = coerceSearchType(item?.searchType, SearchType.CHANNEL);
 
-      const nextId = makeId(
-        query,
-        timeFrame,
-        Number.isFinite(maxResults) ? maxResults : 1000,
-        searchType,
-      );
+      const nextId = makeId(query, timeFrame, maxResults, searchType);
       const next: FavoriteConfig = {
         id: nextId,
         query,
         timeFrame,
-        maxResults: Number.isFinite(maxResults) ? maxResults : 1000,
+        maxResults,
         searchType,
         createdAt,
         label,
@@ -269,8 +265,6 @@ export const favoritesService = {
 
     const newId = makeId(base.query, nextTimeFrame, nextMax, searchType);
 
-    const existingIdx = list.findIndex((f) => f.id === newId);
-
     const updatedFav: FavoriteConfig = {
       id: newId,
       query: base.query,
@@ -281,11 +275,9 @@ export const favoritesService = {
       label: nextLabel,
     };
 
-    let nextList = list.filter((f) => f.id !== id);
-    if (existingIdx >= 0) {
-      nextList = nextList.filter((f) => f.id !== newId);
-    }
-    nextList = [updatedFav, ...nextList];
+    // Drops the edited entry and any entry already holding the new id, which
+    // the updated one replaces.
+    const nextList = [updatedFav, ...list.filter((f) => f.id !== id && f.id !== newId)];
     safeWrite(STORAGE_KEYS.FAVORITES, nextList);
 
     // Invalidate cache

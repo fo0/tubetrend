@@ -1,4 +1,3 @@
-import { safeReadRecord, safeWrite } from "@/src/shared/lib/storage";
 import {
   AUTO_LIMIT_CHANNEL,
   CACHE_TTL,
@@ -22,73 +21,19 @@ import type {
   YoutubeVideoListResponse,
 } from "../types";
 
+import { createTtlCache } from "./ttlCache";
 import { fetchFromApi, getApiKey, YouTubeApiError } from "./youtubeApiClient";
 
-interface AutocompleteCacheEntry {
-  results: ChannelSuggestion[];
-  timestamp: number;
-}
-
-interface ChannelCacheEntry {
-  info: ChannelInfo;
-  timestamp: number;
-}
-
-// Channel cache helpers. The stored map is shape-checked, not only parsed: a
-// stored `null` used to throw on the first lookup, so every channel search and
-// favorite refresh failed in findChannelInfo, and a stored number let the
-// lookup through but threw in saveChannelToCache — after the paid requests had
-// already spent their quota.
-function getChannelCache(): Record<string, ChannelCacheEntry> {
-  return safeReadRecord<ChannelCacheEntry>(STORAGE_KEYS.CHANNEL_CACHE);
-}
-
-// An entry without a usable timestamp makes the age NaN, and every NaN
-// comparison is false — so treat a non-finite age as expired rather than as
-// fresh, which would pin a malformed entry in the cache forever.
-function isExpired(age: number): boolean {
-  return !Number.isFinite(age) || age > CACHE_TTL.CHANNEL;
-}
-
-function getChannelFromCache(key: string): ChannelInfo | null {
-  const cache = getChannelCache();
-  const entry = cache[key];
-  if (!entry) return null;
-
-  if (isExpired(Date.now() - entry.timestamp)) return null;
-
-  return entry.info;
-}
-
-function saveChannelToCache(key: string, data: ChannelInfo): void {
-  const cache = getChannelCache();
-  const now = Date.now();
-
-  // Clean expired entries. The optional chain keeps a corrupt value (a bare
-  // `null` under a key) from throwing here: it yields NaN, which isExpired
-  // classifies as expired, so the junk entry is dropped instead of persisting.
-  Object.keys(cache).forEach((cachedKey) => {
-    if (isExpired(now - cache[cachedKey]?.timestamp)) {
-      delete cache[cachedKey];
-    }
-  });
-
-  cache[key] = { info: data, timestamp: now };
-  safeWrite(STORAGE_KEYS.CHANNEL_CACHE, cache);
-}
-
-// Autocomplete cache helpers
-function getAutocompleteCache(): Record<string, AutocompleteCacheEntry> {
-  return safeReadRecord<AutocompleteCacheEntry>(STORAGE_KEYS.AUTOCOMPLETE_CACHE);
-}
-
-// Same rule the channel cache applies through `isExpired`: an entry without a
-// usable timestamp makes the age NaN, and every NaN comparison is false — so a
-// non-finite age counts as expired rather than as fresh, which would pin a
-// malformed entry in the cache forever.
-function isAutocompleteExpired(age: number): boolean {
-  return !Number.isFinite(age) || age > CACHE_TTL.AUTOCOMPLETE;
-}
+const channelCache = createTtlCache<"info", ChannelInfo>(
+  STORAGE_KEYS.CHANNEL_CACHE,
+  CACHE_TTL.CHANNEL,
+  "info",
+);
+const autocompleteCache = createTtlCache<"results", ChannelSuggestion[]>(
+  STORAGE_KEYS.AUTOCOMPLETE_CACHE,
+  CACHE_TTL.AUTOCOMPLETE,
+  "results",
+);
 
 /** True only for absolute http(s) URLs — the schemes an `<img src>` may safely load from. */
 function isHttpUrl(value: unknown): boolean {
@@ -149,11 +94,7 @@ function toSafeSuggestion(value: unknown): ChannelSuggestion | null {
 }
 
 function getAutocompleteFromCache(query: string): ChannelSuggestion[] | null {
-  const cache = getAutocompleteCache();
-  const entry = cache[query.toLowerCase()];
-  if (!entry) return null;
-
-  if (isAutocompleteExpired(Date.now() - entry.timestamp)) return null;
+  const results = autocompleteCache.get(query.toLowerCase());
 
   // The cache is localStorage content, so `results` is only a `ChannelSuggestion[]`
   // by declaration. A corrupt entry used to be handed straight to InputSection,
@@ -161,30 +102,10 @@ function getAutocompleteFromCache(query: string): ChannelSuggestion[] | null {
   // dropdown, i.e. under no try/catch of its own. Treat a non-array as a miss: the
   // lookup falls through to the API call it would have made anyway. Every surviving
   // entry is normalized through `toSafeSuggestion` (see there for the sink).
-  if (!Array.isArray(entry.results)) return null;
-  return entry.results
+  if (!Array.isArray(results)) return null;
+  return results
     .map(toSafeSuggestion)
     .filter((suggestion): suggestion is ChannelSuggestion => suggestion !== null);
-}
-
-function saveAutocompleteToCache(query: string, results: ChannelSuggestion[]): void {
-  const cache = getAutocompleteCache();
-  const now = Date.now();
-
-  // Clean expired entries. The optional chain keeps a corrupt value (a bare
-  // `null` under a key) from throwing here: it yields NaN, which
-  // isAutocompleteExpired classifies as expired, so the junk entry is dropped
-  // instead of aborting the write. Without it the TypeError propagated into
-  // searchChannels' own catch, which swallowed the freshly fetched suggestions
-  // and returned [] — after the 100 quota units for the search had been spent.
-  Object.keys(cache).forEach((key) => {
-    if (isAutocompleteExpired(now - cache[key]?.timestamp)) {
-      delete cache[key];
-    }
-  });
-
-  cache[query.toLowerCase()] = { results, timestamp: now };
-  safeWrite(STORAGE_KEYS.AUTOCOMPLETE_CACHE, cache);
 }
 
 /**
@@ -330,7 +251,7 @@ export async function searchChannels(query: string): Promise<ChannelSuggestion[]
       };
     });
 
-    saveAutocompleteToCache(query, results);
+    autocompleteCache.set(query.toLowerCase(), results);
     return results;
   } catch {
     return [];
@@ -357,7 +278,7 @@ export async function findChannelInfo(
   const videoId = extractVideoId(query);
   if (videoId) {
     const cacheKey = `video:${videoId}`;
-    const cachedVideoChannel = getChannelFromCache(cacheKey);
+    const cachedVideoChannel = channelCache.get(cacheKey);
     if (cachedVideoChannel) return cachedVideoChannel;
     const videoData = await fetchFromApi<YoutubeVideoListResponse>(
       "videos",
@@ -371,12 +292,12 @@ export async function findChannelInfo(
       });
     }
     const result = await findChannelInfo(uploaderId, { name: query, ...context });
-    saveChannelToCache(cacheKey, result);
+    channelCache.set(cacheKey, result);
     return result;
   }
 
   // Check cache first
-  const cached = getChannelFromCache(query.toLowerCase());
+  const cached = channelCache.get(query.toLowerCase());
   if (cached) {
     return cached;
   }
@@ -421,7 +342,7 @@ export async function findChannelInfo(
             uploadsPlaylistId: uploads,
           };
 
-          saveChannelToCache(query.toLowerCase(), result);
+          channelCache.set(query.toLowerCase(), result);
           return result;
         }
       }
@@ -488,7 +409,7 @@ export async function findChannelInfo(
     uploadsPlaylistId,
   };
 
-  saveChannelToCache(query.toLowerCase(), result);
+  channelCache.set(query.toLowerCase(), result);
   return result;
 }
 

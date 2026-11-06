@@ -6,8 +6,8 @@ import { TimeFrame } from "../types";
 
 // Built once, like `pacificWallClock` below: the locale and time zone are
 // fixed, so a fresh instance per call only repeated the costly construction.
-// Every quota read calls it — track() on each API call, then getInfo() and
-// getHistory() again in the quota indicator when the update event lands.
+// Every quota read calls it — track() on each API call, then getSnapshot()
+// again in the quota indicator when the update event lands.
 const pacificDate = new Intl.DateTimeFormat("en-CA", {
   timeZone: "America/Los_Angeles",
   year: "numeric",
