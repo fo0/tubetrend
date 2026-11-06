@@ -650,6 +650,17 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
       (favoritesService.getCache(currentFavId)?.videos.length ?? 0) > 0
     : false;
 
+  // The "as of" status chip. getLocale(), not the browser default, for the
+  // exact timestamp: the relative value beside it follows the chosen UI
+  // language, so a timestamp in a different locale is a jarring mismatch. Same
+  // helper AnalyserPage and HiddenHighlightsModal already use.
+  const asOfStatus = loading
+    ? t("favorites.status.refreshing")
+    : lastFetchedAt && liveTimeAgo
+      ? t("favorites.status.asOf", { time: liveTimeAgo })
+      : t("favorites.status.asOfUnknown");
+  const asOfExact = lastFetchedAt ? new Date(lastFetchedAt).toLocaleString(getLocale()) : undefined;
+
   // The next value is computed outside the state updater on purpose: the write
   // below is a side effect, and React may invoke an updater more than once.
   const toggleCollapsed = () => {
@@ -883,19 +894,16 @@ export const FavoriteRow: React.FC<FavoriteRowProps> = ({
             )}
             <span
               className="px-2 py-0.5 rounded-full bg-slate-100/70 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400"
-              // getLocale(), not the browser default: the badge next to it
-              // ("as of 5 min ago") follows the chosen UI language, so an exact
-              // timestamp in a different locale is a jarring mismatch. Same
-              // helper AnalyserPage and HiddenHighlightsModal already use.
-              title={
-                lastFetchedAt ? new Date(lastFetchedAt).toLocaleString(getLocale()) : undefined
-              }
+              // Focusable note while it has an exact time to offer, like the
+              // analyser's "analyzed X ago" badge: a `title` on a bare <span>
+              // is out of reach for keyboard and screen-reader users. The name
+              // carries the visible status plus the exact timestamp.
+              tabIndex={asOfExact ? 0 : undefined}
+              role={asOfExact ? "note" : undefined}
+              aria-label={asOfExact ? `${asOfStatus} — ${asOfExact}` : undefined}
+              title={asOfExact}
             >
-              {loading
-                ? t("favorites.status.refreshing")
-                : lastFetchedAt && liveTimeAgo
-                  ? t("favorites.status.asOf", { time: liveTimeAgo })
-                  : t("favorites.status.asOfUnknown")}
+              {asOfStatus}
             </span>
             {!loading && totalInTimeFrame !== null && totalInTimeFrame > 0 && (
               <span

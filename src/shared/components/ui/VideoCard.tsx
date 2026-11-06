@@ -11,6 +11,8 @@ interface VideoCardProps {
 
 export const VideoCard: React.FC<VideoCardProps> = ({ video }) => {
   const { t } = useTranslation();
+  const publishedAgo = formatTimeAgo(video.publishedTimestamp, t);
+  const exactPublished = formatExactDateTime(video.publishedTimestamp);
   const [copied, setCopied] = useState(false);
   const [titleCopied, setTitleCopied] = useState(false);
   // Which copy action last failed, so a blocked clipboard is visible feedback
@@ -136,10 +138,17 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video }) => {
             the same exact-value tooltip the "analyzed X ago" badge carries. */}
         <div
           className="absolute bottom-3 left-3 bg-black/70 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded flex items-center gap-1 cursor-help"
-          title={formatExactDateTime(video.publishedTimestamp) || undefined}
+          // Focusable note, like the score badge and the "analyzed X ago" badge:
+          // the exact upload time sat in `title` alone on a non-focusable <div>,
+          // out of reach for keyboard and screen-reader users. The name carries
+          // both values, the tooltip stays for the mouse.
+          tabIndex={exactPublished ? 0 : undefined}
+          role={exactPublished ? "note" : undefined}
+          title={exactPublished || undefined}
+          aria-label={exactPublished ? `${publishedAgo} — ${exactPublished}` : undefined}
         >
           <Clock className="w-3 h-3 text-slate-300" />
-          {formatTimeAgo(video.publishedTimestamp, t)}
+          {publishedAgo}
         </div>
         {/* role="note": this badge is deliberately focusable (tabIndex={0}) so a
             keyboard user can reach the score explanation the `title` tooltip

@@ -139,15 +139,22 @@ export const FavoritesFilter: React.FC<FavoritesFilterProps> = ({
         )}
       </div>
 
-      {isFiltering && (
-        <p
-          role="status"
-          aria-live="polite"
-          className="text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap sm:pl-2"
-        >
-          {t("dashboard.filter.count", { count: matchCount, total: totalCount })}
-        </p>
-      )}
+      {/* The live region stays mounted, only its text changes: a role="status"
+          element inserted together with its text is announced unreliably, so
+          the match count of the first keystroke — the one that starts the
+          filter — was regularly swallowed (WCAG 4.1.3). Idle it is sr-only and
+          empty, which keeps it out of the flex layout and renders nothing. */}
+      <p
+        role="status"
+        aria-live="polite"
+        className={
+          isFiltering
+            ? "text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap sm:pl-2"
+            : "sr-only"
+        }
+      >
+        {isFiltering ? t("dashboard.filter.count", { count: matchCount, total: totalCount }) : ""}
+      </p>
     </div>
   );
 };
