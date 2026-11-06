@@ -176,7 +176,8 @@ project, or a key restriction that blocks the site.
   straight from the error banner and `R` re-runs the analysis on screen, the star button saves the
   current search as a favorite and takes it back again, the history button reopens the last ten
   searches whatever is in the box, and a pasted video link analyses the channel that uploaded it
-- **Highlights** — Auto-surface top-performing videos, copy their title or URL, or export them as CSV
+- **Highlights** — Auto-surface top-performing videos, copy their title or URL, or export them as
+  CSV; hiding a highlight brings up that favorite's next best video in its place
 - **Backup** — Export the dashboard as JSON; import it back with the button or by dropping the file on the page
 - **Chrome Extension** — Install as browser extension, opens in a new tab
 - **Multi-language** — English and German translations; 11 further locales auto-detect and fall back to English
