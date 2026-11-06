@@ -129,27 +129,23 @@ export const favoritesService = {
         continue;
       }
       const timeFrame = coerceTimeFrame(item?.timeFrame);
-      const maxResults =
+      const storedMax =
         typeof item?.maxResults === "number"
           ? item.maxResults
           : typeof item?.maxResults === "string"
             ? parseInt(item.maxResults, 10)
             : 1000;
+      const maxResults = Number.isFinite(storedMax) ? storedMax : 1000;
       const createdAt = typeof item?.createdAt === "number" ? item.createdAt : Date.now();
       const label = typeof item?.label === "string" ? item.label.trim() || undefined : undefined;
       const searchType = coerceSearchType(item?.searchType, SearchType.CHANNEL);
 
-      const nextId = makeId(
-        query,
-        timeFrame,
-        Number.isFinite(maxResults) ? maxResults : 1000,
-        searchType,
-      );
+      const nextId = makeId(query, timeFrame, maxResults, searchType);
       const next: FavoriteConfig = {
         id: nextId,
         query,
         timeFrame,
-        maxResults: Number.isFinite(maxResults) ? maxResults : 1000,
+        maxResults,
         searchType,
         createdAt,
         label,
