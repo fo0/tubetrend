@@ -64,12 +64,14 @@ export default defineConfig(() => {
       __BUILD_INFO__: JSON.stringify(buildInfo),
     },
     resolve: {
+      // `import.meta.dirname`, not the CommonJS `__dirname`: this is an ES module
+      // ("type": "module"), and Vite's native config loader rejects `__dirname`.
       alias: {
-        "@": path.resolve(__dirname, "."),
-        "@features": path.resolve(__dirname, "src/features"),
-        "@shared": path.resolve(__dirname, "src/shared"),
-        "@providers": path.resolve(__dirname, "src/providers"),
-        "@i18n": path.resolve(__dirname, "src/i18n"),
+        "@": path.resolve(import.meta.dirname, "."),
+        "@features": path.resolve(import.meta.dirname, "src/features"),
+        "@shared": path.resolve(import.meta.dirname, "src/shared"),
+        "@providers": path.resolve(import.meta.dirname, "src/providers"),
+        "@i18n": path.resolve(import.meta.dirname, "src/i18n"),
       },
     },
   };
