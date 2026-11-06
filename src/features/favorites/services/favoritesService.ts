@@ -269,8 +269,6 @@ export const favoritesService = {
 
     const newId = makeId(base.query, nextTimeFrame, nextMax, searchType);
 
-    const existingIdx = list.findIndex((f) => f.id === newId);
-
     const updatedFav: FavoriteConfig = {
       id: newId,
       query: base.query,
@@ -281,11 +279,9 @@ export const favoritesService = {
       label: nextLabel,
     };
 
-    let nextList = list.filter((f) => f.id !== id);
-    if (existingIdx >= 0) {
-      nextList = nextList.filter((f) => f.id !== newId);
-    }
-    nextList = [updatedFav, ...nextList];
+    // Drops the edited entry and any entry already holding the new id, which
+    // the updated one replaces.
+    const nextList = [updatedFav, ...list.filter((f) => f.id !== id && f.id !== newId)];
     safeWrite(STORAGE_KEYS.FAVORITES, nextList);
 
     // Invalidate cache
