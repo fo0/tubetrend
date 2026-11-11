@@ -41,7 +41,7 @@
     "build:extension": "vite build && node scripts/build-extension.mjs"
   },
   "dependencies": {
-    "@capacitor/android": "^8.5.3",
+    "@capacitor/android": "^8.6.0",
     "@capacitor/core": "^8.6.0",
     "@fontsource/inter": "^5.2.8",
     "i18next": "^26.5.3",
