@@ -49,7 +49,7 @@
     "lucide-react": "^1.61.0",
     "react": "^19.2.7",
     "react-dom": "^19.3.0",
-    "react-i18next": "^17.0.16"
+    "react-i18next": "^18.0.1"
   },
   "overrides": {
     "brace-expansion@1": "^1.1.12",
